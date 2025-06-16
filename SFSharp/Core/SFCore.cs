@@ -7,7 +7,7 @@ namespace SFSharp;
 public unsafe static partial class SFCore
 {
     private static SFSynchronizationContext? _sc;
-    public static void PostToMainLoop(SendOrPostCallback callback)
+    internal static void PostToMainLoop(SendOrPostCallback callback)
     {
         if (_sc == null) throw new UnreachableException();
         _sc.Post(callback, null);

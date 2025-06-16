@@ -35,12 +35,23 @@ public unsafe static partial class SFCore
 
     internal static unsafe void SendToChat(string message)
     {
+        if (message.StartsWith('/'))
+        {
+            CInput.Instance.Send(message);
+        }
+        else
+        {
+            CLocalPlayer.Instance.Chat(message);
+        }
+        return;
         using var ansiString = AnsiString.Encode(message);
         _exports.SendToChat(ansiString);
     }
 
     internal static void LogToChat(string message)
     {
+        CChat.Instance.AddEntry(EntryType.Chat, message, "", 0xFFAAAAAA, 0xFFAAAAAA);
+        return;
         using var ansiString = AnsiString.Encode(message);
         _exports.LogToChat(ansiString);
     }
@@ -49,6 +60,8 @@ public unsafe static partial class SFCore
 
     internal static short? GetAimedPlayerId()
     {
+        var aimedPlayer = CLocalPlayer.Instance.WeaponsData.AimedPlayer;
+        return aimedPlayer > 0 ? (short)aimedPlayer : null;
         var id = _exports.GetAimedPlayerId();
         return id >= 0 ? id : null;
     }
@@ -104,8 +117,6 @@ public unsafe static partial class SFCore
         _exports.UnregisterChatCommand(commandAnsi);
     }
 
-    internal static ReadOnlySpan<ChatEntry> GetChat() => new(_exports.GetChat(), 100);
-
     internal static void TakeScreenshot() => _exports.TakeScreenshot();
 
     internal static bool IsDialogOpen(uint dialogId) => _exports.IsDialogOpen(dialogId) != 0;
@@ -121,22 +132,4 @@ public enum DialogStyle
     Password = 3,
     TabList = 4,
     TabListHeaders = 5,
-}
-
-internal unsafe struct ChatEntry
-{
-    public uint _systemTime;
-    public fixed byte _prefix[28];
-    public fixed byte _text[144];
-    public fixed byte _unknown[64];
-    public int _type;
-    public uint _textColor;
-    public uint _prefixColor;
-
-    public bool Equals(ref ChatEntry other)
-    {
-        var thisSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref this, 1));
-        var otherSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref other, 1));
-        return thisSpan.SequenceEqual(otherSpan);
-    }
 }
