@@ -3,6 +3,9 @@
     <Platform Name="Any CPU" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
   <Project Path="SFSharp.Test/SFSharp.Test.csproj" Id="82e8b9fa-df30-4cb2-b3fe-c4e9b81939a2" />
   <Project Path="SFSharp/SFSharp.csproj" Id="eec737f4-1d3a-4952-9f8f-c6e622dc2334" />
   <Project Path="SFSharpLoader/SFSharpLoader.vcxproj" Id="33f3085d-9c10-4d11-b9b5-90423df2018d">
