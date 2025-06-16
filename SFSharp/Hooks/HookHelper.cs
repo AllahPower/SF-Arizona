@@ -23,14 +23,15 @@ public static unsafe class HookHelper
         Win32.VirtualProtect(trampolinePtr, stolenByteCount + 5, PAGE.EXECUTE_READ, out _);
 
         Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, PAGE.READWRITE, out var oldProtect);
-        *(byte*)originalFunctionPtr = 0xE9; // JMP instruction
+        *(byte*)originalFunctionPtr = 0xE9;
         *(uint*)(originalFunctionPtr + 1) = injectedFunctionPtr - (originalFunctionPtr + 5);
         Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, oldProtect, out _);
 
         return trampolinePtr;
     }
 
-    public static void RemoveSimpleHook(uint originalFunctionPtr, uint stolenByteCount, uint trampolinePtr) {
+    public static void RemoveSimpleHook(uint originalFunctionPtr, uint stolenByteCount, uint trampolinePtr)
+    {
         Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, PAGE.READWRITE, out var oldProtect);
         NativeMemory.Copy((void*)trampolinePtr, (void*)originalFunctionPtr, stolenByteCount);
         Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, oldProtect, out _);

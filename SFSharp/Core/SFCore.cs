@@ -1,10 +1,18 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
 public unsafe static partial class SFCore
 {
+    private static SFSynchronizationContext? _sc;
+    public static void PostToMainLoop(SendOrPostCallback callback)
+    {
+        if (_sc == null) throw new UnreachableException();
+        _sc.Post(callback, null);
+    }
+
     public static int Init(nint exportsPtr, Action mainMethod)
     {
         var exports = (CSharpExports*)exportsPtr;
@@ -14,11 +22,12 @@ public unsafe static partial class SFCore
             return 1;
         }
 
-        SynchronizationContext.SetSynchronizationContext(new SFSynchronizationContext());
+        _sc = new SFSynchronizationContext();
+        SynchronizationContext.SetSynchronizationContext(_sc);
         exports->MainLoop = &MainLoop;
 
         RegisterDialogCallback(&SFDialog.DialogCallback);
-        SF.StartChatLoop();
+        SF.InstallChatHook();
 
         try { mainMethod(); } catch(Exception ex) { LogException(ex); }
         return 0;

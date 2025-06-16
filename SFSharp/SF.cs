@@ -6,6 +6,11 @@ public static partial class SF
 {
     public static string SFSharpDirectory => Path.Combine(Environment.CurrentDirectory, "SFSharp");
 
+    public static void BeginInvoke(SendOrPostCallback callback)
+    {
+        SFCore.PostToMainLoop(callback);
+    }
+
     public static bool IsPlayerDefined(int playerId) => SFCore.IsPlayerDefined(playerId);
     public static string? GetPlayerName(int playerId) => SFCore.GetPlayerName(playerId);
     public static int GetLocalPlayerId() => SFCore.GetLocalPlayerId();

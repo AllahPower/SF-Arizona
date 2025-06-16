@@ -2,49 +2,38 @@
 
 namespace SFSharp;
 
-public record SFChatEntry(string? Text, uint TextColor, uint Timestamp);
+public record SFChatEntry(string? Text, uint TextColor);
 
 public static partial class SF
 {
-    private static readonly Stack<SFChatEntry> _entryStack = new();
-    private static readonly List<Queue<SFChatEntry>> _queues = new();
+    private static readonly List<Queue<SFChatEntry>> _consumerQueues = new();
 
-    private static unsafe SFChatEntry DecodeEntry(ChatEntry entry)
+    public class SFChatSubHook : ISubHook<CChatAddEntryArgs>
     {
-        return new SFChatEntry(AnsiString.Decode(entry._text), entry._textColor, entry._systemTime);
-    }
-
-    internal static async void StartChatLoop()
-    {
-        var chat = new ChatEntry[100];
-        var lastEntry = default(ChatEntry);
-        while (true)
+        public void Process(CChatAddEntryArgs args, Action<CChatAddEntryArgs> next)
         {
-            SFCore.GetChat().CopyTo(chat);
-            for (int i = 99; i > 0 && !chat[i].Equals(lastEntry); i--)
+            next(args);
+            var entry = new SFChatEntry(args.Text, args.TextColor);
+            BeginInvoke(_ =>
             {
-                var entry = DecodeEntry(chat[i]);
-                _entryStack.Push(entry);
-            }
-
-            while (_entryStack.Count > 0)
-            {
-                var entry = _entryStack.Pop();
-                SFDebug.Log(entry.Text ?? "<empty>");
-                foreach (var queue in _queues)
+                foreach(var queue in _consumerQueues)
                 {
                     queue.Enqueue(entry);
                 }
-            }
-            lastEntry = chat[99];
-            await Task.Yield();
+                SFDebug.Log(entry.Text);
+            });
         }
+    }
+
+    public static void InstallChatHook()
+    {
+        HookManager.CChatAddEntry.AddSubHook(new SFChatSubHook());
     }
 
     public static async IAsyncEnumerable<SFChatEntry> StreamChatEntries([EnumeratorCancellation] CancellationToken token = default)
     {
         var queue = new Queue<SFChatEntry>();
-        _queues.Add(queue);
+        _consumerQueues.Add(queue);
         try
         {
             while (true)
@@ -59,7 +48,7 @@ public static partial class SF
         }
         finally
         {
-            _queues.Remove(queue);
+            _consumerQueues.Remove(queue);
         }
     }
 }
