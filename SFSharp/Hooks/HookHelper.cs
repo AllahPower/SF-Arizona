@@ -14,36 +14,58 @@ public static unsafe class HookHelper
         return Win32.GetModuleHandle(moduleName) + offset;
     }
 
-    public static uint InstallSimpleHook(uint originalFunctionPtr, uint stolenByteCount, uint injectedFunctionPtr)
+    public static uint InstallJumpHook(uint targetAddress, uint stolenByteCount, uint injectedFunctionPtr)
     {
         var trampolinePtr = Win32.VirtualAlloc(0, stolenByteCount + 5, MEM.COMMIT | MEM.RESERVE, PAGE.READWRITE);
-        NativeMemory.Copy((void*)originalFunctionPtr, (void*)trampolinePtr, stolenByteCount);
+        NativeMemory.Copy((void*)targetAddress, (void*)trampolinePtr, stolenByteCount);
         *(byte*)(trampolinePtr + stolenByteCount) = 0xE9;
-        *(uint*)(trampolinePtr + stolenByteCount + 1) = (originalFunctionPtr + stolenByteCount) - (trampolinePtr + stolenByteCount + 5);
+        *(uint*)(trampolinePtr + stolenByteCount + 1) = (targetAddress + stolenByteCount) - (trampolinePtr + stolenByteCount + 5);
         Win32.VirtualProtect(trampolinePtr, stolenByteCount + 5, PAGE.EXECUTE_READ, out _);
 
-        Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, PAGE.READWRITE, out var oldProtect);
-        *(byte*)originalFunctionPtr = 0xE9;
-        *(uint*)(originalFunctionPtr + 1) = injectedFunctionPtr - (originalFunctionPtr + 5);
-        Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, oldProtect, out _);
+        Win32.VirtualProtect(targetAddress, stolenByteCount, PAGE.READWRITE, out var oldProtect);
+        *(byte*)targetAddress = 0xE9;
+        *(uint*)(targetAddress + 1) = injectedFunctionPtr - (targetAddress + 5);
+        Win32.VirtualProtect(targetAddress, stolenByteCount, oldProtect, out _);
 
         return trampolinePtr;
     }
 
-    public static void RemoveSimpleHook(uint originalFunctionPtr, uint stolenByteCount, uint trampolinePtr)
+    public static void RemoveJumpHook(uint targetAddress, uint stolenByteCount, uint trampolinePtr)
     {
-        Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, PAGE.READWRITE, out var oldProtect);
-        NativeMemory.Copy((void*)trampolinePtr, (void*)originalFunctionPtr, stolenByteCount);
-        Win32.VirtualProtect(originalFunctionPtr, stolenByteCount, oldProtect, out _);
+        Win32.VirtualProtect(targetAddress, stolenByteCount, PAGE.READWRITE, out var oldProtect);
+        NativeMemory.Copy((void*)trampolinePtr, (void*)targetAddress, stolenByteCount);
+        Win32.VirtualProtect(targetAddress, stolenByteCount, oldProtect, out _);
 
         Win32.VirtualFree(trampolinePtr, stolenByteCount + 5, MEM.RELEASE);
+    }
+
+    public static uint InstallCallHook(uint targetAddress, uint stolenByteCount, uint injectedFunctionPtr)
+    {
+        var bufferPtr = (uint)NativeMemory.AllocZeroed(stolenByteCount);
+        NativeMemory.Copy((void*)targetAddress, (void*)bufferPtr, stolenByteCount);
+
+        Win32.VirtualProtect(targetAddress, stolenByteCount, PAGE.READWRITE, out var oldProtect);
+        *(byte*)targetAddress = 0xE8;
+        *(uint*)(targetAddress + 1) = injectedFunctionPtr - (targetAddress + 5);
+        for (uint i = 5; i < stolenByteCount; i++)
+        {
+            *(byte*)(targetAddress + i) = 0x90;
+        }
+        Win32.VirtualProtect(targetAddress, stolenByteCount, oldProtect, out _);
+
+        return bufferPtr;
+    }
+
+    public static void RemoveCallHook(uint targetAddress, uint stolenByteCount, uint originalByteBuffer)
+    {
+        Win32.VirtualProtect(targetAddress, stolenByteCount, PAGE.READWRITE, out var oldProtect);
+        NativeMemory.Copy((void*)originalByteBuffer, (void*)targetAddress, stolenByteCount);
+        Win32.VirtualProtect(targetAddress, stolenByteCount, oldProtect, out _);
     }
 }
 
 public static unsafe partial class Win32
 {
-    public static uint GetSampAddress(uint offset) => GetModuleHandle("samp.dll") + offset;
-
     [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW")]
     internal static partial uint GetModuleHandle([MarshalAs(UnmanagedType.LPWStr)] string lpModuleName);
 

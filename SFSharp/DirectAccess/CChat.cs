@@ -6,10 +6,10 @@ using unsafe AddEntryDelegate = delegate* unmanaged[Thiscall]<CChat*, int, byte*
 [StructLayout(LayoutKind.Explicit, Size = 25622, Pack = 1)]
 public unsafe struct CChat
 {
-    private static readonly CChat* _instance = *(CChat**)Win32.GetSampAddress(0x26EB80);
+    private static readonly CChat* _instance = *(CChat**)HookHelper.GetFunctionPtr("samp.dll", 0x26EB80);
     public static ref CChat Instance => ref *_instance;
 
-    private static readonly AddEntryDelegate _addEntry = (AddEntryDelegate)Win32.GetSampAddress(0x67BE0);
+    private static readonly AddEntryDelegate _addEntry = (AddEntryDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x67BE0);
     public void AddEntry(EntryType type, string text, string prefix, uint textColor, uint prefixColor)
     {
         using var textAnsi = AnsiString.Encode(text);

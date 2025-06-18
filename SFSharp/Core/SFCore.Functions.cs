@@ -60,8 +60,9 @@ public unsafe static partial class SFCore
 
     internal static short? GetAimedPlayerId()
     {
-        var aimedPlayer = CLocalPlayer.Instance.WeaponsData.AimedPlayer;
-        return aimedPlayer > 0 ? (short)aimedPlayer : null;
+        var data = CLocalPlayer.Instance.WeaponsData;
+        var aimedPlayer = data.AimedPlayer;
+        return aimedPlayer != ushort.MaxValue ? (short)aimedPlayer : null;
         var id = _exports.GetAimedPlayerId();
         return id >= 0 ? id : null;
     }

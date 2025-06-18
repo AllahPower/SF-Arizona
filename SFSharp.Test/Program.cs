@@ -13,7 +13,7 @@ public static class Program
     {
         var container = new SFSharpModuleContainer();
         container.RegisterModule<BrightBinder>();
-        container.RegisterModule<LicenseShooter>();
+        container.RegisterModule<LicenseShooter>(false);
         container.RegisterModule<NodShaker>();
         container.RegisterModule<CountryCapitalHelper>(false);
 

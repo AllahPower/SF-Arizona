@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-internal class SFSynchronizationContext : SynchronizationContext
+internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekMessageArgs, int>
 {
     private static readonly Lock _queueLock = new();
 
@@ -32,19 +32,20 @@ internal class SFSynchronizationContext : SynchronizationContext
         }
     }
 
-    internal static void LoopProc()
+    public int Process(PeekMessageArgs args, Func<PeekMessageArgs, int> next)
     {
         lock (_queueLock)
         {
-            if(_queue.Count == 0) return;
+            if (_queue.Count == 0) return next(args);
             _queue = Interlocked.Exchange(ref _lastQueue, _queue);
         }
         while (_lastQueue.TryDequeue(out var entry))
         {
             var (d, state, mre) = entry;
-            try { d(state); } catch(Exception ex) { SFCore.LogException(ex); }
+            try { d(state); } catch (Exception ex) { SFCore.LogException(ex); }
             mre?.Set();
         }
-        
+
+        return next(args);
     }
 }

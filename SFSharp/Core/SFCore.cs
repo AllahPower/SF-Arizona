@@ -24,19 +24,20 @@ public unsafe static partial class SFCore
 
         _sc = new SFSynchronizationContext();
         SynchronizationContext.SetSynchronizationContext(_sc);
-        exports->MainLoop = &MainLoop;
+        HookManager.PeekMessage.AddSubHook(_sc);
+        //exports->MainLoop = &MainLoop;
 
         RegisterDialogCallback(&SFDialog.DialogCallback);
         SF.InstallChatHook();
 
         try { mainMethod(); } catch(Exception ex) { LogException(ex); }
-        return 0;
+        return 1;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static void MainLoop()
     {
-        SFSynchronizationContext.LoopProc();
+        //SFSynchronizationContext.LoopProc();
     }
 
     internal static void LogException(Exception ex)

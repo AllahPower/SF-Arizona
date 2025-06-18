@@ -17,7 +17,7 @@ public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs>, IDisposable
         if (_instance is not null) throw new InvalidOperationException();
 
         _functionAddress = HookHelper.GetFunctionPtr("samp.dll", 0x67BE0);
-        _trampolinePtr = (delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)HookHelper.InstallSimpleHook(
+        _trampolinePtr = (delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)HookHelper.InstallJumpHook(
             _functionAddress,
             StolenBytesCount,
             (uint)(delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)&HookedFunction
@@ -51,7 +51,7 @@ public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs>, IDisposable
     {
         if (_instance is null) throw new InvalidOperationException();
 
-        HookHelper.RemoveSimpleHook(_functionAddress, StolenBytesCount, (uint)(delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)&HookedFunction);
+        HookHelper.RemoveJumpHook(_functionAddress, StolenBytesCount, (uint)(delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)&HookedFunction);
         _instance = null;
     }
 }
