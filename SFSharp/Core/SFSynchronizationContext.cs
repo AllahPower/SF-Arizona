@@ -1,10 +1,11 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekMessageArgs, int>
+internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekMessageArgs, PeekMessageResult>
 {
     private static readonly Lock _queueLock = new();
 
@@ -32,11 +33,11 @@ internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekM
         }
     }
 
-    public int Process(PeekMessageArgs args, Func<PeekMessageArgs, int> next)
+    private void ProcLoop()
     {
         lock (_queueLock)
         {
-            if (_queue.Count == 0) return next(args);
+            if (_queue.Count == 0) return;
             _queue = Interlocked.Exchange(ref _lastQueue, _queue);
         }
         while (_lastQueue.TryDequeue(out var entry))
@@ -45,7 +46,11 @@ internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekM
             try { d(state); } catch (Exception ex) { SFCore.LogException(ex); }
             mre?.Set();
         }
+    }
 
+    PeekMessageResult ISubHook<PeekMessageArgs, PeekMessageResult>.Process(PeekMessageArgs args, Func<PeekMessageArgs, PeekMessageResult> next)
+    {
+        ProcLoop();
         return next(args);
     }
 }

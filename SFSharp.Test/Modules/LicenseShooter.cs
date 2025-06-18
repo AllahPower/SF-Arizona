@@ -70,7 +70,8 @@ public class LicenseShooter : ISFSharpModule
             SF.SendChatMessage("/time");
             await Task.Delay(500);
 
-            lastScreenshot = await SF.TakeScreenshotAsync();
+            continue;
+            //lastScreenshot = await SF.TakeScreenshotAsync();
 
             var folder = Path.GetDirectoryName(lastScreenshot)!;
             int screenshotNumber = 0;

@@ -17,27 +17,16 @@ public unsafe static partial class SFCore
     {
         var exports = (CSharpExports*)exportsPtr;
         _exports = *exports;
-        if(_exports.Version != sizeof(CSharpExports))
-        {
-            return 1;
-        }
 
         _sc = new SFSynchronizationContext();
         SynchronizationContext.SetSynchronizationContext(_sc);
         HookManager.PeekMessage.AddSubHook(_sc);
-        //exports->MainLoop = &MainLoop;
 
         RegisterDialogCallback(&SFDialog.DialogCallback);
         SF.InstallChatHook();
 
         try { mainMethod(); } catch(Exception ex) { LogException(ex); }
         return 1;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
-    private static void MainLoop()
-    {
-        //SFSynchronizationContext.LoopProc();
     }
 
     internal static void LogException(Exception ex)

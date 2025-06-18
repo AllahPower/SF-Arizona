@@ -10,7 +10,7 @@ public class BrightBinder : ISFSharpModule
     {
         while (!token.IsCancellationRequested)
         {
-            if (bbEnabled && SF.GetAimedPlayerId() is int aimedPlayerId)
+            if (bbEnabled && SF.GetAimedPlayerId() is ushort aimedPlayerId)
             {
                 await ShowDialog("default", aimedPlayerId);
             }
@@ -27,7 +27,7 @@ public class BrightBinder : ISFSharpModule
         }
     }
 
-    private async Task ShowDialog(string fileName, int? targetIdOrNull)
+    private async Task ShowDialog(string fileName, ushort? targetIdOrNull)
     {
         var currentDialog = BBDialog.FromFile(fileName);
 
@@ -50,7 +50,7 @@ public class BrightBinder : ISFSharpModule
         {
             Style = DialogStyle.TabListHeaders,
             Title = $"BrightBinder: {fileName}.txt",
-            Header = targetIdOrNull is int targetId ? $"Target: {SF.GetPlayerName(targetId)}[{targetId}] <{SF.GetPlayerScore(targetId)}>" : "No target selected.",
+            Header = targetIdOrNull is ushort targetId ? $"Target: {SF.GetPlayerName(targetId)}[{targetId}] <{SF.GetPlayerScore(targetId)}>" : "No target selected.",
             Items = currentDialog.Items.Select(entry => entry.GetDisplayText()).ToArray(),
             AcceptButton = "Select",
             CancelButton = "Cancel"
@@ -61,7 +61,7 @@ public class BrightBinder : ISFSharpModule
         await ProcessEntry(entry, targetIdOrNull);
     }
 
-    private async Task ProcessEntry(BBDialogEntry entry, int? targetId)
+    private async Task ProcessEntry(BBDialogEntry entry, ushort? targetId)
     {
         const string playerIdToken = "@playerId";
         const string playerNameToken = "@playerName";
@@ -82,13 +82,13 @@ public class BrightBinder : ISFSharpModule
             }.ShowAsync();
             if (dialogResult is not { Button: DialogButton.Accept }) return;
             ArgumentException.ThrowIfNullOrWhiteSpace(dialogResult.InputText);
-            targetId = short.Parse(dialogResult.InputText);
+            targetId = ushort.Parse(dialogResult.InputText);
         }
 
         var nextDialog = entry.TargetFile is null ? Task.CompletedTask : ShowDialog(entry.TargetFile, targetId);
 
-        int? playerId = null;
-        int getPlayerId() => playerId ??= SF.GetLocalPlayerId();
+        ushort? playerId = null;
+        ushort getPlayerId() => playerId ??= SF.GetLocalPlayerId();
 
         string? playerName = null;
         string getPlayerName() => playerName ??= SF.GetPlayerName(getPlayerId())!;

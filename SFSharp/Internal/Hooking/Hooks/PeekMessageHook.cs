@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public unsafe class PeekMessageHook : Hook<PeekMessageArgs, int>
+public unsafe class PeekMessageHook : Hook<PeekMessageArgs, PeekMessageResult>
 {
     private const int StolenBytesCount = 6;
 
@@ -20,21 +20,21 @@ public unsafe class PeekMessageHook : Hook<PeekMessageArgs, int>
         _bufferAddress = HookHelper.InstallCallHook(
             _functionAddress,
             StolenBytesCount,
-            (uint)(delegate* unmanaged[Stdcall]<PeekMessageArgs, int>)&HookedFunction
+            (uint)(delegate* unmanaged[Stdcall]<PeekMessageArgs, PeekMessageResult>)&HookedFunction
         );
 
         _instance = this;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
-    private static unsafe int HookedFunction(PeekMessageArgs args)
+    private static unsafe PeekMessageResult HookedFunction(PeekMessageArgs args)
     {
         if (_instance is null) throw new UnreachableException();
 
        return _instance.Process(args);
     }
 
-    [DllImport("user32.dll")] private static extern int PeekMessageA(PeekMessageArgs args);
+    [DllImport("user32.dll")] private static extern PeekMessageResult PeekMessageA(PeekMessageArgs args);
 
     public void Dispose()
     {
@@ -47,3 +47,6 @@ public unsafe class PeekMessageHook : Hook<PeekMessageArgs, int>
 
 [StructLayout(LayoutKind.Explicit, Size = 4 * 5, Pack = 1)]
 public struct PeekMessageArgs;
+
+[StructLayout(LayoutKind.Explicit, Size = 4, Pack = 1)]
+public struct PeekMessageResult;

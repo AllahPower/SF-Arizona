@@ -5,8 +5,6 @@
 
 std::unique_ptr<SAMPFUNCS> SF;
 
-static std::vector<CSharpLoopCallback> mainLoopCallbacks;
-
 static void LoadModules() {
 	std::filesystem::path moduleFolder = std::filesystem::current_path() / "SFSharp";
 	if(!std::filesystem::exists(moduleFolder) || !std::filesystem::is_directory(moduleFolder)) {
@@ -19,19 +17,8 @@ static void LoadModules() {
 			CSharpExports exports;
 			CSharpInitFunction init = reinterpret_cast<CSharpInitFunction>(GetProcAddress(hModule, "SFSharpMain"));
 			int returnCode = init(&exports);
-			switch (returnCode) {
-				case 0:
-					callbacks.push_back(exports.loopCallback);
-					continue;
-				case 1:
-					std::string errorMessage = "SFSharp plugin version mismatch: " + entry.path().filename().string();
-					SF->getSAMP()->getChat()->AddChatMessage(0xFFAAAAAA, errorMessage.c_str());
-					continue;
-			}
-			
 		}
 	}
-	mainLoopCallbacks = callbacks;
 }
 
 static void CALLBACK mainloop() {
@@ -39,13 +26,8 @@ static void CALLBACK mainloop() {
 	if (!initialized && GAME && GAME->GetSystemState() == eSystemState::GS_PLAYING_GAME && SF->getSAMP()->IsInitialized()) {
 		initialized = true;
 		LoadModules();
-		SF->getSAMP()->getChat()->AddChatMessage(0xFFAAAAAA, "SFSharp initialized. Plugins loaded: %i", mainLoopCallbacks.size());
+		SF->getSAMP()->getChat()->AddChatMessage(0xFFAAAAAA, "SFSharp initialized.");
 		return;
-	}
-	if(initialized) {
-		for (const CSharpLoopCallback& callback : mainLoopCallbacks) {
-			callback();
-		}
 	}
 }
 
