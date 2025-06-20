@@ -1,0 +1,27 @@
+﻿CDialogCloseHook overwrites the hook installed by SAMPFUNCS, leading to fucky-wuckies.
+
+Original bytes at function address (IDA):
+55 8B EC 83 E4 F8 6A FF 68 4B 3A 0E 10 64 A1 00 00 00 00 50 64 89 25 00 00
+SF-patched bytes (scanned immediately before we hook):
+E9 E4 61 7B 66 F8 6A FF 68 4B 3A FA 03 64 A1 00 00 00 00 50 64 89 25 00 00
+
+SF overwrites far more than the first 5/6 bytes, and they insert relative addresses which require runtime disassembly to patch.
+
+To work around this, we check if SF is loaded and hook into IT instead.
+Here's the naked function they install in the first 5 bytes:
+
+.text:10086819 ; int __fastcall sub_10086819(int, int, int)
+.text:10086819 sub_10086819    proc near               ; DATA XREF: sub_10087E2A+2F↓o
+.text:10086819
+.text:10086819 arg_0           = dword ptr  4
+.text:10086819
+.text:10086819                 pusha
+.text:1008681A                 push    [esp+20h+arg_0]
+.text:1008681E                 call    sub_1008680F    // int __cdecl sub_1008680F(int)
+.text:10086823                 pop     eax
+.text:10086824                 popa
+.text:10086825                 jmp     dword_10129594
+.text:10086825 sub_10086819    endp
+.text:10086825
+
+We'll call-inject our own __cdecl at 0x8681E.

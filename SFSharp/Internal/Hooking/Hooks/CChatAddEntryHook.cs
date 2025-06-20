@@ -58,4 +58,3 @@ public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs>, IDisposable
 }
 
 public record CChatAddEntryArgs(uint ThisPtr, int Type, string? Text, string? Prefix, uint TextColor, uint PrefixColor);
-

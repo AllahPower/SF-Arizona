@@ -64,9 +64,28 @@ public unsafe static partial class SFCore
         CDialog.Instance.Show(dialogId, dialogStyle, title, content, button1, button2, false);
     }
 
+    private class DialogCallbackHook : ISubHook<CDialogCloseArgs>
+    {
+        public required delegate* unmanaged[Stdcall]<int, int, int, byte*, void> Callback;
+        public void Process(CDialogCloseArgs args, Action<CDialogCloseArgs> next)
+        {
+            var cDialog = CDialog.Instance;
+
+            var id = (int)cDialog.Id;
+            var button = args.DialogButton;
+            var selectedIndex = cDialog.ListBox->GetSelectedIndex(-1);
+            var text = cDialog.Text;
+            
+            Callback(id, selectedIndex, button, text);
+
+            next(args);
+        }
+    }
+
     internal static void RegisterDialogCallback(delegate* unmanaged[Stdcall]<int, int, int, byte*, void> callback)
     {
-        _exports.RegisterDialogCallback(callback);
+        HookManager.CDialogClose.AddSubHook(new DialogCallbackHook { Callback = callback });
+        //_exports.RegisterDialogCallback(callback);
     }
 
     internal static bool IsKeyDown(VK key) => _exports.IsKeyDown((byte)key) != 0;

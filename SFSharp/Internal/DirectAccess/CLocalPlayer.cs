@@ -9,7 +9,7 @@ public unsafe struct CLocalPlayer
     private static readonly CLocalPlayer* _instance = CPlayerPool.Instance.GetLocalPlayer();
     public static ref CLocalPlayer Instance => ref *_instance;
 
-    [FieldOffset(0x185)]
+    [FieldOffset(389)]
     public WeaponsData WeaponsData;
 
     private static readonly ChatDelegate _chat = (ChatDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x5A10);

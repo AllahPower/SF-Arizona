@@ -25,6 +25,10 @@ public static unsafe class HookHelper
         Win32.VirtualProtect(targetAddress, stolenByteCount, PAGE.READWRITE, out var oldProtect);
         *(byte*)targetAddress = 0xE9;
         *(uint*)(targetAddress + 1) = injectedFunctionPtr - (targetAddress + 5);
+        for (uint i = 5; i < stolenByteCount; i++)
+        {
+            *(byte*)(targetAddress + i) = 0x90; // NOP
+        }
         Win32.VirtualProtect(targetAddress, stolenByteCount, oldProtect, out _);
 
         return trampolinePtr;
