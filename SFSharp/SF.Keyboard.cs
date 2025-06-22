@@ -9,7 +9,7 @@ public static partial class SF
     {
         while (true)
         {
-            _currentState = Interlocked.Exchange(ref _currentState, _lastState);
+            (_currentState, _lastState) = (_lastState, _currentState);
             _currentState.AsSpan().Fill(0);
             Win32.GetKeyboardState(ref _currentState[0]);
             await Task.Yield();
