@@ -1,15 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<IsAotCompatible>True</IsAotCompatible>
-
-	<Version>0.1.0</Version>
-	<PackageLicenseExpression>Unlicense</PackageLicenseExpression>
-	<RepositoryUrl>https://github.com/TheLeftExit/SFSharp</RepositoryUrl>
+	  <PublishAot>true</PublishAot>
+	  <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+	  <SelfContained>true</SelfContained>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <LangVersion>preview</LangVersion>
+	  
   </PropertyGroup>
 
+
+	<Target Name="ExcludeNoOpMain" DependsOnTargets="SetupOSSpecificProps" BeforeTargets="LinkNative">
+		<ItemGroup>
+			<LinkerArg Remove="@(NativeLibrary->'&quot;%(Identity)&quot;')" />
+
+			<NativeLibrary Remove="$(IlcSdkPath)dllmain$(ObjectSuffix)" />
+			<NativeLibrary Include="$(DllMainPath)dllmain.lib" />
+
+			<LinkerArg Include="@(NativeLibrary->'&quot;%(Identity)&quot;')" />
+
+			<LinkerArg Include="/INCLUDE:_DllMain@12" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="RenameOutput" AfterTargets="CopyNativeBinary">
+		<Move SourceFiles="$(PublishDir)$(TargetName)$(NativeBinaryExt)" DestinationFiles="$(PublishDir)$(TargetName).asi" />
+	</Target>
+
+	<ItemGroup>
+	  <Compile Remove="Modules\SF.Keyboard.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="SF.Keyboard.cs" />
+	</ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 
 using unsafe GetPlayerPoolDelegate = delegate* unmanaged[Thiscall]<CNetGame*, CPlayerPool*>;
+using unsafe UpdatePlayersDelegate = delegate* unmanaged[Thiscall]<CNetGame*, void>;
 
 [StructLayout(LayoutKind.Explicit, Size = 1006, Pack = 1)]
 public unsafe struct CNetGame
@@ -13,5 +14,11 @@ public unsafe struct CNetGame
     public CPlayerPool* GetPlayerPool()
     {
         return _getPlayerPool(_instance);
+    }
+
+    private static readonly UpdatePlayersDelegate _updatePlayers = (UpdatePlayersDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x8F10);
+    public void UpdatePlayers()
+    {
+        _updatePlayers(_instance);
     }
 }

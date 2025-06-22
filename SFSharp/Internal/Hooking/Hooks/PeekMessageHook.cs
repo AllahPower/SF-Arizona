@@ -31,7 +31,7 @@ public unsafe class PeekMessageHook : Hook<PeekMessageArgs, PeekMessageResult>
     {
         if (_instance is null) throw new UnreachableException();
 
-       return _instance.Process(args);
+        return _instance.Process(args);
     }
 
     [DllImport("user32.dll")] private static extern PeekMessageResult PeekMessageA(PeekMessageArgs args);

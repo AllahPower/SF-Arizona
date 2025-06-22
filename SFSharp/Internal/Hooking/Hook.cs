@@ -1,13 +1,12 @@
 ﻿namespace SFSharp;
 
+public struct NoRetValue;
+public struct NoArgs;
+public record struct ThisPtrArgs(uint ThisPtr);
+
 public interface ISubHook<TArgs, TResult>
 {
     TResult Process(TArgs args, Func<TArgs, TResult> next);
-}
-
-public interface ISubHook<TArgs>
-{
-    void Process(TArgs args, Action<TArgs> next);
 }
 
 public abstract class Hook<TArgs, TResult>
@@ -54,51 +53,5 @@ public abstract class Hook<TArgs, TResult>
         var returnValue = _invokeSubHooks(args);
         _isProcessing = false;
         return returnValue;
-    }
-}
-
-public abstract class Hook<TArgs>
-{
-    private List<ISubHook<TArgs>> _subHooks = new();
-    private readonly Action<TArgs> _baseFunction;
-    private Action<TArgs> _invokeSubHooks;
-    private bool _isProcessing = false;
-
-    protected Hook(Action<TArgs> baseFunction)
-    {
-        _invokeSubHooks = _baseFunction = baseFunction;
-    }
-
-    public void AddSubHook(ISubHook<TArgs> subHook)
-    {
-        if (_isProcessing) _subHooks = _subHooks.ToList();
-
-        _subHooks.Add(subHook);
-        _invokeSubHooks = BuildHookChain();
-    }
-    public void RemoveSubHook(ISubHook<TArgs> subHook)
-    {
-        if (_isProcessing) _subHooks = _subHooks.ToList();
-
-        _subHooks.Remove(subHook);
-        _invokeSubHooks = BuildHookChain();
-    }
-
-    protected Action<TArgs> BuildHookChain()
-    {
-        var next = _baseFunction;
-        foreach (var subHook in _subHooks.AsEnumerable().Reverse())
-        {
-            var current = next;
-            next = args => subHook.Process(args, current);
-        }
-        return next;
-    }
-
-    protected void Process(TArgs args)
-    {
-        _isProcessing = true;
-        _invokeSubHooks(args);
-        _isProcessing = false;
     }
 }

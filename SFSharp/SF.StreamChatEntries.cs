@@ -8,20 +8,21 @@ public static partial class SF
 {
     private static readonly List<Queue<SFChatEntry>> _consumerQueues = new();
 
-    public class SFChatSubHook : ISubHook<CChatAddEntryArgs>
+    public class SFChatSubHook : ISubHook<CChatAddEntryArgs, NoRetValue>
     {
-        public void Process(CChatAddEntryArgs args, Action<CChatAddEntryArgs> next)
+        public NoRetValue Process(CChatAddEntryArgs args, Func<CChatAddEntryArgs, NoRetValue> next)
         {
             next(args);
             var entry = new SFChatEntry(args.Text, args.TextColor);
             BeginInvoke(_ =>
             {
-                foreach(var queue in _consumerQueues)
+                foreach (var queue in _consumerQueues)
                 {
                     queue.Enqueue(entry);
                 }
                 SFDebug.Log(entry.Text);
             });
+            return default;
         }
     }
 

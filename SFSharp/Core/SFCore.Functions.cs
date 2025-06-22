@@ -6,21 +6,8 @@ using System.Text;
 
 namespace SFSharp;
 
-public unsafe struct CSharpExports {
-    public delegate* unmanaged[Stdcall]<delegate* unmanaged[Stdcall]<int, int, int, byte*, void>, void> RegisterDialogCallback;
-    public delegate* unmanaged[Stdcall]<byte, byte> IsKeyDown;
-    public delegate* unmanaged[Stdcall]<byte, byte> IsKeyPressed;
-    public delegate* unmanaged[Stdcall]<byte*, delegate* unmanaged[Cdecl]<byte*, void>, void> RegisterChatCommand;
-    public delegate* unmanaged[Stdcall]<byte*, void> UnregisterChatCommand;
-    public delegate* unmanaged[Stdcall]<void> TakeScreenshot;
-    public delegate* unmanaged[Stdcall]<uint, byte> IsDialogOpen;
-    public delegate* unmanaged[Stdcall]<void> UpdateScoreAndPing;
-}
-
 public unsafe static partial class SFCore
 {
-    private static CSharpExports _exports;
-
     internal static unsafe void SendToChat(string message)
     {
         if (message.StartsWith('/'))
@@ -35,7 +22,7 @@ public unsafe static partial class SFCore
 
     internal static void LogToChat(string message)
     {
-        CChat.Instance.AddEntry(EntryType.Chat, message, "", 0xFFAAAAAA, 0xFFAAAAAA);
+        CChat.Instance.AddEntry(EntryType.Debug, message, null, 0xFFAAAAAA, 0xFFAAAAAA);
     }
 
     internal static ushort GetLocalPlayerId()
@@ -64,10 +51,10 @@ public unsafe static partial class SFCore
         CDialog.Instance.Show(dialogId, dialogStyle, title, content, button1, button2, false);
     }
 
-    private class DialogCallbackHook : ISubHook<CDialogCloseArgs>
+    private class DialogCallbackHook : ISubHook<CDialogCloseArgs, NoRetValue>
     {
         public required delegate* unmanaged[Stdcall]<int, int, int, byte*, void> Callback;
-        public void Process(CDialogCloseArgs args, Action<CDialogCloseArgs> next)
+        public NoRetValue Process(CDialogCloseArgs args, Func<CDialogCloseArgs, NoRetValue> next)
         {
             var cDialog = CDialog.Instance;
 
@@ -76,38 +63,61 @@ public unsafe static partial class SFCore
             var selectedIndex = cDialog.ListBox->GetSelectedIndex(-1);
             var text = cDialog.Text;
             
-            Callback(id, selectedIndex, button, text);
+            Callback(id, button, selectedIndex, text);
 
-            next(args);
+            return next(args);
         }
     }
 
     internal static void RegisterDialogCallback(delegate* unmanaged[Stdcall]<int, int, int, byte*, void> callback)
     {
         HookManager.CDialogClose.AddSubHook(new DialogCallbackHook { Callback = callback });
-        //_exports.RegisterDialogCallback(callback);
     }
 
-    internal static bool IsKeyDown(VK key) => _exports.IsKeyDown((byte)key) != 0;
+    internal static bool IsKeyDown(VK key)
+    {
+        return false;
+    }
 
-    internal static bool IsKeyPressed(VK key) => _exports.IsKeyPressed((byte)key) != 0;
+    internal static bool IsKeyPressed(VK key)
+    {
+        return false;
+    }
 
     internal static void RegisterChatCommand(string command, delegate* unmanaged[Cdecl]<byte*, void> callback)
     {
-        using var commandAnsi = AnsiString.Encode(command);
-        _exports.RegisterChatCommand(commandAnsi, callback);
+        CInput.Instance.AddCommand(command, callback);
     }
 
-    internal static void UnregisterChatCommand(string command)
+    internal static void UnregisterChatCommand(string command, delegate* unmanaged[Cdecl]<byte*, void> callback = null)
     {
-        using var commandAnsi = AnsiString.Encode(command);
-        _exports.UnregisterChatCommand(commandAnsi);
+        var commands = CInput.Instance.Commands;
+        int commandCount = commands.CommandCount;
+
+        var commandIndex = -1;
+        for (int i = 0; i < commandCount; i++)
+        {
+            if (commands.GetCommandAt(i) == (uint)callback)
+            {
+                commandIndex = i;
+                break;
+            }
+        }
+        if (commandIndex == -1) throw new ArgumentException();
+
+        //if (commands.GetCommandNameAt(commandIndex) != command) throw new ArgumentException();
+
+        for (int i = commandIndex; i < commandCount - 2; i++)
+        {
+            commands.SetCommandAt(i, commands.GetCommandAt(i + 1));
+            commands.SetCommandNameAt(i, commands.GetCommandNameAt(i + 1));
+        }
     }
 
-    internal static void TakeScreenshot() => _exports.TakeScreenshot();
+    internal static bool IsDialogOpen(uint dialogId) => CDialog.Instance.Id == dialogId;
 
-    internal static bool IsDialogOpen(uint dialogId) => _exports.IsDialogOpen(dialogId) != 0;
-
-    internal static void UpdateScoreAndPing() => _exports.UpdateScoreAndPing();
+    internal static void UpdateScoreAndPing()
+    {
+        CNetGame.Instance.UpdatePlayers();
+    }
 }
-

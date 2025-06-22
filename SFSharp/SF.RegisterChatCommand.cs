@@ -31,7 +31,7 @@ public static partial class SF
         SFCore.RegisterChatCommand(command, pointer);
     }
 
-    public static void UnregisterChatCommand(string command)
+    public static unsafe void UnregisterChatCommand(string command)
     {
         _commandProcedures.Remove(command);
         SFCore.UnregisterChatCommand(command);

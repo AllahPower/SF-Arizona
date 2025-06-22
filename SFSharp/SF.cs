@@ -14,6 +14,4 @@ public static partial class SF
     public static ushort? GetAimedPlayerId() => SFCore.GetAimedPlayerId();
     public static int? GetPlayerScore(ushort playerId) => SFCore.GetPlayerScore(playerId);
     public static void UpdateScoreAndPing() => SFCore.UpdateScoreAndPing();
-    public static bool IsKeyDown(VK key) => SFCore.IsKeyDown(key);
-    public static bool IsKeyPressed(VK key) => SFCore.IsKeyPressed(key);
 }

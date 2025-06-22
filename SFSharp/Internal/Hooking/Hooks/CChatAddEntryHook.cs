@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs>, IDisposable
+public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs, NoRetValue>, IDisposable
 {
     private const int StolenBytesCount = 5;
 
@@ -35,10 +35,18 @@ public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs>, IDisposable
         var text = AnsiString.Decode(szText);
         var prefix = AnsiString.Decode(szPrefix);
 
-        _instance.Process(new((uint)thisPtr, nType, text, prefix, textColor, prefixColor));
+        try
+        {
+            _instance.Process(new((uint)thisPtr, nType, text, prefix, textColor, prefixColor));
+        }
+        catch (Exception ex)
+        {
+            SFCore.LogException(ex);
+        }
+
     }
 
-    private static unsafe void BaseFunction(CChatAddEntryArgs args)
+    private static unsafe NoRetValue BaseFunction(CChatAddEntryArgs args)
     {
         if (_instance is null) throw new UnreachableException();
 
@@ -46,6 +54,7 @@ public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs>, IDisposable
         using var szPrefix = AnsiString.Encode(args.Prefix);
 
         _instance._trampolinePtr((void*)args.ThisPtr, args.Type, szText, szPrefix, args.TextColor, args.PrefixColor);
+        return default;
     }
 
     public void Dispose()

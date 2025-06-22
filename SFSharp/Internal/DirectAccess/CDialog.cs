@@ -35,7 +35,7 @@ public unsafe struct CDialog
         _show(_instance, dialogId, (int)style, captionAnsi, textAnsi, leftButtonAnsi, rightButtonAnsi, serverSide ? 1 : 0);
     }
 
-    
+
 
 }
 
@@ -54,7 +54,7 @@ public unsafe struct CDXUTListBox
     private static readonly GetSelectedIndexDelegate _getSelectedIndex = (GetSelectedIndexDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x88E70);
     public int GetSelectedIndex(int listBoxId)
     {
-        fixed(CDXUTListBox* thisPtr = &this)
+        fixed (CDXUTListBox* thisPtr = &this)
         {
             return _getSelectedIndex(thisPtr, listBoxId);
         }

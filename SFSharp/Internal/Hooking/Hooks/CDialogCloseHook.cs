@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SFSharp;
 
-public unsafe class CDialogCloseHook : Hook<CDialogCloseArgs>, IDisposable
+public unsafe class CDialogCloseHook : Hook<CDialogCloseArgs, NoRetValue>, IDisposable
 {
     private const int StolenBytesCount = 6; // This is not tested, and won't be until we get running without SF
 
@@ -30,16 +30,24 @@ public unsafe class CDialogCloseHook : Hook<CDialogCloseArgs>, IDisposable
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
     private static unsafe void HookedFunction(void* thisPtr, byte dialogButton)
     {
-        if(_instance is null) throw new UnreachableException();
+        if (_instance is null) throw new UnreachableException();
 
-        _instance.Process(new((uint)thisPtr, dialogButton));
+        try
+        {
+            _instance.Process(new((uint)thisPtr, dialogButton));
+        }
+        catch (Exception ex)
+        {
+            SFCore.LogException(ex);
+        }
     }
 
-    private static unsafe void BaseFunction(CDialogCloseArgs args)
+    private static unsafe NoRetValue BaseFunction(CDialogCloseArgs args)
     {
         if (_instance is null) throw new UnreachableException();
 
         _instance._trampolinePtr((void*)args.ThisPtr, args.DialogButton);
+        return default;
     }
 
     public void Dispose()

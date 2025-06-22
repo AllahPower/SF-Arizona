@@ -6,31 +6,57 @@ namespace SFSharp;
 
 public unsafe static partial class SFCore
 {
-    private static SFSynchronizationContext? _sc;
+    internal static SFSynchronizationContext? _sc;
     internal static void PostToMainLoop(SendOrPostCallback callback)
     {
         if (_sc == null) throw new UnreachableException();
         _sc.Post(callback, null);
     }
 
-    public static int Init(nint exportsPtr, Action mainMethod)
-    {
-        var exports = (CSharpExports*)exportsPtr;
-        _exports = *exports;
-
-        _sc = new SFSynchronizationContext();
-        SynchronizationContext.SetSynchronizationContext(_sc);
-        HookManager.PeekMessage.AddSubHook(_sc);
-
-        RegisterDialogCallback(&SFDialog.DialogCallback);
-        SF.InstallChatHook();
-
-        try { mainMethod(); } catch(Exception ex) { LogException(ex); }
-        return 1;
-    }
-
     internal static void LogException(Exception ex)
     {
         LogToChat($"{ex.GetType()}: {ex.Message}");
+    }
+
+    private static bool initialized = false;
+    private static uint baseAddress = 0;
+
+    private static unsafe bool IsSampInitialized()
+    {
+        if (baseAddress == 0)
+        {
+            baseAddress = Win32.GetModuleHandle("samp.dll");
+        }
+
+        if (baseAddress == 0) return false;
+
+        var chatPtr = (uint**)(baseAddress + 0x26EB94);
+        if(*chatPtr == null) return false;
+        if(**chatPtr == 0) return false;
+
+
+        return true;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]
+    public static void WinMainLoop()
+    {
+        if (!initialized)
+        {
+            if (!IsSampInitialized()) return;
+
+            _sc = new SFSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(_sc);
+
+            SF.InstallChatHook();
+            SF.StartKeyboardLoop();
+            DialogManager.InstallHooks();
+
+            initialized = true;
+            try { Program.Main(); } catch (Exception ex) { LogException(ex); }
+            return;
+        }
+
+        _sc!.ProcLoop();
     }
 }

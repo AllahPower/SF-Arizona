@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekMessageArgs, PeekMessageResult>
+internal class SFSynchronizationContext : SynchronizationContext
 {
     private static readonly Lock _queueLock = new();
 
@@ -33,7 +33,8 @@ internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekM
         }
     }
 
-    private void ProcLoop()
+
+    internal void ProcLoop()
     {
         lock (_queueLock)
         {
@@ -46,11 +47,5 @@ internal class SFSynchronizationContext : SynchronizationContext, ISubHook<PeekM
             try { d(state); } catch (Exception ex) { SFCore.LogException(ex); }
             mre?.Set();
         }
-    }
-
-    PeekMessageResult ISubHook<PeekMessageArgs, PeekMessageResult>.Process(PeekMessageArgs args, Func<PeekMessageArgs, PeekMessageResult> next)
-    {
-        ProcLoop();
-        return next(args);
     }
 }

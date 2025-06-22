@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
@@ -20,4 +21,8 @@ public static unsafe partial class Win32
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool FlushInstructionCache(nint hProcess, uint lpBaseAddress, uint dwSize);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool GetKeyboardState(ref byte keyStates);
 }

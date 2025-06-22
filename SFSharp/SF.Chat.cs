@@ -30,7 +30,7 @@ public struct SFChatInterpolatedStringHandler
 
     public void AppendFormatted<T>(T value)
     {
-        if(value is Color colorValue)
+        if (value is Color colorValue)
         {
             var rgb = (colorValue.ToArgb() & 0xFFFFFF).ToString("X6");
 

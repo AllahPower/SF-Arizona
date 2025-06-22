@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <SolutionRoot>$(MSBuildThisFileDirectory)</SolutionRoot>
+    <DllMainPath>$(SolutionRoot)bin\</DllMainPath>
+  </PropertyGroup>
+</Project>
