@@ -9,32 +9,14 @@
 	  <SelfContained>true</SelfContained>
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	  <LangVersion>preview</LangVersion>
-	  
+	  <DllMainSourceFile>dllmain.c</DllMainSourceFile>
   </PropertyGroup>
-
-
-	<Target Name="ExcludeNoOpMain" DependsOnTargets="SetupOSSpecificProps" BeforeTargets="LinkNative">
-		<ItemGroup>
-			<LinkerArg Remove="@(NativeLibrary->'&quot;%(Identity)&quot;')" />
-
-			<NativeLibrary Remove="$(IlcSdkPath)dllmain$(ObjectSuffix)" />
-			<NativeLibrary Include="$(DllMainPath)dllmain.lib" />
-
-			<LinkerArg Include="@(NativeLibrary->'&quot;%(Identity)&quot;')" />
-
-			<LinkerArg Include="/INCLUDE:_DllMain@12" />
-		</ItemGroup>
-	</Target>
 
 	<Target Name="RenameOutput" AfterTargets="CopyNativeBinary">
 		<Move SourceFiles="$(PublishDir)$(TargetName)$(NativeBinaryExt)" DestinationFiles="$(PublishDir)$(TargetName).asi" />
 	</Target>
 
 	<ItemGroup>
-	  <Compile Remove="Modules\SF.Keyboard.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="SF.Keyboard.cs" />
+	  <PackageReference Include="DllMain" Version="1.0.0" />
 	</ItemGroup>
 </Project>

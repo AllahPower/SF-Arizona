@@ -4,10 +4,6 @@
   </Configurations>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
-    <File Path="Directory.Build.props" />
   </Folder>
-  <Project Path="SFSharp.DllMain/SFSharp.DllMain.vcxproj" Id="159c275a-1bca-4df6-8df5-864726aeef18">
-    <BuildType Project="Release" />
-  </Project>
   <Project Path="SFSharp/SFSharp.csproj" Id="eec737f4-1d3a-4952-9f8f-c6e622dc2334" />
 </Solution>
