@@ -1,24 +1,25 @@
-﻿namespace SFSharp;
+﻿using System.Runtime.InteropServices;
+
+namespace SFSharp;
 
 public struct NoRetValue;
-public struct NoArgs;
-public record struct ThisPtrArgs(uint ThisPtr);
 
 public interface ISubHook<TArgs, TResult>
 {
     TResult Process(TArgs args, Func<TArgs, TResult> next);
 }
 
-public abstract class Hook<TArgs, TResult>
+public abstract class HookBase<TArgs, TResult>
 {
     private List<ISubHook<TArgs, TResult>> _subHooks = new();
-    private readonly Func<TArgs, TResult> _baseFunction;
     private Func<TArgs, TResult> _invokeSubHooks;
     private bool _isProcessing = false;
 
-    protected Hook(Func<TArgs, TResult> baseFunction)
+    protected abstract TResult InvokeOriginalFunction(TArgs args);
+
+    protected HookBase()
     {
-        _invokeSubHooks = _baseFunction = baseFunction;
+        _invokeSubHooks = InvokeOriginalFunction;
     }
 
     public void AddSubHook(ISubHook<TArgs, TResult> subHook)
@@ -38,7 +39,7 @@ public abstract class Hook<TArgs, TResult>
 
     protected Func<TArgs, TResult> BuildHookChain()
     {
-        var next = _baseFunction;
+        var next = InvokeOriginalFunction;
         foreach (var subHook in _subHooks.AsEnumerable().Reverse())
         {
             var current = next;
@@ -50,8 +51,55 @@ public abstract class Hook<TArgs, TResult>
     protected TResult Process(TArgs args)
     {
         _isProcessing = true;
-        var returnValue = _invokeSubHooks(args);
-        _isProcessing = false;
-        return returnValue;
+        try
+        {
+            return _invokeSubHooks(args);
+        }
+        catch (Exception e)
+        {
+            SFCore.LogException(e);
+            return InvokeOriginalFunction(args); // If this fails, we're fucked anyway.
+            // Potential bug: a sub-hook may throw after invoking, leading to double invocation.
+            // We could inject our own sub-hook, check if it intercepted a return value yet, and if so, return that.
+            // It's a bit of an overkill since that's a lot of extra logic just to gracefully handle exceptions in sub-hooks...
+            // TODO: do that ^
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}
+
+public abstract class JumpHook<TArgs, TResult, TFunction> : HookBase<TArgs, TResult>, IDisposable
+    where TFunction : Delegate
+{
+    protected abstract TFunction HookedFunction { get; }
+    protected TFunction Trampoline { get; }
+
+    private readonly uint _stolenByteCount;
+    private readonly uint _functionAddress;
+    private readonly uint _trampolineAddress;
+    private readonly GCHandle _gcHandle;
+
+    protected JumpHook(uint stolenByteCount, string targetFunctionModule, uint targetFunctionOffset)
+    {
+        _stolenByteCount = stolenByteCount;
+        _functionAddress = HookHelper.GetFunctionPtr(targetFunctionModule, targetFunctionOffset);
+
+        _trampolineAddress = HookHelper.InstallJumpHook(
+            _functionAddress,
+            _stolenByteCount,
+            (uint)Marshal.GetFunctionPointerForDelegate(HookedFunction)
+        );
+        Trampoline = Marshal.GetDelegateForFunctionPointer<TFunction>((nint)_trampolineAddress);
+
+        _gcHandle = GCHandle.Alloc(this);
+    }
+
+    public virtual void Dispose()
+    {
+        _gcHandle.Free();
+        HookHelper.RemoveJumpHook(_functionAddress, _stolenByteCount, _trampolineAddress);
     }
 }

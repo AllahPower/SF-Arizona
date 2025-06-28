@@ -5,64 +5,34 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public unsafe class CChatAddEntryHook : Hook<CChatAddEntryArgs, NoRetValue>, IDisposable
+[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+public unsafe delegate void CChatAddEntry(void* thisPtr, int nType, byte* szText, byte* szPrefix, uint textColor, uint prefixColor);
+
+public unsafe class CChatAddEntryHook : JumpHook<CChatAddEntryArgs, NoRetValue, CChatAddEntry>
 {
-    private const int StolenBytesCount = 5;
+    public CChatAddEntryHook() : base(
+        stolenByteCount: 5,
+        targetFunctionModule: "samp.dll",
+        targetFunctionOffset: 0x67BE0
+    )
+    { }
 
-    private static CChatAddEntryHook? _instance;
-    private readonly delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void> _trampolinePtr;
-    private readonly uint _functionAddress;
-
-    public CChatAddEntryHook() : base(BaseFunction)
+    protected override CChatAddEntry HookedFunction => HookProc;
+    private void HookProc(void* thisPtr, int nType, byte* szText, byte* szPrefix, uint textColor, uint prefixColor)
     {
-        if (_instance is not null) throw new InvalidOperationException();
-
-        _functionAddress = HookHelper.GetFunctionPtr("samp.dll", 0x67BE0);
-        _trampolinePtr = (delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)HookHelper.InstallJumpHook(
-            _functionAddress,
-            StolenBytesCount,
-            (uint)(delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)&HookedFunction
-        );
-
-        _instance = this;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
-    private static unsafe void HookedFunction(void* thisPtr, int nType, byte* szText, byte* szPrefix, uint textColor, uint prefixColor)
-    {
-        if (_instance is null) throw new UnreachableException();
-
         var text = AnsiString.Decode(szText);
         var prefix = AnsiString.Decode(szPrefix);
 
-        try
-        {
-            _instance.Process(new((uint)thisPtr, nType, text, prefix, textColor, prefixColor));
-        }
-        catch (Exception ex)
-        {
-            SFCore.LogException(ex);
-        }
-
+        Process(new((uint)thisPtr, nType, text, prefix, textColor, prefixColor));
     }
 
-    private static unsafe NoRetValue BaseFunction(CChatAddEntryArgs args)
+    protected override NoRetValue InvokeOriginalFunction(CChatAddEntryArgs args)
     {
-        if (_instance is null) throw new UnreachableException();
-
         using var szText = AnsiString.Encode(args.Text);
         using var szPrefix = AnsiString.Encode(args.Prefix);
 
-        _instance._trampolinePtr((void*)args.ThisPtr, args.Type, szText, szPrefix, args.TextColor, args.PrefixColor);
+        Trampoline((void*)args.ThisPtr, args.Type, szText, szPrefix, args.TextColor, args.PrefixColor);
         return default;
-    }
-
-    public void Dispose()
-    {
-        if (_instance is null) throw new InvalidOperationException();
-
-        HookHelper.RemoveJumpHook(_functionAddress, StolenBytesCount, (uint)(delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)&HookedFunction);
-        _instance = null;
     }
 }
 

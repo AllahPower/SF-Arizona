@@ -5,57 +5,28 @@ using System.Text;
 
 namespace SFSharp;
 
-public unsafe class CDialogHideHook : Hook<CDialogHideArgs, NoRetValue>, IDisposable
+[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+public unsafe delegate void CDialogHide(void* thisPtr);
+
+public unsafe class CDialogHideHook : JumpHook<CDialogHideArgs, NoRetValue, CDialogHide>
 {
-    private const int StolenBytesCount = 5;
-
-    private static CDialogHideHook? _instance;
-    private readonly delegate* unmanaged[Thiscall]<void*, void> _trampolinePtr;
-    private readonly uint _functionAddress;
-
-    public CDialogHideHook() : base(BaseFunction)
+    public CDialogHideHook() : base(
+        stolenByteCount: 5,
+        targetFunctionModule: "samp.dll",
+        targetFunctionOffset: 0x6F860)
     {
-        if (_instance is not null) throw new InvalidOperationException();
-
-        _functionAddress = HookHelper.GetFunctionPtr("samp.dll", 0x6F860);
-        _trampolinePtr = (delegate* unmanaged[Thiscall]<void*, void>)HookHelper.InstallJumpHook(
-            _functionAddress,
-            StolenBytesCount,
-            (uint)(delegate* unmanaged[Thiscall]<void*, void>)&HookedFunction
-        );
-
-        _instance = this;
     }
 
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
-    private static unsafe void HookedFunction(void* thisPtr)
+    protected override CDialogHide HookedFunction => HookProc;
+    private unsafe void HookProc(void* thisPtr)
     {
-        if (_instance is null) throw new UnreachableException();
-
-        try
-        {
-            _instance.Process(new((uint)thisPtr));
-        }
-        catch (Exception ex)
-        {
-            SFCore.LogException(ex);
-        }
+        Process(new((uint)thisPtr));
     }
 
-    private static unsafe NoRetValue BaseFunction(CDialogHideArgs args)
+    protected override unsafe NoRetValue InvokeOriginalFunction(CDialogHideArgs args)
     {
-        if (_instance is null) throw new UnreachableException();
-
-        _instance._trampolinePtr((void*)args.ThisPtr);
+        Trampoline((void*)args.ThisPtr);
         return default;
-    }
-
-    public void Dispose()
-    {
-        if (_instance is null) throw new InvalidOperationException();
-
-        HookHelper.RemoveJumpHook(_functionAddress, StolenBytesCount, (uint)(delegate* unmanaged[Thiscall]<void*, void>)&HookedFunction);
-        _instance = null;
     }
 }
 

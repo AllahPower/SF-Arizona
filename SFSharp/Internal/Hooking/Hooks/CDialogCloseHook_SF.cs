@@ -3,27 +3,29 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
+using unsafe CDialogClose_SF = delegate* unmanaged[Cdecl]<int, int>;
+
 namespace SFSharp;
 
-public unsafe class CDialogCloseHook_SF : Hook<CDialogCloseArgs, NoRetValue>, IDisposable
+public unsafe class CDialogCloseHook_SF : HookBase<CDialogCloseArgs, NoRetValue>, IDisposable
 {
     private const int StolenBytesCount = 5;
 
     private static CDialogCloseHook_SF? _instance;
     private readonly uint _bufferAddress;
     private readonly uint _callAddress;
-    private readonly delegate* unmanaged[Cdecl]<int, int> _functionAddress;
+    private readonly CDialogClose_SF _functionAddress;
 
-    public CDialogCloseHook_SF() : base(BaseFunction)
+    public CDialogCloseHook_SF()
     {
         if (_instance is not null) throw new InvalidOperationException();
 
         _callAddress = HookHelper.GetFunctionPtr("sampfuncs.asi", 0x8681E);
-        _functionAddress = (delegate* unmanaged[Cdecl]<int, int>)HookHelper.GetFunctionPtr("sampfuncs.asi", 0x8680F);
+        _functionAddress = (CDialogClose_SF)HookHelper.GetFunctionPtr("sampfuncs.asi", 0x8680F);
         _bufferAddress = HookHelper.InstallCallHook(
             _callAddress,
             StolenBytesCount,
-            (uint)(delegate* unmanaged[Cdecl]<int, int>)&HookedFunction
+            (uint)(CDialogClose_SF)(&HookedFunction)
         );
 
         _instance = this;
@@ -45,7 +47,7 @@ public unsafe class CDialogCloseHook_SF : Hook<CDialogCloseArgs, NoRetValue>, ID
         return 0; // Unused
     }
 
-    private static unsafe NoRetValue BaseFunction(CDialogCloseArgs args)
+    protected override unsafe NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
     {
         if (_instance is null) throw new UnreachableException();
 

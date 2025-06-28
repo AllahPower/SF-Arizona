@@ -2,8 +2,5 @@
   <Configurations>
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/Solution Items/">
-    <File Path=".editorconfig" />
-  </Folder>
   <Project Path="SFSharp/SFSharp.csproj" Id="eec737f4-1d3a-4952-9f8f-c6e622dc2334" />
 </Solution>

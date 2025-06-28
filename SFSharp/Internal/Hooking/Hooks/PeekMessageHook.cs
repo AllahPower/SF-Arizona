@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public unsafe class PeekMessageHook : Hook<PeekMessageArgs, PeekMessageResult>
+public unsafe class PeekMessageHook : HookBase<PeekMessageArgs, PeekMessageResult>
 {
     private const int StolenBytesCount = 6;
 
@@ -12,7 +12,7 @@ public unsafe class PeekMessageHook : Hook<PeekMessageArgs, PeekMessageResult>
     private readonly uint _bufferAddress;
     private readonly uint _functionAddress;
 
-    public PeekMessageHook() : base(PeekMessageA)
+    public PeekMessageHook()
     {
         if (_instance is not null) throw new InvalidOperationException();
 
@@ -32,6 +32,11 @@ public unsafe class PeekMessageHook : Hook<PeekMessageArgs, PeekMessageResult>
         if (_instance is null) throw new UnreachableException();
 
         return _instance.Process(args);
+    }
+
+    protected override PeekMessageResult InvokeOriginalFunction(PeekMessageArgs args)
+    {
+        return PeekMessageA(args);
     }
 
     [DllImport("user32.dll")] private static extern PeekMessageResult PeekMessageA(PeekMessageArgs args);

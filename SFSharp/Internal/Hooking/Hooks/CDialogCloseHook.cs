@@ -1,61 +1,30 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace SFSharp;
 
-public unsafe class CDialogCloseHook : Hook<CDialogCloseArgs, NoRetValue>, IDisposable
+[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+public unsafe delegate void CDialogClose(void* thisPtr, byte dialogButton);
+
+public unsafe class CDialogCloseHook : JumpHook<CDialogCloseArgs, NoRetValue, CDialogClose>
 {
-    private const int StolenBytesCount = 6; // This is not tested, and won't be until we get running without SF
+    public CDialogCloseHook() : base(
+        stolenByteCount: 6,
+        targetFunctionModule: "samp.dll",
+        targetFunctionOffset: 0x70630)
+    { }
 
-    private static CDialogCloseHook? _instance;
-    private readonly delegate* unmanaged[Thiscall]<void*, byte, void> _trampolinePtr;
-    private readonly uint _functionAddress;
-
-    public CDialogCloseHook() : base(BaseFunction)
+    protected override CDialogClose HookedFunction => HookProc;
+    private void HookProc(void* thisPtr, byte dialogButton)
     {
-        if (_instance is not null) throw new InvalidOperationException();
-
-        _functionAddress = HookHelper.GetFunctionPtr("samp.dll", 0x70630);
-        _trampolinePtr = (delegate* unmanaged[Thiscall]<void*, byte, void>)HookHelper.InstallJumpHook(
-            _functionAddress,
-            StolenBytesCount,
-            (uint)(delegate* unmanaged[Thiscall]<void*, byte, void>)&HookedFunction
-        );
-
-        _instance = this;
+        Process(new((uint)thisPtr, dialogButton));
     }
 
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
-    private static unsafe void HookedFunction(void* thisPtr, byte dialogButton)
+    protected override unsafe NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
     {
-        if (_instance is null) throw new UnreachableException();
-
-        try
-        {
-            _instance.Process(new((uint)thisPtr, dialogButton));
-        }
-        catch (Exception ex)
-        {
-            SFCore.LogException(ex);
-        }
-    }
-
-    private static unsafe NoRetValue BaseFunction(CDialogCloseArgs args)
-    {
-        if (_instance is null) throw new UnreachableException();
-
-        _instance._trampolinePtr((void*)args.ThisPtr, args.DialogButton);
+        Trampoline((void*)args.ThisPtr, args.DialogButton);
         return default;
-    }
-
-    public void Dispose()
-    {
-        if (_instance is null) throw new InvalidOperationException();
-
-        HookHelper.RemoveJumpHook(_functionAddress, StolenBytesCount, (uint)(delegate* unmanaged[Thiscall]<void*, byte, void>)&HookedFunction);
-        _instance = null;
     }
 }
 

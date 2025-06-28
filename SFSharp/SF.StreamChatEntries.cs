@@ -14,7 +14,7 @@ public static partial class SF
         {
             next(args);
             var entry = new SFChatEntry(args.Text, args.TextColor);
-            BeginInvoke(_ =>
+            BeginInvoke(() =>
             {
                 foreach (var queue in _consumerQueues)
                 {

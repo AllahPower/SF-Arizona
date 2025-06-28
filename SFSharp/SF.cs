@@ -4,7 +4,7 @@ public static partial class SF
 {
     public static string SFSharpDirectory => Path.Combine(Environment.CurrentDirectory, "SFSharp");
 
-    public static void BeginInvoke(SendOrPostCallback callback)
+    public static void BeginInvoke(Action callback)
     {
         SFCore.PostToMainLoop(callback);
     }

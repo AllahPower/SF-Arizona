@@ -4,71 +4,41 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public unsafe class CDialogShowHook : Hook<CDialogShowHookArgs, NoRetValue>, IDisposable
+[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+public unsafe delegate void CDialogShow(void* thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide);
+
+public unsafe class CDialogShowHook : JumpHook<CDialogShowHookArgs, NoRetValue, CDialogShow>
 {
-    private const int StolenBytesCount = 5;
+    public CDialogShowHook() : base(
+        stolenByteCount: 5,
+        targetFunctionModule: "samp.dll",
+        targetFunctionOffset: 0x6FFB0)
+    { }
 
-    private static CDialogShowHook? _instance;
-    private readonly delegate* unmanaged[Thiscall]<void*, int, int, byte*, byte*, byte*, byte*, int, void> _trampolinePtr;
-    private readonly uint _functionAddress;
-
-    public CDialogShowHook() : base(BaseFunction)
+    protected override CDialogShow HookedFunction => HookProc;
+    private unsafe void HookProc(void* thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide)
     {
-        if (_instance is not null) throw new InvalidOperationException();
-
-        _functionAddress = HookHelper.GetFunctionPtr("samp.dll", 0x6FFB0);
-        _trampolinePtr = (delegate* unmanaged[Thiscall]<void*, int, int, byte*, byte*, byte*, byte*, int, void>)HookHelper.InstallJumpHook(
-            _functionAddress,
-            StolenBytesCount,
-            (uint)(delegate* unmanaged[Thiscall]<void*, int, int, byte*, byte*, byte*, byte*, int, void>)&HookedFunction
-        );
-
-        _instance = this;
+        Process(new(
+            (uint)thisPtr,
+            id,
+            (DialogStyle)type,
+            AnsiString.Decode(caption),
+            AnsiString.Decode(text),
+            AnsiString.Decode(leftButton),
+            AnsiString.Decode(rightButton),
+            serverSide != 0
+        ));
     }
 
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
-    private static unsafe void HookedFunction(void* thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide)
+    protected override unsafe NoRetValue InvokeOriginalFunction(CDialogShowHookArgs args)
     {
-        if (_instance is null) throw new UnreachableException();
-
-        try
-        {
-            _instance.Process(new(
-                (uint)thisPtr,
-                id,
-                (DialogStyle)type,
-                AnsiString.Decode(caption),
-                AnsiString.Decode(text),
-                AnsiString.Decode(leftButton),
-                AnsiString.Decode(rightButton),
-                serverSide != 0
-            ));
-        }
-        catch (Exception ex)
-        {
-            SFCore.LogException(ex);
-        }
-    }
-
-    private static unsafe NoRetValue BaseFunction(CDialogShowHookArgs args)
-    {
-        if (_instance is null) throw new UnreachableException();
-
         using var caption = AnsiString.Encode(args.Caption);
         using var text = AnsiString.Encode(args.Text);
         using var leftButton = AnsiString.Encode(args.LeftButton);
         using var rightButton = AnsiString.Encode(args.RightButton);
 
-        _instance._trampolinePtr((void*)args.ThisPtr, args.Id, (int)args.Style, caption, text, leftButton, rightButton, args.ServerSide ? 1 : 0);
+        Trampoline((void*)args.ThisPtr, args.Id, (int)args.Style, caption, text, leftButton, rightButton, args.ServerSide ? 1 : 0);
         return default;
-    }
-
-    public void Dispose()
-    {
-        if (_instance is null) throw new InvalidOperationException();
-
-        HookHelper.RemoveJumpHook(_functionAddress, StolenBytesCount, (uint)(delegate* unmanaged[Thiscall]<void*, int, int, byte*, byte*, byte*, byte*, int, void>)&HookedFunction);
-        _instance = null;
     }
 }
 

@@ -7,10 +7,10 @@ namespace SFSharp;
 public unsafe static partial class SFCore
 {
     internal static SFSynchronizationContext? _sc;
-    internal static void PostToMainLoop(SendOrPostCallback callback)
+    internal static void PostToMainLoop(Action callback)
     {
         if (_sc == null) throw new UnreachableException();
-        _sc.Post(callback, null);
+        _sc.Post(static obj => ((Action)obj!)(), callback);
     }
 
     internal static void LogException(Exception ex)
@@ -29,7 +29,7 @@ public unsafe static partial class SFCore
         }
 
         if (baseAddress == 0) return false;
-
+        // Checking if CNetGame is initialized
         var chatPtr = (uint**)(baseAddress + 0x26EB94);
         if(*chatPtr == null) return false;
         if(**chatPtr == 0) return false;
