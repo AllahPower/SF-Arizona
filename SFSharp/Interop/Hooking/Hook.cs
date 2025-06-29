@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
@@ -19,7 +20,7 @@ public abstract class HookBase<TArgs, TResult>
 
     protected HookBase()
     {
-        _invokeSubHooks = InvokeOriginalFunction;
+        BuildHookChain();
     }
 
     public void AddSubHook(ISubHook<TArgs, TResult> subHook)
@@ -27,17 +28,18 @@ public abstract class HookBase<TArgs, TResult>
         if (_isProcessing) _subHooks = _subHooks.ToList();
 
         _subHooks.Add(subHook);
-        _invokeSubHooks = BuildHookChain();
+        BuildHookChain();
     }
     public void RemoveSubHook(ISubHook<TArgs, TResult> subHook)
     {
         if (_isProcessing) _subHooks = _subHooks.ToList();
 
         _subHooks.Remove(subHook);
-        _invokeSubHooks = BuildHookChain();
+        BuildHookChain();
     }
 
-    protected Func<TArgs, TResult> BuildHookChain()
+    [MemberNotNull(nameof(_invokeSubHooks))]
+    protected void BuildHookChain()
     {
         var next = InvokeOriginalFunction;
         foreach (var subHook in _subHooks.AsEnumerable().Reverse())
@@ -45,7 +47,7 @@ public abstract class HookBase<TArgs, TResult>
             var current = next;
             next = args => subHook.Process(args, current);
         }
-        return next;
+        _invokeSubHooks = next;
     }
 
     protected TResult Process(TArgs args)
@@ -57,7 +59,7 @@ public abstract class HookBase<TArgs, TResult>
         }
         catch (Exception e)
         {
-            SFCore.LogException(e);
+            SFBootstrap.ProcessException(e);
             return InvokeOriginalFunction(args); // If this fails, we're fucked anyway.
             // Potential bug: a sub-hook may throw after invoking, leading to double invocation.
             // We could inject our own sub-hook, check if it intercepted a return value yet, and if so, return that.
@@ -71,6 +73,8 @@ public abstract class HookBase<TArgs, TResult>
     }
 }
 
+// These hooks used to inherit directly from HookBase, and declared UnmanagedCallersOnly methods.
+// As much as I dislike runtime-created thunks from GetFunctionPointerForDelegate, this is much more reusable and less error-prone.
 public abstract class JumpHook<TArgs, TResult, TFunction> : HookBase<TArgs, TResult>, IDisposable
     where TFunction : Delegate
 {

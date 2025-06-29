@@ -1,11 +1,11 @@
 ﻿namespace SFSharp;
 
-public static partial class SF
+public class SFKeyboard : ISFComponent
 {
     private static byte[] _currentState = new byte[256];
     private static byte[] _lastState = new byte[256];
 
-    public static async void StartKeyboardLoop()
+    async void ISFComponent.Initialize()
     {
         while (true)
         {
@@ -21,12 +21,12 @@ public static partial class SF
         return (state[(int)key] & 0x80) != 0;
     }
 
-    public static bool IsKeyDown(VK key)
+    public bool IsKeyDown(VK key)
     {
         return IsKeyDownCore(key, _currentState);
     }
 
-    public static bool IsKeyPressed(VK key)
+    public bool IsKeyPressed(VK key)
     {
         return IsKeyDownCore(key, _currentState) && !IsKeyDownCore(key, _lastState);
     }

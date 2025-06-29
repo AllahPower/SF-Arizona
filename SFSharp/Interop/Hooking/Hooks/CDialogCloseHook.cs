@@ -28,4 +28,4 @@ public unsafe class CDialogCloseHook : JumpHook<CDialogCloseArgs, NoRetValue, CD
     }
 }
 
-public record CDialogCloseArgs(uint ThisPtr, byte DialogButton);
+public record struct CDialogCloseArgs(uint ThisPtr, byte DialogButton);

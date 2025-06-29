@@ -6,13 +6,13 @@ public class NodShaker : ISFSharpModule
     {
         while (!token.IsCancellationRequested)
         {
-            if (SF.IsKeyPressed(VK.ADD))
+            if (SF.Keyboard.IsKeyPressed(VK.ADD))
             {
-                SF.SendChatMessage("+");
+                SF.Chat.Send("+");
             }
-            if (SF.IsKeyPressed(VK.SUBTRACT))
+            if (SF.Keyboard.IsKeyPressed(VK.SUBTRACT))
             {
-                SF.SendChatMessage("-");
+                SF.Chat.Send("-");
             }
             await Task.Yield();
         }

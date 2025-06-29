@@ -12,9 +12,8 @@ public static class Program
         container.RegisterModule<BrightBinder>();
         container.RegisterModule<LicenseShooter>(false);
         container.RegisterModule<NodShaker>();
-        container.RegisterModule<CountryCapitalHelper>(false);
 
-        SF.RegisterChatCommand("sfd", x => SFDebug.ShowDialog());
+        SF.Chat.RegisterChatCommand("sfd", x => SFDebug.ShowDialog());
 
         await container.RunAllAsync(CancellationToken.None);
     }

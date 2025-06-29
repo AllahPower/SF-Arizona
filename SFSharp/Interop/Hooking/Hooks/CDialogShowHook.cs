@@ -42,4 +42,4 @@ public unsafe class CDialogShowHook : JumpHook<CDialogShowHookArgs, NoRetValue, 
     }
 }
 
-public record class CDialogShowHookArgs(uint ThisPtr, int Id, DialogStyle Style, string? Caption, string? Text, string? LeftButton, string? RightButton, bool ServerSide);
+public record struct CDialogShowHookArgs(uint ThisPtr, int Id, DialogStyle Style, string? Caption, string? Text, string? LeftButton, string? RightButton, bool ServerSide);

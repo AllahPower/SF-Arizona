@@ -42,7 +42,7 @@ public unsafe class CDialogCloseHook_SF : HookBase<CDialogCloseArgs, NoRetValue>
         }
         catch (Exception ex)
         {
-            SFCore.LogException(ex);
+            SFBootstrap.ProcessException(ex);
         }
         return 0; // Unused
     }

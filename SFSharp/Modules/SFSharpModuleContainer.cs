@@ -29,7 +29,7 @@ public class SFSharpModuleContainer
 
     public async Task RunAllAsync(CancellationToken token)
     {
-        SF.RegisterChatCommand("sfs", _ => CommandCallbackCore());
+        SF.Chat.RegisterChatCommand("sfs", _ => CommandCallbackCore());
         try
         {
             _masterToken = token;
@@ -46,7 +46,7 @@ public class SFSharpModuleContainer
         }
         finally
         {
-            SF.UnregisterChatCommand("sfs");
+            //SF_old.UnregisterChatCommand("sfs");
         }
     }
 
@@ -58,22 +58,18 @@ public class SFSharpModuleContainer
             return $"{x.GetType().Name}\t{statusText}";
         }).ToArray();
 
-        var dialogResult = await new SFDialog
-        {
-            Style = DialogStyle.TabListHeaders,
-            Title = "SFSharp modules (select to enable/disable)",
-            Header = "Module\tStatus",
-            Items = lines,
-            AcceptButton = "Select",
-            CancelButton = "Cancel",
-        }.ShowAsync();
+        var dialogResult = await SF.Dialog.ShowList(
+            "SFSharp modules (select to enable/disable)",
+            lines,
+            "Module\tStatus"
+        );
 
-        if (dialogResult is not { Button: DialogButton.Accept })
+        if (dialogResult is not { Button: SFDialogButton.OK })
         {
-            SF.AddChatMessage("[SFSharp] No changes made to running module.");
+            SF.Chat.Add("[SFSharp] No changes made to running module.");
             return;
         }
-        var selectedModule = _modules[dialogResult.SelectedItemIndex];
+        var selectedModule = _modules[dialogResult.SelectedIndex];
         if (_runningModules.TryGetValue(selectedModule, out var runningModule))
         {
             _runningModules.Remove(selectedModule);
@@ -84,14 +80,14 @@ public class SFSharpModuleContainer
             }
             catch (OperationCanceledException) { } // Expected.
 
-            SF.AddChatMessage($"[SFSharp] {selectedModule.GetType().Name} stopped.");
+            SF.Chat.Add($"[SFSharp] {selectedModule.GetType().Name} stopped.");
         }
         else
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(_masterToken);
             var task = selectedModule.RunAsync(cts.Token);
             _runningModules[selectedModule] = (task, cts);
-            SF.AddChatMessage($"[SFSharp] {selectedModule.GetType().Name} started.");
+            SF.Chat.Add($"[SFSharp] {selectedModule.GetType().Name} started.");
         }
     }
 }

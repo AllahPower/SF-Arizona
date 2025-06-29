@@ -1,5 +1,4 @@
 ﻿using SFSharp;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using unsafe GetLocalPlayerDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, CLocalPlayer*>;

@@ -1,11 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-internal class SFSynchronizationContext : SynchronizationContext
+public class SFSynchronizationContext : SynchronizationContext
 {
     private static readonly Lock _queueLock = new();
 
@@ -33,18 +30,17 @@ internal class SFSynchronizationContext : SynchronizationContext
         }
     }
 
-
     internal void ProcLoop()
     {
         lock (_queueLock)
         {
             if (_queue.Count == 0) return;
-            _queue = Interlocked.Exchange(ref _lastQueue, _queue);
+            (_queue, _lastQueue) = (_lastQueue, _queue);
         }
         while (_lastQueue.TryDequeue(out var entry))
         {
             var (d, state, mre) = entry;
-            try { d(state); } catch (Exception ex) { SFCore.LogException(ex); }
+            try { d(state); } catch (Exception ex) { SFBootstrap.ProcessException(ex); }
             mre?.Set();
         }
     }

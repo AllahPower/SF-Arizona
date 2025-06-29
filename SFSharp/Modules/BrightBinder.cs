@@ -7,21 +7,21 @@ public class BrightBinder : ISFSharpModule
 {
     private bool bbEnabled = true;
     public async Task RunAsync(CancellationToken token)
-    {
+    { 
         while (!token.IsCancellationRequested)
         {
-            if (bbEnabled && SF.GetAimedPlayerId() is ushort aimedPlayerId)
+            if (bbEnabled && SF.Players.GetAimedPlayerId() is ushort aimedPlayerId)
             {
                 await ShowDialog("default", aimedPlayerId);
             }
-            if (SF.IsKeyPressed(VK.XBUTTON1))
+            if (SF.Keyboard.IsKeyPressed(VK.XBUTTON1))
             {
                 await ShowDialog("default", null);
             }
-            if (SF.IsKeyPressed(VK.XBUTTON2))
+            if (SF.Keyboard.IsKeyPressed(VK.XBUTTON2))
             {
                 bbEnabled = !bbEnabled;
-                SF.AddChatMessage(bbEnabled ? "[SFSharp.Managed] Quick bind enabled." : "[SFSharp.Managed] Quick bind disabled.");
+                SF.Chat.Add(bbEnabled ? "Quick bind enabled." : "Quick bind disabled.");
             }
             await Task.Yield();
         }
@@ -31,33 +31,23 @@ public class BrightBinder : ISFSharpModule
     {
         var currentDialog = BBDialog.FromFile(fileName);
 
-        if (targetIdOrNull is not null && SF.GetPlayerScore(targetIdOrNull.Value) == 0)
+        if (targetIdOrNull is not null && SF.Players.GetScore(targetIdOrNull.Value) == 0)
         {
-            new SFDialog
-            {
-                Style = DialogStyle.MsgBox,
-                Title = "BrightBinder",
-                Items = ["Loading player score..."],
-            }.Show();
-            SF.UpdateScoreAndPing();
-            while (SF.GetPlayerScore(targetIdOrNull.Value) == 0)
+            _ = SF.Dialog.ShowMessage("BrightBinder", "Loading player score...");
+            SF.Players.UpdateScoreboard();
+            while (SF.Players.GetScore(targetIdOrNull.Value) == 0)
             {
                 await Task.Yield();
             }
         }
+        var result = await SF.Dialog.ShowList(
+            $"BrightBinder: {fileName}.txt",
+            currentDialog.Items.Select(entry => entry.GetDisplayText()).ToArray(),
+            targetIdOrNull is ushort targetId ? $"Target: {SF.Players.GetName(targetId)}[{targetId}] <{SF.Players.GetScore(targetId)}>" : "No target selected."
+        );
 
-        var result = await new SFDialog
-        {
-            Style = DialogStyle.TabListHeaders,
-            Title = $"BrightBinder: {fileName}.txt",
-            Header = targetIdOrNull is ushort targetId ? $"Target: {SF.GetPlayerName(targetId)}[{targetId}] <{SF.GetPlayerScore(targetId)}>" : "No target selected.",
-            Items = currentDialog.Items.Select(entry => entry.GetDisplayText()).ToArray(),
-            AcceptButton = "Select",
-            CancelButton = "Cancel"
-        }.ShowAsync();
-
-        if (result is not { Button: DialogButton.Accept }) return;
-        var entry = currentDialog.Items[result.SelectedItemIndex];
+        if (result.Button != SFDialogButton.OK) return;
+        var entry = currentDialog.Items[result.SelectedIndex];
         await ProcessEntry(entry, targetIdOrNull);
     }
 
@@ -72,29 +62,25 @@ public class BrightBinder : ISFSharpModule
         var requiresTargetId = entry.Commands.Any(cmd => cmd.Contains(targetIdToken) || cmd.Contains(targetNameToken));
         if (requiresTargetId && targetId is null)
         {
-            var dialogResult = await new SFDialog
-            {
-                Style = DialogStyle.Input,
-                Title = "BrightBinder: Input required",
-                Items = ["Enter target ID:"],
-                AcceptButton = "Enter",
-                CancelButton = "Cancel",
-            }.ShowAsync();
-            if (dialogResult is not { Button: DialogButton.Accept }) return;
-            ArgumentException.ThrowIfNullOrWhiteSpace(dialogResult.InputText);
-            targetId = ushort.Parse(dialogResult.InputText);
+            var dialogResult = await SF.Dialog.ShowInput(
+                "BrightBinder: Input required",
+                "Enter target ID:"
+            );
+            if (dialogResult.Button != SFDialogButton.OK) return;
+            ArgumentException.ThrowIfNullOrWhiteSpace(dialogResult.Text);
+            targetId = ushort.Parse(dialogResult.Text);
         }
 
         var nextDialog = entry.TargetFile is null ? Task.CompletedTask : ShowDialog(entry.TargetFile, targetId);
 
         ushort? playerId = null;
-        ushort getPlayerId() => playerId ??= SF.GetLocalPlayerId();
+        ushort getPlayerId() => playerId ??= SF.Players.LocalPlayerId;
 
         string? playerName = null;
-        string getPlayerName() => playerName ??= SF.GetPlayerName(getPlayerId())!;
+        string getPlayerName() => playerName ??= SF.Players.GetName(getPlayerId())!;
 
         string? targetName = null;
-        string getTargetName() => targetName ??= SF.GetPlayerName(targetId ?? getPlayerId())!;
+        string getTargetName() => targetName ??= SF.Players.GetName(targetId ?? getPlayerId())!;
 
         foreach (var rawCommand in entry.Commands)
         {
@@ -104,7 +90,7 @@ public class BrightBinder : ISFSharpModule
             if (command.Contains(targetIdToken)) command = command.Replace(targetIdToken, targetId!.Value.ToString());
             if (command.Contains(targetNameToken)) command = command.Replace(targetNameToken, getTargetName());
 
-            SF.SendChatMessage(command);
+            SF.Chat.Send(command);
             await Task.Delay(delay);
         }
 
@@ -132,7 +118,7 @@ public record BBDialog(string Name, BBDialogEntry[] Items)
 {
     public static BBDialog FromFile(string fileName)
     {
-        var baseDirectory = Path.Combine(SF.SFSharpDirectory, "brightbinder");
+        var baseDirectory = Path.Combine(SF.UserFilesDirectory, "SF", "brightbinder");
         var filePath = Path.Combine(baseDirectory, fileName + ".txt");
         if (!File.Exists(filePath)) throw new FileNotFoundException(null, filePath);
         return new(

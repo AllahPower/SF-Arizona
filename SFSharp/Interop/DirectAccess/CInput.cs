@@ -3,11 +3,12 @@ using System.Runtime.InteropServices;
 
 using unsafe SendDelegate = delegate* unmanaged[Thiscall]<CInput*, byte*, void>;
 using unsafe AddCommandDelegate = delegate* unmanaged[Thiscall]<CInput*, byte*, delegate* unmanaged[Cdecl]<byte*, void>, void>;
-using System.Runtime.CompilerServices;
 
 [StructLayout(LayoutKind.Explicit, Size = 6908, Pack = 1)]
 public unsafe struct CInput
 {
+    public static bool Ready => HookHelper.IsClassReady("samp.dll", 0x26EB84);
+
     private static readonly CInput* _instance = *(CInput**)HookHelper.GetFunctionPtr("samp.dll", 0x26EB84);
     public static ref CInput Instance => ref *_instance;
 

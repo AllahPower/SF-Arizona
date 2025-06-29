@@ -6,27 +6,27 @@ public class LicenseShooter : ISFSharpModule
 {
     public async Task RunAsync(CancellationToken token)
     {
-        var path = Path.Combine(SF.SFSharpDirectory, "earnings.txt");
+        var path = Path.Combine(SF.UserFilesDirectory, "SF", "earnings.txt");
         var earnings = File.Exists(path) ? int.Parse(File.ReadAllText(path)) : 0;
-        SF.AddChatMessage("[SFSharp] Starting earnings: " + earnings);
+        SF.Chat.Add("[SFSharp] Starting earnings: " + earnings);
 
         var lastEarnings = 0;
         var lastScreenshot = (string?)null;
 
-        SF.RegisterChatCommand("oops", x =>
+        SF.Chat.RegisterChatCommand("oops", x =>
         {
             if (lastScreenshot is null)
             {
-                SF.AddChatMessage("[SFSharp] Nothing to undo.");
+                SF.Chat.Add("[SFSharp] Nothing to undo.");
                 return;
             }
             earnings -= lastEarnings;
             File.Delete(lastScreenshot);
             lastScreenshot = null;
-            SF.AddChatMessage($"[SFSharp] Screenshot deleted; earnings reverted to: {earnings}");
+            SF.Chat.Add($"[SFSharp] Screenshot deleted; earnings reverted to: {earnings}");
         });
 
-        await foreach (var entry in SF.StreamChatEntries(token))
+        await foreach (var entry in SF.Chat.StreamChatEntries(token))
         {
             if (entry.Text is not string text) continue;
             text = text.Trim();
@@ -52,22 +52,15 @@ public class LicenseShooter : ISFSharpModule
             }
             */
 
-            var dialogResult = await new SFDialog
-            {
-                Style = DialogStyle.MsgBox,
-                Items = [$"License sale to {buyer} detected. Proceed with recording?"],
-                Title = "LicenseShooter",
-                AcceptButton = "OK",
-                CancelButton = "Cancel"
-            }.ShowAsync();
-            if (dialogResult is not { Button: DialogButton.Accept }) continue;
+            var dialogResult = await SF.Dialog.ShowMessage("LicenseShooter", $"License sale to {buyer} detected. Proceed with recording?");
+            if (dialogResult != SFDialogButton.OK) continue;
 
-            SF.AddChatMessage($"[SFSharp] License sale to {buyer} recorded. Earnings: {earnings} + {lastEarnings} = {earnings + lastEarnings}");
+            SF.Chat.Add($"[SFSharp] License sale to {buyer} recorded. Earnings: {earnings} + {lastEarnings} = {earnings + lastEarnings}");
             earnings += lastEarnings;
             File.WriteAllText(path, earnings.ToString());
             await Task.Delay(500);
 
-            SF.SendChatMessage("/time");
+            SF.Chat.Send("/time");
             await Task.Delay(500);
 
             continue;

@@ -14,6 +14,16 @@ public static unsafe class HookHelper
         return Win32.GetModuleHandle(moduleName) + offset;
     }
 
+    public static bool IsClassReady(string moduleName, uint offset)
+    {
+        var moduleHandle = Win32.GetModuleHandle(moduleName);
+        if (moduleHandle == 0) return false;
+        var classPtr = (uint**)(moduleHandle + offset);
+        if (*classPtr == null) return false;
+        if (**classPtr == 0) return false;
+        return true;
+    }
+
     public static uint InstallJumpHook(uint targetAddress, uint stolenByteCount, uint injectedFunctionPtr)
     {
         var trampolinePtr = Win32.VirtualAlloc(0, stolenByteCount + 5, MEM.COMMIT | MEM.RESERVE, PAGE.READWRITE);
