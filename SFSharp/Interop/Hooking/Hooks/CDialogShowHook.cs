@@ -4,21 +4,25 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-public unsafe delegate void CDialogShow(void* thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide);
+using unsafe CDialogShow = delegate* unmanaged[Thiscall]<void*, int, int, byte*, byte*, byte*, byte*, int, void>;
+public record struct CDialogShowHookArgs(uint ThisPtr, int Id, DialogStyle Style, string? Caption, string? Text, string? LeftButton, string? RightButton, bool ServerSide);
 
-public unsafe class CDialogShowHook : JumpHook<CDialogShowHookArgs, NoRetValue, CDialogShow>
+public unsafe class CDialogShowHook : JumpHook<CDialogShowHookArgs, NoRetValue>
 {
+    private static CDialogShowHook? _instance;
     public CDialogShowHook() : base(
         stolenByteCount: 5,
         targetFunctionModule: "samp.dll",
-        targetFunctionOffset: 0x6FFB0)
-    { }
+        targetFunctionOffset: 0x6FFB0
+    ) => _instance = this;
 
-    protected override CDialogShow HookedFunction => HookProc;
-    private unsafe void HookProc(void* thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide)
+    protected override void* InjectedFunction => (CDialogShow)(&HookProc);
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
+    private static unsafe void HookProc(void* thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide)
     {
-        Process(new(
+        if (_instance is null) throw new UnreachableException();
+
+        _instance.Process(new(
             (uint)thisPtr,
             id,
             (DialogStyle)type,
@@ -37,9 +41,8 @@ public unsafe class CDialogShowHook : JumpHook<CDialogShowHookArgs, NoRetValue, 
         using var leftButton = AnsiString.Encode(args.LeftButton);
         using var rightButton = AnsiString.Encode(args.RightButton);
 
-        Trampoline((void*)args.ThisPtr, args.Id, (int)args.Style, caption, text, leftButton, rightButton, args.ServerSide ? 1 : 0);
+        ((CDialogShow)OriginalFunction)((void*)args.ThisPtr, args.Id, (int)args.Style, caption, text, leftButton, rightButton, args.ServerSide ? 1 : 0);
         return default;
     }
 }
 
-public record struct CDialogShowHookArgs(uint ThisPtr, int Id, DialogStyle Style, string? Caption, string? Text, string? LeftButton, string? RightButton, bool ServerSide);

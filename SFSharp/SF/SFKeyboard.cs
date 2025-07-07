@@ -10,7 +10,7 @@ public class SFKeyboard : ISFComponent
         while (true)
         {
             (_currentState, _lastState) = (_lastState, _currentState);
-            _currentState.AsSpan().Fill(0);
+            _currentState.AsSpan().Clear();
             Win32.GetKeyboardState(ref _currentState[0]);
             await Task.Yield();
         }

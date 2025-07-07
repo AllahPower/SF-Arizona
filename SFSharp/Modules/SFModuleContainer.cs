@@ -2,22 +2,20 @@
 using System.Runtime.InteropServices;
 using SFSharp;
 
-public interface ISFSharpModule
+public interface ISFModule
 {
     Task RunAsync(CancellationToken token);
 }
 
-public class SFSharpModuleContainer
+public class SFModuleContainer
 {
-    private readonly List<ISFSharpModule> _modules = new();
-    private readonly Dictionary<ISFSharpModule, (Task Task, CancellationTokenSource TokenSource)> _runningModules = new();
-    private readonly List<ISFSharpModule> _modulesDisabledOnStart = new();
+    private readonly List<ISFModule> _modules = new();
+    private readonly Dictionary<ISFModule, (Task Task, CancellationTokenSource TokenSource)> _runningModules = new();
+    private readonly List<ISFModule> _modulesDisabledOnStart = new();
 
-    private static SFSharpModuleContainer? _currentContainer;
+    private static SFModuleContainer? _currentContainer;
 
-    private CancellationToken _masterToken;
-
-    public void RegisterModule<T>(bool enabledOnStart = true) where T : ISFSharpModule, new()
+    public void RegisterModule<T>(bool enabledOnStart = true) where T : ISFModule, new()
     {
         var module = new T();
         _modules.Add(module);
@@ -27,30 +25,37 @@ public class SFSharpModuleContainer
         }
     }
 
-    public async Task RunAllAsync(CancellationToken token)
+    public void Run()
     {
-        SF.Chat.RegisterChatCommand("sfs", _ => CommandCallbackCore());
-        try
+        foreach (var module in _modules)
         {
-            _masterToken = token;
-
-            foreach (var module in _modules)
-            {
-                if (_modulesDisabledOnStart.Contains(module)) continue;
-                var cts = CancellationTokenSource.CreateLinkedTokenSource(_masterToken);
-                var task = module.RunAsync(cts.Token);
-                _runningModules[module] = (task, cts);
-            }
-
-            await Task.WhenAll(_runningModules.Values.Select(x => x.Task));
-        }
-        finally
-        {
-            //SF_old.UnregisterChatCommand("sfs");
+            if (_modulesDisabledOnStart.Contains(module)) continue;
+            var cts = new CancellationTokenSource();
+            var task = module.RunAsync(cts.Token);
+            _runningModules[module] = (task, cts);
         }
     }
 
-    private async void CommandCallbackCore()
+    public async Task RunAllAsync()
+    {
+        foreach (var module in _modules)
+        {
+            if (_modulesDisabledOnStart.Contains(module)) continue;
+            var cts = new CancellationTokenSource();
+            var task = module.RunAsync(cts.Token);
+            _runningModules[module] = (task, cts);
+        }
+
+        using var commandTaskSource = SF.Chat.RegisterChatCommand("sfs");
+        await foreach(var args in commandTaskSource.StreamCommandsAsync())
+        {
+            await CommandCallbackCore();
+        }
+
+        await Task.WhenAll(_runningModules.Values.Select(x => x.Task));
+    }
+
+    private async Task CommandCallbackCore()
     {
         var lines = _modules.Select(x =>
         {
@@ -84,7 +89,7 @@ public class SFSharpModuleContainer
         }
         else
         {
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(_masterToken);
+            var cts = new CancellationTokenSource();
             var task = selectedModule.RunAsync(cts.Token);
             _runningModules[selectedModule] = (task, cts);
             SF.Chat.Add($"[SFSharp] {selectedModule.GetType().Name} started.");

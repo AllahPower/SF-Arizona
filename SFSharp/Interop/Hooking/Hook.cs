@@ -73,13 +73,10 @@ public abstract class HookBase<TArgs, TResult>
     }
 }
 
-// These hooks used to inherit directly from HookBase, and declared UnmanagedCallersOnly methods.
-// As much as I dislike runtime-created thunks from GetFunctionPointerForDelegate, this is much more reusable and less error-prone.
-public abstract class JumpHook<TArgs, TResult, TFunction> : HookBase<TArgs, TResult>, IDisposable
-    where TFunction : Delegate
+public abstract unsafe class JumpHook<TArgs, TResult> : HookBase<TArgs, TResult>, IDisposable
 {
-    protected abstract TFunction HookedFunction { get; }
-    protected TFunction Trampoline { get; }
+    protected abstract void* InjectedFunction { get; }
+    protected void* OriginalFunction => (void*)_trampolineAddress;
 
     private readonly uint _stolenByteCount;
     private readonly uint _functionAddress;
@@ -94,9 +91,8 @@ public abstract class JumpHook<TArgs, TResult, TFunction> : HookBase<TArgs, TRes
         _trampolineAddress = HookHelper.InstallJumpHook(
             _functionAddress,
             _stolenByteCount,
-            (uint)Marshal.GetFunctionPointerForDelegate(HookedFunction)
+            (uint)InjectedFunction
         );
-        Trampoline = Marshal.GetDelegateForFunctionPointer<TFunction>((nint)_trampolineAddress);
 
         _gcHandle = GCHandle.Alloc(this);
     }

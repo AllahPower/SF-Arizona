@@ -58,7 +58,7 @@ public class SFDialog : ISFComponent
     {
         if (_tcs is not null)
         {
-            var result = (button, CDialog.Instance.ListBox->GetSelectedIndex(-1), AnsiString.Decode(CDialog.Instance.Text));
+            var result = (button, CDialog.Instance.ListBox->SelectedIndex, AnsiString.Decode(CDialog.Instance.Text));
             _tcs.SetResult(result);
             _tcs = null;
         }

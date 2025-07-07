@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Channels;
 
 namespace SFSharp;
 
@@ -10,7 +12,9 @@ public class SFChat : ISFComponent
 {
     void ISFComponent.Initialize()
     {
-        HookManager.CChatAddEntry.AddSubHook(new SubHook());
+        var subHook = new SubHook();
+        HookManager.CChatAddEntry.AddSubHook(subHook);
+        HookManager.CInputGetCommandHandler.AddSubHook(subHook);
     }
 
     public void Send(string message)
@@ -52,31 +56,73 @@ public class SFChat : ISFComponent
         }
     }
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private unsafe delegate void CmdProc(byte* text);
-    private static Dictionary<string, CmdProc> _commandProcedures = new Dictionary<string, CmdProc>();
-    public unsafe void RegisterChatCommand(string command, Action<string?> commandProcedure)
+    private class CommandTaskSource : ICommandTaskSource
     {
-        var proc = new CmdProc(text =>
+        private readonly string _commandName;
+        private readonly Channel<string?> _channel;
+
+        private ChannelReader<string?> Reader => field ??= _channel.Reader;
+        private ChannelWriter<string?> Writer => field ??= _channel.Writer;
+
+        public CommandTaskSource(string commandName)
         {
-            try
+            _commandName = commandName;
+            _channel = Channel.CreateBounded<string?>(new BoundedChannelOptions(1)
             {
-                string? commandText = Marshal.PtrToStringAnsi((IntPtr)text);
-                commandProcedure(commandText);
-            }
-            catch (Exception ex)
-            {
-                SFBootstrap.ProcessException(ex);
-            }
-        });
-        _commandProcedures[command] = proc;
-        var pointer = (delegate* unmanaged[Cdecl]<byte*, void>)Marshal.GetFunctionPointerForDelegate(proc);
-        CInput.Instance.AddCommand(command, pointer);
+                AllowSynchronousContinuations = false,
+                FullMode = BoundedChannelFullMode.DropWrite,
+                SingleReader = true,
+                SingleWriter = true
+            });
+        }
+
+        public void OnCommand(string? args)
+        {
+            Writer.TryWrite(args);
+        }
+
+        public ValueTask<string?> WaitForCommandAsync(CancellationToken token = default)
+        {
+            return Reader.ReadAsync(token);
+        }
+
+        public IAsyncEnumerable<string?> StreamCommandsAsync(CancellationToken token = default)
+        {
+            return Reader.ReadAllAsync(token);
+        }
+
+        public void Dispose()
+        {
+            Writer.Complete();
+            _taskSourcesByCommand.Remove(_commandName);
+        }
+
+        
+    }
+    private static Dictionary<string, CommandTaskSource> _taskSourcesByCommand = new();
+    private static string? _lastCommand = null;
+    public ICommandTaskSource RegisterChatCommand(string command)
+    {
+        var taskSource = new CommandTaskSource(command);
+        _taskSourcesByCommand.Add(command, taskSource);
+        return taskSource;
     }
 
-    private class SubHook : ISubHook<CChatAddEntryArgs, NoRetValue>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe void OnCommand(byte* text)
     {
-        public NoRetValue Process(CChatAddEntryArgs args, Func<CChatAddEntryArgs, NoRetValue> next)
+        if (_lastCommand is null) throw new UnreachableException();
+        var args = AnsiString.Decode(text);
+
+        _taskSourcesByCommand[_lastCommand].OnCommand(args);
+        _lastCommand = null;
+    }
+
+    private unsafe class SubHook :
+        ISubHook<CChatAddEntryArgs, NoRetValue>,
+        ISubHook<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue>
+    {
+        NoRetValue ISubHook<CChatAddEntryArgs, NoRetValue>.Process(CChatAddEntryArgs args, Func<CChatAddEntryArgs, NoRetValue> next)
         {
             next(args);
             var entry = new SFChatEntry((EntryType)args.Type, args.Text, args.Prefix, args.TextColor, args.PrefixColor);
@@ -86,5 +132,21 @@ public class SFChat : ISFComponent
             }
             return default;
         }
+
+        CInputGetCommandHandlerRetValue ISubHook<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue>.Process(CInputGetCommandHandlerArgs args, Func<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue> next)
+        {
+            if (_taskSourcesByCommand.ContainsKey(args.CommandName))
+            {
+                _lastCommand = args.CommandName;
+                return (delegate* unmanaged[Cdecl]<byte*, void>)&OnCommand;
+            }
+            return next(args);
+        }
     }
+}
+
+public interface ICommandTaskSource : IDisposable
+{
+    ValueTask<string?> WaitForCommandAsync(CancellationToken token = default);
+    IAsyncEnumerable<string?> StreamCommandsAsync(CancellationToken token = default);
 }

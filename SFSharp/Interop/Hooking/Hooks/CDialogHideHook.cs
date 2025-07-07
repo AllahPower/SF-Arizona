@@ -5,29 +5,31 @@ using System.Text;
 
 namespace SFSharp;
 
-[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-public unsafe delegate void CDialogHide(void* thisPtr);
+using unsafe CDialogHide = delegate*unmanaged[Thiscall]<void*, void>;
+public record struct CDialogHideArgs(uint ThisPtr);
 
-public unsafe class CDialogHideHook : JumpHook<CDialogHideArgs, NoRetValue, CDialogHide>
+public unsafe class CDialogHideHook : JumpHook<CDialogHideArgs, NoRetValue>
 {
+    private static CDialogHideHook? _instance;
     public CDialogHideHook() : base(
         stolenByteCount: 5,
         targetFunctionModule: "samp.dll",
-        targetFunctionOffset: 0x6F860)
-    {
-    }
+        targetFunctionOffset: 0x6F860
+    ) => _instance = this;
 
-    protected override CDialogHide HookedFunction => HookProc;
-    private unsafe void HookProc(void* thisPtr)
+    protected override void* InjectedFunction => (CDialogHide)(&HookProc);
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
+    private static unsafe void HookProc(void* thisPtr)
     {
-        Process(new((uint)thisPtr));
+        if (_instance is null) throw new UnreachableException();
+        
+        _instance.Process(new((uint)thisPtr));
     }
 
     protected override unsafe NoRetValue InvokeOriginalFunction(CDialogHideArgs args)
     {
-        Trampoline((void*)args.ThisPtr);
+        ((CDialogHide)OriginalFunction)((void*)args.ThisPtr);
         return default;
     }
 }
 
-public record struct CDialogHideArgs(uint ThisPtr);

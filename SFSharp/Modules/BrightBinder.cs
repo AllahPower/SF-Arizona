@@ -3,11 +3,11 @@ using System.Text.RegularExpressions;
 
 using SFSharp;
 
-public class BrightBinder : ISFSharpModule
+public class BrightBinder : ISFModule
 {
     private bool bbEnabled = true;
     public async Task RunAsync(CancellationToken token)
-    { 
+    {
         while (!token.IsCancellationRequested)
         {
             if (bbEnabled && SF.Players.GetAimedPlayerId() is ushort aimedPlayerId)

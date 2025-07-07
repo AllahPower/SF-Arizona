@@ -12,8 +12,6 @@ public unsafe struct CInput
     private static readonly CInput* _instance = *(CInput**)HookHelper.GetFunctionPtr("samp.dll", 0x26EB84);
     public static ref CInput Instance => ref *_instance;
 
-    public CommandManager Commands => new(_instance);
-
     private static readonly SendDelegate _send = (SendDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x69900);
     public void Send(string text)
     {
@@ -21,14 +19,16 @@ public unsafe struct CInput
         _send(_instance, textAnsi);
     }
 
+    /*
     private static readonly AddCommandDelegate _addCommand = (AddCommandDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x69770);
     public void AddCommand(string command, delegate* unmanaged[Cdecl]<byte*, void> callback)
     {
         using var commandAnsi = AnsiString.Encode(command);
         _addCommand(_instance, commandAnsi, callback);
     }
+    */
 }
-
+/*
 public readonly unsafe struct CommandManager
 {
     public const int MAX_CLIENT_CMDS = 144;
@@ -76,3 +76,4 @@ public readonly unsafe struct CommandManager
         commandNames[index] = (uint)valueAnsi.Pointer;
     }
 }
+*/

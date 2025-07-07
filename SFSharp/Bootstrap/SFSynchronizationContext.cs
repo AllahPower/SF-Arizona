@@ -40,7 +40,14 @@ public class SFSynchronizationContext : SynchronizationContext
         while (_lastQueue.TryDequeue(out var entry))
         {
             var (d, state, mre) = entry;
-            try { d(state); } catch (Exception ex) { SFBootstrap.ProcessException(ex); }
+            try
+            {
+                d(state);
+            }
+            catch (Exception ex)
+            {
+                SFBootstrap.ProcessException(ex);
+            }
             mre?.Set();
         }
     }

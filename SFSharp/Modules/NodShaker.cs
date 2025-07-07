@@ -1,6 +1,6 @@
 ﻿using SFSharp;
 
-public class NodShaker : ISFSharpModule
+public class NodShaker : ISFModule
 {
     public async Task RunAsync(CancellationToken token)
     {

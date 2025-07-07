@@ -7,7 +7,7 @@ public static class SFBootstrap
 {
     private static SFSynchronizationContext? _sc;
     public static void PostToMainThread(Action action) => _sc?.Post(x => ((Action)x!)(), action);
-    public static void ProcessException(Exception ex) => CChat.Instance.AddEntry(EntryType.Debug, $"{ex.GetType()}: {ex.Message}", null, 0xFFFFFFFF, 0);
+    public static void ProcessException(Exception ex) => CChat.Instance.AddEntry(EntryType.Chat, $"{ex.GetType()}: {ex.Message}", null, 0xFFFFFFFF, 0);
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]
     public static void WinMainLoop() => WinMainLoopCore(Program.Main);

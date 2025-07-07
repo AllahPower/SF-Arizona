@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 
-public class LicenseShooter : ISFSharpModule
+public class LicenseShooter : ISFModule
 {
     public async Task RunAsync(CancellationToken token)
     {
@@ -13,6 +13,7 @@ public class LicenseShooter : ISFSharpModule
         var lastEarnings = 0;
         var lastScreenshot = (string?)null;
 
+        /*
         SF.Chat.RegisterChatCommand("oops", x =>
         {
             if (lastScreenshot is null)
@@ -25,6 +26,7 @@ public class LicenseShooter : ISFSharpModule
             lastScreenshot = null;
             SF.Chat.Add($"[SFSharp] Screenshot deleted; earnings reverted to: {earnings}");
         });
+        */
 
         await foreach (var entry in SF.Chat.StreamChatEntries(token))
         {

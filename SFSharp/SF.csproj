@@ -17,6 +17,6 @@
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="DllMain" Version="1.0.0" />
+	  <PackageReference Include="DllMain" Version="1.0.2" />
 	</ItemGroup>
 </Project>

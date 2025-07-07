@@ -8,13 +8,18 @@ public static class Program
 {
     public static async void Main()
     {
-        var container = new SFSharpModuleContainer();
+        var container = new SFModuleContainer();
+        container.RegisterModule<DialogScraper>();
         container.RegisterModule<BrightBinder>();
         container.RegisterModule<LicenseShooter>(false);
         container.RegisterModule<NodShaker>();
 
-        SF.Chat.RegisterChatCommand("sfd", x => SFDebug.ShowDialog());
+        var containerTask = container.RunAllAsync();
 
-        await container.RunAllAsync(CancellationToken.None);
+        using var debugCommand = SF.Chat.RegisterChatCommand("sfd");
+        await foreach(var args in debugCommand.StreamCommandsAsync())
+        {
+            SFDebug.ShowDialog();
+        }
     }
 }

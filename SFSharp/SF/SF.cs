@@ -12,5 +12,10 @@ public static class SF
     public static SFChat Chat { get; } = new SFChat();
     public static SFPlayers Players { get; } = new SFPlayers();
 
+    public static async Task When(Func<bool> condition)
+    {
+        while (!condition()) await Task.Yield();
+    }
+
     public static string UserFilesDirectory { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GTA San Andreas User Files");
 }

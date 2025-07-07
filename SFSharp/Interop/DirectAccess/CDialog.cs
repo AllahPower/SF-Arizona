@@ -14,7 +14,8 @@ public unsafe struct CDialog
     public CDXUTListBox* ListBox;
 
     [FieldOffset(40)]
-    public int IsActive;
+    private int isActive;
+    public bool IsActive => isActive != 0;
 
     [FieldOffset(44)]
     public DialogStyle Style;
@@ -34,9 +35,6 @@ public unsafe struct CDialog
         using var rightButtonAnsi = AnsiString.Encode(rightButton);
         _show(_instance, dialogId, (int)style, captionAnsi, textAnsi, leftButtonAnsi, rightButtonAnsi, serverSide ? 1 : 0);
     }
-
-
-
 }
 
 public enum DialogStyle
@@ -49,14 +47,9 @@ public enum DialogStyle
     TabListHeaders = 5,
 }
 
+[StructLayout(LayoutKind.Explicit)]
 public unsafe struct CDXUTListBox
 {
-    private static readonly GetSelectedIndexDelegate _getSelectedIndex = (GetSelectedIndexDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x88E70);
-    public int GetSelectedIndex(int listBoxId)
-    {
-        fixed (CDXUTListBox* thisPtr = &this)
-        {
-            return _getSelectedIndex(thisPtr, listBoxId);
-        }
-    }
+    [FieldOffset(323)]
+    public int SelectedIndex;
 }
