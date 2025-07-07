@@ -30,10 +30,12 @@ public static class SFBootstrap
 
         await Task.Yield();
 
-        void Initialize(ISFComponent component) => component.Initialize();
-        Initialize(SF.Dialog);
-        Initialize(SF.Keyboard);
-        Initialize(SF.Chat);
+        HookManager.CDialogShow.AddSubHook(SF.Dialog);
+        HookManager.CDialogHide.AddSubHook(SF.Dialog);
+        HookManager.CDialogClose.AddSubHook(SF.Dialog);
+        HookManager.CChatAddEntry.AddSubHook(SF.Chat);
+        HookManager.CInputGetCommandHandler.AddSubHook(SF.Chat);
+        SF.Keyboard.StartLoop();
 
         PostToMainThread(main);
     }

@@ -14,12 +14,6 @@ public static class Program
         container.RegisterModule<LicenseShooter>(false);
         container.RegisterModule<NodShaker>();
 
-        var containerTask = container.RunAllAsync();
-
-        using var debugCommand = SF.Chat.RegisterChatCommand("sfd");
-        await foreach(var args in debugCommand.StreamCommandsAsync())
-        {
-            SFDebug.ShowDialog();
-        }
+        await container.Run();
     }
 }

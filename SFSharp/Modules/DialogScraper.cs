@@ -1,6 +1,4 @@
-﻿
-
-using SFSharp;
+﻿using SFSharp;
 
 public class DialogScraper : ISFModule
 {
@@ -18,7 +16,7 @@ public class DialogScraper : ISFModule
 
     private unsafe void RunCore()
     {
-        var dialog = CDialog.Instance;
+        ref var dialog = ref CDialog.Instance;
         if(!dialog.IsActive) return;
         var style = CDialog.Instance.Style;
         if (style is not DialogStyle.List or DialogStyle.TabList or DialogStyle.TabListHeaders) return;

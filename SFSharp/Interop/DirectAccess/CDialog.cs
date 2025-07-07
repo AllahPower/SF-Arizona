@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 
 using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<CDialog*, int, int, byte*, byte*, byte*, byte*, int, void>;
-using unsafe GetSelectedIndexDelegate = delegate* unmanaged[Thiscall]<CDXUTListBox*, int, int>;
 
 [StructLayout(LayoutKind.Explicit, Size = 689, Pack = 1)]
 public unsafe struct CDialog

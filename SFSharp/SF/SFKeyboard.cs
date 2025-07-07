@@ -1,11 +1,11 @@
 ﻿namespace SFSharp;
 
-public class SFKeyboard : ISFComponent
+public class SFKeyboard
 {
     private static byte[] _currentState = new byte[256];
     private static byte[] _lastState = new byte[256];
 
-    async void ISFComponent.Initialize()
+    internal async void StartLoop()
     {
         while (true)
         {

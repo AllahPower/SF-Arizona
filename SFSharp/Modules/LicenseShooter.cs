@@ -1,6 +1,4 @@
 ﻿using SFSharp;
-using System.Diagnostics;
-using System.Reflection.PortableExecutable;
 
 public class LicenseShooter : ISFModule
 {

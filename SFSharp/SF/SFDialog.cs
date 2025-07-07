@@ -9,15 +9,11 @@ public enum SFDialogButton
     None
 };
 
-public class SFDialog : ISFComponent
+public class SFDialog :
+    ISubHook<CDialogCloseArgs, NoRetValue>,
+    ISubHook<CDialogHideArgs, NoRetValue>,
+    ISubHook<CDialogShowHookArgs, NoRetValue>
 {
-    void ISFComponent.Initialize()
-    {
-        var subHook = new SubHook();
-        HookManager.CDialogShow.AddSubHook(subHook);
-        HookManager.CDialogHide.AddSubHook(subHook);
-        HookManager.CDialogClose.AddSubHook(subHook);
-    }
 
     public Task<DialogResultArgs> Show(DialogStyle style, string title, string text, string okButton, string cancelButton)
     {
@@ -37,7 +33,7 @@ public class SFDialog : ISFComponent
         return (result.Button, result.InputText);
     }
 
-    public async Task<(SFDialogButton Button, int SelectedIndex)> ShowList(string title, string[] items, string header = "")
+    public async Task<(SFDialogButton Button, int SelectedIndex)> ShowList(string title, IEnumerable<string> items, string header = "")
     {
         var result = await Show(DialogStyle.TabListHeaders, title, $"{header}\r\n{string.Join("\r\n", items)}", OkCaption, CancelCaption);
         return (result.Button, result.SelectedItemIndex);
@@ -46,13 +42,11 @@ public class SFDialog : ISFComponent
     public static string OkCaption = "OK";
     public static string CancelCaption = "Cancel";
     
-    
     private static TaskCompletionSource<(SFDialogButton Button, int SelectedItemIndex, string? InputText)>? _tcs;
     private static Task<DialogResultArgs> GetTask()
     {
-        var tcs = new TaskCompletionSource<DialogResultArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _tcs = tcs;
-        return tcs.Task;
+        _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        return _tcs.Task;
     }
     private static unsafe void SetResult(SFDialogButton button)
     {
@@ -64,27 +58,21 @@ public class SFDialog : ISFComponent
         }
     }
 
-    private class SubHook :
-        ISubHook<CDialogCloseArgs, NoRetValue>,
-        ISubHook<CDialogHideArgs, NoRetValue>,
-        ISubHook<CDialogShowHookArgs, NoRetValue>
+    NoRetValue ISubHook<CDialogCloseArgs, NoRetValue>.Process(CDialogCloseArgs args, Func<CDialogCloseArgs, NoRetValue> next)
     {
-        NoRetValue ISubHook<CDialogCloseArgs, NoRetValue>.Process(CDialogCloseArgs args, Func<CDialogCloseArgs, NoRetValue> next)
-        {
-            SetResult((SFDialogButton)args.DialogButton);
-            return next(args);
-        }
+        SetResult((SFDialogButton)args.DialogButton);
+        return next(args);
+    }
 
-        NoRetValue ISubHook<CDialogShowHookArgs, NoRetValue>.Process(CDialogShowHookArgs args, Func<CDialogShowHookArgs, NoRetValue> next)
-        {
-            SetResult(SFDialogButton.None);
-            return next(args);
-        }
+    NoRetValue ISubHook<CDialogShowHookArgs, NoRetValue>.Process(CDialogShowHookArgs args, Func<CDialogShowHookArgs, NoRetValue> next)
+    {
+        SetResult(SFDialogButton.None);
+        return next(args);
+    }
 
-        NoRetValue ISubHook<CDialogHideArgs, NoRetValue>.Process(CDialogHideArgs args, Func<CDialogHideArgs, NoRetValue> next)
-        {
-            SetResult(SFDialogButton.None);
-            return next(args);
-        }
+    NoRetValue ISubHook<CDialogHideArgs, NoRetValue>.Process(CDialogHideArgs args, Func<CDialogHideArgs, NoRetValue> next)
+    {
+        SetResult(SFDialogButton.None);
+        return next(args);
     }
 }
