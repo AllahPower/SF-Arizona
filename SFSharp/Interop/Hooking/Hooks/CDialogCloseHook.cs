@@ -12,8 +12,7 @@ public unsafe class CDialogCloseHook : JumpHook<CDialogCloseArgs, NoRetValue>
     private static CDialogCloseHook? _instance;
     public CDialogCloseHook() : base(
         stolenByteCount: 6,
-        targetFunctionModule: "samp.dll",
-        targetFunctionOffset: 0x70630
+        functionAddress: HookHelper.GetFunctionPtr("samp.dll", 0x70630)
     ) => _instance = this;
 
     protected override void* InjectedFunction => (CDialogClose)(&HookProc);

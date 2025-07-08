@@ -12,8 +12,7 @@ public unsafe class CDialogShowHook : JumpHook<CDialogShowHookArgs, NoRetValue>
     private static CDialogShowHook? _instance;
     public CDialogShowHook() : base(
         stolenByteCount: 5,
-        targetFunctionModule: "samp.dll",
-        targetFunctionOffset: 0x6FFB0
+        functionAddress: HookHelper.GetFunctionPtr("samp.dll", 0x6FFB0)
     ) => _instance = this;
 
     protected override void* InjectedFunction => (CDialogShow)(&HookProc);

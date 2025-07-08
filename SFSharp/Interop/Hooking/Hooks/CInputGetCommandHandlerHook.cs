@@ -18,8 +18,7 @@ public unsafe class CInputGetCommandHandlerHook : JumpHook<CInputGetCommandHandl
     private static CInputGetCommandHandlerHook? _instance;
     public CInputGetCommandHandlerHook() : base(
         stolenByteCount: 6,
-        targetFunctionModule: "samp.dll",
-        targetFunctionOffset: 0x69710
+        functionAddress: HookHelper.GetFunctionPtr("samp.dll", 0x69710)
     ) => _instance = this;
 
     protected override void* InjectedFunction => (CInputGetCommandHandler)(&HookProc);

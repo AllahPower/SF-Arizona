@@ -13,8 +13,7 @@ public unsafe class CDialogHideHook : JumpHook<CDialogHideArgs, NoRetValue>
     private static CDialogHideHook? _instance;
     public CDialogHideHook() : base(
         stolenByteCount: 5,
-        targetFunctionModule: "samp.dll",
-        targetFunctionOffset: 0x6F860
+        functionAddress: HookHelper.GetFunctionPtr("samp.dll", 0x6F860)
     ) => _instance = this;
 
     protected override void* InjectedFunction => (CDialogHide)(&HookProc);

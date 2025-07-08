@@ -83,10 +83,10 @@ public abstract unsafe class JumpHook<TArgs, TResult> : HookBase<TArgs, TResult>
     private readonly uint _trampolineAddress;
     private readonly GCHandle _gcHandle;
 
-    protected JumpHook(uint stolenByteCount, string targetFunctionModule, uint targetFunctionOffset)
+    protected JumpHook(uint stolenByteCount, uint functionAddress)
     {
         _stolenByteCount = stolenByteCount;
-        _functionAddress = HookHelper.GetFunctionPtr(targetFunctionModule, targetFunctionOffset);
+        _functionAddress = functionAddress;
 
         _trampolineAddress = HookHelper.InstallJumpHook(
             _functionAddress,
@@ -101,5 +101,38 @@ public abstract unsafe class JumpHook<TArgs, TResult> : HookBase<TArgs, TResult>
     {
         _gcHandle.Free();
         HookHelper.RemoveJumpHook(_functionAddress, _stolenByteCount, _trampolineAddress);
+    }
+}
+
+public abstract unsafe class CallHook<TArgs, TResult> : HookBase<TArgs, TResult>, IDisposable
+{
+    protected abstract void* InjectedFunction { get; }
+    protected void* OriginalFunction => (void*)_callTargetAddress;
+
+    private readonly uint _stolenByteCount;
+    private readonly uint _callSiteAddress;
+    private readonly uint _callTargetAddress; // The base class doesn't really need this, but it allows for uniform API with JumpHook
+    private readonly uint _originalByteBuffer;
+    private readonly GCHandle _gcHandle;
+
+    public CallHook(uint stolenByteCount, uint callSiteAddress, uint callTargetAddress)
+    {
+        _callSiteAddress = callSiteAddress;
+        _callTargetAddress = callTargetAddress;
+        _stolenByteCount = stolenByteCount;
+
+        _originalByteBuffer = HookHelper.InstallCallHook(
+            _callSiteAddress,
+            _stolenByteCount,
+            (uint)InjectedFunction
+        );
+
+        _gcHandle = GCHandle.Alloc(this);
+    }
+
+    public virtual void Dispose()
+    {
+        _gcHandle.Free();
+        HookHelper.RemoveCallHook(_callSiteAddress, _stolenByteCount, _originalByteBuffer);
     }
 }

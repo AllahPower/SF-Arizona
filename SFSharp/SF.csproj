@@ -1,22 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	  <PublishAot>true</PublishAot>
-	  <RuntimeIdentifier>win-x86</RuntimeIdentifier>
-	  <SelfContained>true</SelfContained>
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	  <LangVersion>preview</LangVersion>
-	  <DllMainSourceFile>dllmain.c</DllMainSourceFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PublishAot>true</PublishAot>
+		<RuntimeIdentifier>win-x86</RuntimeIdentifier>
+		<SelfContained>true</SelfContained>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>preview</LangVersion>
+		<DllMainSourceFile>dllmain.c</DllMainSourceFile>
+	</PropertyGroup>
 
 	<Target Name="RenameOutput" AfterTargets="CopyNativeBinary">
 		<Move SourceFiles="$(PublishDir)$(TargetName)$(NativeBinaryExt)" DestinationFiles="$(PublishDir)$(TargetName).asi" />
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="DllMain" Version="1.0.2" />
+		<PackageReference Include="DllMain" Version="1.0.2" />
 	</ItemGroup>
 </Project>

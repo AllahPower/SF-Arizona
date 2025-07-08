@@ -12,8 +12,7 @@ public unsafe class CChatAddEntryHook : JumpHook<CChatAddEntryArgs, NoRetValue>
     private static CChatAddEntryHook? _instance;
     public CChatAddEntryHook() : base(
         stolenByteCount: 5,
-        targetFunctionModule: "samp.dll",
-        targetFunctionOffset: 0x67BE0
+        functionAddress: HookHelper.GetFunctionPtr("samp.dll", 0x67BE0)
     ) => _instance = this;
 
     protected override void* InjectedFunction => (CChatAddEntry)(&HookProc);
