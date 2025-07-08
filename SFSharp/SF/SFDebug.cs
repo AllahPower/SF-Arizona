@@ -3,9 +3,9 @@
 public static class SFDebug
 {
     private static Queue<string> _messages = new();
-    public static void Log(ChatEntry entry)
+    public static void Log(string text)
     {
-        _messages.Enqueue($"{{AAAAAA}}[{TimeOnly.FromDateTime(DateTime.Now):T}] {{FFFFFF}}{entry.Text}");
+        _messages.Enqueue($"{{AAAAAA}}[{TimeOnly.FromDateTime(DateTime.Now):T}] {{FFFFFF}}{text}");
         if (_messages.Count > 50) _messages.Dequeue();
     }
 

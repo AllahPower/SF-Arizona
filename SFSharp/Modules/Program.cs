@@ -11,8 +11,10 @@ public static class Program
         var container = new SFModuleContainer();
         container.RegisterModule<DialogScraper>();
         container.RegisterModule<BrightBinder>();
-        container.RegisterModule<LicenseShooter>(false);
+        container.RegisterModule<LicenseShooter>();
         container.RegisterModule<NodShaker>();
+
+        using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ => SFDebug.ShowDialog());
 
         await container.Run();
     }

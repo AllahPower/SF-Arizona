@@ -29,7 +29,14 @@ public partial class SFChat
 	{
 		if (_lastCommand is null) throw new UnreachableException();
 		var args = AnsiString.Decode(text);
-		_taskSourcesByCommand[_lastCommand].OnCommand(args);
+        try
+        {
+            _taskSourcesByCommand[_lastCommand].OnCommand(args);
+        }
+        catch (Exception ex)
+        {
+            SFBootstrap.ProcessException(ex);
+        }
 		_lastCommand = null;
 	}
 
