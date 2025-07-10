@@ -6,7 +6,7 @@ using System.Threading.Tasks.Sources;
 
 namespace SFSharp;
 
-public partial class SFChat
+public partial class SFChat : ISubHook<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue>
 {
 	private record CommandRegistration(string Name, Action<string?> Callback) : IDisposable
 	{

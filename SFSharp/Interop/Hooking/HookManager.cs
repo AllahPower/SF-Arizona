@@ -10,4 +10,5 @@ public static class HookManager
     public static HookBase<CDialogHideArgs, NoRetValue> CDialogHide { get; } = new CDialogHideHook();
     public static HookBase<CDialogShowHookArgs, NoRetValue> CDialogShow { get; } = new CDialogShowHook();
     public static HookBase<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue> CInputGetCommandHandler { get; } = new CInputGetCommandHandlerHook();
+    public static HookBase<UpdateScoresPingsIpsArgs, NoRetValue> UpdateScoresPingsIps { get; } = new UpdateScoresPingsIpsHook();
 }

@@ -35,6 +35,7 @@ public static class SFBootstrap
         HookManager.CDialogClose.AddSubHook(SF.Dialog);
         HookManager.CChatAddEntry.AddSubHook(SF.Chat);
         HookManager.CInputGetCommandHandler.AddSubHook(SF.Chat);
+        HookManager.UpdateScoresPingsIps.AddSubHook(SF.Players);
         SF.Keyboard.StartLoop();
 
         PostToMainThread(main);

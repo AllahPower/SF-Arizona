@@ -34,11 +34,7 @@ public class BrightBinder : ISFModule
         if (targetIdOrNull is not null && SF.Players.GetScore(targetIdOrNull.Value) == 0)
         {
             _ = SF.Dialog.ShowMessage("BrightBinder", "Loading player score...");
-            SF.Players.UpdateScoreboard();
-            while (SF.Players.GetScore(targetIdOrNull.Value) == 0)
-            {
-                await Task.Yield();
-            }
+            await SF.Players.UpdateScoreboard();
         }
         var result = await SF.Dialog.ShowList(
             $"BrightBinder: {fileName}.txt",

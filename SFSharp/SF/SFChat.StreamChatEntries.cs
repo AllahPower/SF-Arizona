@@ -5,7 +5,7 @@ namespace SFSharp;
 
 public record ChatEntry(EntryType Type, string? Text, string? Prefix, uint TextColor, uint PrefixColor);
 
-public unsafe partial class SFChat
+public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 {
     private static readonly List<ConcurrentQueue<ChatEntry>> _consumerQueues = new();
     public async IAsyncEnumerable<ChatEntry> StreamChatEntries([EnumeratorCancellation] CancellationToken token = default)

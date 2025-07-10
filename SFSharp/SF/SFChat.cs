@@ -6,9 +6,7 @@ using System.Threading.Channels;
 
 namespace SFSharp;
 
-public partial class SFChat :
-    ISubHook<CChatAddEntryArgs, NoRetValue>,
-    ISubHook<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue>
+public partial class SFChat
 {
     public void Send(string message)
     {

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace SFSharp;
 
 using unsafe CChatAddEntry = delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>;
-public record CChatAddEntryArgs(uint ThisPtr, int Type, string? Text, string? Prefix, uint TextColor, uint PrefixColor);
+public record struct CChatAddEntryArgs(uint ThisPtr, int Type, string? Text, string? Prefix, uint TextColor, uint PrefixColor);
 
 public unsafe class CChatAddEntryHook : JumpHook<CChatAddEntryArgs, NoRetValue>
 {
