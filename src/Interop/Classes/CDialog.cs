@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<CDialog*, int, int, byte*, byte*, byte*, byte*, int, void>;
 
 [StructLayout(LayoutKind.Explicit, Size = 689, Pack = 1)]
-public unsafe struct CDialog
+public unsafe ref struct CDialog
 {
     private static readonly CDialog* _instance = *(CDialog**)HookHelper.GetFunctionPtr("samp.dll", 0x26EB50);
-    public static ref CDialog Instance => ref *_instance;
+    public static ref readonly CDialog Instance => ref *_instance;
 
     [FieldOffset(32)]
     public CDXUTListBox* ListBox;

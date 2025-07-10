@@ -23,6 +23,8 @@ UINT InstallCallHook(UINT targetAddress, UINT stolenByteCount, UINT injectedFunc
 
 void __stdcall WinMainLoop();
 
+// TODO: Compatibility with other SF-based plugins
+// Probably via a window property that points to a callback vector, and logic that iterates it
 BOOL WINAPI PeekMessageAFake(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg) {
 	WinMainLoop();
 	return PeekMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);

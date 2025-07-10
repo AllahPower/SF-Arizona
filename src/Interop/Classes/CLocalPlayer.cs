@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 using unsafe ChatDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, byte*, void>;
 
 [StructLayout(LayoutKind.Explicit, Size = 812, Pack = 1)]
-public unsafe struct CLocalPlayer
+public unsafe ref struct CLocalPlayer
 {
     private static readonly CLocalPlayer* _instance = CPlayerPool.Instance.GetLocalPlayer();
-    public static ref CLocalPlayer Instance => ref *_instance;
+    public static ref readonly CLocalPlayer Instance => ref *_instance;
 
     [FieldOffset(389)]
     public WeaponsData WeaponsData;

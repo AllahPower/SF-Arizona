@@ -5,7 +5,7 @@ Original bytes at function address (IDA):
 SF-patched bytes (scanned immediately before we hook):
 E9 E4 61 7B 66 F8 6A FF 68 4B 3A FA 03 64 A1 00 00 00 00 50 64 89 25 00 00
 
-SF overwrites far more than the first 5/6 bytes, and they insert relative addresses which require runtime disassembly to patch.
+SF overwrites far more than the first 5/6 bytes, and they seem to insert relative addresses which require runtime disassembly to patch.
 
 To work around this, we check if SF is loaded and hook into IT instead.
 Here's the naked function they install in the first 5 bytes:

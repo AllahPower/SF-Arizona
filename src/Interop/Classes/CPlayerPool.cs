@@ -7,10 +7,10 @@ using unsafe GetNameDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, ushor
 using unsafe GetScoreDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, ushort, int>;
 
 [StructLayout(LayoutKind.Explicit, Size = 16126, Pack = 1)]
-public unsafe struct CPlayerPool
+public unsafe ref struct CPlayerPool
 {
     private static readonly CPlayerPool* _instance = CNetGame.Instance.GetPlayerPool();
-    public static ref CPlayerPool Instance => ref *_instance;
+    public static ref readonly CPlayerPool Instance => ref *_instance;
 
     [FieldOffset(0x00)]
     public LocalPlayerInfo LocalPlayerInfo;

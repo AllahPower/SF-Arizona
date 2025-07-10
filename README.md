@@ -1,50 +1,24 @@
-# SFSharp
+# SF
 
-SFSharp is a C# plugin library and loader for SAMPFUNCS, another library/loader that provides C++ bindings for GTA San Andreas and SAMP.
+This not-yet-properly-named project is both a C# plugin framework for GTA SAMP and its single consuming plugin.
+
+I develop and maintain this project for personal use, but it should also look good on a low-level C# job resume, if such a job even exists. You can also clone the project and write your own [Program.cs](src/Modules/Program.cs) if you want to try your hand at SAMP plugin development.
+
+## Features
+
+- Pure C#, including game class interaction and hooks (except for the native `DllMain` entry point), compiled into a single ASI,
+- Managed "entry point" method for plugin code, with `async`/`await` support - all continuations run inside the game loop, and `await Task.Yield` waits for the next game loop frame,
+- Managed [game API facade](src/SF) with awaitable methods where appropriate, including [awaitable game dialogs](src/SF/SFDialog.cs) and a [chat reader with `await foreach` support](src/SF/SFChat.StreamChatEntries.cs),
+- [A minimal hook framework](src/Interop/Hooking) to create jump/call hooks with managed pipeline API,
+- [A simple sub-plugin management system](src/Modules/SFModuleContainer.cs) that allows to view running `async` methods and start/stop them via an in-game dialog.
 
 ## Game build prerequisites
 - GTA San Andreas (1.0 US)
 - [SAMP](https://www.sa-mp.mp/downloads/) 0.3.7-R5
-- [CLEO 4](https://github.com/cleolibrary/CLEO4)
-- [SAMPFUNCS](https://www.blast.hk/threads/17/) 5.7.1
+- If you use [SAMPFUNCS](https://www.blast.hk/threads/17/), it must be version 5.7.1 ([why?](src/Interop/Hooking/Hooks/CDialogCloseHook.txt))
 
-## Getting started
+## Acknowledgements
 
-### For plugin users
-
-1. Download and copy `SFSharpLoader.sf` from the Releases page to the `SAMPFUNCS` folder in your GTA SA installation directory.
-2. Create a folder named `SFSharp` in your GTA SA installation directory.
-3. Copy `.dll` plugins that you were supplied to the `SFSharp` folder.
-
-### For plugin writers
-
-1. Download and copy `SFSharpLoader.sf` from the Releases page to the `SAMPFUNCS` folder in the game directory.
-2. Create a folder named `SFSharp` in the game directory.
-3. Create a new .NET 9+ C# class library project with NativeAOT support.
-4. Add a reference to the [SFSharp](https://www.nuget.org/packages/SFSharp/0.1.0) NuGet package.
-5. Add the following code:
-```cs
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using SFSharp;
-
-public static class Program
-{
-    [UnmanagedCallersOnly(EntryPoint = "SFSharpMain", CallConvs = [typeof(CallConvStdcall)])]
-    public static unsafe int SFSharpMain(CSharpExports* exports) => SFCore.Init(exports, Main);
-
-    public static async void Main()
-    {
-        
-    }
-}
-```
-6. Go to town. Run a loop, use the `SFSharp.SF` class to do stuff, and `await Task.Yield()`/`await Task.Delay(...)` to keep the game responsive.
-7. When you're done, publish your project as a `win-x86` NativeAOT library, to the `SFSharp` folder in the game directory.
-
-### Rebuilding from source
-
-1. Build `SFSharpLoader` and copy the output to the `SAMPFUNCS` folder in the game directory.
-2. Create a new .NET 9+ C# class library project with NativeAOT support **in the same solution**.
-3. Add a reference to the `SFSharp` project in the solution.
-4. Continue from step 5 in the previous section.
+- [SAMP-API](https://github.com/BlastHackNet/SAMP-API) and [SAMP_IDBs](https://github.com/Northn/SAMP_IDBs) - reversed game classes/functions),
+- [SAMPFUNCS](https://www.blast.hk/threads/17/) - inspiration for the project and API design,
+- [blast.hk forum](https://www.blast.hk/) - for answering my silly questions when I was only getting started with GTA SAMP plugins.
