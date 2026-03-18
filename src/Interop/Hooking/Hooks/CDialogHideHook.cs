@@ -1,34 +1,45 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace SFSharp;
 
-using unsafe CDialogHide = delegate*unmanaged[Thiscall]<void*, void>;
+using unsafe CDialogHideDirect = delegate* unmanaged[Thiscall]<void*, void>;
+
 public record struct CDialogHideArgs(uint ThisPtr);
 
-public unsafe class CDialogHideHook : JumpHook<CDialogHideArgs, NoRetValue>
+internal unsafe class CDialogHideHook : NativeHook<CDialogHideArgs, NoRetValue, CDialogHideHook.CDialogHideNative>
 {
-    private static CDialogHideHook? _instance;
-    public CDialogHideHook() : base(
-        stolenByteCount: 5,
-        functionAddress: HookHelper.GetFunctionPtr("samp.dll", 0x6F860)
-    ) => _instance = this;
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    internal unsafe delegate void CDialogHideNative(IntPtr thisPtr);
 
-    protected override void* InjectedFunction => (CDialogHide)(&HookProc);
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
-    private static unsafe void HookProc(void* thisPtr)
+    private static CDialogHideHook? _instance;
+
+    public CDialogHideHook()
     {
-        if (_instance is null) throw new UnreachableException();
-        
+        _instance = this;
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", 0x6F110), new CDialogHideNative(HookProc));
+    }
+
+    private static void HookProc(IntPtr thisPtr)
+    {
+        if (_instance is null)
+        {
+            throw new UnreachableException();
+        }
+
         _instance.Process(new((uint)thisPtr));
     }
 
-    protected override unsafe NoRetValue InvokeOriginalFunction(CDialogHideArgs args)
+    protected override NoRetValue InvokeOriginalFunction(CDialogHideArgs args)
     {
-        ((CDialogHide)OriginalFunction)((void*)args.ThisPtr);
+        using var _ = SuppressHook();
+        ((CDialogHideDirect)TargetAddress)((void*)args.ThisPtr);
         return default;
     }
-}
 
+    public override void Dispose()
+    {
+        base.Dispose();
+        _instance = null;
+    }
+}

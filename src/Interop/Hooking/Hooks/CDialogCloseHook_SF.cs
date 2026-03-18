@@ -1,35 +1,38 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
-
-using unsafe CDialogClose_SF = delegate* unmanaged[Cdecl]<int, int>;
 
 namespace SFSharp;
 
-public unsafe class CDialogCloseHook_SF : CallHook<CDialogCloseArgs, NoRetValue>, IDisposable
+using unsafe CDialogCloseSfDirect = delegate* unmanaged[Cdecl]<int, int>;
+
+internal unsafe class CDialogCloseHook_SF : NativeHook<CDialogCloseArgs, NoRetValue, CDialogCloseHook_SF.CDialogCloseSfNative>, IDisposable
 {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate int CDialogCloseSfNative(int dialogButton);
+
     private static CDialogCloseHook_SF? _instance;
 
-    public CDialogCloseHook_SF() : base(
-        stolenByteCount: 5,
-        callSiteAddress: HookHelper.GetFunctionPtr("sampfuncs.asi", 0x8681E),
-        callTargetAddress: HookHelper.GetFunctionPtr("sampfuncs.asi", 0x8680F)
-    ) => _instance = this;
-
-    protected override void* InjectedFunction => (CDialogClose_SF)(&HookProc);
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static unsafe int HookProc(int dialogButton)
+    public CDialogCloseHook_SF()
     {
-        if (_instance is null) throw new UnreachableException();
-
-        _instance.Process(new(0, (byte)dialogButton));
-        return 0; // Unused
+        _instance = this;
+        InstallHook(ModuleResolver.GetProcAddress("sampfuncs.asi", 0x91265), new CDialogCloseSfNative(HookProc));
     }
 
-    protected override unsafe NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
+    private static int HookProc(int dialogButton)
     {
-        ((CDialogClose_SF)OriginalFunction)(args.DialogButton);
+        if (_instance is null)
+        {
+            throw new UnreachableException();
+        }
+
+        _instance.Process(new(0, (byte)dialogButton));
+        return 0;
+    }
+
+    protected override NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
+    {
+        using var _ = SuppressHook();
+        ((CDialogCloseSfDirect)TargetAddress)(args.DialogButton);
         return default;
     }
 

@@ -1,4 +1,4 @@
-﻿using SFSharp;
+using SFSharp;
 using System.Runtime.InteropServices;
 
 using unsafe GetLocalPlayerDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, CLocalPlayer*>;
@@ -15,25 +15,25 @@ public unsafe ref struct CPlayerPool
     [FieldOffset(0x00)]
     public LocalPlayerInfo LocalPlayerInfo;
 
-    private static readonly GetLocalPlayerDelegate _getLocalPlayer = (GetLocalPlayerDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x1A40);
+    private static readonly GetLocalPlayerDelegate _getLocalPlayer = (GetLocalPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x1A30);
     public CLocalPlayer* GetLocalPlayer()
     {
         return _getLocalPlayer(_instance);
     }
 
-    private static readonly GetLocalPlayerNameDelegate _getLocalPlayerName = (GetLocalPlayerNameDelegate)HookHelper.GetFunctionPtr("samp.dll", 0xA4E0);
+    private static readonly GetLocalPlayerNameDelegate _getLocalPlayerName = (GetLocalPlayerNameDelegate)ModuleResolver.GetProcAddress("samp.dll", 0xA170);
     public string? GetLocalPlayerName()
     {
         return AnsiString.Decode(_getLocalPlayerName(_instance));
     }
 
-    private static readonly GetNameDelegate _getName = (GetNameDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x175C0);
+    private static readonly GetNameDelegate _getName = (GetNameDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x16F00);
     public string? GetName(ushort playerId)
     {
         return AnsiString.Decode(_getName(_instance, playerId));
     }
 
-    private static readonly GetScoreDelegate _getScore = (GetScoreDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x6E850);
+    private static readonly GetScoreDelegate _getScore = (GetScoreDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x6E0E0);
     public int GetScore(ushort playerId)
     {
         return _getScore(_instance, playerId);

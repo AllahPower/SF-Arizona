@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
+using System.Diagnostics.CodeAnalysis;
+using MinHook;
 
 namespace SFSharp;
 
@@ -25,16 +25,25 @@ public abstract class HookBase<TArgs, TResult>
 
     public void AddSubHook(ISubHook<TArgs, TResult> subHook)
     {
-        if (_isProcessing) _subHooks = _subHooks.ToList();
+        if (_isProcessing)
+        {
+            _subHooks = _subHooks.ToList();
+        }
 
         _subHooks.Add(subHook);
+        SFLog.Info($"AddSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
         BuildHookChain();
     }
+
     public void RemoveSubHook(ISubHook<TArgs, TResult> subHook)
     {
-        if (_isProcessing) _subHooks = _subHooks.ToList();
+        if (_isProcessing)
+        {
+            _subHooks = _subHooks.ToList();
+        }
 
         _subHooks.Remove(subHook);
+        SFLog.Info($"RemoveSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
         BuildHookChain();
     }
 
@@ -47,6 +56,7 @@ public abstract class HookBase<TArgs, TResult>
             var current = next;
             next = args => subHook.Process(args, current);
         }
+
         _invokeSubHooks = next;
     }
 
@@ -60,11 +70,7 @@ public abstract class HookBase<TArgs, TResult>
         catch (Exception e)
         {
             SFBootstrap.ProcessException(e);
-            return InvokeOriginalFunction(args); // If this fails, we're fucked anyway.
-            // Potential bug: a sub-hook may throw after invoking, leading to double invocation.
-            // We could inject our own sub-hook, check if it intercepted a return value yet, and if so, return that.
-            // It's a bit of an overkill since that's a lot of extra logic just to gracefully handle exceptions in sub-hooks...
-            // TODO: do that ^
+            return InvokeOriginalFunction(args);
         }
         finally
         {
@@ -73,66 +79,80 @@ public abstract class HookBase<TArgs, TResult>
     }
 }
 
-public abstract unsafe class JumpHook<TArgs, TResult> : HookBase<TArgs, TResult>, IDisposable
+public static class HookRuntime
 {
-    protected abstract void* InjectedFunction { get; }
-    protected void* OriginalFunction => (void*)_trampolineAddress;
-
-    private readonly uint _stolenByteCount;
-    private readonly uint _functionAddress;
-    private readonly uint _trampolineAddress;
-    private readonly GCHandle _gcHandle;
-
-    protected JumpHook(uint stolenByteCount, uint functionAddress)
-    {
-        _stolenByteCount = stolenByteCount;
-        _functionAddress = functionAddress;
-
-        _trampolineAddress = HookHelper.InstallJumpHook(
-            _functionAddress,
-            _stolenByteCount,
-            (uint)InjectedFunction
-        );
-
-        _gcHandle = GCHandle.Alloc(this);
-    }
-
-    public virtual void Dispose()
-    {
-        _gcHandle.Free();
-        HookHelper.RemoveJumpHook(_functionAddress, _stolenByteCount, _trampolineAddress);
-    }
+    public static HookEngine Engine { get; } = new();
 }
 
-public abstract unsafe class CallHook<TArgs, TResult> : HookBase<TArgs, TResult>, IDisposable
+public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TResult>, IDisposable
+    where TDelegate : Delegate
 {
-    protected abstract void* InjectedFunction { get; }
-    protected void* OriginalFunction => (void*)_callTargetAddress;
-
-    private readonly uint _stolenByteCount;
-    private readonly uint _callSiteAddress;
-    private readonly uint _callTargetAddress; // The base class doesn't really need this, but it allows for uniform API with JumpHook
-    private readonly uint _originalByteBuffer;
-    private readonly GCHandle _gcHandle;
-
-    public CallHook(uint stolenByteCount, uint callSiteAddress, uint callTargetAddress)
+    private sealed class HookSuppressionScope : IDisposable
     {
-        _callSiteAddress = callSiteAddress;
-        _callTargetAddress = callTargetAddress;
-        _stolenByteCount = stolenByteCount;
+        private NativeHook<TArgs, TResult, TDelegate>? _owner;
 
-        _originalByteBuffer = HookHelper.InstallCallHook(
-            _callSiteAddress,
-            _stolenByteCount,
-            (uint)InjectedFunction
-        );
+        public HookSuppressionScope(NativeHook<TArgs, TResult, TDelegate> owner)
+        {
+            _owner = owner;
+            SFLog.Info($"Disable hook temporarily type={owner.GetType().Name} target=0x{owner.TargetAddress:X8}");
+            HookRuntime.Engine.DisableHook(owner.OriginalFunction);
+        }
 
-        _gcHandle = GCHandle.Alloc(this);
+        public void Dispose()
+        {
+            if (_owner is null)
+            {
+                return;
+            }
+
+            HookRuntime.Engine.EnableHook(_owner.OriginalFunction);
+            SFLog.Info($"Re-enable hook type={_owner.GetType().Name} target=0x{_owner.TargetAddress:X8}");
+            _owner = null;
+        }
+    }
+
+    private TDelegate? _detour;
+    private bool _isInstalled;
+
+    protected TDelegate OriginalFunction { get; private set; } = null!;
+    protected nint TargetAddress { get; private set; }
+
+    protected void InstallHook(nint targetAddress, TDelegate detour)
+    {
+        if (_isInstalled)
+        {
+            throw new InvalidOperationException("Hook already installed");
+        }
+
+        TargetAddress = targetAddress;
+        _detour = detour;
+        SFLog.Info($"InstallHook type={GetType().Name} target=0x{targetAddress:X8} detour={detour.Method.Name}");
+        OriginalFunction = HookRuntime.Engine.CreateHook((IntPtr)targetAddress, detour);
+        HookRuntime.Engine.EnableHook(OriginalFunction);
+        _isInstalled = true;
+        SFLog.Info($"InstallHook completed type={GetType().Name} target=0x{targetAddress:X8}");
+    }
+
+    protected IDisposable SuppressHook()
+    {
+        if (!_isInstalled)
+        {
+            throw new InvalidOperationException("Hook is not installed");
+        }
+
+        return new HookSuppressionScope(this);
     }
 
     public virtual void Dispose()
     {
-        _gcHandle.Free();
-        HookHelper.RemoveCallHook(_callSiteAddress, _stolenByteCount, _originalByteBuffer);
+        if (!_isInstalled)
+        {
+            return;
+        }
+
+        HookRuntime.Engine.DisableHook(OriginalFunction);
+        SFLog.Info($"Dispose hook type={GetType().Name} target=0x{TargetAddress:X8}");
+        _isInstalled = false;
+        _detour = null;
     }
 }

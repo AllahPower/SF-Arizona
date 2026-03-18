@@ -1,32 +1,39 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-using unsafe CDialogClose = delegate*unmanaged[Thiscall]<void*, byte, void>;
+using unsafe CDialogCloseDirect = delegate* unmanaged[Thiscall]<void*, byte, void>;
+
 public record struct CDialogCloseArgs(uint ThisPtr, byte DialogButton);
 
-public unsafe class CDialogCloseHook : JumpHook<CDialogCloseArgs, NoRetValue>
+internal unsafe class CDialogCloseHook : NativeHook<CDialogCloseArgs, NoRetValue, CDialogCloseHook.CDialogCloseNative>
 {
-    private static CDialogCloseHook? _instance;
-    public CDialogCloseHook() : base(
-        stolenByteCount: 6,
-        functionAddress: HookHelper.GetFunctionPtr("samp.dll", 0x70630)
-    ) => _instance = this;
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    internal unsafe delegate void CDialogCloseNative(IntPtr thisPtr, byte dialogButton);
 
-    protected override void* InjectedFunction => (CDialogClose)(&HookProc);
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
-    private static void HookProc(void* thisPtr, byte dialogButton)
+    private static CDialogCloseHook? _instance;
+
+    public CDialogCloseHook()
     {
-        if (_instance is null) throw new UnreachableException();
+        _instance = this;
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", 0x6FF40), new CDialogCloseNative(HookProc));
+    }
+
+    private static void HookProc(IntPtr thisPtr, byte dialogButton)
+    {
+        if (_instance is null)
+        {
+            throw new UnreachableException();
+        }
 
         _instance.Process(new((uint)thisPtr, dialogButton));
     }
 
-    protected override unsafe NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
+    protected override NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
     {
-        ((CDialogClose)OriginalFunction)((void*)args.ThisPtr, args.DialogButton);
+        using var _ = SuppressHook();
+        ((CDialogCloseDirect)TargetAddress)((void*)args.ThisPtr, args.DialogButton);
         return default;
     }
 
@@ -36,4 +43,3 @@ public unsafe class CDialogCloseHook : JumpHook<CDialogCloseArgs, NoRetValue>
         _instance = null;
     }
 }
-

@@ -1,52 +1,65 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Threading.Channels;
-using System.Threading.Tasks.Sources;
+using System.Diagnostics;
 
 namespace SFSharp;
 
-public partial class SFChat : ISubHook<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue>
+public partial class SFChat : ISubHook<CInputSendArgs, bool>
 {
-	private record CommandRegistration(string Name, Action<string?> Callback) : IDisposable
-	{
+    private record CommandRegistration(string Name, Action<string?> Callback) : IDisposable
+    {
         public void OnCommand(string? args) => Callback(args);
-        public void Dispose() => _taskSourcesByCommand.Remove(Name);
+
+        public void Dispose()
+        {
+            SFLog.Info($"UnregisterChatCommand name={Name}");
+            _taskSourcesByCommand.Remove(Name);
+        }
     }
 
-	private static Dictionary<string, CommandRegistration> _taskSourcesByCommand = new();
-	private static string? _lastCommand = null;
-	public IDisposable RegisterChatCommand(string command, Action<string?> commandCallback)
-	{
-		var registration = new CommandRegistration(command, commandCallback);
-		_taskSourcesByCommand.Add(command, registration);
-		return registration;
-	}
+    private static Dictionary<string, CommandRegistration> _taskSourcesByCommand = new();
+    private static string? _lastCommand = null;
 
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-	private static unsafe void OnCommand(byte* text)
-	{
-		if (_lastCommand is null) throw new UnreachableException();
-		var args = AnsiString.Decode(text);
-        try
-        {
-            _taskSourcesByCommand[_lastCommand].OnCommand(args);
-        }
-        catch (Exception ex)
-        {
-            SFBootstrap.ProcessException(ex);
-        }
-		_lastCommand = null;
-	}
-
-    unsafe CInputGetCommandHandlerRetValue ISubHook<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue>.Process(CInputGetCommandHandlerArgs args, Func<CInputGetCommandHandlerArgs, CInputGetCommandHandlerRetValue> next)
+    public IDisposable RegisterChatCommand(string command, Action<string?> commandCallback)
     {
-        if (_taskSourcesByCommand.ContainsKey(args.CommandName))
+        SFLog.Info($"RegisterChatCommand name={command}");
+        var registration = new CommandRegistration(command, commandCallback);
+        _taskSourcesByCommand.Add(command, registration);
+        return registration;
+    }
+
+    bool ISubHook<CInputSendArgs, bool>.Process(CInputSendArgs args, Func<CInputSendArgs, bool> next)
+    {
+        if (!args.Text.StartsWith('/'))
         {
-            _lastCommand = args.CommandName;
-            return (delegate* unmanaged[Cdecl]<byte*, void>)&OnCommand;
+            return next(args);
         }
+
+        var commandLine = args.Text[1..];
+        var separatorIndex = commandLine.IndexOf(' ');
+        var commandName = separatorIndex >= 0 ? commandLine[..separatorIndex] : commandLine;
+        var commandArgs = separatorIndex >= 0 ? commandLine[(separatorIndex + 1)..] : null;
+
+        SFLog.Info($"Client command send command={commandName} args={commandArgs ?? "<null>"}");
+        if (_taskSourcesByCommand.TryGetValue(commandName, out var registration))
+        {
+            _lastCommand = commandName;
+            SFLog.Info($"Client command intercepted command={commandName}");
+            try
+            {
+                registration.OnCommand(commandArgs);
+            }
+            catch (Exception ex)
+            {
+                SFBootstrap.ProcessException(ex);
+            }
+            finally
+            {
+                _lastCommand = null;
+            }
+
+            return true;
+        }
+
+        SFLog.Info($"Client command pass-through command={commandName}");
         return next(args);
     }
 }

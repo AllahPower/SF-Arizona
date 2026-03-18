@@ -1,4 +1,4 @@
-﻿using SFSharp;
+using SFSharp;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
@@ -23,6 +23,7 @@ public class SFModuleContainer
     {
         var module = new T();
         _moduleRepository.Add(module);
+        SFLog.Info($"RegisterModule module={module.GetType().Name} enabledOnStart={enabledOnStart}");
         if (!enabledOnStart)
         {
             _modulesDisabledOnStart.Add(module);
@@ -31,11 +32,12 @@ public class SFModuleContainer
 
     private void StartModule(ISFModule module)
     {
-        if(GetModuleStatus(module) != ModuleStatus.Stopped)
+        if (GetModuleStatus(module) != ModuleStatus.Stopped)
         {
             throw new UnreachableException();
         }
 
+        SFLog.Info($"StartModule module={module.GetType().Name}");
         var cts = new CancellationTokenSource();
         var task = module.RunAsync(cts.Token);
         _runningModules.Add(module, (task, cts));
@@ -50,14 +52,21 @@ public class SFModuleContainer
         {
             throw new UnreachableException();
         }
+
+        SFLog.Info($"StopModule module={module.GetType().Name}");
         _runningModules[module].TokenSource.Cancel();
     }
 
     public async Task Run(CancellationToken token = default)
     {
-        foreach(var module in _moduleRepository)
+        SFLog.Info("SFModuleContainer.Run started");
+        foreach (var module in _moduleRepository)
         {
-            if (_modulesDisabledOnStart.Contains(module)) continue;
+            if (_modulesDisabledOnStart.Contains(module))
+            {
+                continue;
+            }
+
             StartModule(module);
         }
 
@@ -72,6 +81,7 @@ public class SFModuleContainer
             if (completedTask == moduleStartTask)
             {
                 _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                SFLog.Info("Module start signal observed");
                 continue;
             }
 
@@ -82,9 +92,11 @@ public class SFModuleContainer
             {
                 case TaskStatus.RanToCompletion:
                 case TaskStatus.Canceled:
+                    SFLog.Info($"Module completed module={completedModule.GetType().Name} status={completedTask.Status}");
                     SF.Chat.Add($"{completedModule.GetType().Name} completed.");
                     break;
                 case TaskStatus.Faulted:
+                    SFLog.Error(completedTask.Exception!.GetBaseException(), $"Module faulted module={completedModule.GetType().Name}");
                     SF.Chat.Add($"{completedModule.GetType().Name} threw an exception:");
                     var exception = completedTask.Exception!.GetBaseException();
                     SF.Chat.Add($"{exception.GetType().Name}: {exception.Message}");
@@ -94,7 +106,7 @@ public class SFModuleContainer
             }
         }
 
-        // No need to handle cancellation for now.
+        SFLog.Warn("SFModuleContainer.Run cancelled");
     }
 
     private enum ModuleStatus
@@ -106,10 +118,11 @@ public class SFModuleContainer
 
     private ModuleStatus GetModuleStatus(ISFModule module)
     {
-        if(_runningModules.TryGetValue(module, out var moduleInfo))
+        if (_runningModules.TryGetValue(module, out var moduleInfo))
         {
             return moduleInfo.TokenSource.IsCancellationRequested ? ModuleStatus.WaitingToExit : ModuleStatus.Running;
         }
+
         return ModuleStatus.Stopped;
     }
 
@@ -126,17 +139,21 @@ public class SFModuleContainer
 
     private async void OnCommand(string? args)
     {
+        SFLog.Info($"/sfs command invoked args={args ?? "<null>"}");
         var dialogResult = await SF.Dialog.ShowList(
             "SF modules (select to enable/disable)",
             _moduleRepository.Select(x => $"{x.GetType().Name}\t{GetModuleStatusText(x)}"),
             "Module\tStatus"
         );
-        if(dialogResult.Button != SFDialogButton.OK)
+        if (dialogResult.Button != SFDialogButton.OK)
         {
+            SFLog.Info("/sfs cancelled by user");
             SF.Chat.Add("No changes made to running modules.");
             return;
         }
+
         var selectedModule = _moduleRepository[dialogResult.SelectedIndex];
+        SFLog.Info($"/sfs selected module={selectedModule.GetType().Name} status={GetModuleStatus(selectedModule)}");
         switch (GetModuleStatus(selectedModule))
         {
             case ModuleStatus.WaitingToExit:

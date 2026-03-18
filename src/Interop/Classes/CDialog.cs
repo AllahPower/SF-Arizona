@@ -1,4 +1,5 @@
-﻿using SFSharp;
+using SFSharp;
+using System;
 using System.Runtime.InteropServices;
 
 using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<CDialog*, int, int, byte*, byte*, byte*, byte*, int, void>;
@@ -6,8 +7,9 @@ using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<CDialog*, int, int, by
 [StructLayout(LayoutKind.Explicit, Size = 689, Pack = 1)]
 public unsafe ref struct CDialog
 {
-    private static readonly CDialog* _instance = *(CDialog**)HookHelper.GetFunctionPtr("samp.dll", 0x26EB50);
-    public static ref readonly CDialog Instance => ref *_instance;
+    private static readonly nuint _instanceAddress = (nuint)ModuleResolver.GetProcAddress("samp.dll", 0x26E898);
+    private static CDialog* CurrentInstance => *(CDialog**)_instanceAddress;
+    public static ref readonly CDialog Instance => ref *RequireInstance();
 
     [FieldOffset(32)]
     public CDXUTListBox* ListBox;
@@ -25,14 +27,26 @@ public unsafe ref struct CDialog
     [FieldOffset(52)]
     public byte* Text;
 
-    private static readonly ShowDelegate _show = (ShowDelegate)HookHelper.GetFunctionPtr("samp.dll", 0x6FFB0);
+    private static readonly ShowDelegate _show = (ShowDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x6F8C0);
     public void Show(int dialogId, DialogStyle style, string caption, string text, string leftButton, string rightButton, bool serverSide)
     {
+        var instance = RequireInstance();
         using var captionAnsi = AnsiString.Encode(caption);
         using var textAnsi = AnsiString.Encode(text);
         using var leftButtonAnsi = AnsiString.Encode(leftButton);
         using var rightButtonAnsi = AnsiString.Encode(rightButton);
-        _show(_instance, dialogId, (int)style, captionAnsi, textAnsi, leftButtonAnsi, rightButtonAnsi, serverSide ? 1 : 0);
+        _show(instance, dialogId, (int)style, captionAnsi, textAnsi, leftButtonAnsi, rightButtonAnsi, serverSide ? 1 : 0);
+    }
+
+    private static CDialog* RequireInstance()
+    {
+        var instance = CurrentInstance;
+        if (instance is null)
+        {
+            throw new InvalidOperationException("CDialog instance is not available.");
+        }
+
+        return instance;
     }
 }
 
