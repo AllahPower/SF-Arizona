@@ -5,19 +5,21 @@ namespace SFSharp;
 
 using unsafe CInputSendDirect = delegate* unmanaged[Thiscall]<void*, byte*, void>;
 
-public record struct CInputSendArgs(uint ThisPtr, string Text);
+public record struct CInputCommandSendArgs(uint ThisPtr, string Text);
 
-internal unsafe class CInputSendHook : NativeHook<CInputSendArgs, bool, CInputSendHook.CInputSendNative>
+internal unsafe class CInputCommandSendHook : NativeHook<CInputCommandSendArgs, bool, CInputCommandSendHook.CInputSendNative>
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     internal unsafe delegate void CInputSendNative(IntPtr thisPtr, byte* text);
 
-    private static CInputSendHook? _instance;
+    private static CInputCommandSendHook? _instance;
+    private static string? _lastSentText;
+    private static long _lastSentTick;
 
-    public CInputSendHook()
+    public CInputCommandSendHook()
     {
         _instance = this;
-        InstallHook(ModuleResolver.GetProcAddress("samp.dll", 0x69190), new CInputSendNative(HookProc));
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CInput.Send), new CInputSendNative(HookProc));
     }
 
     private static unsafe void HookProc(IntPtr thisPtr, byte* text)
@@ -27,23 +29,28 @@ internal unsafe class CInputSendHook : NativeHook<CInputSendArgs, bool, CInputSe
             throw new UnreachableException();
         }
 
-        var decodedText = AnsiString.Decode(text) ?? throw new UnreachableException();
-        var handled = _instance.Process(new((uint)thisPtr, decodedText));
-        if (handled)
+        string decodedText = AnsiString.Decode(text) ?? throw new UnreachableException();
+        long now = Environment.TickCount64;
+        if (decodedText.StartsWith('/') && string.Equals(decodedText, _lastSentText, StringComparison.Ordinal) && now - _lastSentTick <= 250)
         {
-            SFLog.Info($"CInput::Send intercepted text={decodedText}");
+            SFLog.Warn($"CInput::Send duplicate command suppressed text={decodedText}");
             return;
         }
 
-        SFLog.Info($"CInput::Send pass-through text={decodedText}");
-        using var _ = _instance.SuppressHook();
-        ((CInputSendDirect)_instance.TargetAddress)((void*)thisPtr, text);
+        _lastSentText = decodedText;
+        _lastSentTick = now;
+
+        bool handled = _instance.Process(new((uint)thisPtr, decodedText));
+        if (handled)
+        {
+            SFLog.Info($"CInput::Send command intercepted text={decodedText}");
+        }
     }
 
-    protected override bool InvokeOriginalFunction(CInputSendArgs args)
+    protected override bool InvokeOriginalFunction(CInputCommandSendArgs args)
     {
-        using var text = AnsiString.Encode(args.Text);
-        using var _ = SuppressHook();
+        using AnsiString text = AnsiString.Encode(args.Text);
+        using IDisposable _ = SuppressHook();
         ((CInputSendDirect)TargetAddress)((void*)args.ThisPtr, text);
         return false;
     }

@@ -26,3 +26,4 @@ public partial class SFChat
         CChat.Instance.AddEntry(EntryType.Debug, text, prefix, textColor, prefixColor);
     }
 }
+

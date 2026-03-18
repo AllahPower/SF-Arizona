@@ -15,6 +15,7 @@ public static class Program
         container.RegisterModule<BrightBinder>();
         container.RegisterModule<LicenseShooter>();
         container.RegisterModule<NodShaker>();
+        container.RegisterModule<ChatViolationMonitor>();
 
         using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ =>
         {

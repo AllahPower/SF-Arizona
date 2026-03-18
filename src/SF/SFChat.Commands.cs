@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace SFSharp;
 
-public partial class SFChat : ISubHook<CInputSendArgs, bool>
+public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
 {
     private record CommandRegistration(string Name, Action<string?> Callback) : IDisposable
     {
@@ -26,20 +26,20 @@ public partial class SFChat : ISubHook<CInputSendArgs, bool>
         return registration;
     }
 
-    bool ISubHook<CInputSendArgs, bool>.Process(CInputSendArgs args, Func<CInputSendArgs, bool> next)
+    bool ISubHook<CInputCommandSendArgs, bool>.Process(CInputCommandSendArgs args, Func<CInputCommandSendArgs, bool> next)
     {
         if (!args.Text.StartsWith('/'))
         {
             return next(args);
         }
 
-        var commandLine = args.Text[1..];
-        var separatorIndex = commandLine.IndexOf(' ');
-        var commandName = separatorIndex >= 0 ? commandLine[..separatorIndex] : commandLine;
-        var commandArgs = separatorIndex >= 0 ? commandLine[(separatorIndex + 1)..] : null;
+        string commandLine = args.Text[1..];
+        int separatorIndex = commandLine.IndexOf(' ');
+        string commandName = separatorIndex >= 0 ? commandLine[..separatorIndex] : commandLine;
+        string? commandArgs = separatorIndex >= 0 ? commandLine[(separatorIndex + 1)..] : null;
 
         SFLog.Info($"Client command send command={commandName} args={commandArgs ?? "<null>"}");
-        if (_taskSourcesByCommand.TryGetValue(commandName, out var registration))
+        if (_taskSourcesByCommand.TryGetValue(commandName, out CommandRegistration? registration))
         {
             _lastCommand = commandName;
             SFLog.Info($"Client command intercepted command={commandName}");

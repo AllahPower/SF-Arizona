@@ -94,7 +94,6 @@ public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TR
         public HookSuppressionScope(NativeHook<TArgs, TResult, TDelegate> owner)
         {
             _owner = owner;
-            SFLog.Info($"Disable hook temporarily type={owner.GetType().Name} target=0x{owner.TargetAddress:X8}");
             HookRuntime.Engine.DisableHook(owner.OriginalFunction);
         }
 
@@ -106,7 +105,6 @@ public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TR
             }
 
             HookRuntime.Engine.EnableHook(_owner.OriginalFunction);
-            SFLog.Info($"Re-enable hook type={_owner.GetType().Name} target=0x{_owner.TargetAddress:X8}");
             _owner = null;
         }
     }

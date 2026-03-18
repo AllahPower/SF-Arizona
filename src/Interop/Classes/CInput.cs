@@ -7,11 +7,11 @@ using unsafe SendDelegate = delegate* unmanaged[Thiscall]<CInput*, byte*, void>;
 [StructLayout(LayoutKind.Explicit, Size = 6908, Pack = 1)]
 public unsafe ref struct CInput
 {
-    private static readonly nuint _instanceAddress = (nuint)ModuleResolver.GetProcAddress("samp.dll", 0x26E8CC);
+    private static readonly nuint _instanceAddress = (nuint)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CInput.Instance);
     private static CInput* CurrentInstance => *(CInput**)_instanceAddress;
     public static ref readonly CInput Instance => ref *RequireInstance();
 
-    private static readonly SendDelegate _send = (SendDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x69190);
+    private static readonly SendDelegate _send = (SendDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CInput.Send);
     public void Send(string text)
     {
         var instance = RequireInstance();
