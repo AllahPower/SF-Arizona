@@ -24,7 +24,7 @@ This release stabilizes the Arizona fork with a safer hook backend, live singlet
 - Arizona RP client
 - SA:MP 0.3.7 R3-1
 - SAMPFUNCS v5.5.0 rel.22
-- .NET SDK 10.0 preview for local builds
+- .NET SDK 10.0 for local builds
 
 ## Build
 
@@ -32,16 +32,26 @@ This release stabilizes the Arizona fork with a safer hook backend, live singlet
 - `dotnet publish src/SF.csproj -c Release`
 - Output: `src/bin/Release/net10.0/win-x86/publish/SF.asi`
 
-## Roadmap / TODO
+---
 
-- Turn SF-Arizona into a robust **.NET loader for external libraries**, closer in spirit to MoonLoader but for managed plugins
-- Define a stable plugin/module ABI so third-party .NET assemblies can register hooks, commands, dialogs, and tasks safely
-- Finish hardening the hook layer against chained hooks, foreign trampolines, and NativeAOT edge cases
-- Expand the game API with more pools, dialogs, textdraws, RPC/network handlers, and additional high-value hooks
-- Improve diagnostics with log levels, filtering, rotation, and crash-context capture
-- Add compatibility guards for common Arizona modpacks and better coexistence with other ASI/SAMPFUNCS addons
-- Document supported offsets, client assumptions, and the process for porting to future Arizona builds
-- Add focused regression tests or smoke-test utilities for command, dialog, and hook flows
+## TODO / Roadmap
+
+- [x] **Arizona Port:** Core offsets and SA:MP class access migrated to Arizona RP 0.3.7 R3-1
+- [x] **Hook Backend:** Old manual trampoline helper replaced with `MinHook.NET`
+- [x] **Command Interception:** Local commands handled through `CInput::Send` before server dispatch
+- [x] **Dialog Isolation:** SF dialogs moved away from conflicting IDs and filtered from foreign mod dialogs
+- [x] **General Logging:** Centralized runtime logging added to `sf_arz.log`
+- [x] **Version System:** Release metadata added with `2.0.0-arizona`
+- [ ] **.NET Loader:** Turn SF-Arizona into a managed loader for external .NET libraries, closer to MoonLoader for C# plugins
+- [ ] **Plugin ABI:** Define a stable module/plugin ABI for hooks, commands, dialogs, tasks, and lifecycle callbacks
+- [ ] **Hook Hardening:** Finish resilience against chained hooks, foreign trampolines, and NativeAOT edge cases
+- [ ] **API Expansion:** Expand access to pools, dialogs, textdraws, RPC/network handlers, and other gameplay systems
+- [ ] **Diagnostics:** Add log levels, filtering, rotation, and richer crash-context capture
+- [ ] **Compatibility Layer:** Improve coexistence with Arizona modpacks, ASI plugins, and SAMPFUNCS-based addons
+- [ ] **Portability:** Document supported client builds, offsets, and the porting workflow for future Arizona updates
+- [ ] **Testing:** Add smoke-test or regression utilities for command, dialog, and hook flows
+
+---
 
 ## Acknowledgements
 
