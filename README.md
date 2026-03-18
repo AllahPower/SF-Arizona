@@ -1,8 +1,8 @@
-# SF
+# SF-Arizona
 
-This not-yet-properly-named project is both a C# plugin framework for GTA SAMP and its single consuming plugin.
+Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizona RP** client based on **SA-MP 0.3.7 R3-1** (SAMPFUNCS v5.5.0 rel.22).
 
-I develop and maintain this project for personal use, but it should also look good on a low-level C# job resume, if such a job even exists. You can also clone the project and write your own [Program.cs](src/Modules/Program.cs) if you want to try your hand at SAMP plugin development.
+All memory offsets have been updated to match this specific client version.
 
 ## Features
 
@@ -14,11 +14,11 @@ I develop and maintain this project for personal use, but it should also look go
 
 ## Game build prerequisites
 - GTA San Andreas (1.0 US)
-- [SAMP](https://www.sa-mp.mp/downloads/) 0.3.7-R5
-- If you use [SAMPFUNCS](https://www.blast.hk/threads/17/), it must be version 5.7.1 ([why?](src/Interop/Hooking/Hooks/CDialogCloseHook.txt))
+- Arizona RP client, SAMPFUNCS v5.5.0 rel.22 (SA-MP 0.3.7 R3-1)
 
 ## Acknowledgements
 
-- [SAMP-API](https://github.com/BlastHackNet/SAMP-API) and [SAMP_IDBs](https://github.com/Northn/SAMP_IDBs) - reversed game classes/functions),
+- [TheLeftExit/SF](https://github.com/TheLeftExit/SF) - original project,
+- [SAMP-API](https://github.com/BlastHackNet/SAMP-API) and [SAMP_IDBs](https://github.com/Northn/SAMP_IDBs) - reversed game classes/functions,
 - [SAMPFUNCS](https://www.blast.hk/threads/17/) - inspiration for the project and API design,
-- [blast.hk forum](https://www.blast.hk/) - for answering my silly questions when I was only getting started with GTA SAMP plugins.
+- [blast.hk forum](https://www.blast.hk/) - for answering questions on GTA SAMP plugin development.
