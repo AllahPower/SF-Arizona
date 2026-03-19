@@ -4,7 +4,7 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.1**
+Current release: **3.1.2**
 
 ## Highlights
 
@@ -12,7 +12,7 @@ Current release: **3.1.1**
 - `MinHook.NET`-based hook installation with trampoline calls
 - RakNet interception layer for incoming and outgoing RPC/raw packets
 - Managed `BitStreamReader` for RakNet payload parsing with CP1251 string decoding
-- Async streaming API for RPC (`SF.Rpc`) and packets (`SF.Packets`) for modules
+- Async streaming API for RPC (`SF.Rpc`), packets (`SF.Packets`), and Arizona sub-packets (`SF.ArizonaPackets`) for modules
 - Structured SAMP offsets in `SampOffsets.cs`
 - Live pointer resolution for `CChat`, `CDialog`, `CInput`, `CNetGame`, and other SAMP singletons
 - Local command interception via `CInput::Send`
@@ -31,6 +31,10 @@ These packets are now described in code by:
 - `src/Interop/RakNet/Arizona/ArizonaPacketId.cs`
 - `src/Interop/RakNet/Arizona/ArizonaPacketIdEx.cs`
 - `src/Interop/RakNet/Arizona/ArizonaPacket.cs`
+- `src/Interop/RakNet/Arizona/ArizonaPacketArgs.cs`
+- `src/Interop/RakNet/Arizona/ArizonaPacketPayload.cs`
+- `src/Interop/RakNet/Arizona/ArizonaCoreCustomPacketId.cs`
+- `src/SF/SFArizonaPackets.cs`
 
 ### Packet 220
 
@@ -42,6 +46,21 @@ It is primarily used for Arizona UI/CEF and gameplay-side custom events, for exa
 - cursor and HUD toggles
 - custom map/icon and vehicle visual state updates
 - client-side interface callbacks back to the server
+
+
+### core.asi CustomPacket Layer
+
+Reverse of `core.asi` shows an additional internal dispatcher `enum CustomPacket` on top of raw Arizona transport.
+It is documented separately in `src/Interop/RakNet/Arizona/ArizonaCoreCustomPacketId.cs` because it is not equal to raw Packet `220/221` sub-ids.
+
+Confirmed IDs from IDA so far:
+
+- `15` - used by `VehicleBrakeCalipers`, `VehicleLightsColor`, `VehicleNeon`, `VehicleSpeedLimiter`, `WeaponUpgrades`
+- `63` - used by `VehicleMaterials`
+- `239` and `240` - used by `VehicleDrift`
+- `254` - used by `TestDrive`, `VehicleLightsColor`, `ViceCityServer`
+- `4078` - used by `Streamer`
+- `4095` - used by `VehicleFeatures`
 
 ### Packet 221
 
@@ -135,3 +154,4 @@ dotnet publish src/SF.csproj -c Release
 - [RakHook](https://github.com/imring/RakHook) and [RakLua](https://github.com/Northn/RakLua) for RakNet hooking references
 - [SAMPFUNCS](https://www.blast.hk/threads/17/) for inspiration and API ideas
 - [blast.hk forum](https://www.blast.hk/) for GTA SA:MP reverse-engineering discussions
+

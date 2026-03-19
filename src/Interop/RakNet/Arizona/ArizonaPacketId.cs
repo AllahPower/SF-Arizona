@@ -23,16 +23,16 @@ public enum ArizonaPacketId : byte
     // u8 mode
     SetRadarMode = 9,
 
-    // byte[16] unknown, encoded_string js, encoded_string any, u32 server_id
+    // byte[16] unknown, maybeEncoded js, maybeEncoded any, u32 server_id
     LoadJs = 10,
 
-    // i32 billboard_id, byte[12] pad, encoded link, encoded user_agent, byte[12] pad
+    // i32 billboard_id, byte[12] pad, maybeEncoded link, maybeEncoded user_agent, byte[12] pad
     PlayMediaOnBillboard = 12,
 
     // u32 server_id, string32 url
     LoadHtml = 16,
 
-    // u32 server_id, encoded_string text
+    // u32 server_id, maybeEncoded text
     // main CEF event pipe: carries window.executeEvent('eventName', `json`)
     Display = 17,
 
@@ -63,7 +63,7 @@ public enum ArizonaPacketId : byte
     // bool8 status
     ShowPositionInDiscord = 71,
 
-    // bool state
+    // bool state - writes a patched byte through VirtualProtect in GameFunctions_HandleCustomPacket
     AutoDrinkBeer = 91,
 
     // IDA: bool night_mode — toggles day/night color scheme on materials
@@ -72,20 +72,23 @@ public enum ArizonaPacketId : byte
     // IDA: bool state — toggles compass/minimap element
     ToggleCompass = 93,
 
-    // IDA: u32 value — sets animation timer or object property
+    // u32 value - stored into *(dword_101B1784 + 72) in GameFunctions_HandleCustomPacket
     SetAnimationProperty = 97,
 
-    // IDA: bool state — toggles map/texture color mode
+    // bool state - patches three code/data locations in GameFunctions_HandleCustomPacket
     ToggleMapColors = 101,
-
-    // IDA: bool state — unknown toggle (UI-related)
+    
+    // bool state - swaps a 5-byte CALL patch with NOPs at one target site in GameFunctions_HandleCustomPacket
     ToggleUnknown102 = 102,
 
-    // IDA: string32 host, u32 port, string32 password, string32 nickname, bool unknown
-    // server transfer — reconnects client to another server
+    // string32 host, u32 port, string32 nickname, optional string password, bool connect_mode
+    // server transfer - reconnects client to another server
     ChangeServer = 103,
 
-    // IDA: bool state — unknown toggle
+    // IDA: u8 bg_type, optional u32 timeout - ViceCityServer load screen control
+    ShowLoadScreenVc = 104,
+
+    // bool state - enables the target/highlight update path in GameFunctions_UpdateTargetTrace and packet 116 emission
     ToggleUnknown105 = 105,
 
     // u32 player_id, bool is_open
@@ -94,11 +97,14 @@ public enum ArizonaPacketId : byte
     // u8 type, u16 len
     UiConfig = 110,
 
-    // IDA: u8 state, u8 unknown — patches game memory for spectator/camera system
+    // IDA: u8 state, u8 unknown - both bytes participate in spectator/camera memory patching
     SetSpectatorPatches = 112,
 
-    // IDA: bool state — toggles unknown flag, resets state on disable
+    // bool state - stored in byte_1028944A and disables GameFunctions_ToggleActionState when false
     ToggleUnknown114 = 114,
+
+    // IDA: bool state - ViceCityServer flag stored in word_101B0C84 high byte
+    SetViceCityFlag = 117,
 
     // u16 player_id, bool unknown, string8[4] flags
     SetPlayerNametagFlags = 120,
@@ -118,14 +124,40 @@ public enum ArizonaPacketId : byte
     // u8 tag0 (0x21), u8 tag1, u8 tag2, string names, u32[5] offsets, u16 end
     SetSkyboxImages = 144,
 
+    // IDA: u16 id, u32 x, u32 y, u32 z, u32 time_offset, u32 unknown, bool active
+    // stores into a 3D waypoint/marker ring buffer with tick timer
+    Create3DWaypoint = 141,
+
+    // IDA: u8 style — loads HUD theme ("hud_default" or alt) + all 63 radar sprites
+    SetHudStyle = 147,
+
+    // IDA: bool create — creates (true) or destroys (false) a 512x512 render target (Drone module)
+    ToggleRenderTarget = 149,
+
     // u16 vehicle_id, { u8 type, string8 text, stringUnread region }
     SetVehicleNumberPlate = 153,
 
     // u16 player_id, i32 index, bool create, { i32 bone, i32 model, vec3 off, vec3 rot, vec3 scale, i32 c1, i32 c2 }
     SetPlayerAttachedObject = 155,
 
+    // IDA: bool state - enables selector-mode checks and patches a CALL to sub_1004C310 via custom packet 163
+    ToggleUnknown163 = 163,
+
+    // bool state - selector gate flag stored in byte_1028946C and consumed by GameFunctions_CanUseSelectorSlot
+    ToggleUnknown164 = 164,
+
     // string8 text
     LoadBinary = 165,
+
+    // IDA: bool state — toggles portal visibility flag (Portal module)
+    TogglePortal = 166,
+
+    // IDA: u16 id (max 1004), u8 type (0=front, 1=back), vec3 offset, vec3 rotation
+    // creates a portal render object at slot [id][type]
+    CreatePortal = 169,
+
+    // IDA: u16 id (max 1004), u8 type (0=front, 1=back) — destroys portal at slot [id][type]
+    DestroyPortal = 170,
 
     // u8 unused, string8 text, stringUnread emoji
     SetCurrentTask = 172,
@@ -151,8 +183,19 @@ public enum ArizonaPacketId : byte
     // u16 vehicle_id, string8 light_name
     SetVehicleLights = 193,
 
+    // IDA: u8 skin_id — sets player model/skin via internal function
+    SetPlayerSkin = 200,
+
     // u16 vehicle_id, byte[6] unknown
     SetVehicleStrobelights = 209,
+
+    // IDA: u8 action (0=destroy, 1=create), u8 slot, { per-type: Point(vec3), Line(u8,u16,vec3),
+    //   PedBone(bool,u16,u16), Vehicle(u16,u8,vec3,string) } x2 endpoints, u8 speed, bool loop,
+    //   u32 color1, u32 color2 — GPS route line drawing system (Lines::Point, PedBonePoint, VehiclePoint)
+    SetGpsRoute = 212,
+
+    // IDA: bool state — toggles first-person camera mode, patches camera control vars
+    SetFirstPersonCamera = 215,
 
     // -- outgoing (client -> server) --
 
@@ -169,7 +212,7 @@ public enum ArizonaPacketId : byte
     // u32 server_id, u32 menu_id
     SendOpenInterface = 17,
 
-    // string16 text, u32 server_id
+    // string16 text - client join payload, u32 server_id
     Send = 18,
 
     // u32 width, u32 height
@@ -184,9 +227,29 @@ public enum ArizonaPacketId : byte
     // u8 mode
     SendSwitchChatMode = 51,
 
-    // string16 text
+    // float value - GameFunctions_ReportFloatValue
+    SendFloatValue = 113,
+
+    // bool state - GameFunctions_ToggleActionState
+    SendToggleActionState = 115,
+
+    // vec3 position - GameFunctions target/trace report from GameFunctions_UpdateTick
+    SendTargetPosition = 116,
+
+    // string16 text - client join payload
     SendClientJoin = 140,
+
+    // float heading - Drone_UpdateTick
+    SendDroneHeading = 148,
+
+    // u8 mode/state - Portal_ToggleSendTick
+    SendPortalToggle = 167,
 
     // u8 direction (0=up, 1=down)
     SendWeaponScroll = 184,
+
+    // u8 weapon_id (observed 54, 55, 56) - DamageResponseHook_SendWeaponResponse
+    SendDamageResponseWeapon = 195,
 }
+
+

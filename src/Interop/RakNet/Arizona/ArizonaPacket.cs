@@ -35,11 +35,20 @@ public readonly record struct ArzSetHudMode(byte Mode);
 // id=9 | minimap/radar mode
 public readonly record struct ArzSetRadarMode(byte Mode);
 
+// id=10 | load JS resource into CEF pipeline
+// js/any use Arizona maybeEncoded strings: u16 length, i8 encoded_flag, then plain or RakNet-encoded bytes
+public readonly record struct ArzLoadJs(byte[] Unknown16, string Js, string Any, uint ServerId);
+
+// id=12 | billboard media playback
+// link/user_agent use Arizona maybeEncoded strings: u16 length, i8 encoded_flag, then plain or RakNet-encoded bytes
+public readonly record struct ArzPlayMediaOnBillboard(int BillboardId, byte[] Pad12A, string Link, string UserAgent, byte[] Pad12B);
+
 // id=16 | load remote HTML page into CEF overlay
 public readonly record struct ArzLoadHtml(uint ServerId, string Url);
 
 // id=17 | main CEF event pipe
-// text carries JS: window.executeEvent('eventName', `{json}`);
+// text uses Arizona maybeEncoded format: u16 length, i8 encoded_flag, then plain or RakNet-encoded bytes
+// payload commonly carries JS: window.executeEvent('eventName', `{json}`);
 public readonly record struct ArzDisplay(uint ServerId, string Text);
 
 // id=25 | toggle mouse cursor visibility
@@ -72,11 +81,47 @@ public readonly record struct ArzShowPositionInDiscord(bool Status);
 // id=91 | auto-drink beer toggle (RP event)
 public readonly record struct ArzAutoDrinkBeer(bool State);
 
+// id=92 | day/night material color toggle
+public readonly record struct ArzSetDayNightColors(bool NightMode);
+
+// id=93 | compass/minimap visibility toggle
+public readonly record struct ArzToggleCompass(bool State);
+
+// id=97 | animation/game function property value
+public readonly record struct ArzSetAnimationProperty(uint Value);
+
+// id=101 | map color patch toggle
+public readonly record struct ArzToggleMapColors(bool State);
+
+// id=102 | 5-byte CALL/NOP patch toggle at one target site
+public readonly record struct ArzToggleUnknown102(bool State);
+
+// id=103 | server transfer / reconnect
+// wire format: string32 host, u32 port, string32 nickname, string password, bool connect_mode
+public readonly record struct ArzChangeServer(string Host, uint Port, string Nickname, string Password, bool ConnectMode);
+
+// id=104 | Vice City themed load screen control
+// if bg_type != 0 then payload continues with optional u32 timeout
+public readonly record struct ArzShowLoadScreenVc(byte BgType, uint? Timeout);
+
+// id=105 | target trace / highlight path toggle
+public readonly record struct ArzToggleUnknown105(bool State);
+
 // id=108 | player chat window open/close notification
 public readonly record struct ArzSwitchChatState(uint PlayerId, bool IsOpen);
 
 // id=110 | CEF UI config packet
 public readonly record struct ArzUiConfig(byte Type, ushort Len);
+
+// id=112 | spectator/camera patch toggle
+// second byte is still not fully named, but both bytes participate in spectator/camera memory patching
+public readonly record struct ArzSetSpectatorPatches(byte State, byte Unknown);
+
+// id=114 | unknown GameFunctions state flag
+public readonly record struct ArzToggleUnknown114(bool State);
+
+// id=117 | Vice City mode flag
+public readonly record struct ArzSetViceCityFlag(bool State);
 
 // id=120 | nametag flag strings (clan tags, faction icons, etc.)
 public readonly record struct ArzSetPlayerNametagFlags(ushort PlayerId, bool Unknown1, string Flag1, string Flag2, string Flag3, string Flag4);
@@ -94,6 +139,14 @@ public readonly record struct ArzSetVehicleColorSmoke(ushort VehicleId, float In
 // id=142 | vehicle body color (RGBA)
 public readonly record struct ArzVehicleColor(ushort VehicleId, byte R, byte G, byte B, byte A);
 
+// id=144 | skybox image descriptor + code offsets
+public readonly record struct ArzSetSkyboxImages(
+    byte Tag0, byte Tag1, byte Tag2,
+    string Names,
+    uint Offset1, uint Offset2, uint Offset3, uint Offset4, uint Offset5,
+    ushort End
+);
+
 // id=153 | vehicle license plate text + region
 public readonly record struct ArzSetVehicleNumberPlate(ushort VehicleId, byte PlateType, string PlateText, string PlateRegion);
 
@@ -107,6 +160,14 @@ public readonly record struct ArzSetPlayerAttachedObject(
 
 // id=165 | load binary resource by name
 public readonly record struct ArzLoadBinary(string Text);
+
+// id=163 | selector-mode hook toggle
+// enables the sub_1004C310 hook path and related GameFunctions selector checks
+public readonly record struct ArzToggleUnknown163(bool State);
+
+// id=164 | selector gate flag
+// gates sub_1004B5E0 checks and suppresses one branch of the selector logic when enabled
+public readonly record struct ArzToggleUnknown164(bool State);
 
 // id=172 | current quest/task HUD text
 public readonly record struct ArzSetCurrentTask(byte Unused, string Text, string Emoji);
@@ -165,12 +226,30 @@ public readonly record struct ArzSendHash(byte[] Hash);
 // id=51 | switch chat mode from client side
 public readonly record struct ArzSendSwitchChatMode(byte Mode);
 
+// id=113 | report float value
+public readonly record struct ArzSendFloatValue(float Value);
+
+// id=115 | send action-state toggle
+public readonly record struct ArzSendToggleActionState(bool State);
+
+// id=116 | send target position / vec3 report
+public readonly record struct ArzSendTargetPosition(Vector3 Position);
+
 // id=140 | client join payload (version/hwid string)
 public readonly record struct ArzSendClientJoin(string Text);
+
+// id=148 | drone heading report
+public readonly record struct ArzSendDroneHeading(float Heading);
+
+// id=167 | portal state/mode report
+public readonly record struct ArzSendPortalToggle(byte State);
 
 // id=184 | mouse wheel weapon scroll
 // direction: 0=up, 1=down
 public readonly record struct ArzSendWeaponScroll(byte Direction);
+
+// id=195 | damage response weapon id
+public readonly record struct ArzSendDamageResponseWeapon(byte WeaponId);
 
 // --- Packet 221 incoming (server -> client) --- bot/NPC system ---
 
@@ -285,6 +364,17 @@ public static class ArizonaPacket
         return bytes > 0 ? r.ReadFixedString(bytes) : string.Empty;
     }
 
+    // Arizona maybeEncoded format seen on Packet 220 CEF packets:
+    // u16 length, i8 encoded_flag, then either plain bytes or RakNet-encoded bytes.
+    // We currently preserve the exact wire shape but decode the string as a best-effort byte read.
+    private static string ReadMaybeEncodedString(ref BitStreamReader r)
+    {
+        ushort len = r.ReadUInt16();
+        byte encodedFlag = r.ReadUInt8();
+        int bytesToRead = encodedFlag == 0 ? len : len + encodedFlag;
+        return bytesToRead > 0 ? r.ReadFixedString(bytesToRead) : string.Empty;
+    }
+
     // ---- Packet 220 incoming parsers ----
 
     public static ArzSetLocalDriver ParseSetLocalDriver(ref BitStreamReader r)
@@ -316,6 +406,25 @@ public static class ArizonaPacket
         return new(r.ReadUInt8());
     }
 
+    public static ArzLoadJs ParseLoadJs(ref BitStreamReader r)
+    {
+        byte[] unknown16 = r.ReadBytes(16).ToArray();
+        string js = ReadMaybeEncodedString(ref r);
+        string any = ReadMaybeEncodedString(ref r);
+        uint serverId = r.ReadUInt32();
+        return new(unknown16, js, any, serverId);
+    }
+
+    public static ArzPlayMediaOnBillboard ParsePlayMediaOnBillboard(ref BitStreamReader r)
+    {
+        int billboardId = r.ReadInt32();
+        byte[] pad12a = r.ReadBytes(12).ToArray();
+        string link = ReadMaybeEncodedString(ref r);
+        string userAgent = ReadMaybeEncodedString(ref r);
+        byte[] pad12b = r.ReadBytes(12).ToArray();
+        return new(billboardId, pad12a, link, userAgent, pad12b);
+    }
+
     public static ArzLoadHtml ParseLoadHtml(ref BitStreamReader r)
     {
         uint serverId = r.ReadUInt32();
@@ -326,12 +435,7 @@ public static class ArizonaPacket
     public static ArzDisplay ParseDisplay(ref BitStreamReader r)
     {
         uint serverId = r.ReadUInt32();
-        // text is "maybeEncoded": u16 len, u8 encoded_flag, then string or encoded_string
-        // for now read as raw string with u16 length prefix + 1 flag byte
-        ushort len = r.ReadUInt16();
-        byte encodedFlag = r.ReadUInt8();
-        // encoded strings use RakNet compressed encoding, we read raw bytes either way
-        string text = r.ReadFixedString(encodedFlag == 0 ? len : len + 1);
+        string text = ReadMaybeEncodedString(ref r);
         return new(serverId, text);
     }
 
@@ -404,6 +508,53 @@ public static class ArizonaPacket
         return new(r.ReadBool());
     }
 
+    public static ArzSetDayNightColors ParseSetDayNightColors(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzToggleCompass ParseToggleCompass(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzSetAnimationProperty ParseSetAnimationProperty(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt32());
+    }
+
+    public static ArzToggleMapColors ParseToggleMapColors(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzToggleUnknown102 ParseToggleUnknown102(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzChangeServer ParseChangeServer(ref BitStreamReader r)
+    {
+        string host = r.ReadStringUInt32Length();
+        uint port = r.ReadUInt32();
+        string nickname = r.ReadStringUInt32Length();
+        string password = r.ReadStringUInt32Length();
+        bool connectMode = r.ReadBool();
+        return new(host, port, nickname, password, connectMode);
+    }
+
+    public static ArzShowLoadScreenVc ParseShowLoadScreenVc(ref BitStreamReader r)
+    {
+        byte bgType = r.ReadUInt8();
+        uint? timeout = r.RemainingBits >= 32 ? r.ReadUInt32() : null;
+        return new(bgType, timeout);
+    }
+
+    public static ArzToggleUnknown105 ParseToggleUnknown105(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
     public static ArzSwitchChatState ParseSwitchChatState(ref BitStreamReader r)
     {
         uint pid = r.ReadUInt32();
@@ -416,6 +567,23 @@ public static class ArizonaPacket
         byte type = r.ReadUInt8();
         ushort len = r.ReadUInt16();
         return new(type, len);
+    }
+
+    public static ArzSetSpectatorPatches ParseSetSpectatorPatches(ref BitStreamReader r)
+    {
+        byte state = r.ReadUInt8();
+        byte unknown = r.ReadUInt8();
+        return new(state, unknown);
+    }
+
+    public static ArzToggleUnknown114 ParseToggleUnknown114(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzSetViceCityFlag ParseSetViceCityFlag(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
     }
 
     public static ArzSetPlayerNametagFlags ParseSetPlayerNametagFlags(ref BitStreamReader r)
@@ -468,6 +636,29 @@ public static class ArizonaPacket
         return new(vid, red, green, blue, alpha);
     }
 
+    public static ArzSetSkyboxImages ParseSetSkyboxImages(ref BitStreamReader r)
+    {
+        byte tag0 = r.ReadUInt8();
+        byte tag1 = r.ReadUInt8();
+        byte tag2 = r.ReadUInt8();
+
+        int remainingBytes = (r.RemainingBits + 7) / 8;
+        if (remainingBytes < 22)
+        {
+            return new(tag0, tag1, tag2, string.Empty, 0, 0, 0, 0, 0, 0);
+        }
+
+        int namesLength = remainingBytes - 22;
+        string names = namesLength > 0 ? r.ReadFixedString(namesLength) : string.Empty;
+        uint offset1 = r.ReadUInt32();
+        uint offset2 = r.ReadUInt32();
+        uint offset3 = r.ReadUInt32();
+        uint offset4 = r.ReadUInt32();
+        uint offset5 = r.ReadUInt32();
+        ushort end = r.ReadUInt16();
+        return new(tag0, tag1, tag2, names, offset1, offset2, offset3, offset4, offset5, end);
+    }
+
     public static ArzSetVehicleNumberPlate ParseSetVehicleNumberPlate(ref BitStreamReader r)
     {
         ushort vid = r.ReadUInt16();
@@ -495,6 +686,16 @@ public static class ArizonaPacket
     public static ArzLoadBinary ParseLoadBinary(ref BitStreamReader r)
     {
         return new(r.ReadStringUInt8Length());
+    }
+
+    public static ArzToggleUnknown163 ParseToggleUnknown163(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzToggleUnknown164 ParseToggleUnknown164(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
     }
 
     public static ArzSetCurrentTask ParseSetCurrentTask(ref BitStreamReader r)
@@ -617,12 +818,42 @@ public static class ArizonaPacket
         return new(r.ReadUInt8());
     }
 
+    public static ArzSendFloatValue ParseSendFloatValue(ref BitStreamReader r)
+    {
+        return new(r.ReadFloat());
+    }
+
+    public static ArzSendToggleActionState ParseSendToggleActionState(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzSendTargetPosition ParseSendTargetPosition(ref BitStreamReader r)
+    {
+        return new(ReadVec3(ref r));
+    }
+
     public static ArzSendClientJoin ParseSendClientJoin(ref BitStreamReader r)
     {
         return new(r.ReadStringUInt16Length());
     }
 
+    public static ArzSendDroneHeading ParseSendDroneHeading(ref BitStreamReader r)
+    {
+        return new(r.ReadFloat());
+    }
+
+    public static ArzSendPortalToggle ParseSendPortalToggle(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
     public static ArzSendWeaponScroll ParseSendWeaponScroll(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
+    public static ArzSendDamageResponseWeapon ParseSendDamageResponseWeapon(ref BitStreamReader r)
     {
         return new(r.ReadUInt8());
     }
