@@ -8,10 +8,15 @@ public static class HookManager
     private static HookBase<CInputCommandSendArgs, bool>? _cInputCommandSend;
     private static HookBase<UpdateScoresPingsIpsArgs, NoRetValue>? _updateScoresPingsIps;
 
+    internal static OutgoingRpcPacketHook OutgoingRpcPacket { get; } = new OutgoingRpcPacketHook();
+    private static OutgoingPacketHook? _outgoingPacket;
+    private static IncomingPacketHook? _incomingPacket;
+
     //public static Hook<PeekMessageArgs, PeekMessageResult> PeekMessage { get; } = new PeekMessageHook();
     public static HookBase<CChatAddEntryArgs, NoRetValue> CChatAddEntry { get; } = new CChatAddEntryHook();
     internal static IncomingRpcPacketHook IncomingRpcPacket { get; } = new IncomingRpcPacketHook();
-    internal static OutgoingRpcPacketHook OutgoingRpcPacket { get; } = new OutgoingRpcPacketHook();
+    internal static OutgoingPacketHook OutgoingPacket => _outgoingPacket ??= new OutgoingPacketHook();
+    internal static IncomingPacketHook IncomingPacket => _incomingPacket ??= new IncomingPacketHook();
     public static HookBase<CDialogCloseArgs, NoRetValue> CDialogClose => _cDialogClose ??= !ModuleResolver.IsModuleLoaded("sampfuncs.asi") ? new CDialogCloseHook() : new CDialogCloseHook_SF();
     public static HookBase<CDialogHideArgs, NoRetValue> CDialogHide => _cDialogHide ??= new CDialogHideHook();
     public static HookBase<CDialogShowHookArgs, NoRetValue> CDialogShow => _cDialogShow ??= new CDialogShowHook();

@@ -91,6 +91,20 @@ public static class SampOffsets
         public const int SendRpcBitStream = 0x33EE0;
     }
 
+    public static class RakNetBitStream
+    {
+        public const int NumberOfBitsUsed = 4;
+        public const int Data = 12;
+    }
+
+    public static class RakNetPacket
+    {
+        // Packet struct returned by RakClient::Receive
+        public const int Length = 8;
+        public const int BitSize = 12;
+        public const int Data = 16;
+    }
+
     public static class RpcRoutes
     {
         public static class Chat

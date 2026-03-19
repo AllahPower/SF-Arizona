@@ -4,15 +4,15 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.0.0-arizona**
+Current release: **3.1.0-arizona**
 
 ## Highlights
 
 - NativeAOT `win-x86` build published as a single `SF.asi`
 - `MinHook.NET`-based hook installation with trampoline calls (zero-overhead original function invocation)
-- RakNet packet interception layer for both incoming and outgoing RPC
+- RakNet interception layer for both RPC and raw sync packets (incoming/outgoing)
 - `BitStreamReader` for managed bit-level parsing of RakNet payloads (CP1251)
-- Async RPC streaming API (`SF.Rpc.Stream`, `SF.Rpc.StreamOutgoing`) for module integration
+- Async streaming API for RPC (`SF.Rpc`) and packets (`SF.Packets`) for module integration
 - Structured SAMP offsets (`SampOffsets.cs`) with full RakClient vtable mapping (55 entries)
 - Live pointer resolution for `CChat`, `CDialog`, `CInput`, `CNetGame`, and other SAMP singletons
 - Local command interception via `CInput::Send` hook with duplicate suppression
@@ -36,6 +36,22 @@ Outgoing: samp.dll RakClient::RPC (0x33EE0)
   -> SFBootstrap.EnqueueOutgoingRpc (ConcurrentQueue)
   -> ProcessOutgoingRpcBatch (main thread, max 24/tick)
   -> OutgoingRpcManager.Dispatch -> subscribers
+```
+
+### Packet Pipeline
+
+```
+Incoming: RakClient::Receive (vtable[8], resolved at runtime)
+  -> IncomingPacketHook (MinHook trampoline)
+  -> SFBootstrap.EnqueueIncomingPacket (ConcurrentQueue)
+  -> ProcessIncomingPacketBatch (main thread, max 24/tick)
+  -> IncomingPacketManager.Dispatch -> subscribers
+
+Outgoing: RakClient::Send (vtable[7], resolved at runtime)
+  -> OutgoingPacketHook (MinHook trampoline)
+  -> SFBootstrap.EnqueueOutgoingPacket (ConcurrentQueue)
+  -> ProcessOutgoingPacketBatch (main thread, max 24/tick)
+  -> OutgoingPacketManager.Dispatch -> subscribers
 ```
 
 ### Module System
@@ -68,7 +84,10 @@ dotnet publish src/SF.csproj -c Release
 - [x] **Dialog Isolation:** SF dialogs moved away from conflicting IDs and filtered from foreign mod dialogs
 - [x] **General Logging:** Centralized runtime logging added to `sf_arz.log`
 - [x] **RPC Interception:** Incoming and outgoing RPC packet hooks with managed BitStream parsing
+- [x] **Packet Interception:** Raw sync packet hooks via RakClient::Send/Receive vtable resolution
 - [x] **RPC Abstraction:** Subscribe/Stream API for typed RPC handlers (`RpcHandlerManager`, `OutgoingRpcManager`)
+- [x] **Packet Abstraction:** Subscribe/Stream API for raw packets (`IncomingPacketManager`, `OutgoingPacketManager`)
+- [x] **Network Debugger:** In-game `/rpcd` command for live RPC/packet monitoring with stats and filtering
 - [x] **Offset Registry:** Structured `SampOffsets` with CNetGame, CChat, CInput, RakClient vtable, RPC routes
 - [ ] **.NET Loader:** Turn SF-Arizona into a managed loader for external .NET libraries, closer to MoonLoader for C# plugins
 - [ ] **Plugin ABI:** Define a stable module/plugin ABI for hooks, commands, dialogs, tasks, and lifecycle callbacks

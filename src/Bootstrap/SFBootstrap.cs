@@ -6,10 +6,12 @@ namespace SFSharp;
 public static class SFBootstrap
 {
     private static SFSynchronizationContext? _sc;
-    private static readonly RpcDispatcher _rpcDispatcher = new();
+    private static readonly NetworkDispatcher _dispatcher = new();
 
-    public static RpcHandlerManager RpcHandlers => _rpcDispatcher.IncomingHandlers;
-    public static OutgoingRpcManager OutgoingRpcHandlers => _rpcDispatcher.OutgoingHandlers;
+    public static RpcHandlerManager RpcHandlers => _dispatcher.IncomingRpcHandlers;
+    public static OutgoingRpcManager OutgoingRpcHandlers => _dispatcher.OutgoingRpcHandlers;
+    public static IncomingPacketManager IncomingPacketHandlers => _dispatcher.IncomingPacketHandlers;
+    public static OutgoingPacketManager OutgoingPacketHandlers => _dispatcher.OutgoingPacketHandlers;
 
     public static void PostToMainThread(Action action)
     {
@@ -32,12 +34,22 @@ public static class SFBootstrap
 
     public static void EnqueueIncomingRpc(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)
     {
-        _rpcDispatcher.EnqueueIncoming(rpcId, packet, payloadBitOffset, payloadBitLength);
+        _dispatcher.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
     }
 
     public static void EnqueueOutgoingRpc(int rpcId, byte[] packet, int dataBitLength)
     {
-        _rpcDispatcher.EnqueueOutgoing(rpcId, packet, dataBitLength);
+        _dispatcher.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
+    }
+
+    public static void EnqueueIncomingPacket(int packetId, byte[] data, int dataBitLength)
+    {
+        _dispatcher.EnqueueIncomingPacket(packetId, data, dataBitLength);
+    }
+
+    public static void EnqueueOutgoingPacket(int packetId, byte[] data, int dataBitLength)
+    {
+        _dispatcher.EnqueueOutgoingPacket(packetId, data, dataBitLength);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]
@@ -68,12 +80,18 @@ public static class SFBootstrap
         await WhenCNetGameLoads(baseAddress);
         SFLog.Info("CNetGame is ready");
 
-        _rpcDispatcher.Reset();
-        SF.Chat.RegisterRpcBindings(_rpcDispatcher.IncomingHandlers);
-        _rpcDispatcher.IncomingHandlers.StartAll();
+        _dispatcher.Reset();
+        SF.Chat.RegisterRpcBindings(_dispatcher.IncomingRpcHandlers);
+        _dispatcher.IncomingRpcHandlers.StartAll();
 
         _ = HookManager.OutgoingRpcPacket;
         SFLog.Info("Outgoing RPC hook prepared");
+
+        _ = HookManager.OutgoingPacket;
+        SFLog.Info("Outgoing packet hook prepared");
+
+        _ = HookManager.IncomingPacket;
+        SFLog.Info("Incoming packet hook prepared");
 
         HookManager.CDialogShow.AddSubHook(SF.Dialog);
         HookManager.CDialogHide.AddSubHook(SF.Dialog);

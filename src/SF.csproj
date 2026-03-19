@@ -10,10 +10,15 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>preview</LangVersion>
 		<DllMainSourceFile>dllmain.c</DllMainSourceFile>
-		<Version>2.0.0</Version>
-		<AssemblyVersion>2.0.0.0</AssemblyVersion>
-		<FileVersion>2.0.0.0</FileVersion>
-		<InformationalVersion>2.0.0-arizona</InformationalVersion>
+		<Version>3.1.0</Version>
+		<AssemblyVersion>3.1.0.0</AssemblyVersion>
+		<FileVersion>3.1.0.0</FileVersion>
+		<InformationalVersion>3.1.0-arizona</InformationalVersion>
+		<Product>SF-Arizona</Product>
+		<Authors>AllahPower</Authors>
+		<Company>AllahPower</Company>
+		<RepositoryUrl>https://github.com/AllahPower/SF-Arizona</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

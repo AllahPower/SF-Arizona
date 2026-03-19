@@ -122,6 +122,17 @@ public enum RpcId : byte
 /// </summary>
 public enum PacketId : byte
 {
+    // RakNet internal
+    ConnectionRequestAccepted = 14,
+    ConnectionLost = 17,
+    ConnectionBanned = 18,
+    InvalidPassword = 19,
+    ConnectionFailed = 20,
+    Rpc = 20,
+    Timestamp = 40,
+    Authentication = 152,
+
+    // SAMP sync packets (client <-> server)
     IncarData = 200,
     RconCommand = 201,
     AimData = 203,
