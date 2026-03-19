@@ -36,13 +36,17 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 
         manager.Bind(RpcId.Chat, SampRpc.ParseChatMessage, static (payload, args) =>
         {
-            ChatEntry entry = new(EntryType.Chat, payload.Text, payload.Prefix, 0xFFFFFFFF, payload.PrefixColor);
+            // Chat prefixColor is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
+            uint prefixColor = (payload.PrefixColor >> 8) | ((payload.PrefixColor & 0xFF) << 24);
+            ChatEntry entry = new(EntryType.Chat, payload.Text, payload.Prefix, 0xFFFFFFFF, prefixColor);
             SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.Chat, RpcId.Chat, entry));
         }, name: "IncomingChatMessageRpc");
 
         manager.Bind(RpcId.ClientMessage, SampRpc.ParseClientMessage, static (payload, args) =>
         {
-            ChatEntry entry = new(EntryType.Info, payload.Text, null, payload.Color, 0);
+            // SendClientMessage color is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
+            uint color = (payload.Color >> 8) | ((payload.Color & 0xFF) << 24);
+            ChatEntry entry = new(EntryType.Info, payload.Text, null, color, 0);
             SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.ClientMessage, RpcId.ClientMessage, entry));
         }, name: "IncomingClientMessageRpc");
 
