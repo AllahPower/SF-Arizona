@@ -17,7 +17,7 @@ internal unsafe class UpdateScoresPingsIpsHook : NativeHook<UpdateScoresPingsIps
     public UpdateScoresPingsIpsHook()
     {
         _instance = this;
-        InstallHook(ModuleResolver.GetProcAddress("samp.dll", 0x10090), new UpdateScoresPingsIpsNative(HookProc));
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CScoreboard.UpdateScoresPingsIps), new UpdateScoresPingsIpsNative(HookProc));
     }
 
     private static void HookProc(IntPtr paramsPtr)

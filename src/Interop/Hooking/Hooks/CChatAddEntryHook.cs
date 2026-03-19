@@ -17,7 +17,7 @@ internal unsafe class CChatAddEntryHook : NativeHook<CChatAddEntryArgs, NoRetVal
     public CChatAddEntryHook()
     {
         _instance = this;
-        InstallHook(ModuleResolver.GetProcAddress("samp.dll", 0x67460), new CChatAddEntryNative(HookProc));
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CChat.AddEntry), new CChatAddEntryNative(HookProc));
     }
 
     private static unsafe void HookProc(IntPtr thisPtr, int nType, byte* szText, byte* szPrefix, uint textColor, uint prefixColor)

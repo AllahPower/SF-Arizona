@@ -17,7 +17,7 @@ internal unsafe class CDialogShowHook : NativeHook<CDialogShowHookArgs, NoRetVal
     public CDialogShowHook()
     {
         _instance = this;
-        InstallHook(ModuleResolver.GetProcAddress("samp.dll", 0x6F8C0), new CDialogShowNative(HookProc));
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CDialog.Show), new CDialogShowNative(HookProc));
     }
 
     private static unsafe void HookProc(IntPtr thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide)

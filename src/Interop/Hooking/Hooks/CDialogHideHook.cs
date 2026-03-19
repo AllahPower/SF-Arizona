@@ -17,7 +17,7 @@ internal unsafe class CDialogHideHook : NativeHook<CDialogHideArgs, NoRetValue, 
     public CDialogHideHook()
     {
         _instance = this;
-        InstallHook(ModuleResolver.GetProcAddress("samp.dll", 0x6F110), new CDialogHideNative(HookProc));
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CDialog.Hide), new CDialogHideNative(HookProc));
     }
 
     private static void HookProc(IntPtr thisPtr)

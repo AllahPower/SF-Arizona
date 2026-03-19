@@ -15,25 +15,25 @@ public unsafe ref struct CPlayerPool
     [FieldOffset(0x00)]
     public LocalPlayerInfo LocalPlayerInfo;
 
-    private static readonly GetLocalPlayerDelegate _getLocalPlayer = (GetLocalPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x1A30);
+    private static readonly GetLocalPlayerDelegate _getLocalPlayer = (GetLocalPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetLocalPlayer);
     public CLocalPlayer* GetLocalPlayer()
     {
         return _getLocalPlayer(_instance);
     }
 
-    private static readonly GetLocalPlayerNameDelegate _getLocalPlayerName = (GetLocalPlayerNameDelegate)ModuleResolver.GetProcAddress("samp.dll", 0xA170);
+    private static readonly GetLocalPlayerNameDelegate _getLocalPlayerName = (GetLocalPlayerNameDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetLocalPlayerName);
     public string? GetLocalPlayerName()
     {
         return AnsiString.Decode(_getLocalPlayerName(_instance));
     }
 
-    private static readonly GetNameDelegate _getName = (GetNameDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x16F00);
+    private static readonly GetNameDelegate _getName = (GetNameDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetName);
     public string? GetName(ushort playerId)
     {
         return AnsiString.Decode(_getName(_instance, playerId));
     }
 
-    private static readonly GetScoreDelegate _getScore = (GetScoreDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x6E0E0);
+    private static readonly GetScoreDelegate _getScore = (GetScoreDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetScore);
     public int GetScore(ushort playerId)
     {
         return _getScore(_instance, playerId);

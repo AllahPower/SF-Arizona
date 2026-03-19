@@ -7,7 +7,7 @@ using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<CDialog*, int, int, by
 [StructLayout(LayoutKind.Explicit, Size = 689, Pack = 1)]
 public unsafe ref struct CDialog
 {
-    private static readonly nuint _instanceAddress = (nuint)ModuleResolver.GetProcAddress("samp.dll", 0x26E898);
+    private static readonly nuint _instanceAddress = (nuint)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CDialog.Instance);
     private static CDialog* CurrentInstance => *(CDialog**)_instanceAddress;
     public static ref readonly CDialog Instance => ref *RequireInstance();
 
@@ -27,7 +27,7 @@ public unsafe ref struct CDialog
     [FieldOffset(52)]
     public byte* Text;
 
-    private static readonly ShowDelegate _show = (ShowDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x6F8C0);
+    private static readonly ShowDelegate _show = (ShowDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CDialog.Show);
     public void Show(int dialogId, DialogStyle style, string caption, string text, string leftButton, string rightButton, bool serverSide)
     {
         var instance = RequireInstance();

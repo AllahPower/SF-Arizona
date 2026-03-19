@@ -15,7 +15,7 @@ internal unsafe class CDialogCloseHook_SF : NativeHook<CDialogCloseArgs, NoRetVa
     public CDialogCloseHook_SF()
     {
         _instance = this;
-        InstallHook(ModuleResolver.GetProcAddress("sampfuncs.asi", 0x91265), new CDialogCloseSfNative(HookProc));
+        InstallHook(ModuleResolver.GetProcAddress("sampfuncs.asi", SampOffsets.SampFuncs.CDialogClose), new CDialogCloseSfNative(HookProc));
     }
 
     private static int HookProc(int dialogButton)

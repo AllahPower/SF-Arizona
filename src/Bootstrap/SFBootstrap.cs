@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -6,18 +5,11 @@ namespace SFSharp;
 
 public static class SFBootstrap
 {
-    private const int MaxRpcDispatchPerTick = 24;
-
     private static SFSynchronizationContext? _sc;
-    private static RpcHandlerManager _rpcHandlers = new();
-    private static OutgoingRpcManager _outgoingRpcHandlers = new();
-    private static readonly ConcurrentQueue<(int RpcId, byte[] Packet, int PayloadBitOffset, int PayloadBitLength)> _pendingRpcs = new();
-    private static readonly ConcurrentQueue<(int RpcId, byte[] Packet, int DataBitLength)> _pendingOutgoingRpcs = new();
-    private static int _rpcDispatchScheduled;
-    private static int _outgoingRpcDispatchScheduled;
+    private static readonly RpcDispatcher _rpcDispatcher = new();
 
-    public static RpcHandlerManager RpcHandlers => _rpcHandlers;
-    public static OutgoingRpcManager OutgoingRpcHandlers => _outgoingRpcHandlers;
+    public static RpcHandlerManager RpcHandlers => _rpcDispatcher.IncomingHandlers;
+    public static OutgoingRpcManager OutgoingRpcHandlers => _rpcDispatcher.OutgoingHandlers;
 
     public static void PostToMainThread(Action action)
     {
@@ -40,14 +32,12 @@ public static class SFBootstrap
 
     public static void EnqueueIncomingRpc(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)
     {
-        _pendingRpcs.Enqueue((rpcId, packet, payloadBitOffset, payloadBitLength));
-        ScheduleRpcDispatch();
+        _rpcDispatcher.EnqueueIncoming(rpcId, packet, payloadBitOffset, payloadBitLength);
     }
 
     public static void EnqueueOutgoingRpc(int rpcId, byte[] packet, int dataBitLength)
     {
-        _pendingOutgoingRpcs.Enqueue((rpcId, packet, dataBitLength));
-        ScheduleOutgoingRpcDispatch();
+        _rpcDispatcher.EnqueueOutgoing(rpcId, packet, dataBitLength);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]
@@ -78,10 +68,9 @@ public static class SFBootstrap
         await WhenCNetGameLoads(baseAddress);
         SFLog.Info("CNetGame is ready");
 
-        _rpcHandlers = new RpcHandlerManager();
-        _outgoingRpcHandlers = new OutgoingRpcManager();
-        SF.Chat.RegisterRpcBindings(_rpcHandlers);
-        _rpcHandlers.StartAll();
+        _rpcDispatcher.Reset();
+        SF.Chat.RegisterRpcBindings(_rpcDispatcher.IncomingHandlers);
+        _rpcDispatcher.IncomingHandlers.StartAll();
 
         _ = HookManager.OutgoingRpcPacket;
         SFLog.Info("Outgoing RPC hook prepared");
@@ -98,72 +87,6 @@ public static class SFBootstrap
         SFLog.Info("Keyboard loop started");
 
         PostToMainThread(main);
-    }
-
-    private static void ScheduleRpcDispatch()
-    {
-        if (Interlocked.CompareExchange(ref _rpcDispatchScheduled, 1, 0) != 0)
-        {
-            return;
-        }
-
-        PostToMainThread(ProcessIncomingRpcBatch);
-    }
-
-    private static void ProcessIncomingRpcBatch()
-    {
-        int processed = 0;
-        while (processed < MaxRpcDispatchPerTick && _pendingRpcs.TryDequeue(out (int RpcId, byte[] Packet, int PayloadBitOffset, int PayloadBitLength) item))
-        {
-            _rpcHandlers.DispatchIncoming(item.RpcId, item.Packet, item.PayloadBitOffset, item.PayloadBitLength);
-            processed++;
-        }
-
-        if (_pendingRpcs.IsEmpty)
-        {
-            Interlocked.Exchange(ref _rpcDispatchScheduled, 0);
-            if (!_pendingRpcs.IsEmpty)
-            {
-                ScheduleRpcDispatch();
-            }
-
-            return;
-        }
-
-        PostToMainThread(ProcessIncomingRpcBatch);
-    }
-
-    private static void ScheduleOutgoingRpcDispatch()
-    {
-        if (Interlocked.CompareExchange(ref _outgoingRpcDispatchScheduled, 1, 0) != 0)
-        {
-            return;
-        }
-
-        PostToMainThread(ProcessOutgoingRpcBatch);
-    }
-
-    private static void ProcessOutgoingRpcBatch()
-    {
-        int processed = 0;
-        while (processed < MaxRpcDispatchPerTick && _pendingOutgoingRpcs.TryDequeue(out (int RpcId, byte[] Packet, int DataBitLength) item))
-        {
-            _outgoingRpcHandlers.Dispatch(item.RpcId, item.Packet, item.DataBitLength);
-            processed++;
-        }
-
-        if (_pendingOutgoingRpcs.IsEmpty)
-        {
-            Interlocked.Exchange(ref _outgoingRpcDispatchScheduled, 0);
-            if (!_pendingOutgoingRpcs.IsEmpty)
-            {
-                ScheduleOutgoingRpcDispatch();
-            }
-
-            return;
-        }
-
-        PostToMainThread(ProcessOutgoingRpcBatch);
     }
 
     private static async Task<uint> GetSampDllBaseAddress()

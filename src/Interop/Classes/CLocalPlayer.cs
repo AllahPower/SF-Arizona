@@ -12,7 +12,7 @@ public unsafe ref struct CLocalPlayer
     [FieldOffset(389)]
     public WeaponsData WeaponsData;
 
-    private static readonly ChatDelegate _chat = (ChatDelegate)ModuleResolver.GetProcAddress("samp.dll", 0x5820);
+    private static readonly ChatDelegate _chat = (ChatDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CLocalPlayer.Chat);
     public void Chat(string text)
     {
         using var textAnsi = AnsiString.Encode(text);
