@@ -10,10 +10,10 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>preview</LangVersion>
 		<DllMainSourceFile>dllmain.c</DllMainSourceFile>
-		<Version>3.1.0</Version>
-		<AssemblyVersion>3.1.0.0</AssemblyVersion>
-		<FileVersion>3.1.0.0</FileVersion>
-		<InformationalVersion>3.1.0-arizona</InformationalVersion>
+		<Version>3.1.1</Version>
+		<AssemblyVersion>3.1.1.0</AssemblyVersion>
+		<FileVersion>3.1.1.0</FileVersion>
+		<InformationalVersion>3.1.1</InformationalVersion>
 		<Product>SF-Arizona</Product>
 		<Authors>AllahPower</Authors>
 		<Company>AllahPower</Company>
