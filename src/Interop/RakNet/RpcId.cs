@@ -134,6 +134,11 @@ public enum PacketId : byte
 
     // SAMP sync packets (client <-> server)
     IncarData = 200,
+    // Arizona RP custom packets (CEF transport layer)
+    // packet 220: first byte = sub-id (uint8), rest = payload
+    // packet 221: first 2 bytes = sub-id (uint16), rest = payload (bots/extended)
+    ArizonaCef = 220,
+    ArizonaCefEx = 221,
     RconCommand = 201,
     AimData = 203,
     WeaponsData = 204,
