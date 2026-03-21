@@ -3,19 +3,21 @@ using System.Text.RegularExpressions;
 
 public record ChatViolationRecord(DateTime Timestamp, string PlayerName, string ViolationType, string MatchedFragment, string OriginalText);
 
-public class ChatViolationMonitor : ISFModule
+[SFModule("chat-violation-monitor", "ChatViolationMonitor", Category = "Moderation", Description = "Tracks rule-breaking chat fragments and stores recent violations.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 50)]
+public class ChatViolationMonitor : SFModuleBase
 {
     private const int MaxRecords = 200;
     private readonly object _sync = new();
     private readonly List<ChatViolationRecord> _records = new();
 
-    public async Task RunAsync(CancellationToken token)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        using var violationsCommand = SF.Chat.RegisterChatCommand("violations", OnCommand);
-        using var shortCommand = SF.Chat.RegisterChatCommand("viollog", OnCommand);
+        using IDisposable violationsCommand = Context.RegisterChatCommand("violations", OnCommand);
+        using IDisposable shortCommand = Context.RegisterChatCommand("viollog", OnCommand);
 
-        await foreach (ServerChatEntry entry in SF.Chat.StreamServerChatEntries(token))
+        await foreach (ServerChatEntry entry in SF.Chat.StreamServerChatEntries(cancellationToken))
         {
+            Context.IncrementCounter("chat.entries");
 
             if (entry.Kind != ServerChatKind.ClientMessage)
             {
@@ -39,7 +41,10 @@ public class ChatViolationMonitor : ISFModule
             }
 
             AddRecord(new(DateTime.Now, playerName, violationType, matchedFragment, entry.Text));
-            SFLog.Info($"Violation detected player={playerName} type={violationType} fragment={matchedFragment}");
+            Context.IncrementCounter("violations.detected");
+            Context.SetDetail("records", GetSnapshot().Length.ToString());
+            Context.Heartbeat($"violation:{violationType}");
+            Log.Info($"Violation detected player={playerName} type={violationType} fragment={matchedFragment}");
         }
     }
 

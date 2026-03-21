@@ -3,38 +3,52 @@ using System.Text.RegularExpressions;
 
 using SFSharp;
 
-public class BrightBinder : ISFModule
+[SFModule("brightbinder", "BrightBinder", Category = "Automation", Description = "Quick bind dialog runner with target-aware command templates.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 20)]
+public class BrightBinder : SFModuleBase
 {
     private bool bbEnabled = true;
-    public async Task RunAsync(CancellationToken token)
+
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!token.IsCancellationRequested)
+        Context.SetDetail("quickbind", "enabled");
+
+        while (!cancellationToken.IsCancellationRequested)
         {
+            using ModuleLoopScope _ = Context.TrackLoop("keyboard-poll");
             if (bbEnabled && SF.Players.GetAimedPlayerId() is ushort aimedPlayerId)
             {
+                Context.IncrementCounter("dialogs.auto");
                 await ShowDialog("default", aimedPlayerId);
             }
             if (SF.Keyboard.IsKeyPressed(VK.XBUTTON1))
             {
+                Context.IncrementCounter("dialogs.manual");
                 await ShowDialog("default", null);
             }
             if (SF.Keyboard.IsKeyPressed(VK.XBUTTON2))
             {
                 bbEnabled = !bbEnabled;
+                Context.SetDetail("quickbind", bbEnabled ? "enabled" : "disabled");
+                Context.ReportActivity(bbEnabled ? "quickbind-enabled" : "quickbind-disabled");
                 SF.Chat.Add(bbEnabled ? "Quick bind enabled." : "Quick bind disabled.");
             }
+
+            Context.Heartbeat(bbEnabled ? "watching target" : "paused");
             await Task.Yield();
         }
     }
 
     private async Task ShowDialog(string fileName, ushort? targetIdOrNull)
     {
+        Context.IncrementCounter("dialogs.opened");
+        Context.SetDetail("last.dialog", fileName);
         var currentDialog = BBDialog.FromFile(fileName);
 
         if (targetIdOrNull is not null && SF.Players.GetScore(targetIdOrNull.Value) == 0)
         {
             _ = SF.Dialog.ShowMessage("BrightBinder", "Loading player score...");
             await SF.Players.UpdateScoreboard();
+            Context.IncrementCounter("scoreboard.refreshes");
         }
         var result = await SF.Dialog.ShowList(
             $"BrightBinder: {fileName}.txt",
@@ -87,6 +101,7 @@ public class BrightBinder : ISFModule
             if (command.Contains(targetNameToken)) command = command.Replace(targetNameToken, getTargetName());
 
             SF.Chat.Send(command);
+            Context.IncrementCounter("commands.sent");
             await Task.Delay(delay);
         }
 

@@ -4,114 +4,105 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.6**
+Current release: **3.1.7**
 
 ## Highlights
 
 - NativeAOT `win-x86` build published as a single `SF.asi`
-- `MinHook.NET`-based hook installation with trampoline calls
+- `MinHook.NET` based hook installation with trampoline calls
 - RakNet interception layer for incoming and outgoing RPC/raw packets
-- Managed `BitStreamReader` for RakNet payload parsing with CP1251 string decoding
-- Async streaming API for RPC (`SF.Rpc`), packets (`SF.Packets`), and Arizona sub-packets (`SF.ArizonaPackets`) for modules
-- Structured SAMP offsets in `SampOffsets.cs`
-- Live pointer resolution for `CChat`, `CDialog`, `CInput`, `CNetGame`, and other SAMP singletons
-- Expanded native player abstractions for `CPlayerPool`, `CLocalPlayer`, `CNetGame`, and `SF.Players`
-- Implemented baseline pool models for vehicles, objects, actors, pickups, menus, textdraws, gang zones, and labels
+- Expanded native pool models for players, vehicles, objects, actors, pickups, menus, textdraws, gang zones, and labels
+- Runtime module system with metadata, lifecycle tracking, telemetry, built-in module logger, and `/sfs` dashboard
+- Color builder API via `SFColor` and `SFColors` for chat and dialog styling
 - Local command interception via `CInput::Send`
 - Background worker logger writing to `sf_arz.log`
-- Arizona-specific transport definitions for raw packets `220` and `221`
-
-## Arizona Transport
-
-Arizona RP uses custom payloads on top of raw RakNet packets:
-
-- `PacketId.ArizonaCef = 220`
-- `PacketId.ArizonaCefEx = 221`
-
-These packets are now described in code by:
-
-- `src/Interop/RakNet/Arizona/ArizonaPacketId.cs`
-- `src/Interop/RakNet/Arizona/ArizonaPacketIdEx.cs`
-- `src/Interop/RakNet/Arizona/ArizonaPacket.cs`
-- `src/Interop/RakNet/Arizona/ArizonaPacketArgs.cs`
-- `src/Interop/RakNet/Arizona/ArizonaPacketPayload.cs`
-- `src/Interop/RakNet/Arizona/ArizonaCoreCustomPacketId.cs`
-- `src/SF/SFArizonaPackets.cs`
-
-### Packet 220
-
-`Packet 220` uses a `uint8` sub-id as the first byte of the payload.
-It is primarily used for Arizona UI/CEF and gameplay-side custom events, for example:
-
-- CEF display/event pipe
-- chat mode/group configuration
-- cursor and HUD toggles
-- custom map/icon and vehicle visual state updates
-- client-side interface callbacks back to the server
-
-### core.asi CustomPacket Layer
-
-Reverse of `core.asi` shows an additional internal dispatcher `enum CustomPacket` on top of raw Arizona transport.
-It is documented separately in `src/Interop/RakNet/Arizona/ArizonaCoreCustomPacketId.cs` because it is not equal to raw Packet `220/221` sub-ids.
-
-Confirmed IDs from IDA so far:
-
-- `15` - used by `VehicleBrakeCalipers`, `VehicleLightsColor`, `VehicleNeon`, `VehicleSpeedLimiter`, `WeaponUpgrades`
-- `63` - used by `VehicleMaterials`
-- `239` and `240` - used by `VehicleDrift`
-- `254` - used by `TestDrive`, `VehicleLightsColor`, `ViceCityServer`
-- `4078` - used by `Streamer`
-- `4095` - used by `VehicleFeatures`
-
-### Packet 221
-
-`Packet 221` uses a `uint16` sub-id as the first 2 bytes of the payload.
-It is primarily used by Arizona's bot/NPC transport, for example:
-
-- bot stream in/out
-- bot sync and movement
-- bot weapon and animation control
-- attached objects and chat bubbles
-- outgoing bot sync/damage reports
 
 ## Architecture
 
 ### RPC Pipeline
 
 ```text
-Incoming: samp.dll HandleRpcPacket (0x3A6A0)
+Incoming: samp.dll HandleRpcPacket
   -> IncomingRpcPacketHook
   -> SFBootstrap.EnqueueIncomingRpc
-  -> ProcessIncomingRpcBatch (main thread, batched)
-  -> RpcHandlerManager.DispatchIncoming -> subscribers
+  -> main-thread batch dispatcher
+  -> RpcHandlerManager / subscribers
 
-Outgoing: samp.dll RakClient::RPC (0x33EE0)
+Outgoing: samp.dll RakClient::RPC
   -> OutgoingRpcPacketHook
   -> SFBootstrap.EnqueueOutgoingRpc
-  -> ProcessOutgoingRpcBatch (main thread, batched)
-  -> OutgoingRpcManager.Dispatch -> subscribers
+  -> main-thread batch dispatcher
+  -> OutgoingRpcManager / subscribers
 ```
 
 ### Packet Pipeline
 
 ```text
-Incoming: RakClient::Receive (vtable[8], resolved at runtime)
+Incoming: RakClient::Receive
   -> IncomingPacketHook
   -> SFBootstrap.EnqueueIncomingPacket
-  -> ProcessIncomingPacketBatch (main thread, batched)
-  -> IncomingPacketManager.Dispatch -> subscribers
+  -> main-thread batch dispatcher
+  -> IncomingPacketManager / subscribers
 
-Outgoing: RakClient::Send (raw data overload, vtable[6], resolved at runtime)
+Outgoing: RakClient::Send
   -> OutgoingPacketHook
   -> SFBootstrap.EnqueueOutgoingPacket
-  -> ProcessOutgoingPacketBatch (main thread, batched)
-  -> OutgoingPacketManager.Dispatch -> subscribers
+  -> main-thread batch dispatcher
+  -> OutgoingPacketManager / subscribers
 ```
 
-### Module System
+## Module System
 
-Modules implement `ISFModule` with `RunAsync(CancellationToken)`.
-Register them in `Program.Main`; lifecycle is managed by `SFModuleContainer` and the in-game `/sfs` command.
+Modules are registered in [`src/Modules/Program.cs`](src/Modules/Program.cs) through `SFModuleContainer.RegisterModule<T>()`.
+
+Each module should:
+
+- declare metadata with `[SFModule("id", "DisplayName", ...)]`
+- inherit `SFModuleBase`
+- implement `ExecuteAsync(CancellationToken cancellationToken)`
+
+Minimal example:
+
+```csharp
+[SFModule("example", "Example", Description = "Demo module", Order = 100)]
+public sealed class ExampleModule : SFModuleBase
+{
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        Log.Info("started");
+        Context.SetDetail("mode", "idle");
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            using ModuleLoopScope _ = Context.TrackLoop("tick");
+            Context.Heartbeat("running");
+            await Task.Yield();
+        }
+    }
+}
+```
+
+Available module features:
+
+- `Log.Info/Warn/Error(...)` with automatic module prefix
+- `Context.Heartbeat(...)` and `Context.ReportActivity(...)`
+- `Context.IncrementCounter(...)` and `Context.SetDetail(...)`
+- `Context.TrackLoop(...)` for lightweight load metrics
+- `Context.RegisterChatCommand(...)` and `Context.RegisterDisposable(...)`
+- `Context.SwitchToMainThreadAsync()` and `Context.RunBackground(...)`
+- `/sfs`, `/sfs status`, `/sfs info <id>`, `/sfs start <id>`, `/sfs stop <id>`, `/sfs restart <id>`
+
+The `/sfs` dialog shows state, uptime, load, counters, details, last activity, stop reason, and management actions for every registered module.
+
+## Colors
+
+Use [`src/SF/SFColor.cs`](src/SF/SFColor.cs) for SA-MP text colors instead of raw `"{RRGGBB}"` strings.
+
+```csharp
+SFColor accent = SFColors.Cyan | SFColors.Blue;
+string title = accent.Apply("Network Debugger");
+uint chatColor = SFColors.Green;
+```
 
 ## Prerequisites
 
@@ -131,22 +122,17 @@ dotnet publish src/SF.csproj -c Release
 
 ## TODO / Roadmap
 
-- [x] **Arizona Port:** Core offsets and SA:MP class access migrated to Arizona RP 0.3.7 R3-1
-- [x] **Hook Backend:** Manual trampolines replaced with `MinHook.NET`
-- [x] **Command Interception:** Local commands handled through `CInput::Send`
-- [x] **Dialog Isolation:** SF dialogs moved away from conflicting IDs and filtered from foreign mod dialogs
-- [x] **General Logging:** Centralized runtime logging added to `sf_arz.log`
-- [x] **RPC Interception:** Incoming and outgoing RPC packet hooks with managed bitstream parsing
-- [x] **Packet Interception:** Raw packet hooks via RakClient send/receive interception
-- [x] **RPC Abstraction:** Subscribe/Stream API for typed RPC handlers
-- [x] **Packet Abstraction:** Subscribe/Stream API for raw packets
-- [x] **Arizona Custom Transport:** Packet `220/221` enums and payload records added for CEF and bot traffic
-- [ ] **.NET Loader:** Turn SF-Arizona into a managed loader for external .NET libraries, closer to MoonLoader for C# plugins
-- [ ] **Plugin ABI:** Define a stable module/plugin ABI for hooks, commands, dialogs, packets, and lifecycle callbacks
-- [ ] **Hook Hardening:** Finish resilience against chained hooks, foreign trampolines, and NativeAOT edge cases
-- [ ] **API Expansion:** Expand access to pools, dialogs, textdraws, and other gameplay systems
-- [ ] **Compatibility Layer:** Improve coexistence with Arizona modpacks, ASI plugins, and SAMPFUNCS-based addons
-- [ ] **Portability:** Document supported client builds, offsets, and the porting workflow for future Arizona updates
+- [x] Core Arizona RP port for SA:MP 0.3.7 R3-1
+- [x] RPC and raw packet interception
+- [x] Expanded native gameplay pool abstractions
+- [x] Runtime module metadata, lifecycle, telemetry, and `/sfs` management UI
+- [x] Module-scoped logger contract via `SFModuleBase`
+- [x] Shared SA-MP color builder via `SFColor` and `SFColors`
+- [ ] Expand high-level `SF.*` wrappers over newly mapped native classes
+- [ ] Add more module examples built on the new runtime contract
+- [ ] Persist module settings such as autostart and per-module options
+- [ ] Harden coexistence with foreign hooks, Arizona modpacks, and SAMPFUNCS add-ons
+- [ ] Document supported client builds and the offset update workflow
 
 ## Acknowledgements
 

@@ -2,12 +2,25 @@ using System.Collections.Concurrent;
 
 using SFSharp;
 
-public class RpcDebugger : ISFModule
+[SFModule("rpc-debugger", "RpcDebugger", Category = "Debug", Description = "Captures incoming and outgoing RPC/packet traffic with lightweight decoding.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 60)]
+public class RpcDebugger : SFModuleBase
 {
     private const int MaxEntries = 200;
     private const int EntriesPerPage = 20;
 
     private readonly ConcurrentQueue<NetLogEntry> _log = new();
+    private static readonly SFColor SuccessColor = SFColors.Green;
+    private static readonly SFColor DangerColor = SFColors.Red;
+    private static readonly SFColor IncomingColor = SFColor.FromHex("00AAFF");
+    private static readonly SFColor OutgoingColor = SFColor.FromHex("FFAA00");
+    private static readonly SFColor RpcColor = SFColor.FromHex("CCCCFF");
+    private static readonly SFColor PacketColor = SFColor.FromHex("FFCCAA");
+    private static readonly SFColor MutedColor = SFColors.Gray;
+    private static readonly SFColor SoftMutedColor = SFColor.FromHex("888888");
+    private static readonly SFColor NavColor = SFColor.FromHex("55AAFF");
+    private static readonly SFColor HeaderColor = SFColors.Cyan | SFColors.Blue;
+    private static readonly SFColor TitleColor = SFColors.Yellow | SFColors.Orange;
+    private static readonly SFColor ValueColor = SFColors.White;
     private volatile bool _captureEnabled;
     private volatile bool _captureIncoming = true;
     private volatile bool _captureOutgoing = true;
@@ -17,7 +30,6 @@ public class RpcDebugger : ISFModule
     private int _totalOutgoingRpc;
     private int _totalIncomingPacket;
     private int _totalOutgoingPacket;
-
     private enum Direction { Incoming, Outgoing }
     private enum MessageKind { Rpc, Packet }
 
@@ -30,27 +42,32 @@ public class RpcDebugger : ISFModule
         int DataBitLength,
         long Timestamp);
 
-    public async Task RunAsync(CancellationToken token)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        using var command = SF.Chat.RegisterChatCommand("rpcd", OnCommand);
+        UpdateRuntimeFlags();
+        using IDisposable command = Context.RegisterChatCommand("rpcd", OnCommand);
 
         List<RpcSubscription> subscriptions = new();
         try
         {
             foreach (RpcId rpcId in Enum.GetValues<RpcId>())
             {
-                subscriptions.Add(SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args)));
-                subscriptions.Add(SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args)));
+                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
+                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
             }
 
             foreach (PacketId packetId in Enum.GetValues<PacketId>())
             {
-                subscriptions.Add(SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args)));
-                subscriptions.Add(SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args)));
+                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
+                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
             }
 
-            while (!token.IsCancellationRequested)
+            Context.SetDetail("subscriptions", subscriptions.Count.ToString());
+
+            while (!cancellationToken.IsCancellationRequested)
             {
+                using ModuleLoopScope _ = Context.TrackLoop("dispatcher-idle");
+                Context.Heartbeat("waiting network events");
                 await Task.Yield();
             }
         }
@@ -66,6 +83,7 @@ public class RpcDebugger : ISFModule
     private void OnIncomingRpc(IncomingRpcArgs args)
     {
         Interlocked.Increment(ref _totalIncomingRpc);
+        Context.IncrementCounter("rpc.in.total");
         if (!_captureEnabled || !_captureIncoming || !_captureRpc)
         {
             return;
@@ -74,11 +92,13 @@ public class RpcDebugger : ISFModule
         string? name = Enum.IsDefined((RpcId)args.RpcId) ? ((RpcId)args.RpcId).ToString() : null;
         string? detail = $"direction=Incoming rpcId={args.RpcId}";
         Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Rpc, args.RpcId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"rpc-in:{args.RpcId}");
     }
 
     private void OnOutgoingRpc(OutgoingRpcArgs args)
     {
         Interlocked.Increment(ref _totalOutgoingRpc);
+        Context.IncrementCounter("rpc.out.total");
         if (!_captureEnabled || !_captureOutgoing || !_captureRpc)
         {
             return;
@@ -87,11 +107,13 @@ public class RpcDebugger : ISFModule
         string? name = Enum.IsDefined((RpcId)args.RpcId) ? ((RpcId)args.RpcId).ToString() : null;
         string? detail = $"direction=Outgoing rpcId={args.RpcId}";
         Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Rpc, args.RpcId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"rpc-out:{args.RpcId}");
     }
 
     private void OnIncomingPacket(IncomingPacketArgs args)
     {
         Interlocked.Increment(ref _totalIncomingPacket);
+        Context.IncrementCounter("packet.in.total");
         if (!_captureEnabled || !_captureIncoming || !_capturePackets)
         {
             return;
@@ -99,11 +121,13 @@ public class RpcDebugger : ISFModule
 
         (string? name, string? detail) = DecodeIncomingPacket(args);
         Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Packet, args.PacketId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"pkt-in:{args.PacketId}");
     }
 
     private void OnOutgoingPacket(OutgoingPacketArgs args)
     {
         Interlocked.Increment(ref _totalOutgoingPacket);
+        Context.IncrementCounter("packet.out.total");
         if (!_captureEnabled || !_captureOutgoing || !_capturePackets)
         {
             return;
@@ -111,6 +135,7 @@ public class RpcDebugger : ISFModule
 
         (string? name, string? detail) = DecodeOutgoingPacket(args);
         Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Packet, args.PacketId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"pkt-out:{args.PacketId}");
     }
 
     private static (string? Name, string? Detail) DecodeIncomingPacket(IncomingPacketArgs args)
@@ -216,6 +241,7 @@ public class RpcDebugger : ISFModule
     private void Enqueue(NetLogEntry entry)
     {
         _log.Enqueue(entry);
+        Context.SetDetail("log.entries", _log.Count.ToString());
         while (_log.Count > MaxEntries)
         {
             _log.TryDequeue(out _);
@@ -227,6 +253,7 @@ public class RpcDebugger : ISFModule
         if (args is "on")
         {
             _captureEnabled = true;
+            UpdateRuntimeFlags();
             SF.Chat.Add("RpcDebugger: capture enabled.");
             return;
         }
@@ -234,6 +261,7 @@ public class RpcDebugger : ISFModule
         if (args is "off")
         {
             _captureEnabled = false;
+            UpdateRuntimeFlags();
             SF.Chat.Add("RpcDebugger: capture disabled.");
             return;
         }
@@ -241,6 +269,7 @@ public class RpcDebugger : ISFModule
         if (args is "clear")
         {
             ClearCounters();
+            UpdateRuntimeFlags();
             SF.Chat.Add("RpcDebugger: log cleared.");
             return;
         }
@@ -255,6 +284,16 @@ public class RpcDebugger : ISFModule
         Interlocked.Exchange(ref _totalOutgoingRpc, 0);
         Interlocked.Exchange(ref _totalIncomingPacket, 0);
         Interlocked.Exchange(ref _totalOutgoingPacket, 0);
+        Context.SetDetail("log.entries", "0");
+    }
+
+    private void UpdateRuntimeFlags()
+    {
+        Context.SetDetail("capture", _captureEnabled ? "on" : "off");
+        Context.SetDetail("incoming", _captureIncoming ? "on" : "off");
+        Context.SetDetail("outgoing", _captureOutgoing ? "on" : "off");
+        Context.SetDetail("rpc", _captureRpc ? "on" : "off");
+        Context.SetDetail("packets", _capturePackets ? "on" : "off");
     }
 
     private async Task ShowMainMenu()
@@ -264,26 +303,26 @@ public class RpcDebugger : ISFModule
         int inPkt = Volatile.Read(ref _totalIncomingPacket);
         int outPkt = Volatile.Read(ref _totalOutgoingPacket);
         int logCount = _log.Count;
-        string captureStatus = _captureEnabled ? "{00FF00}ON" : "{FF0000}OFF";
-        string inFilter = _captureIncoming ? "{00FF00}ON" : "{FF0000}OFF";
-        string outFilter = _captureOutgoing ? "{00FF00}ON" : "{FF0000}OFF";
-        string rpcFilter = _captureRpc ? "{00FF00}ON" : "{FF0000}OFF";
-        string pktFilter = _capturePackets ? "{00FF00}ON" : "{FF0000}OFF";
+        string captureStatus = Toggle(_captureEnabled);
+        string inFilter = Toggle(_captureIncoming);
+        string outFilter = Toggle(_captureOutgoing);
+        string rpcFilter = Toggle(_captureRpc);
+        string pktFilter = Toggle(_capturePackets);
 
         var result = await SF.Dialog.ShowList(
-            "Network Debugger",
+            TitleColor.Apply("Network Debugger"),
             new[]
             {
-                $"View log\t{{AAAAAA}}{logCount} entries",
-                $"View stats\t{{AAAAAA}}RPC: {inRpc + outRpc} / PKT: {inPkt + outPkt}",
-                $"Toggle capture\t{captureStatus}",
-                $"Filter: Incoming\t{inFilter}",
-                $"Filter: Outgoing\t{outFilter}",
-                $"Filter: RPC\t{rpcFilter}",
-                $"Filter: Packets\t{pktFilter}",
-                $"Clear log\t{{AAAAAA}}Reset all"
+                $"{Paint(SFColors.Cyan, "View log")}\t{Paint(MutedColor, $"{logCount} entries")}",
+                $"{Paint(SFColors.Purple, "View stats")}\t{Paint(MutedColor, $"RPC: {inRpc + outRpc} / PKT: {inPkt + outPkt}")}",
+                $"{Paint(SFColors.Yellow, "Toggle capture")}\t{captureStatus}",
+                $"{Paint(IncomingColor, "Filter: Incoming")}\t{inFilter}",
+                $"{Paint(OutgoingColor, "Filter: Outgoing")}\t{outFilter}",
+                $"{Paint(RpcColor, "Filter: RPC")}\t{rpcFilter}",
+                $"{Paint(PacketColor, "Filter: Packets")}\t{pktFilter}",
+                $"{Paint(DangerColor, "Clear log")}\t{Paint(MutedColor, "Reset all")}"
             },
-            "Action\tInfo"
+            $"{HeaderColor.Apply("Action")}\t{HeaderColor.Apply("Info")}"
         );
 
         if (result.Button != SFDialogButton.OK)
@@ -301,23 +340,28 @@ public class RpcDebugger : ISFModule
                 break;
             case 2:
                 _captureEnabled = !_captureEnabled;
+                UpdateRuntimeFlags();
                 SF.Chat.Add($"RpcDebugger: capture {(_captureEnabled ? "enabled" : "disabled")}.");
                 await ShowMainMenu();
                 break;
             case 3:
                 _captureIncoming = !_captureIncoming;
+                UpdateRuntimeFlags();
                 await ShowMainMenu();
                 break;
             case 4:
                 _captureOutgoing = !_captureOutgoing;
+                UpdateRuntimeFlags();
                 await ShowMainMenu();
                 break;
             case 5:
                 _captureRpc = !_captureRpc;
+                UpdateRuntimeFlags();
                 await ShowMainMenu();
                 break;
             case 6:
                 _capturePackets = !_capturePackets;
+                UpdateRuntimeFlags();
                 await ShowMainMenu();
                 break;
             case 7:
@@ -345,19 +389,19 @@ public class RpcDebugger : ISFModule
         for (int i = 0; i < pageCount; i++)
         {
             NetLogEntry entry = entries[skip + i];
-            string dir = entry.Direction == Direction.Incoming ? "{00AAFF}IN" : "{FFAA00}OUT";
-            string kind = entry.Kind == MessageKind.Rpc ? "{CCCCFF}RPC" : "{FFCCAA}PKT";
+            string dir = Paint(entry.Direction == Direction.Incoming ? IncomingColor : OutgoingColor, entry.Direction == Direction.Incoming ? "IN" : "OUT");
+            string kind = Paint(entry.Kind == MessageKind.Rpc ? RpcColor : PacketColor, entry.Kind == MessageKind.Rpc ? "RPC" : "PKT");
             string name = entry.Name ?? "Unknown";
             long ago = (now - entry.Timestamp) / 1000;
             string time = ago < 60 ? $"{ago}s ago" : $"{ago / 60}m {ago % 60}s ago";
             int dataBytes = (entry.DataBitLength + 7) / 8;
 
-            items.Add($"{dir}\t{kind}\t{{FFFFFF}}{entry.Id}\t{{AAAAAA}}{name}\t{{FFFFFF}}{dataBytes}B\t{{888888}}{time}");
+            items.Add($"{dir}\t{kind}\t{Paint(ValueColor, entry.Id.ToString())}\t{Paint(MutedColor, name)}\t{Paint(ValueColor, $"{dataBytes}B")}\t{Paint(SoftMutedColor, time)}");
         }
 
         if (items.Count == 0)
         {
-            items.Add("{888888}-\t-\t-\tNo entries\t-\t-");
+            items.Add($"{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "No entries")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}");
         }
 
         int previousPageIndex = -1;
@@ -367,20 +411,20 @@ public class RpcDebugger : ISFModule
             if (page > 0)
             {
                 previousPageIndex = items.Count;
-                items.Add("{55AAFF}<--\tNAV\t-\tPrevious page\t-\t-");
+                items.Add($"{Paint(NavColor, "<--")}\t{Paint(NavColor, "NAV")}\t{Paint(SoftMutedColor, "-")}\t{Paint(NavColor, "Previous page")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}");
             }
 
             if (page < totalPages - 1)
             {
                 nextPageIndex = items.Count;
-                items.Add("{55AAFF}-->\tNAV\t-\tNext page\t-\t-");
+                items.Add($"{Paint(NavColor, "-->")}\t{Paint(NavColor, "NAV")}\t{Paint(SoftMutedColor, "-")}\t{Paint(NavColor, "Next page")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}");
             }
         }
 
         var result = await SF.Dialog.ShowList(
-            $"Network Log [Page {page + 1}/{totalPages}]",
+            TitleColor.Apply($"Network Log [Page {page + 1}/{totalPages}]"),
             items,
-            "Dir\tType\tID\tName\tSize\tTime"
+            $"{HeaderColor.Apply("Dir")}\t{HeaderColor.Apply("Type")}\t{HeaderColor.Apply("ID")}\t{HeaderColor.Apply("Name")}\t{HeaderColor.Apply("Size")}\t{HeaderColor.Apply("Time")}"
         );
 
         if (result.Button != SFDialogButton.OK)
@@ -419,16 +463,16 @@ public class RpcDebugger : ISFModule
 
         string text = string.Join("\r\n", new[]
         {
-            $"Direction: {dir}",
-            $"Type: {kind}",
-            $"ID: {entry.Id} ({entry.Name ?? "Unknown"})",
-            $"Size: {dataBytes} bytes ({entry.DataBitLength} bits)",
+            Paint(SFColors.Cyan, $"Direction: {dir}"),
+            Paint(SFColors.Cyan, $"Type: {kind}"),
+            Paint(ValueColor, $"ID: {entry.Id} ({entry.Name ?? "Unknown"})"),
+            Paint(ValueColor, $"Size: {dataBytes} bytes ({entry.DataBitLength} bits)"),
             string.Empty,
-            "Decoded:",
-            entry.Detail ?? "(no decoded data)"
+            Paint(SFColors.Yellow, "Decoded:"),
+            Paint(SFColors.White | SFColors.Ice, entry.Detail ?? "(no decoded data)")
         });
 
-        await SF.Dialog.ShowMessage($"{kind} {entry.Id} Detail", text);
+        await SF.Dialog.ShowMessage(TitleColor.Apply($"{kind} {entry.Id} Detail"), text);
         await ShowLog(returnPage);
     }
 
@@ -463,15 +507,15 @@ public class RpcDebugger : ISFModule
         List<string> items = new();
         foreach (var (key, s) in sorted)
         {
-            string kind = key.Kind == MessageKind.Rpc ? "{CCCCFF}RPC" : "{FFCCAA}PKT";
+            string kind = Paint(key.Kind == MessageKind.Rpc ? RpcColor : PacketColor, key.Kind == MessageKind.Rpc ? "RPC" : "PKT");
             string name = s.Name ?? "Unknown";
             int totalBytes = (s.InBits + s.OutBits + 7) / 8;
-            items.Add($"{kind}\t{{FFFFFF}}{key.Id}\t{{AAAAAA}}{name}\t{{00AAFF}}{s.InCount}\t{{FFAA00}}{s.OutCount}\t{{FFFFFF}}{totalBytes}B");
+            items.Add($"{kind}\t{Paint(ValueColor, key.Id.ToString())}\t{Paint(MutedColor, name)}\t{Paint(IncomingColor, s.InCount.ToString())}\t{Paint(OutgoingColor, s.OutCount.ToString())}\t{Paint(ValueColor, $"{totalBytes}B")}");
         }
 
         if (items.Count == 0)
         {
-            items.Add("-\t-\tNo data\t-\t-\t-");
+            items.Add($"{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "No data")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}\t{Paint(SoftMutedColor, "-")}");
         }
 
         int inRpc = Volatile.Read(ref _totalIncomingRpc);
@@ -480,9 +524,19 @@ public class RpcDebugger : ISFModule
         int outPkt = Volatile.Read(ref _totalOutgoingPacket);
 
         await SF.Dialog.ShowList(
-            $"Network Stats (RPC: {inRpc + outRpc} / PKT: {inPkt + outPkt})",
+            TitleColor.Apply($"Network Stats (RPC: {inRpc + outRpc} / PKT: {inPkt + outPkt})"),
             items,
-            "Type\tID\tName\tIN\tOUT\tSize"
+            $"{HeaderColor.Apply("Type")}\t{HeaderColor.Apply("ID")}\t{HeaderColor.Apply("Name")}\t{HeaderColor.Apply("IN")}\t{HeaderColor.Apply("OUT")}\t{HeaderColor.Apply("Size")}"
         );
+    }
+
+    private static string Toggle(bool value)
+    {
+        return Paint(value ? SuccessColor : DangerColor, value ? "ON" : "OFF");
+    }
+
+    private static string Paint(SFColor color, string text)
+    {
+        return color.Apply(text);
     }
 }

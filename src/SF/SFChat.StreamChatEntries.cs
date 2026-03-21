@@ -113,7 +113,7 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 
     internal void PublishServerChatEntry(ServerChatEntry entry)
     {
-        SFLog.Info($"Server chat entry kind={entry.Kind} rpcId={(int)entry.RpcId} type={entry.Type} textColor=0x{entry.TextColor:X8} prefixColor=0x{entry.PrefixColor:X8} prefix={entry.Prefix ?? "<null>"} text={entry.Text ?? "<null>"}");
+        //SFLog.Info($"Server chat entry kind={entry.Kind} rpcId={(int)entry.RpcId} type={entry.Type} textColor=0x{entry.TextColor:X8} prefixColor=0x{entry.PrefixColor:X8} prefix={entry.Prefix ?? "<null>"} text={entry.Text ?? "<null>"}");
         foreach (ConcurrentQueue<ServerChatEntry> queue in _serverConsumerQueues)
         {
             queue.Enqueue(entry);

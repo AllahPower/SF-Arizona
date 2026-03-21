@@ -38,7 +38,7 @@ public readonly record struct ArzSetRadarMode(byte Mode);
 
 // id=10 | load JS resource into CEF pipeline
 // js/any use Arizona maybeEncoded strings: u16 length, i8 encoded_flag, then plain or RakNet-encoded bytes
-public readonly record struct ArzLoadJs(byte[] Unknown16, string Js, string Any, uint ServerId);
+public readonly record struct ArzLoadJs(byte[] Unknown16, string Js, string Any, uint BrowserId);
 
 // id=12 | billboard media playback
 // link/user_agent use Arizona maybeEncoded strings: u16 length, i8 encoded_flag, then plain or RakNet-encoded bytes
@@ -236,7 +236,7 @@ public readonly record struct ArzSetPlayerNametagFlags(ushort PlayerId, byte Hea
 public readonly record struct ArzSetMapIcon(byte IconId, byte[] Pad14, ushort IconModel, Vector3 Position, string IconName, byte Pad);
 
 // id=135 | CEF UI scalar value (float property by index)
-public readonly record struct ArzUiScalar(ushort ServerId, byte Index, float Value);
+public readonly record struct ArzUiScalar(ushort BrowserId, byte Index, float Value);
 
 // id=139 | vehicle exhaust smoke color + intensity
 // intensity: 0.4 is default
@@ -300,7 +300,7 @@ public readonly record struct ArzToggleDrawInterface(bool Status);
 public readonly record struct ArzSetInterior(Vector3 Position, ushort Pad, byte Interior, byte[] Remaining);
 
 // id=176 | toggle specific CEF panel by server_id
-public readonly record struct ArzUiToggle(ushort ServerId, bool State);
+public readonly record struct ArzUiToggle(ushort BrowserId, bool State);
 
 // id=180 | vehicle headlights on/off
 public readonly record struct ArzVehicleHeadlightsState(ushort VehicleId, bool State);
@@ -388,10 +388,10 @@ public readonly record struct ArzSendSwitchChatState(bool IsOpen);
 public readonly record struct ArzSendTurnLights(byte State);
 
 // id=17 | open CEF interface by server/menu id pair
-public readonly record struct ArzSendOpenInterface(uint ServerId, uint MenuId);
+public readonly record struct ArzSendOpenInterface(uint BrowserId, uint MenuId);
 
 // id=18 | send text/callback to CEF server handler
-public readonly record struct ArzSendText(string Text, uint ServerId);
+public readonly record struct ArzSendText(string Text, uint BrowserId);
 
 // id=20 | report client screen resolution
 public readonly record struct ArzSendResolution(uint Width, uint Height);
@@ -403,7 +403,7 @@ public readonly record struct ArzCustomStatePair(uint Value0, uint Value1);
 public readonly record struct ArzModuleReadRequest(uint ModuleOffset, string ModuleName, uint Size);
 
 // id=24 | client requests interface hide/show
-public readonly record struct ArzSendToggleDrawInterface(uint ServerId, bool Status);
+public readonly record struct ArzSendToggleDrawInterface(uint BrowserId, bool Status);
 
 // id=38 | anti-cheat hash (64 bytes fixed)
 public readonly record struct ArzSendHash(byte[] Hash);
@@ -669,8 +669,8 @@ public static class ArizonaPacket
         byte[] unknown16 = r.ReadBytes(16).ToArray();
         string js = ReadMaybeEncodedString(ref r);
         string any = ReadMaybeEncodedString(ref r);
-        uint serverId = r.ReadUInt32();
-        return new(unknown16, js, any, serverId);
+        uint browserId = r.ReadUInt32();
+        return new(unknown16, js, any, browserId);
     }
 
     public static ArzPlayMediaOnBillboard ParsePlayMediaOnBillboard(ref BitStreamReader r)
@@ -685,9 +685,9 @@ public static class ArizonaPacket
 
     public static ArzLoadHtml ParseLoadHtml(ref BitStreamReader r)
     {
-        uint serverId = r.ReadUInt32();
+        uint browserId = r.ReadUInt32();
         string url = r.ReadStringUInt32Length();
-        return new(serverId, url);
+        return new(browserId, url);
     }
 
     public static ArzInjectCode ParseInjectCode(ref BitStreamReader r)

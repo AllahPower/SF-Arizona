@@ -24,7 +24,8 @@ public enum LicenseType
 internal partial class SourceGenerationContext : JsonSerializerContext;
 public record LicenseSale(string Name, LicenseType LicenseType, int Price, DateTime DateTime);
 
-public class LicenseShooter : ISFModule
+[SFModule("license-shooter", "LicenseShooter", Category = "Tracking", Description = "Tracks license offers and persists successful sales.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 40)]
+public class LicenseShooter : SFModuleBase
 {
     private List<LicenseSale> LoadSales()
     {
@@ -112,20 +113,24 @@ public class LicenseShooter : ISFModule
         return true;
     }
 
-    public async Task RunAsync(CancellationToken token)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        using var commandRegistration = SF.Chat.RegisterChatCommand("licenselog", OnCommand);
+        using IDisposable commandRegistration = Context.RegisterChatCommand("licenselog", OnCommand);
 
         var offers = new Dictionary<string, LicenseSale>();
 
-        await foreach(var entry in SF.Chat.StreamChatEntries(token))
+        await foreach(var entry in SF.Chat.StreamChatEntries(cancellationToken))
         {
+            Context.IncrementCounter("chat.entries");
             if (entry.TextColor != 0xFF6495ED) continue;
             if (entry.Text is null) continue;
 
             if (TryDecodeOffer(entry.Text, out var offer))
             {
                 offers[offer.Name] = offer;
+                Context.IncrementCounter("offers.detected");
+                Context.SetDetail("pending.offers", offers.Count.ToString());
+                Context.Heartbeat("offer-detected");
                 continue;
             }
             if (TryDecodeSale(entry.Text, out var name))
@@ -133,6 +138,7 @@ public class LicenseShooter : ISFModule
                 if(!offers.TryGetValue(name, out var previousOffer))
                 {
                     SF.Chat.Add($"Detected sale {name}, but could not find an offer.");
+                    Context.IncrementCounter("sales.missed");
                     continue;
                 }
 
@@ -141,6 +147,10 @@ public class LicenseShooter : ISFModule
                 SaveSales(sales);
 
                 offers.Remove(name);
+                Context.IncrementCounter("sales.recorded");
+                Context.SetDetail("pending.offers", offers.Count.ToString());
+                Context.SetDetail("last.sale", name);
+                Context.Heartbeat("sale-recorded");
                 SF.Chat.Add($"Recorded sale to {name}");
                 continue;
             }
