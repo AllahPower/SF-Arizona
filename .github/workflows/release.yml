@@ -1,0 +1,68 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'src/**'
+      - '.github/workflows/release.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+
+      - name: Restore dependencies
+        run: dotnet restore src/SF.csproj
+
+      - name: Publish (NativeAOT win-x86)
+        run: dotnet publish src/SF.csproj -c Release
+
+      - name: Extract version from csproj
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$csproj = Get-Content src/SF.csproj
+          $ver = $csproj.Project.PropertyGroup[0].Version
+          echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
+          echo "TAG=v$ver" >> $env:GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: tag_check
+        shell: pwsh
+        run: |
+          git fetch --tags
+          $tag = "v${{ steps.version.outputs.VERSION }}"
+          $exists = git tag -l $tag
+          if ($exists) {
+            echo "EXISTS=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "EXISTS=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Create tag
+        if: steps.tag_check.outputs.EXISTS == 'false'
+        run: |
+          git tag ${{ steps.version.outputs.TAG }}
+          git push origin ${{ steps.version.outputs.TAG }}
+
+      - name: Create GitHub Release
+        if: steps.tag_check.outputs.EXISTS == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.TAG }}
+          name: SF-Arizona ${{ steps.version.outputs.TAG }}
+          generate_release_notes: true
+          files: src/bin/Release/net10.0/win-x86/publish/SF.asi
