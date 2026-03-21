@@ -18,6 +18,7 @@ public class SFModuleContainer
     private readonly Dictionary<string, ModuleRegistration> _registrationsById = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<ModuleRegistration, RunningModule> _runningModules = [];
     private TaskCompletionSource _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private Task[]? _cachedWhenAnyTasks;
     private bool _isShuttingDown;
 
     public void RegisterModule<T>(bool? enabledOnStart = null) where T : ISFModule, new()
@@ -40,6 +41,13 @@ public class SFModuleContainer
         SFLog.Info($"RegisterModule id={descriptor.Id} type={descriptor.ModuleType.Name} enabledOnStart={autoStartEnabled} execution={descriptor.ExecutionModel}");
     }
 
+    private void InvalidateTaskCache() => _cachedWhenAnyTasks = null;
+
+    private Task[] GetWhenAnyTasks()
+    {
+        return _cachedWhenAnyTasks ??= _runningModules.Values.Select(x => x.Task).Append(_moduleStartTaskSource.Task).ToArray();
+    }
+
     public async Task Run(CancellationToken token = default)
     {
         SFLog.Info("SFModuleContainer.Run started");
@@ -60,17 +68,19 @@ public class SFModuleContainer
             while (!token.IsCancellationRequested)
             {
                 Task moduleStartTask = _moduleStartTaskSource.Task;
-                Task[] tasks = _runningModules.Values.Select(x => x.Task).Append(moduleStartTask).ToArray();
+                Task[] tasks = GetWhenAnyTasks();
                 Task completedTask = await Task.WhenAny(tasks);
 
                 if (completedTask == moduleStartTask)
                 {
                     _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                    InvalidateTaskCache();
                     continue;
                 }
 
                 KeyValuePair<ModuleRegistration, RunningModule> completed = _runningModules.Single(x => x.Value.Task == completedTask);
                 _runningModules.Remove(completed.Key);
+                InvalidateTaskCache();
                 await HandleModuleCompletion(completed.Key, completed.Value);
             }
         }
@@ -110,6 +120,7 @@ public class SFModuleContainer
         };
 
         _runningModules.Add(registration, new(module, context, task, cts));
+        InvalidateTaskCache();
         _moduleStartTaskSource.TrySetResult();
         _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
@@ -187,6 +198,16 @@ public class SFModuleContainer
 
         if (!_isShuttingDown && finalSnapshot.LastStopReason == ModuleStopReason.Faulted && registration.Descriptor.RestartPolicy == ModuleRestartPolicy.OnFault)
         {
+            registration.Runtime.RecordFaultForCircuitBreaker();
+            if (registration.Runtime.IsCircuitBroken)
+            {
+                registration.AutoStartEnabled = false;
+                registration.Runtime.SetAutoStartEnabled(false);
+                SFLog.Error($"Circuit breaker tripped for module id={registration.Descriptor.Id}: too many faults in 60s, auto-restart disabled");
+                SF.Chat.Add(FormatChatAction("disabled", registration.Descriptor.DisplayName, "too many faults, auto-restart off", SFColors.Red));
+                return;
+            }
+
             registration.Runtime.IncrementRestartCount();
             StartModule(registration);
         }
@@ -194,57 +215,70 @@ public class SFModuleContainer
 
     private async void OnCommand(string? args)
     {
-        string[] segments = string.IsNullOrWhiteSpace(args)
-            ? []
-            : args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        if (segments.Length == 0)
+        try
         {
-            await ShowDashboard();
-            return;
-        }
+            string[] segments = string.IsNullOrWhiteSpace(args)
+                ? []
+                : args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        string verb = segments[0].ToLowerInvariant();
-        if (verb == "status")
-        {
-            ShowStatusInChat();
-            return;
-        }
+            if (segments.Length == 0)
+            {
+                await ShowDashboard();
+                return;
+            }
 
-        if (segments.Length < 2)
-        {
-            SF.Chat.Add(FormatUsage());
-            return;
-        }
+            string verb = segments[0].ToLowerInvariant();
+            if (verb == "status")
+            {
+                int page = 1;
+                if (segments.Length >= 2 && int.TryParse(segments[1], out int parsed))
+                {
+                    page = parsed;
+                }
 
-        string query = string.Join(' ', segments.Skip(1));
-        ModuleRegistration? registration = ResolveModule(query);
-        if (registration is null)
-        {
-            SF.Chat.Add($"{Paint(SFColors.Rose, "Module not found")}: {Paint(SFColors.White | SFColors.Ice, query)}");
-            return;
-        }
+                ShowStatusInChat(page);
+                return;
+            }
 
-        switch (verb)
-        {
-            case "info":
-                await ShowModuleDetail(registration);
-                break;
-            case "start":
-                StartModule(registration);
-                SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, "requested", SFColors.Green));
-                break;
-            case "stop":
-                StopModule(registration, ModuleStopReason.UserRequested);
-                SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, "requested", SFColors.Orange));
-                break;
-            case "restart":
-                RestartModule(registration);
-                SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, "requested", SFColors.Yellow));
-                break;
-            default:
+            if (segments.Length < 2)
+            {
                 SF.Chat.Add(FormatUsage());
-                break;
+                return;
+            }
+
+            string query = string.Join(' ', segments.Skip(1));
+            ModuleRegistration? registration = ResolveModule(query);
+            if (registration is null)
+            {
+                SF.Chat.Add($"{Paint(SFColors.Rose, "Module not found")}: {Paint(SFColors.White | SFColors.Ice, query)}");
+                return;
+            }
+
+            switch (verb)
+            {
+                case "info":
+                    await ShowModuleDetail(registration);
+                    break;
+                case "start":
+                    StartModule(registration);
+                    SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, "requested", SFColors.Green));
+                    break;
+                case "stop":
+                    StopModule(registration, ModuleStopReason.UserRequested);
+                    SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, "requested", SFColors.Orange));
+                    break;
+                case "restart":
+                    RestartModule(registration);
+                    SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, "requested", SFColors.Yellow));
+                    break;
+                default:
+                    SF.Chat.Add(FormatUsage());
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            SFLog.Error(ex, "Unhandled exception in /sfs command handler");
         }
     }
 
@@ -260,24 +294,45 @@ public class SFModuleContainer
         StartModule(registration);
     }
 
-    private void ShowStatusInChat()
+    private const int StatusPageSize = 6;
+
+    private void ShowStatusInChat(int page)
     {
-        foreach (ModuleRegistration registration in _registrations)
+        if (_registrations.Count == 0)
+        {
+            SF.Chat.Add(Paint(SFColors.Slate, "No modules registered."));
+            return;
+        }
+
+        int totalPages = Math.Max(1, (_registrations.Count + StatusPageSize - 1) / StatusPageSize);
+        page = Math.Clamp(page, 1, totalPages);
+
+        List<ModuleRegistration> pageItems = _registrations
+            .Skip((page - 1) * StatusPageSize)
+            .Take(StatusPageSize)
+            .ToList();
+
+        string sep = Paint(SFColors.Slate, " \u00b7 ");
+        foreach (ModuleRegistration registration in pageItems)
         {
             ModuleRuntimeSnapshot snapshot = registration.Runtime.CreateSnapshot();
-            string uptime = FormatDuration(snapshot.Uptime);
-            string line = string.Join(" ", [
+            string line = string.Concat(
                 Paint(SFColors.Cyan | SFColors.Blue, registration.Descriptor.Id),
-                Paint(SFColors.Slate, "|"),
+                Paint(SFColors.White | SFColors.Ice, " \u00bb "),
                 FormatState(snapshot.State),
-                Paint(SFColors.Slate, "|"),
+                sep,
                 Paint(SFColor.FromHex("A8DADC"), snapshot.Descriptor.ExecutionModel.ToString()),
-                Paint(SFColors.Slate, "|"),
-                Paint(SFColors.Sand, $"uptime={uptime}"),
-                Paint(SFColors.Slate, "|"),
-                FormatLoad(snapshot.EstimatedLoadPercent)
-            ]);
+                sep,
+                Paint(SFColors.Sand, FormatDuration(snapshot.Uptime)),
+                sep,
+                FormatLoad(snapshot.EstimatedLoadPercent));
             SF.Chat.Add(line);
+        }
+
+        if (totalPages > 1)
+        {
+            SF.Chat.Add(Paint(SFColors.Slate, $"Page {page}/{totalPages}") + " " +
+                         Paint(SFColors.White | SFColors.Ice, $"/sfs status <1-{totalPages}>"));
         }
     }
 
@@ -522,4 +577,5 @@ public class SFModuleContainer
 
         return $"{value:0.0}{units[unitIndex]}";
     }
+
 }

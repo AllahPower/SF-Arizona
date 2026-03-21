@@ -4,7 +4,7 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.7**
+Current release: **3.1.8**
 
 ## Highlights
 
@@ -69,13 +69,16 @@ public sealed class ExampleModule : SFModuleBase
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        Log.Info("started");
+        Log.LogInformation("started");
         Context.SetDetail("mode", "idle");
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            using ModuleLoopScope _ = Context.TrackLoop("tick");
-            Context.Heartbeat("running");
+            using (ModuleLoopScope _ = Context.TrackLoop("tick"))
+            {
+                Context.Heartbeat("running");
+            }
+
             await Task.Yield();
         }
     }

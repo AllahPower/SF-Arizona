@@ -7,13 +7,16 @@ public class DialogScraper : SFModuleBase
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            using ModuleLoopScope _ = Context.TrackLoop("dialog-poll");
-            if (SF.Keyboard.IsKeyPressed(VK.NUMPAD0))
+            using (ModuleLoopScope _ = Context.TrackLoop("dialog-poll"))
             {
-                RunCore();
+                if (SF.Keyboard.IsKeyPressed(VK.NUMPAD0))
+                {
+                    RunCore();
+                }
+
+                Context.Heartbeat("watching dialogs");
             }
 
-            Context.Heartbeat("watching dialogs");
             await Task.Yield();
         }
     }

@@ -38,6 +38,18 @@ public static class SFLog
         Write("ERROR", $"{context}: {ex}");
     }
 
+    public static void WriteFormatted(string formattedLine)
+    {
+        try
+        {
+            _pendingLines.Enqueue(formattedLine + Environment.NewLine);
+            _signal.Set();
+        }
+        catch
+        {
+        }
+    }
+
     private static string BuildPath()
     {
         try

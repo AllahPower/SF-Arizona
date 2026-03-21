@@ -7,20 +7,23 @@ public class NodShaker : SFModuleBase
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            using ModuleLoopScope _ = Context.TrackLoop("keyboard-poll");
-            if (SF.Keyboard.IsKeyPressed(VK.ADD))
+            using (ModuleLoopScope _ = Context.TrackLoop("keyboard-poll"))
             {
-                SF.Chat.Send("+");
-                Context.IncrementCounter("plus.sent");
+                if (SF.Keyboard.IsKeyPressed(VK.ADD))
+                {
+                    SF.Chat.Send("+");
+                    Context.IncrementCounter("plus.sent");
+                }
+
+                if (SF.Keyboard.IsKeyPressed(VK.SUBTRACT))
+                {
+                    SF.Chat.Send("-");
+                    Context.IncrementCounter("minus.sent");
+                }
+
+                Context.Heartbeat("watching +/- keys");
             }
 
-            if (SF.Keyboard.IsKeyPressed(VK.SUBTRACT))
-            {
-                SF.Chat.Send("-");
-                Context.IncrementCounter("minus.sent");
-            }
-
-            Context.Heartbeat("watching +/- keys");
             await Task.Yield();
         }
     }

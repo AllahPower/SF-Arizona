@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using SFSharp;
 using System.Text.RegularExpressions;
 
@@ -44,7 +45,7 @@ public class ChatViolationMonitor : SFModuleBase
             Context.IncrementCounter("violations.detected");
             Context.SetDetail("records", GetSnapshot().Length.ToString());
             Context.Heartbeat($"violation:{violationType}");
-            Log.Info($"Violation detected player={playerName} type={violationType} fragment={matchedFragment}");
+            Log.LogInformation("Violation detected player={PlayerName} type={ViolationType} fragment={MatchedFragment}", playerName, violationType, matchedFragment);
         }
     }
 

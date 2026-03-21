@@ -14,26 +14,29 @@ public class BrightBinder : SFModuleBase
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            using ModuleLoopScope _ = Context.TrackLoop("keyboard-poll");
-            if (bbEnabled && SF.Players.GetAimedPlayerId() is ushort aimedPlayerId)
+            using (ModuleLoopScope _ = Context.TrackLoop("keyboard-poll"))
             {
-                Context.IncrementCounter("dialogs.auto");
-                await ShowDialog("default", aimedPlayerId);
-            }
-            if (SF.Keyboard.IsKeyPressed(VK.XBUTTON1))
-            {
-                Context.IncrementCounter("dialogs.manual");
-                await ShowDialog("default", null);
-            }
-            if (SF.Keyboard.IsKeyPressed(VK.XBUTTON2))
-            {
-                bbEnabled = !bbEnabled;
-                Context.SetDetail("quickbind", bbEnabled ? "enabled" : "disabled");
-                Context.ReportActivity(bbEnabled ? "quickbind-enabled" : "quickbind-disabled");
-                SF.Chat.Add(bbEnabled ? "Quick bind enabled." : "Quick bind disabled.");
+                if (bbEnabled && SF.Players.GetAimedPlayerId() is ushort aimedPlayerId)
+                {
+                    Context.IncrementCounter("dialogs.auto");
+                    await ShowDialog("default", aimedPlayerId);
+                }
+                if (SF.Keyboard.IsKeyPressed(VK.XBUTTON1))
+                {
+                    Context.IncrementCounter("dialogs.manual");
+                    await ShowDialog("default", null);
+                }
+                if (SF.Keyboard.IsKeyPressed(VK.XBUTTON2))
+                {
+                    bbEnabled = !bbEnabled;
+                    Context.SetDetail("quickbind", bbEnabled ? "enabled" : "disabled");
+                    Context.ReportActivity(bbEnabled ? "quickbind-enabled" : "quickbind-disabled");
+                    SF.Chat.Add(bbEnabled ? "Quick bind enabled." : "Quick bind disabled.");
+                }
+
+                Context.Heartbeat(bbEnabled ? "watching target" : "paused");
             }
 
-            Context.Heartbeat(bbEnabled ? "watching target" : "paused");
             await Task.Yield();
         }
     }

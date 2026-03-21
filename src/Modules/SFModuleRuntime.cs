@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace SFSharp;
 
@@ -58,7 +59,7 @@ public interface ISFModule
 public abstract class SFModuleBase : ISFModule
 {
     protected ModuleContext Context { get; private set; } = null!;
-    protected ModuleLogger Log { get; private set; } = null!;
+    protected ILogger Log { get; private set; } = null!;
 
     public async Task RunAsync(ModuleContext context)
     {
@@ -66,7 +67,6 @@ public abstract class SFModuleBase : ISFModule
 
         Context = context;
         Log = CreateLogger(context);
-        context.SetLogger(Log);
 
         await OnStartingAsync();
         try
@@ -98,9 +98,9 @@ public abstract class SFModuleBase : ISFModule
         }
     }
 
-    protected virtual ModuleLogger CreateLogger(ModuleContext context)
+    protected virtual ILogger CreateLogger(ModuleContext context)
     {
-        return new DefaultModuleLogger(context.Descriptor);
+        return SFLoggerProvider.Instance.CreateLogger(context.Descriptor.Id);
     }
 
     protected virtual Task OnStartingAsync() => Task.CompletedTask;
@@ -185,24 +185,16 @@ public sealed class ModuleContext : IDisposable
 {
     private readonly ModuleRuntimeInfo _runtime;
     private int _disposed;
-    private ModuleLogger _logger;
 
     internal ModuleContext(ModuleDescriptor descriptor, ModuleRuntimeInfo runtime, CancellationToken cancellationToken)
     {
         Descriptor = descriptor;
         _runtime = runtime;
         CancellationToken = cancellationToken;
-        _logger = new DefaultModuleLogger(descriptor);
     }
 
     public ModuleDescriptor Descriptor { get; }
     public CancellationToken CancellationToken { get; }
-    public ModuleLogger Logger => _logger;
-
-    internal void SetLogger(ModuleLogger logger)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
 
     public void Heartbeat(string? activity = null)
     {
@@ -231,7 +223,7 @@ public sealed class ModuleContext : IDisposable
 
     internal ModuleLoopScope TrackLoop(string? activity = null)
     {
-        return new ModuleLoopScope(_runtime, activity);
+        return new ModuleLoopScope(_runtime, Stopwatch.GetTimestamp(), activity);
     }
 
     public IDisposable RegisterDisposable(IDisposable disposable)
@@ -297,79 +289,14 @@ public sealed class ModuleContext : IDisposable
     }
 }
 
-internal readonly struct ModuleLoopScope(ModuleRuntimeInfo runtime, string? activity) : IDisposable
+internal readonly struct ModuleLoopScope(ModuleRuntimeInfo runtime, long startTicks, string? activity) : IDisposable
 {
-    private readonly long _startedAt = Stopwatch.GetTimestamp();
-
     public void Dispose()
     {
-        runtime.RecordLoop(Stopwatch.GetElapsedTime(_startedAt), activity);
+        runtime.RecordLoop(startTicks, Stopwatch.GetTimestamp(), activity);
     }
 }
 
-public enum ModuleLogLevel
-{
-    Info,
-    Warn,
-    Error
-}
-
-public abstract class ModuleLogger(ModuleDescriptor descriptor)
-{
-    protected ModuleDescriptor Descriptor { get; } = descriptor;
-
-    public void Info(string message)
-    {
-        Write(ModuleLogLevel.Info, message, null);
-    }
-
-    public void Warn(string message)
-    {
-        Write(ModuleLogLevel.Warn, message, null);
-    }
-
-    public void Error(string message)
-    {
-        Write(ModuleLogLevel.Error, message, null);
-    }
-
-    public void Error(Exception ex, string context)
-    {
-        Write(ModuleLogLevel.Error, context, ex);
-    }
-
-    protected string Prefix(string message)
-    {
-        return $"[{Descriptor.Id}] {message}";
-    }
-
-    protected abstract void Write(ModuleLogLevel level, string message, Exception? exception);
-}
-
-public class DefaultModuleLogger(ModuleDescriptor descriptor) : ModuleLogger(descriptor)
-{
-    protected override void Write(ModuleLogLevel level, string message, Exception? exception)
-    {
-        string prefixed = Prefix(message);
-        switch (level)
-        {
-            case ModuleLogLevel.Info:
-                SFLog.Info(prefixed);
-                break;
-            case ModuleLogLevel.Warn:
-                SFLog.Warn(prefixed);
-                break;
-            case ModuleLogLevel.Error when exception is not null:
-                SFLog.Error(exception, prefixed);
-                break;
-            case ModuleLogLevel.Error:
-                SFLog.Error(prefixed);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(level), level, null);
-        }
-    }
-}
 
 internal sealed class ModuleRuntimeInfo
 {
@@ -377,6 +304,7 @@ internal sealed class ModuleRuntimeInfo
     private readonly List<IDisposable> _ownedDisposables = [];
     private readonly ConcurrentDictionary<string, long> _counters = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, string> _details = new(StringComparer.OrdinalIgnoreCase);
+    private long _lastMemoryPollTicks;
 
     private DateTimeOffset? _createdAt = DateTimeOffset.UtcNow;
     private DateTimeOffset? _startedAt;
@@ -397,10 +325,15 @@ internal sealed class ModuleRuntimeInfo
     private double _avgLoopMilliseconds;
     private double _maxLoopMilliseconds;
     private double _totalMeasuredLoopMilliseconds;
+    private long _lastLoopStartTicks;
+    private double _dutyCycleSum;
+    private long _dutyCycleCount;
     private long _lastMemoryBytes;
     private string? _lastExceptionType;
     private string? _lastExceptionMessage;
     private ModuleStopReason _requestedStopReason = ModuleStopReason.None;
+    private readonly Queue<long> _recentFaultTicks = new();
+    private bool _circuitBroken;
 
     public ModuleRuntimeInfo(ModuleDescriptor descriptor, bool autoStartEnabled)
     {
@@ -409,6 +342,50 @@ internal sealed class ModuleRuntimeInfo
     }
 
     public ModuleDescriptor Descriptor { get; }
+
+    private static readonly long MemoryPollIntervalTicks = Stopwatch.Frequency * 2; // 2 seconds
+    private const int CircuitBreakerFaultLimit = 5;
+    private static readonly long CircuitBreakerWindowTicks = Stopwatch.Frequency * 60; // 60 seconds
+
+    private void PollMemoryIfDue()
+    {
+        long now = Stopwatch.GetTimestamp();
+        if (now - _lastMemoryPollTicks >= MemoryPollIntervalTicks)
+        {
+            _lastMemoryPollTicks = now;
+            _lastMemoryBytes = GC.GetTotalMemory(false);
+        }
+    }
+
+    public void RecordFaultForCircuitBreaker()
+    {
+        lock (_sync)
+        {
+            long now = Stopwatch.GetTimestamp();
+            _recentFaultTicks.Enqueue(now);
+
+            while (_recentFaultTicks.Count > 0 && now - _recentFaultTicks.Peek() > CircuitBreakerWindowTicks)
+            {
+                _recentFaultTicks.Dequeue();
+            }
+
+            if (_recentFaultTicks.Count >= CircuitBreakerFaultLimit)
+            {
+                _circuitBroken = true;
+            }
+        }
+    }
+
+    public bool IsCircuitBroken
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _circuitBroken;
+            }
+        }
+    }
 
     public void PrepareForStart(bool autoStartEnabled)
     {
@@ -434,6 +411,10 @@ internal sealed class ModuleRuntimeInfo
             _avgLoopMilliseconds = 0;
             _maxLoopMilliseconds = 0;
             _totalMeasuredLoopMilliseconds = 0;
+            _lastLoopStartTicks = 0;
+            _dutyCycleSum = 0;
+            _dutyCycleCount = 0;
+            _lastMemoryPollTicks = 0;
             _lastMemoryBytes = GC.GetTotalMemory(false);
             _counters.Clear();
             _details.Clear();
@@ -514,7 +495,7 @@ internal sealed class ModuleRuntimeInfo
             }
 
             _lastThreadId = Environment.CurrentManagedThreadId;
-            _lastMemoryBytes = GC.GetTotalMemory(false);
+            PollMemoryIfDue();
         }
     }
 
@@ -528,17 +509,29 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void RecordLoop(TimeSpan duration, string? activity)
+    public void RecordLoop(long startTicks, long endTicks, string? activity)
     {
         lock (_sync)
         {
             _loopCount++;
-            double ms = duration.TotalMilliseconds;
+            double ms = Stopwatch.GetElapsedTime(startTicks, endTicks).TotalMilliseconds;
             _avgLoopMilliseconds = ((_avgLoopMilliseconds * (_loopCount - 1)) + ms) / _loopCount;
             _maxLoopMilliseconds = Math.Max(_maxLoopMilliseconds, ms);
             _totalMeasuredLoopMilliseconds += ms;
+
+            if (_lastLoopStartTicks > 0)
+            {
+                double periodMs = Stopwatch.GetElapsedTime(_lastLoopStartTicks, startTicks).TotalMilliseconds;
+                if (periodMs > 0)
+                {
+                    _dutyCycleSum += Math.Min(ms / periodMs, 1.0);
+                    _dutyCycleCount++;
+                }
+            }
+
+            _lastLoopStartTicks = startTicks;
             _lastThreadId = Environment.CurrentManagedThreadId;
-            _lastMemoryBytes = GC.GetTotalMemory(false);
+            PollMemoryIfDue();
             DateTimeOffset now = DateTimeOffset.UtcNow;
             _lastHeartbeatAt = now;
             _lastActivityAt = now;
@@ -626,8 +619,12 @@ internal sealed class ModuleRuntimeInfo
             _avgLoopMilliseconds = 0;
             _maxLoopMilliseconds = 0;
             _totalMeasuredLoopMilliseconds = 0;
+            _lastLoopStartTicks = 0;
+            _dutyCycleSum = 0;
+            _dutyCycleCount = 0;
             _lastExceptionType = null;
             _lastExceptionMessage = null;
+            _lastMemoryPollTicks = 0;
             _lastMemoryBytes = GC.GetTotalMemory(false);
         }
     }
@@ -637,10 +634,9 @@ internal sealed class ModuleRuntimeInfo
         lock (_sync)
         {
             double estimatedLoadPercent = 0;
-            if (_startedAt is DateTimeOffset startedAt)
+            if (_dutyCycleCount > 0)
             {
-                double uptimeMs = Math.Max(1, ((_stoppedAt ?? DateTimeOffset.UtcNow) - startedAt).TotalMilliseconds);
-                estimatedLoadPercent = Math.Clamp((_totalMeasuredLoopMilliseconds / uptimeMs) * 100.0, 0, 100);
+                estimatedLoadPercent = Math.Clamp((_dutyCycleSum / _dutyCycleCount) * 100.0, 0, 100);
             }
 
             return new(

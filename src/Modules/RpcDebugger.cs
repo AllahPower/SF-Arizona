@@ -66,8 +66,11 @@ public class RpcDebugger : SFModuleBase
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                using ModuleLoopScope _ = Context.TrackLoop("dispatcher-idle");
-                Context.Heartbeat("waiting network events");
+                using (ModuleLoopScope _ = Context.TrackLoop("dispatcher-idle"))
+                {
+                    Context.Heartbeat("waiting network events");
+                }
+
                 await Task.Yield();
             }
         }
