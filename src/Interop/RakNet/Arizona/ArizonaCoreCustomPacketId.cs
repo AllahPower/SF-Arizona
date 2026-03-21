@@ -4,6 +4,7 @@ namespace SFSharp;
 // This is a post-transport dispatcher layer used by Arizona core modules.
 // It is not the same thing as raw Packet 220/221 sub-ids.
 // Duplicate values are intentional - several core modules subscribe to the same dispatcher ID.
+// MVP: only includes custom packet IDs that have been observed in IDA so far, with some notes on payload layouts where known. This is a work in progress and will be updated as more information is recovered.
 public enum ArizonaCoreCustomPacketId : ushort
 {
     // u16 vehicleId, bool toggle, if toggle then bool isSimpleModel, u16 modelId

@@ -26,6 +26,7 @@ public class RpcDebugger : ISFModule
         MessageKind Kind,
         int Id,
         string? Name,
+        string? Detail,
         int DataBitLength,
         long Timestamp);
 
@@ -36,14 +37,12 @@ public class RpcDebugger : ISFModule
         List<RpcSubscription> subscriptions = new();
         try
         {
-            // Subscribe to all known RPC IDs
             foreach (RpcId rpcId in Enum.GetValues<RpcId>())
             {
                 subscriptions.Add(SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args)));
                 subscriptions.Add(SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args)));
             }
 
-            // Subscribe to all known Packet IDs
             foreach (PacketId packetId in Enum.GetValues<PacketId>())
             {
                 subscriptions.Add(SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args)));
@@ -57,7 +56,7 @@ public class RpcDebugger : ISFModule
         }
         finally
         {
-            foreach (var sub in subscriptions)
+            foreach (RpcSubscription sub in subscriptions)
             {
                 sub.Dispose();
             }
@@ -67,37 +66,151 @@ public class RpcDebugger : ISFModule
     private void OnIncomingRpc(IncomingRpcArgs args)
     {
         Interlocked.Increment(ref _totalIncomingRpc);
-        if (!_captureEnabled || !_captureIncoming || !_captureRpc) return;
+        if (!_captureEnabled || !_captureIncoming || !_captureRpc)
+        {
+            return;
+        }
 
         string? name = Enum.IsDefined((RpcId)args.RpcId) ? ((RpcId)args.RpcId).ToString() : null;
-        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Rpc, args.RpcId, name, args.DataBitLength, Environment.TickCount64));
+        string? detail = $"direction=Incoming rpcId={args.RpcId}";
+        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Rpc, args.RpcId, name, detail, args.DataBitLength, Environment.TickCount64));
     }
 
     private void OnOutgoingRpc(OutgoingRpcArgs args)
     {
         Interlocked.Increment(ref _totalOutgoingRpc);
-        if (!_captureEnabled || !_captureOutgoing || !_captureRpc) return;
+        if (!_captureEnabled || !_captureOutgoing || !_captureRpc)
+        {
+            return;
+        }
 
         string? name = Enum.IsDefined((RpcId)args.RpcId) ? ((RpcId)args.RpcId).ToString() : null;
-        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Rpc, args.RpcId, name, args.DataBitLength, Environment.TickCount64));
+        string? detail = $"direction=Outgoing rpcId={args.RpcId}";
+        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Rpc, args.RpcId, name, detail, args.DataBitLength, Environment.TickCount64));
     }
 
     private void OnIncomingPacket(IncomingPacketArgs args)
     {
         Interlocked.Increment(ref _totalIncomingPacket);
-        if (!_captureEnabled || !_captureIncoming || !_capturePackets) return;
+        if (!_captureEnabled || !_captureIncoming || !_capturePackets)
+        {
+            return;
+        }
 
-        string? name = Enum.IsDefined((PacketId)args.PacketId) ? ((PacketId)args.PacketId).ToString() : null;
-        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Packet, args.PacketId, name, args.DataBitLength, Environment.TickCount64));
+        (string? name, string? detail) = DecodeIncomingPacket(args);
+        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Packet, args.PacketId, name, detail, args.DataBitLength, Environment.TickCount64));
     }
 
     private void OnOutgoingPacket(OutgoingPacketArgs args)
     {
         Interlocked.Increment(ref _totalOutgoingPacket);
-        if (!_captureEnabled || !_captureOutgoing || !_capturePackets) return;
+        if (!_captureEnabled || !_captureOutgoing || !_capturePackets)
+        {
+            return;
+        }
 
-        string? name = Enum.IsDefined((PacketId)args.PacketId) ? ((PacketId)args.PacketId).ToString() : null;
-        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Packet, args.PacketId, name, args.DataBitLength, Environment.TickCount64));
+        (string? name, string? detail) = DecodeOutgoingPacket(args);
+        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Packet, args.PacketId, name, detail, args.DataBitLength, Environment.TickCount64));
+    }
+
+    private static (string? Name, string? Detail) DecodeIncomingPacket(IncomingPacketArgs args)
+    {
+        if (SF.PacketParsers.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)
+        {
+            return FormatParsedPacket(packet, args.PacketId);
+        }
+
+        return FormatPacketParseFailure(args.PacketId, result, TryReadArizonaSubId(args));
+    }
+
+    private static (string? Name, string? Detail) DecodeOutgoingPacket(OutgoingPacketArgs args)
+    {
+        if (SF.PacketParsers.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
+        {
+            return FormatParsedPacket(packet, args.PacketId);
+        }
+
+        return FormatPacketParseFailure(args.PacketId, result, TryReadArizonaSubId(args));
+    }
+
+    private static (string? Name, string? Detail) FormatParsedPacket(IParsedPacket packet, int rawPacketId)
+    {
+        if (packet is IParsedArizonaPacket arizonaPacket)
+        {
+            PacketId packetId = (PacketId)rawPacketId;
+            string transport = packetId == PacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
+            string name = $"{transport}:{packet.Name}";
+            string detail = packet.Detail is { Length: > 0 }
+                ? $"subId={arizonaPacket.SubId} {packet.Detail}"
+                : $"subId={arizonaPacket.SubId}";
+            return (name, detail);
+        }
+
+        return (packet.Name, packet.Detail);
+    }
+
+    private static (string? Name, string? Detail) FormatPacketParseFailure(int rawPacketId, PacketParseResult result, int? arizonaSubId)
+    {
+        PacketParseFailureReason reason = result.FailureReason;
+        string? fallbackName = Enum.IsDefined((PacketId)rawPacketId) ? ((PacketId)rawPacketId).ToString() : null;
+        if (arizonaSubId is int subId)
+        {
+            PacketId packetId = (PacketId)rawPacketId;
+            string transport = packetId == PacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
+            string? detail = reason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
+                ? $"subId={subId}"
+                : $"subId={subId} parse={reason}" + (string.IsNullOrWhiteSpace(result.Error) ? string.Empty : $" error={result.Error}");
+            return ($"{transport}:{fallbackName}", detail);
+        }
+
+        string? failure = reason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
+            ? null
+            : $"parse={reason}" + (string.IsNullOrWhiteSpace(result.Error) ? string.Empty : $" error={result.Error}");
+        return (fallbackName, failure);
+    }
+
+    private static int? TryReadArizonaSubId(IncomingPacketArgs args)
+    {
+        PacketId packetId = (PacketId)args.PacketId;
+        if (packetId is not (PacketId.ArizonaCef or PacketId.ArizonaCefEx))
+        {
+            return null;
+        }
+
+        try
+        {
+            BitStreamReader reader = args.CreateReader();
+            reader.SkipBytes(1);
+            return packetId == PacketId.ArizonaCef
+                ? ArizonaPacket.ReadSubId220(ref reader)
+                : ArizonaPacket.ReadSubId221(ref reader);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static int? TryReadArizonaSubId(OutgoingPacketArgs args)
+    {
+        PacketId packetId = (PacketId)args.PacketId;
+        if (packetId is not (PacketId.ArizonaCef or PacketId.ArizonaCefEx))
+        {
+            return null;
+        }
+
+        try
+        {
+            BitStreamReader reader = args.CreateReader();
+            reader.SkipBytes(1);
+            return packetId == PacketId.ArizonaCef
+                ? ArizonaPacket.ReadSubId220(ref reader)
+                : ArizonaPacket.ReadSubId221(ref reader);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void Enqueue(NetLogEntry entry)
@@ -173,7 +286,10 @@ public class RpcDebugger : ISFModule
             "Action\tInfo"
         );
 
-        if (result.Button != SFDialogButton.OK) return;
+        if (result.Button != SFDialogButton.OK)
+        {
+            return;
+        }
 
         switch (result.SelectedIndex)
         {
@@ -221,13 +337,14 @@ public class RpcDebugger : ISFModule
         page = Math.Clamp(page, 0, totalPages - 1);
 
         int skip = page * EntriesPerPage;
-        var pageEntries = entries.AsSpan().Slice(skip, Math.Min(EntriesPerPage, entries.Length - skip));
+        int pageCount = Math.Min(EntriesPerPage, entries.Length - skip);
 
         List<string> items = new();
         long now = Environment.TickCount64;
 
-        foreach (ref readonly NetLogEntry entry in pageEntries)
+        for (int i = 0; i < pageCount; i++)
         {
+            NetLogEntry entry = entries[skip + i];
             string dir = entry.Direction == Direction.Incoming ? "{00AAFF}IN" : "{FFAA00}OUT";
             string kind = entry.Kind == MessageKind.Rpc ? "{CCCCFF}RPC" : "{FFCCAA}PKT";
             string name = entry.Name ?? "Unknown";
@@ -243,24 +360,76 @@ public class RpcDebugger : ISFModule
             items.Add("{888888}-\t-\t-\tNo entries\t-\t-");
         }
 
-        string navHint = $"Page {page + 1}/{totalPages}";
-        if (page < totalPages - 1) navHint += " | OK=Next";
-        if (page > 0) navHint += " | Cancel=Back";
+        int previousPageIndex = -1;
+        int nextPageIndex = -1;
+        if (totalPages > 1)
+        {
+            if (page > 0)
+            {
+                previousPageIndex = items.Count;
+                items.Add("{55AAFF}<--\tNAV\t-\tPrevious page\t-\t-");
+            }
+
+            if (page < totalPages - 1)
+            {
+                nextPageIndex = items.Count;
+                items.Add("{55AAFF}-->\tNAV\t-\tNext page\t-\t-");
+            }
+        }
 
         var result = await SF.Dialog.ShowList(
-            $"Network Log [{navHint}]",
+            $"Network Log [Page {page + 1}/{totalPages}]",
             items,
             "Dir\tType\tID\tName\tSize\tTime"
         );
 
-        if (result.Button == SFDialogButton.OK && page < totalPages - 1)
+        if (result.Button != SFDialogButton.OK)
         {
-            await ShowLog(page + 1);
+            if (result.Button == SFDialogButton.Cancel && page > 0)
+            {
+                await ShowLog(page - 1);
+            }
+
+            return;
         }
-        else if (result.Button == SFDialogButton.Cancel && page > 0)
+
+        if (result.SelectedIndex == previousPageIndex)
         {
             await ShowLog(page - 1);
+            return;
         }
+
+        if (result.SelectedIndex == nextPageIndex)
+        {
+            await ShowLog(page + 1);
+            return;
+        }
+
+        if (result.SelectedIndex >= 0 && result.SelectedIndex < pageCount)
+        {
+            await ShowEntryDetail(entries[skip + result.SelectedIndex], page);
+        }
+    }
+
+    private async Task ShowEntryDetail(NetLogEntry entry, int returnPage)
+    {
+        string dir = entry.Direction == Direction.Incoming ? "Incoming" : "Outgoing";
+        string kind = entry.Kind == MessageKind.Rpc ? "RPC" : "Packet";
+        int dataBytes = (entry.DataBitLength + 7) / 8;
+
+        string text = string.Join("\r\n", new[]
+        {
+            $"Direction: {dir}",
+            $"Type: {kind}",
+            $"ID: {entry.Id} ({entry.Name ?? "Unknown"})",
+            $"Size: {dataBytes} bytes ({entry.DataBitLength} bits)",
+            string.Empty,
+            "Decoded:",
+            entry.Detail ?? "(no decoded data)"
+        });
+
+        await SF.Dialog.ShowMessage($"{kind} {entry.Id} Detail", text);
+        await ShowLog(returnPage);
     }
 
     private async Task ShowStats()
@@ -269,10 +438,10 @@ public class RpcDebugger : ISFModule
 
         Dictionary<(MessageKind Kind, int Id), (int InCount, int OutCount, int InBits, int OutBits, string? Name)> stats = new();
 
-        foreach (ref readonly NetLogEntry entry in entries.AsSpan())
+        foreach (NetLogEntry entry in entries)
         {
-            var key = (entry.Kind, entry.Id);
-            if (!stats.TryGetValue(key, out var s))
+            (MessageKind Kind, int Id) key = (entry.Kind, entry.Id);
+            if (!stats.TryGetValue(key, out (int InCount, int OutCount, int InBits, int OutBits, string? Name) s))
             {
                 s = (0, 0, 0, 0, entry.Name);
             }

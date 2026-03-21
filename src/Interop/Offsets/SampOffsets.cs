@@ -59,36 +59,21 @@ public static class SampOffsets
     public static class RakClientVTable
     {
         public const int EntryCount = 55;
-        public const int Destructor = 0;
-        public const int Connect = 1;
-        public const int Disconnect = 2;
-        public const int InitializeSecurity = 3;
-        public const int SetPassword = 4;
-        public const int HasPassword = 5;
-        public const int Send_Data = 6;
-        public const int Send_BitStream = 7;
+        public const int Send_BitStream = 6;
+        public const int Send_Data = 7;
         public const int Receive = 8;
-        public const int DeallocatePacket = 9;
-        public const int PingServer = 10;
-        public const int GetAveragePing = 12;
-        public const int GetLastPing = 13;
-        public const int GetLowestPing = 14;
-        public const int IsConnected = 18;
-        public const int RegisterAsRemoteProcedureCall = 22;
-        public const int RegisterClassMemberRpc = 23;
-        public const int UnregisterAsRemoteProcedureCall = 24;
-        public const int RpcData = 25;
-        public const int RpcBitStream = 26;
-        public const int GetStaticServerData = 34;
-        public const int GetPlayerIndex = 54;
     }
 
     public static class RpcRuntime
     {
         public const int HandleRpcPacket = 0x3A6A0;
-        // RakClient::RPC (BitStream overload, vtable[25])
-        // bool __thiscall RPC(this, int* uniqueID, BitStream* bitStream, priority, reliability, orderingChannel, shiftTimestamp)
         public const int SendRpcBitStream = 0x33EE0;
+    }
+
+    public static class SampStringCompressor
+    {
+        public const int Instance = 0x534F0;
+        public const int DecodeString = 0x53B90;
     }
 
     public static class RakNetBitStream
@@ -99,7 +84,6 @@ public static class SampOffsets
 
     public static class RakNetPacket
     {
-        // Packet struct returned by RakClient::Receive
         public const int Length = 8;
         public const int BitSize = 12;
         public const int Data = 16;
@@ -128,4 +112,3 @@ public static class SampOffsets
         }
     }
 }
-

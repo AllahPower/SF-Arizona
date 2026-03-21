@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-// MinHook detour on RakClient::Receive (vtable[8])
+// MinHook detour on live RakClient::Receive slot (vtable[8])
 // Packet* __thiscall Receive(this)
 internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacketHook.ReceiveNative>
 {

@@ -1,4 +1,5 @@
-using System.Numerics;
+﻿using System.Numerics;
+using System.Text;
 
 namespace SFSharp;
 
@@ -44,21 +45,121 @@ public readonly record struct ArzLoadJs(byte[] Unknown16, string Js, string Any,
 public readonly record struct ArzPlayMediaOnBillboard(int BillboardId, byte[] Pad12A, string Link, string UserAgent, byte[] Pad12B);
 
 // id=16 | load remote HTML page into CEF overlay
-public readonly record struct ArzLoadHtml(uint ServerId, string Url);
+public readonly record struct ArzLoadHtml(uint BrowserId, string Url);
 
 // id=17 | main CEF event pipe
-// text uses Arizona maybeEncoded format: u16 length, i8 encoded_flag, then plain or RakNet-encoded bytes
-// payload commonly carries JS: window.executeEvent('eventName', `{json}`);
-public readonly record struct ArzDisplay(uint ServerId, string Text);
+// raw wire format: u32 reserved, u16 length, u8 flag, then plain text, encoded text, or numeric payload
+// the leading u32 exists on the wire, but the vorbisFile.dll Display handler does not use it after dispatch
+public readonly record struct ArzInjectCode(string Text, string Detail)
+{
+    public bool HasText => !string.IsNullOrEmpty(Text);
+}
+
+// id=10 | RakCefLoader group-A packet, exact short name still unresolved
+// common recovered layout: 4 x i32 rect/anchor values, 2 text payloads, optional raw tail.
+// If the first two ints are zero, vorbisFile.dll derives them from screen size and the next two ints.
+public readonly record struct ArzCustomUnknown10(
+    uint Value0,
+    uint Value1,
+    uint Value2,
+    uint Value3,
+    string MaybeEncodedText,
+    string Text,
+    byte[] RawTail
+);
+
+// id=11 | RakCefLoader group-A packet, exact short name still unresolved
+// Same header as id=10 plus one float and optional trailing fields.
+public readonly record struct ArzCustomUnknown11(
+    uint Value0,
+    uint Value1,
+    uint Value2,
+    uint Value3,
+    string MaybeEncodedText,
+    string Text,
+    float FloatValue,
+    byte[] RawTail
+);
+
+// id=12 | RakCefLoader group-A packet, exact short name still unresolved
+// Same header as id=10 plus u16/u16/float and optional trailing fields.
+public readonly record struct ArzCustomUnknown12(
+    uint Value0,
+    uint Value1,
+    uint Value2,
+    uint Value3,
+    string MaybeEncodedText,
+    string Text,
+    ushort Short0,
+    ushort Short1,
+    float FloatValue,
+    byte[] RawTail
+);
+
+// id=13 | RakCefLoader group-A packet, exact short name still unresolved
+// Same layout as id=12, but vorbisFile.dll reads two extra u32 values before the optional tail.
+public readonly record struct ArzCustomUnknown13(
+    uint Value0,
+    uint Value1,
+    uint Value2,
+    uint Value3,
+    string MaybeEncodedText,
+    string Text,
+    ushort Short0,
+    ushort Short1,
+    float FloatValue,
+    uint Value4,
+    uint Value5,
+    byte[] RawTail
+);
+
+// id=14 | close browser or screen by browser id
+public readonly record struct ArzCustomClose(string BrowserId);
+
+// id=15 | move browser/window by browser id and two values
+public readonly record struct ArzCustomMove(string BrowserId, uint Value0, uint Value1);
+
+// id=16 | change browser URL
+public readonly record struct ArzCustomChangeUrl(string BrowserId, string Url);
+
+// id=17 | inject code/event payload by browser id
+public readonly record struct ArzCustomInjectCode(string BrowserId, string Payload);
 
 // id=25 | toggle mouse cursor visibility
-public readonly record struct ArzToggleCursor(uint Unknown1, bool Status, ushort Unknown2);
+public readonly record struct ArzToggleCursor(uint BrowserId, bool Status, ushort Unknown2);
+
+// id=18 | send browser/UI text message with trailing value
+public readonly record struct ArzCustomSendMessage(string Text, uint Value);
+
+// id=19 | toggle browser/screen by browser id
+public readonly record struct ArzCustomToggleScreen(string BrowserId);
+
+// id=22 | toggle browser show state by browser id
+public readonly record struct ArzCustomToggleShow(string BrowserId);
+
+// id=23 | browser click event with two values and one mode byte
+public readonly record struct ArzCustomBrowserClick(string BrowserId, uint Value0, uint Value1, byte Value2);
+
+// id=24 | get browser control state by browser id
+public readonly record struct ArzGetBrowserControlState(string BrowserId);
+
+// id=25 | set browser control state by browser id
+public readonly record struct ArzCustomSetBrowserControlState(string BrowserId, byte State);
+
+// id=28 | browser resize event
+public readonly record struct ArzCustomResize(string BrowserId, uint Width, uint Height);
+
+// id=30 | add browser object
+public readonly record struct ArzCustomAddObject(string BrowserId, uint Value0, uint Value1);
+
+// id=31 | remove browser object
+public readonly record struct ArzCustomRemoveObject(string BrowserId, uint Value0, uint Value1);
 
 // id=27 | unknown player state flag
 public readonly record struct ArzSetPlayerUnknownState(ushort PlayerId, bool Unknown1, byte State);
 
 // id=34 | CEF element color/scale override
-public readonly record struct ArzUiColorScale(ushort ServerId, uint Argb, float Scale, ushort U16a, ushort U16b, byte Flags);
+public readonly record struct ArzUiColorScale(ushort BrowserId, uint Argb, float Scale, ushort U16a, ushort U16b, byte Flags);
 
 // id=36 | register a chat group with command and color
 public readonly record struct ArzSetChatGroup(byte ChatId, string Command, int Color, string ChatName);
@@ -77,6 +178,9 @@ public readonly record struct ArzSetVisibleDistance3DMarker(bool Status, float D
 
 // id=71 | discord rich presence location toggle
 public readonly record struct ArzShowPositionInDiscord(bool Status);
+
+// id=86 | observed on wire as a single-bit flag packet
+public readonly record struct ArzUnknown86(bool State);
 
 // id=91 | auto-drink beer toggle (RP event)
 public readonly record struct ArzAutoDrinkBeer(bool State);
@@ -123,8 +227,10 @@ public readonly record struct ArzToggleUnknown114(bool State);
 // id=117 | Vice City mode flag
 public readonly record struct ArzSetViceCityFlag(bool State);
 
-// id=120 | nametag flag strings (clan tags, faction icons, etc.)
-public readonly record struct ArzSetPlayerNametagFlags(ushort PlayerId, bool Unknown1, string Flag1, string Flag2, string Flag3, string Flag4);
+// id=120 | compact nametag/settings blob; vorbisFile.dll enumerates keys like
+// nonametagstatus/timestamp/headmove/hudscalefix/interior/togobjlight/cmpstat/audiomsg/logurls.
+// The exact per-field layout is not fully recovered yet, so keep the remaining payload raw.
+public readonly record struct ArzSetPlayerNametagFlags(ushort PlayerId, byte Header, byte[] RawTail, bool? TrailingBit);
 
 // id=127 | custom map icon (minimap marker)
 public readonly record struct ArzSetMapIcon(byte IconId, byte[] Pad14, ushort IconModel, Vector3 Position, string IconName, byte Pad);
@@ -196,6 +302,64 @@ public readonly record struct ArzSetVehicleLights(ushort VehicleId, string Light
 // id=209 | police/emergency strobelights
 public readonly record struct ArzSetVehicleStrobelights(ushort VehicleId, byte[] Unknown6);
 
+// id=141 | 3D waypoint/ring buffer entry with timer fields kept as raw wire integers
+public readonly record struct ArzCreate3DWaypoint(ushort Id, uint X, uint Y, uint Z, uint TimeOffset, uint Unknown, bool Active);
+
+// id=147 | HUD theme/style selector used by CHudHook
+public readonly record struct ArzSetHudStyle(byte Style);
+
+// id=149 | Drone module render target create/destroy toggle
+public readonly record struct ArzToggleRenderTarget(bool Create);
+
+// id=166 | portal visibility toggle flag
+public readonly record struct ArzTogglePortal(bool State);
+
+// id=169 | create/update portal slot; type: 1=front, 2=back/alternate
+public readonly record struct ArzCreatePortal(ushort Id, byte Type, Vector3 Position, Vector3 Rotation);
+
+// id=170 | destroy portal slot by id/type
+public readonly record struct ArzDestroyPortal(ushort Id, byte Type);
+
+// id=200 | local player skin/model override
+public readonly record struct ArzSetPlayerSkin(byte SkinId);
+
+// id=0xBE | ScaleRadarMapIcons::didRecievedScaling::packet_t
+// vorbisFile.dll handler 0x10255FF8 reads: u8 radarIconId, optional float scaleX=1.0, optional float scaleY=1.0
+public readonly record struct ArzScaleRadarMapIcon(byte RadarIconId, float ScaleX, float ScaleY);
+
+// id=0xBF | GangZonePoly::zone_t packet
+// vorbisFile.dll helper 0x102B5AA4 proves:
+//   u8 zoneId
+//   u32 pointWordCount, u32[pointWordCount] packedPolygonPoints
+//   u8 colorR, u8 colorG, u8 colorB, u8 colorA, u8 style
+//   bit-bool enabled
+// color/style names are inferred from GangZonePoly usage; packedPolygonPoints name is used because the reader only proves a word array.
+public readonly record struct ArzGangZonePoly(
+    byte ZoneId,
+    uint[] PackedPolygonPoints,
+    byte ColorR,
+    byte ColorG,
+    byte ColorB,
+    byte ColorA,
+    byte Style,
+    bool Enabled
+);
+
+public abstract record ArzGpsRoutePoint;
+public sealed record ArzGpsRouteWorldPoint(Vector3 Position) : ArzGpsRoutePoint;
+public sealed record ArzGpsRouteLinePoint(byte LineType, ushort LineId, Vector3 Position) : ArzGpsRoutePoint;
+public sealed record ArzGpsRoutePedBonePoint(bool UseEntitySpace, ushort EntityId, ushort BoneId) : ArzGpsRoutePoint;
+public sealed record ArzGpsRouteVehiclePoint(ushort VehicleId, string Label, Vector3 Position) : ArzGpsRoutePoint;
+
+// id=212 | GPS route line packet; action 0 removes slot, action 1 creates/updates it
+public readonly record struct ArzSetGpsRoute(byte Action, byte Slot, byte Speed, bool Loop, int Color1, int Color2, ArzGpsRoutePoint? First, ArzGpsRoutePoint? Second)
+{
+    public bool IsCreate => Action == 1;
+    public bool IsRemove => Action == 0;
+}
+
+// id=215 | first-person camera mode toggle
+public readonly record struct ArzSetFirstPersonCamera(bool State);
 // --- Packet 220 outgoing (client -> server) ---
 
 // id=0 | key press notification
@@ -216,6 +380,12 @@ public readonly record struct ArzSendText(string Text, uint ServerId);
 
 // id=20 | report client screen resolution
 public readonly record struct ArzSendResolution(uint Width, uint Height);
+
+// id=20 | client -> server custom state pair
+public readonly record struct ArzCustomStatePair(uint Value0, uint Value1);
+
+// id=21 | module memory query / request payload
+public readonly record struct ArzModuleReadRequest(uint ModuleOffset, string ModuleName, uint Size);
 
 // id=24 | client requests interface hide/show
 public readonly record struct ArzSendToggleDrawInterface(uint ServerId, bool Status);
@@ -288,7 +458,7 @@ public readonly record struct ArzSetBotPos(ushort BotId, Vector3 Position);
 public readonly record struct ArzMoveBotToPos(ushort BotId, Vector3 Position, ushort Unknown1, uint Unknown2);
 
 // id=69 | play animation on bot
-public readonly record struct ArzApplyBotAnimation(ushort BotId, string AnimLib, string AnimName, byte[] Unknown9);
+public readonly record struct ArzApplyBotAnimation(ushort BotId, string AnimLib, string AnimName, byte[] Tail);
 
 // id=80 | bot attacks a player
 public readonly record struct ArzBotAttackPlayer(ushort BotId, ushort PlayerId, uint Unknown);
@@ -336,10 +506,15 @@ public readonly record struct ArzSetBotAttachedSimpleObject(
 public readonly record struct ArzSendBotOnfootSync(ushort BotId, Vector3 Position, float Heading);
 
 // id=73 | bot damage report
+// first flag is observed as a single-bit value; remaining fields are still being recovered from core.asi
 public readonly record struct ArzSendBotDamage(
-    bool GiveOrTake, ushort BotId,
-    float Damage, int Weapon, int Bodypart,
-    ushort Unknown, ushort PlayerId
+    bool GiveOrTake,
+    ushort BotId,
+    float Damage,
+    byte WeaponId,
+    byte BodyPart,
+    ushort Unknown0,
+    ushort Unknown1
 );
 
 // ============================================================================
@@ -365,14 +540,82 @@ public static class ArizonaPacket
     }
 
     // Arizona maybeEncoded format seen on Packet 220 CEF packets:
-    // u16 length, i8 encoded_flag, then either plain bytes or RakNet-encoded bytes.
-    // We currently preserve the exact wire shape but decode the string as a best-effort byte read.
+    // u16 length, i8 encoded_flag, then either plain bytes or encoded/compressed bytes.
     private static string ReadMaybeEncodedString(ref BitStreamReader r)
     {
-        ushort len = r.ReadUInt16();
+        ushort decodedLength = r.ReadUInt16();
         byte encodedFlag = r.ReadUInt8();
-        int bytesToRead = encodedFlag == 0 ? len : len + encodedFlag;
-        return bytesToRead > 0 ? r.ReadFixedString(bytesToRead) : string.Empty;
+        int remainingBytes = (r.RemainingBits + 7) / 8;
+        if (remainingBytes <= 0)
+        {
+            return string.Empty;
+        }
+
+        if (encodedFlag == 0)
+        {
+            int plainBytes = Math.Min(decodedLength, remainingBytes);
+            return plainBytes > 0 ? r.ReadFixedString(plainBytes) : string.Empty;
+        }
+
+        byte[] encodedBytes = r.ReadRemainingBytes();
+        int maxCharsToWrite = decodedLength + encodedFlag;
+        if (BitStreamReader.RakNetBitStreamDecodeString(encodedBytes, maxCharsToWrite, out string decodedText))
+        {
+            return decodedText;
+        }
+
+        string encodedText = BitConverter.ToString(encodedBytes).Replace("-", string.Empty);
+        return $"<encoded len={decodedLength} flag={encodedFlag} bytes={encodedText}>";
+    }
+
+    private static ArzInjectCode ReadInjectCodePayload(ref BitStreamReader r)
+    {
+        ushort declaredLength = r.ReadUInt16();
+        byte encodedFlag = r.ReadUInt8();
+
+        if (declaredLength == 0)
+        {
+            return new(string.Empty, $"len=0 flag={encodedFlag}");
+        }
+
+        if (encodedFlag == 0)
+        {
+            if (declaredLength == 1)
+            {
+                if (r.RemainingBits < 32)
+                {
+                    return new(string.Empty, $"len=1 flag=0 bits={r.RemainingBits} numeric-too-short");
+                }
+
+                uint numericValue = r.ReadUInt32();
+                return new(numericValue.ToString(), "len=1 flag=0 numeric=u32");
+            }
+
+            int remainingBytes = (r.RemainingBits + 7) / 8;
+            int plainBytes = Math.Min(declaredLength, remainingBytes);
+            string text = plainBytes > 0 ? r.ReadFixedString(plainBytes) : string.Empty;
+            return new(text, $"len={declaredLength} flag=0 bytes={plainBytes}");
+        }
+
+        if (declaredLength <= 1)
+        {
+            return new(string.Empty, $"len={declaredLength} flag={encodedFlag} empty-encoded");
+        }
+
+        byte[] encodedBytes = r.ReadRemainingBytes();
+        int maxCharsToWrite = declaredLength + encodedFlag;
+        if (BitStreamReader.RakNetBitStreamDecodeString(encodedBytes, maxCharsToWrite, out string decodedText))
+        {
+            return new(decodedText, $"len={declaredLength} flag={encodedFlag} bytes={encodedBytes.Length} decoder=RakNet.StringCompressor");
+        }
+
+        string hex = BitConverter.ToString(encodedBytes).Replace("-", string.Empty);
+        if (hex.Length > 96)
+        {
+            hex = hex.Substring(0, 96) + "...";
+        }
+
+        return new(string.Empty, $"len={declaredLength} flag={encodedFlag} bytes={encodedBytes.Length} hex={hex}");
     }
 
     // ---- Packet 220 incoming parsers ----
@@ -432,19 +675,18 @@ public static class ArizonaPacket
         return new(serverId, url);
     }
 
-    public static ArzDisplay ParseDisplay(ref BitStreamReader r)
+    public static ArzInjectCode ParseInjectCode(ref BitStreamReader r)
     {
-        uint serverId = r.ReadUInt32();
-        string text = ReadMaybeEncodedString(ref r);
-        return new(serverId, text);
+        r.ReadUInt32(); // reserved u32 present on raw 220/17 wire format
+        return ReadInjectCodePayload(ref r);
     }
 
     public static ArzToggleCursor ParseToggleCursor(ref BitStreamReader r)
     {
-        uint u1 = r.ReadUInt32();
-        bool status = r.ReadUInt8() != 0;
-        ushort u2 = r.ReadUInt16();
-        return new(u1, status, u2);
+        uint browserId = r.ReadUInt32();
+        bool status = r.ReadBitBool();
+        ushort unknown2 = r.RemainingBits >= 16 ? r.ReadUInt16() : (ushort)0;
+        return new(browserId, status, unknown2);
     }
 
     public static ArzSetPlayerUnknownState ParseSetPlayerUnknownState(ref BitStreamReader r)
@@ -502,6 +744,11 @@ public static class ArizonaPacket
     {
         return new(r.ReadUInt8() != 0);
     }
+    public static ArzUnknown86 ParseUnknown86(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
+    }
+
 
     public static ArzAutoDrinkBeer ParseAutoDrinkBeer(ref BitStreamReader r)
     {
@@ -558,7 +805,7 @@ public static class ArizonaPacket
     public static ArzSwitchChatState ParseSwitchChatState(ref BitStreamReader r)
     {
         uint pid = r.ReadUInt32();
-        bool isOpen = r.ReadBool();
+        bool isOpen = r.ReadBitBool();
         return new(pid, isOpen);
     }
 
@@ -589,12 +836,10 @@ public static class ArizonaPacket
     public static ArzSetPlayerNametagFlags ParseSetPlayerNametagFlags(ref BitStreamReader r)
     {
         ushort pid = r.ReadUInt16();
-        bool u1 = r.ReadBool();
-        string f1 = r.ReadStringUInt8Length();
-        string f2 = r.ReadStringUInt8Length();
-        string f3 = r.ReadStringUInt8Length();
-        string f4 = r.ReadStringUInt8Length();
-        return new(pid, u1, f1, f2, f3, f4);
+        byte header = r.ReadUInt8();
+        byte[] rawTail = r.ReadBytes(r.RemainingBits / 8).ToArray();
+        bool? trailingBit = r.RemainingBits > 0 ? r.ReadBitBool() : null;
+        return new(pid, header, rawTail, trailingBit);
     }
 
     public static ArzSetMapIcon ParseSetMapIcon(ref BitStreamReader r)
@@ -760,6 +1005,114 @@ public static class ArizonaPacket
         return new(vid, unknown);
     }
 
+    public static ArzCreate3DWaypoint ParseCreate3DWaypoint(ref BitStreamReader r)
+    {
+        ushort id = r.ReadUInt16();
+        uint x = r.ReadUInt32();
+        uint y = r.ReadUInt32();
+        uint z = r.ReadUInt32();
+        uint timeOffset = r.ReadUInt32();
+        uint unknown = r.ReadUInt32();
+        bool active = r.ReadBool();
+        return new(id, x, y, z, timeOffset, unknown, active);
+    }
+
+    public static ArzSetHudStyle ParseSetHudStyle(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
+    public static ArzToggleRenderTarget ParseToggleRenderTarget(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzTogglePortal ParseTogglePortal(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    public static ArzCreatePortal ParseCreatePortal(ref BitStreamReader r)
+    {
+        ushort id = r.ReadUInt16();
+        byte type = r.ReadUInt8();
+        Vector3 position = ReadVec3(ref r);
+        Vector3 rotation = ReadVec3(ref r);
+        return new(id, type, position, rotation);
+    }
+
+    public static ArzDestroyPortal ParseDestroyPortal(ref BitStreamReader r)
+    {
+        ushort id = r.ReadUInt16();
+        byte type = r.ReadUInt8();
+        return new(id, type);
+    }
+
+    public static ArzSetPlayerSkin ParseSetPlayerSkin(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
+    public static ArzSetGpsRoute ParseSetGpsRoute(ref BitStreamReader r)
+    {
+        byte action = r.ReadUInt8();
+        byte slot = r.ReadUInt8();
+        if (action == 0)
+        {
+            return new(action, slot, 0, false, 0, 0, null, null);
+        }
+
+        if (action != 1)
+        {
+            return new(action, slot, 0, false, 0, 0, null, null);
+        }
+
+        byte speed = r.ReadUInt8();
+        bool loop = r.ReadBool();
+        int color1 = r.ReadInt32();
+        int color2 = r.ReadInt32();
+        ArzGpsRoutePoint? first = ParseGpsRoutePoint(ref r);
+        ArzGpsRoutePoint? second = ParseGpsRoutePoint(ref r);
+        return new(action, slot, speed, loop, color1, color2, first, second);
+    }
+
+    public static ArzSetFirstPersonCamera ParseSetFirstPersonCamera(ref BitStreamReader r)
+    {
+        return new(r.ReadBool());
+    }
+
+    private static ArzGpsRoutePoint? ParseGpsRoutePoint(ref BitStreamReader r)
+    {
+        byte type = r.ReadUInt8();
+        switch (type)
+        {
+            case 0:
+                return new ArzGpsRouteWorldPoint(ReadVec3(ref r));
+            case 1:
+                {
+                    byte lineType = r.ReadUInt8();
+                    ushort lineId = r.ReadUInt16();
+                    Vector3 position = ReadVec3(ref r);
+                    return new ArzGpsRouteLinePoint(lineType, lineId, position);
+                }
+            case 2:
+                {
+                    bool useEntitySpace = r.ReadBool();
+                    ushort entityId = r.ReadUInt16();
+                    ushort boneId = r.ReadUInt16();
+                    return new ArzGpsRoutePedBonePoint(useEntitySpace, entityId, boneId);
+                }
+            case 3:
+                {
+                    ushort vehicleId = r.ReadUInt16();
+                    string label = r.ReadStringUInt8Length();
+                    Vector3 position = ReadVec3(ref r);
+                    return new ArzGpsRouteVehiclePoint(vehicleId, label, position);
+                }
+            default:
+                return null;
+        }
+    }
     // ---- Packet 220 outgoing parsers ----
 
     public static ArzSendKey ParseSendKey(ref BitStreamReader r)
@@ -898,7 +1251,6 @@ public static class ArizonaPacket
         float maxHp = r.ReadFloat();
         float armour = r.ReadFloat();
         float maxArmour = r.ReadFloat();
-        r.SkipBytes(1); // trailing
         return new(botId, hp, maxHp, armour, maxArmour);
     }
 
@@ -946,8 +1298,16 @@ public static class ArizonaPacket
         ushort botId = r.ReadUInt16();
         string animLib = r.ReadStringUInt32Length();
         string animName = r.ReadStringUInt32Length();
-        byte[] unknown = r.ReadBytes(9).ToArray();
-        return new(botId, animLib, animName, unknown);
+        byte[] tail = r.ReadBytes(r.RemainingBits / 8).ToArray();
+        if (r.RemainingBits > 0)
+        {
+            byte[] tailWithBit = new byte[tail.Length + 1];
+            tail.CopyTo(tailWithBit, 0);
+            tailWithBit[tail.Length] = r.ReadBitBool() ? (byte)1 : (byte)0;
+            tail = tailWithBit;
+        }
+
+        return new(botId, animLib, animName, tail);
     }
 
     public static ArzBotAttackPlayer ParseBotAttackPlayer(ref BitStreamReader r)
@@ -1056,14 +1416,263 @@ public static class ArizonaPacket
 
     public static ArzSendBotDamage ParseSendBotDamage(ref BitStreamReader r)
     {
-        bool giveOrTake = r.ReadBool();
+        bool giveOrTake = r.ReadBitBool();
         ushort botId = r.ReadUInt16();
         float damage = r.ReadFloat();
-        int weapon = r.ReadInt32();
-        int bodypart = r.ReadInt32();
-        ushort unknown = r.ReadUInt16();
-        ushort playerId = r.ReadUInt16();
-        return new(giveOrTake, botId, damage, weapon, bodypart, unknown, playerId);
+        byte weaponId = r.ReadUInt8();
+        byte bodyPart = r.ReadUInt8();
+        ushort unknown0 = r.ReadUInt16();
+        ushort unknown1 = r.ReadUInt16();
+        return new(giveOrTake, botId, damage, weaponId, bodyPart, unknown0, unknown1);
+    }
+    // ---- Internal Arizona runtime custom packet helpers/parsers ----
+
+    private static string ReadCustomPacketNumericString(ref BitStreamReader reader)
+    {
+        uint value = reader.ReadUInt32();
+        return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string ReadCustomPacketString(ref BitStreamReader reader)
+    {
+        ushort length = reader.ReadUInt16();
+        byte encodedFlag = reader.ReadUInt8();
+
+        if (encodedFlag != 0)
+        {
+            byte[] encodedPayload = reader.ReadRemainingBytes();
+            if (BitStreamReader.RakNetBitStreamDecodeString(encodedPayload, length + encodedFlag, out string decoded))
+            {
+                return decoded;
+            }
+
+            return Convert.ToHexString(encodedPayload);
+        }
+
+        if (length <= 1)
+        {
+            return string.Empty;
+        }
+
+        return reader.ReadFixedString(length);
+    }
+
+    private static string ReadCustomPacketMaybeEncodedString(ref BitStreamReader reader)
+    {
+        ushort length = reader.ReadUInt16();
+        byte encodedFlag = reader.ReadUInt8();
+
+        if (length <= 1)
+        {
+            if (length == 1 && encodedFlag == 0 && reader.RemainingBits >= 32)
+            {
+                return reader.ReadUInt32().ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            return string.Empty;
+        }
+
+        if (encodedFlag != 0)
+        {
+            byte[] encodedPayload = reader.ReadRemainingBytes();
+            if (BitStreamReader.RakNetBitStreamDecodeString(encodedPayload, length + encodedFlag, out string decoded))
+            {
+                return decoded;
+            }
+
+            return Convert.ToHexString(encodedPayload);
+        }
+
+        return reader.ReadFixedString(length);
+    }
+
+    public static ArzCustomUnknown10 ParseCustomUnknown10(ref BitStreamReader reader)
+    {
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        uint value2 = reader.ReadUInt32();
+        uint value3 = reader.ReadUInt32();
+        string maybeEncodedText = ReadCustomPacketMaybeEncodedString(ref reader);
+        string text = ReadCustomPacketString(ref reader);
+        byte[] rawTail = reader.ReadRemainingBytes();
+        return new(value0, value1, value2, value3, maybeEncodedText, text, rawTail);
+    }
+
+    public static ArzCustomUnknown11 ParseCustomUnknown11(ref BitStreamReader reader)
+    {
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        uint value2 = reader.ReadUInt32();
+        uint value3 = reader.ReadUInt32();
+        string maybeEncodedText = ReadCustomPacketMaybeEncodedString(ref reader);
+        string text = ReadCustomPacketString(ref reader);
+        float floatValue = reader.ReadFloat();
+        byte[] rawTail = reader.ReadRemainingBytes();
+        return new(value0, value1, value2, value3, maybeEncodedText, text, floatValue, rawTail);
+    }
+
+    public static ArzCustomUnknown12 ParseCustomUnknown12(ref BitStreamReader reader)
+    {
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        uint value2 = reader.ReadUInt32();
+        uint value3 = reader.ReadUInt32();
+        string maybeEncodedText = ReadCustomPacketMaybeEncodedString(ref reader);
+        string text = ReadCustomPacketString(ref reader);
+        ushort short0 = reader.ReadUInt16();
+        ushort short1 = reader.ReadUInt16();
+        float floatValue = reader.ReadFloat();
+        byte[] rawTail = reader.ReadRemainingBytes();
+        return new(value0, value1, value2, value3, maybeEncodedText, text, short0, short1, floatValue, rawTail);
+    }
+
+    public static ArzCustomUnknown13 ParseCustomUnknown13(ref BitStreamReader reader)
+    {
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        uint value2 = reader.ReadUInt32();
+        uint value3 = reader.ReadUInt32();
+        string maybeEncodedText = ReadCustomPacketMaybeEncodedString(ref reader);
+        string text = ReadCustomPacketString(ref reader);
+        ushort short0 = reader.ReadUInt16();
+        ushort short1 = reader.ReadUInt16();
+        float floatValue = reader.ReadFloat();
+        uint value4 = reader.ReadUInt32();
+        uint value5 = reader.ReadUInt32();
+        byte[] rawTail = reader.ReadRemainingBytes();
+        return new(value0, value1, value2, value3, maybeEncodedText, text, short0, short1, floatValue, value4, value5, rawTail);
+    }
+
+    public static ArzCustomClose ParseCustomClose(ref BitStreamReader reader)
+    {
+        return new(ReadCustomPacketNumericString(ref reader));
+    }
+
+    public static ArzCustomMove ParseCustomMove(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        return new(browserId, value0, value1);
+    }
+
+    public static ArzCustomChangeUrl ParseCustomChangeUrl(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        string url = ReadCustomPacketMaybeEncodedString(ref reader);
+        return new(browserId, url);
+    }
+
+    public static ArzInjectCode ParseCustomInjectCode(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        string payload = ReadCustomPacketMaybeEncodedString(ref reader);
+        return new(browserId, payload);
+    }
+
+    public static ArzCustomSendMessage ParseCustomSendMessage(ref BitStreamReader reader)
+    {
+        string text = ReadCustomPacketMaybeEncodedString(ref reader);
+        uint value = reader.ReadUInt32();
+        return new(text, value);
+    }
+
+    public static ArzCustomToggleScreen ParseCustomToggleScreen(ref BitStreamReader reader)
+    {
+        return new(ReadCustomPacketNumericString(ref reader));
+    }
+
+    public static ArzCustomStatePair ParseCustomStatePair(ref BitStreamReader reader)
+    {
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        return new(value0, value1);
+    }
+
+    public static ArzModuleReadRequest ParseCustomModuleReadRequest(ref BitStreamReader reader)
+    {
+        uint moduleOffset = reader.ReadUInt32();
+        byte moduleNameLength = reader.ReadUInt8();
+        string moduleName = moduleNameLength > 0 ? reader.ReadFixedString(moduleNameLength) : string.Empty;
+        uint size = reader.ReadUInt32();
+        return new(moduleOffset, moduleName, size);
+    }
+
+    public static ArzCustomToggleShow ParseCustomToggleShow(ref BitStreamReader reader)
+    {
+        return new(ReadCustomPacketNumericString(ref reader));
+    }
+
+    public static ArzCustomBrowserClick ParseCustomBrowserClick(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        byte value2 = reader.ReadUInt8();
+        return new(browserId, value0, value1, value2);
+    }
+
+    public static ArzGetBrowserControlState ParseCustomGetBrowserControlState(ref BitStreamReader reader)
+    {
+        return new(ReadCustomPacketNumericString(ref reader));
+    }
+
+    public static ArzCustomSetBrowserControlState ParseCustomSetBrowserControlState(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        byte state = reader.ReadUInt8();
+        return new(browserId, state);
+    }
+
+    public static ArzCustomResize ParseCustomResize(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        uint width = reader.ReadUInt32();
+        uint height = reader.ReadUInt32();
+        return new(browserId, width, height);
+    }
+
+    public static ArzCustomAddObject ParseCustomAddObject(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        return new(browserId, value0, value1);
+    }
+
+    public static ArzCustomRemoveObject ParseCustomRemoveObject(ref BitStreamReader reader)
+    {
+        string browserId = ReadCustomPacketNumericString(ref reader);
+        uint value0 = reader.ReadUInt32();
+        uint value1 = reader.ReadUInt32();
+        return new(browserId, value0, value1);
+    }
+
+    public static ArzScaleRadarMapIcon ParseCustomBlipIconRaw(ref BitStreamReader reader)
+    {
+        byte radarIconId = reader.ReadUInt8();
+        float scaleX = reader.RemainingBits >= 32 ? reader.ReadFloat() : 1.0f;
+        float scaleY = reader.RemainingBits >= 32 ? reader.ReadFloat() : 1.0f;
+        return new(radarIconId, scaleX, scaleY);
+    }
+
+    public static ArzGangZonePoly ParseCustomMarkerIconBatchRaw(ref BitStreamReader reader)
+    {
+        byte zoneId = reader.ReadUInt8();
+        uint pointWordCount = reader.ReadUInt32();
+        uint[] packedPolygonPoints = new uint[pointWordCount];
+        for (int i = 0; i < packedPolygonPoints.Length; i++)
+        {
+            packedPolygonPoints[i] = reader.ReadUInt32();
+        }
+
+        byte colorR = reader.ReadUInt8();
+        byte colorG = reader.ReadUInt8();
+        byte colorB = reader.ReadUInt8();
+        byte colorA = reader.ReadUInt8();
+        byte style = reader.ReadUInt8();
+        bool enabled = reader.ReadBitBool();
+        return new(zoneId, packedPolygonPoints, colorR, colorG, colorB, colorA, style, enabled);
     }
 
     // ============================================================================

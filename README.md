@@ -4,7 +4,7 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.2**
+Current release: **3.1.3**
 
 ## Highlights
 
@@ -46,7 +46,6 @@ It is primarily used for Arizona UI/CEF and gameplay-side custom events, for exa
 - cursor and HUD toggles
 - custom map/icon and vehicle visual state updates
 - client-side interface callbacks back to the server
-
 
 ### core.asi CustomPacket Layer
 
@@ -100,7 +99,7 @@ Incoming: RakClient::Receive (vtable[8], resolved at runtime)
   -> ProcessIncomingPacketBatch (main thread, batched)
   -> IncomingPacketManager.Dispatch -> subscribers
 
-Outgoing: RakClient::Send (vtable[7], resolved at runtime)
+Outgoing: RakClient::Send (raw data overload, vtable[6], resolved at runtime)
   -> OutgoingPacketHook
   -> SFBootstrap.EnqueueOutgoingPacket
   -> ProcessOutgoingPacketBatch (main thread, batched)
@@ -150,8 +149,8 @@ dotnet publish src/SF.csproj -c Release
 ## Acknowledgements
 
 - [TheLeftExit/SF](https://github.com/TheLeftExit/SF) for the original project
+- [SAMP.Lua](https://github.com/THE-FYP/SAMP.Lua/) as a reference source for SA:MP RPC/packet layouts and event handling
 - [SAMP-API](https://github.com/BlastHackNet/SAMP-API) and [DarkP1xel/SAMP-API](https://github.com/DarkP1xel/SAMP-API) for reversed classes and offsets
 - [RakHook](https://github.com/imring/RakHook) and [RakLua](https://github.com/Northn/RakLua) for RakNet hooking references
 - [SAMPFUNCS](https://www.blast.hk/threads/17/) for inspiration and API ideas
 - [blast.hk forum](https://www.blast.hk/) for GTA SA:MP reverse-engineering discussions
-

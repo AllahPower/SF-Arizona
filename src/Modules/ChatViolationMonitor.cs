@@ -17,7 +17,7 @@ public class ChatViolationMonitor : ISFModule
         await foreach (ServerChatEntry entry in SF.Chat.StreamServerChatEntries(token))
         {
 
-            if (entry.Kind != ServerChatKind.Chat)
+            if (entry.Kind != ServerChatKind.ClientMessage)
             {
                 continue;
             }
