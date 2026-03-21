@@ -215,7 +215,7 @@ public readonly record struct ArzToggleUnknown105(bool State);
 public readonly record struct ArzSwitchChatState(uint PlayerId, bool IsOpen);
 
 // id=110 | CEF UI config packet
-public readonly record struct ArzUiConfig(byte Type, ushort Len);
+public readonly record struct ArzUiConfig(byte Type, byte Len);
 
 // id=112 | spectator/camera patch toggle
 // second byte is still not fully named, but both bytes participate in spectator/camera memory patching
@@ -263,6 +263,21 @@ public readonly record struct ArzSetPlayerAttachedObject(
     Vector3 Offset, Vector3 Rotation, Vector3 Scale,
     int Color1, int Color2
 );
+
+// id=130 | test drive toggle for a vehicle
+public readonly record struct ArzTestDrive(ushort VehicleId, bool State);
+
+// id=150 | vehicle feature flag 1 (headlights rendering)
+public readonly record struct ArzVehicleFeatureFlag1(ushort VehicleId, bool State);
+
+// id=151 | vehicle feature flag 0 (nitro base flag)
+public readonly record struct ArzVehicleFeatureFlag0(ushort VehicleId, bool State);
+
+// id=152 | vehicle feature flag 2 (nitro color flag)
+public readonly record struct ArzVehicleFeatureFlag2(ushort VehicleId, bool State);
+
+// id=156 | vehicle feature reset (reset + flag6)
+public readonly record struct ArzVehicleFeatureReset(ushort VehicleId, bool State);
 
 // id=165 | load binary resource by name
 public readonly record struct ArzLoadBinary(string Text);
@@ -752,12 +767,12 @@ public static class ArizonaPacket
 
     public static ArzAutoDrinkBeer ParseAutoDrinkBeer(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetDayNightColors ParseSetDayNightColors(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzToggleCompass ParseToggleCompass(ref BitStreamReader r)
@@ -772,12 +787,12 @@ public static class ArizonaPacket
 
     public static ArzToggleMapColors ParseToggleMapColors(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzToggleUnknown102 ParseToggleUnknown102(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzChangeServer ParseChangeServer(ref BitStreamReader r)
@@ -799,7 +814,7 @@ public static class ArizonaPacket
 
     public static ArzToggleUnknown105 ParseToggleUnknown105(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzSwitchChatState ParseSwitchChatState(ref BitStreamReader r)
@@ -812,7 +827,7 @@ public static class ArizonaPacket
     public static ArzUiConfig ParseUiConfig(ref BitStreamReader r)
     {
         byte type = r.ReadUInt8();
-        ushort len = r.ReadUInt16();
+        byte len = r.ReadUInt8();
         return new(type, len);
     }
 
@@ -825,12 +840,12 @@ public static class ArizonaPacket
 
     public static ArzToggleUnknown114 ParseToggleUnknown114(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetViceCityFlag ParseSetViceCityFlag(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetPlayerNametagFlags ParseSetPlayerNametagFlags(ref BitStreamReader r)
@@ -935,12 +950,12 @@ public static class ArizonaPacket
 
     public static ArzToggleUnknown163 ParseToggleUnknown163(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzToggleUnknown164 ParseToggleUnknown164(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetCurrentTask ParseSetCurrentTask(ref BitStreamReader r)
@@ -967,15 +982,15 @@ public static class ArizonaPacket
 
     public static ArzUiToggle ParseUiToggle(ref BitStreamReader r)
     {
+        bool state = r.ReadBitBool();
         ushort sid = r.ReadUInt16();
-        bool state = r.ReadBool();
         return new(sid, state);
     }
 
     public static ArzVehicleHeadlightsState ParseVehicleHeadlightsState(ref BitStreamReader r)
     {
         ushort vid = r.ReadUInt16();
-        bool state = r.ReadBool();
+        bool state = r.ReadBitBool(); // inferred from vehicle packet pattern; not confirmed via IDA
         return new(vid, state);
     }
 
@@ -987,7 +1002,7 @@ public static class ArizonaPacket
     public static ArzSetVehicleDriftMode ParseSetVehicleDriftMode(ref BitStreamReader r)
     {
         ushort vid = r.ReadUInt16();
-        bool state = r.ReadUInt8() != 0;
+        bool state = r.ReadBitBool();
         return new(vid, state);
     }
 
@@ -1024,12 +1039,12 @@ public static class ArizonaPacket
 
     public static ArzToggleRenderTarget ParseToggleRenderTarget(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzTogglePortal ParseTogglePortal(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
     }
 
     public static ArzCreatePortal ParseCreatePortal(ref BitStreamReader r)
@@ -1078,7 +1093,42 @@ public static class ArizonaPacket
 
     public static ArzSetFirstPersonCamera ParseSetFirstPersonCamera(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBitBool());
+    }
+
+    public static ArzTestDrive ParseTestDrive(ref BitStreamReader r)
+    {
+        ushort vid = r.ReadUInt16();
+        bool state = r.ReadBitBool();
+        return new(vid, state);
+    }
+
+    public static ArzVehicleFeatureFlag1 ParseVehicleFeatureFlag1(ref BitStreamReader r)
+    {
+        ushort vid = r.ReadUInt16();
+        bool state = r.ReadBitBool();
+        return new(vid, state);
+    }
+
+    public static ArzVehicleFeatureFlag0 ParseVehicleFeatureFlag0(ref BitStreamReader r)
+    {
+        ushort vid = r.ReadUInt16();
+        bool state = r.ReadBitBool();
+        return new(vid, state);
+    }
+
+    public static ArzVehicleFeatureFlag2 ParseVehicleFeatureFlag2(ref BitStreamReader r)
+    {
+        ushort vid = r.ReadUInt16();
+        bool state = r.ReadBitBool();
+        return new(vid, state);
+    }
+
+    public static ArzVehicleFeatureReset ParseVehicleFeatureReset(ref BitStreamReader r)
+    {
+        ushort vid = r.ReadUInt16();
+        bool state = r.ReadBitBool();
+        return new(vid, state);
     }
 
     private static ArzGpsRoutePoint? ParseGpsRoutePoint(ref BitStreamReader r)

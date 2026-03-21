@@ -93,7 +93,12 @@ public static class PacketParserCatalog
         Register220Incoming(registry, ArizonaPacketId.SetSkyboxImages, ArizonaPacket.ParseSetSkyboxImages);
         Register220Incoming(registry, ArizonaPacketId.Create3DWaypoint, ArizonaPacket.ParseCreate3DWaypoint);
         Register220Incoming(registry, ArizonaPacketId.SetHudStyle, ArizonaPacket.ParseSetHudStyle);
+        Register220Incoming(registry, ArizonaPacketId.TestDrive, ArizonaPacket.ParseTestDrive);
         Register220Incoming(registry, ArizonaPacketId.ToggleRenderTarget, ArizonaPacket.ParseToggleRenderTarget);
+        Register220Incoming(registry, ArizonaPacketId.VehicleFeatureFlag1, ArizonaPacket.ParseVehicleFeatureFlag1);
+        Register220Incoming(registry, ArizonaPacketId.VehicleFeatureFlag0, ArizonaPacket.ParseVehicleFeatureFlag0);
+        Register220Incoming(registry, ArizonaPacketId.VehicleFeatureFlag2, ArizonaPacket.ParseVehicleFeatureFlag2);
+        Register220Incoming(registry, ArizonaPacketId.VehicleFeatureReset, ArizonaPacket.ParseVehicleFeatureReset);
         Register220Incoming(registry, ArizonaPacketId.SetVehicleNumberPlate, ArizonaPacket.ParseSetVehicleNumberPlate);
         Register220Incoming(registry, ArizonaPacketId.SetPlayerAttachedObject, ArizonaPacket.ParseSetPlayerAttachedObject);
         Register220Incoming(registry, ArizonaPacketId.LoadBinary, ArizonaPacket.ParseLoadBinary);

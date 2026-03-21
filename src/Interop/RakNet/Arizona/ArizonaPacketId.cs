@@ -138,6 +138,12 @@ public enum ArizonaPacketId : byte
     // bool8 status
     ShowPositionInDiscord = 71,
 
+    // core.asi: handler found but format not yet recovered
+    Unknown87 = 87,
+
+    // core.asi: handler found but format not yet recovered
+    Unknown88 = 88,
+
     // observed on wire as a single-bit flag, semantics not recovered yet.
     // Likely handled in vorbisFile.dll, but class/name is still not proven.
     Unknown86 = 86,
@@ -145,7 +151,7 @@ public enum ArizonaPacketId : byte
     // bool state - writes a patched byte through VirtualProtect in GameFunctions_HandleCustomPacket
     AutoDrinkBeer = 91,
 
-    // IDA: bool night_mode - toggles day/night color scheme on materials
+    // IDA: bit-bool night_mode - toggles day/night color scheme on materials
     SetDayNightColors = 92,
 
     // IDA: bool state - toggles compass/minimap element
@@ -154,10 +160,13 @@ public enum ArizonaPacketId : byte
     // u32 value - stored into *(dword_101B1784 + 72) in GameFunctions_HandleCustomPacket
     SetAnimationProperty = 97,
 
-    // bool state - patches three code/data locations in GameFunctions_HandleCustomPacket
+    // core.asi: handler found but format not yet recovered
+    Unknown98 = 98,
+
+    // bit-bool state - patches three code/data locations in GameFunctions_HandleCustomPacket
     ToggleMapColors = 101,
 
-    // bool state - swaps a 5-byte CALL patch with NOPs at one target site in GameFunctions_HandleCustomPacket
+    // bit-bool state - swaps a 5-byte CALL patch with NOPs at one target site in GameFunctions_HandleCustomPacket
     ToggleUnknown102 = 102,
 
     // string32 host, u32 port, string32 nickname, optional string password, bool connect_mode
@@ -167,7 +176,7 @@ public enum ArizonaPacketId : byte
     // IDA: u8 bg_type, optional u32 timeout - ViceCityServer load screen control
     ShowLoadScreenVc = 104,
 
-    // bool state - enables the target/highlight update path in GameFunctions_UpdateTargetTrace and packet 116 emission
+    // bit-bool state - enables the target/highlight update path in GameFunctions_UpdateTargetTrace and packet 116 emission
     ToggleUnknown105 = 105,
 
     // observed on wire as u32 player_id, is_open.
@@ -180,21 +189,39 @@ public enum ArizonaPacketId : byte
     // IDA: u8 state, u8 unknown - both bytes participate in spectator/camera memory patching
     SetSpectatorPatches = 112,
 
-    // bool state - stored in byte_1028944A and disables GameFunctions_ToggleActionState when false
+    // bit-bool state - stored in byte_1028944A and disables GameFunctions_ToggleActionState when false
     ToggleUnknown114 = 114,
 
-    // IDA: bool state - ViceCityServer flag stored in word_101B0C84 high byte
+    // IDA: bit-bool state - ViceCityServer flag stored in word_101B0C84 high byte
     SetViceCityFlag = 117,
+
+    // core.asi: handler found but format not yet recovered
+    Unknown118 = 118,
 
     // compact nametag/settings blob; exact per-field layout not fully recovered yet.
     // arizona-events describes this as bool + 4 strings, but live packets and vorbisFile settings keys do not support that layout.
     SetPlayerNametagFlags = 120,
 
+    // core.asi: handler found but format not yet recovered
+    Unknown121 = 121,
+
+    // core.asi: handler found but format not yet recovered
+    Unknown122 = 122,
+
     // u8 icon_id, byte[14] pad, u16 icon_model, vec3 position, string8 icon_name, u8 pad
     SetMapIcon = 127,
 
+    // IDA: u16 vehicle_id, bit-bool state - test drive toggle
+    TestDrive = 130,
+
     // u16 server_id, u8 index, float value
     UiScalar = 135,
+
+    // core.asi: handler found but format not yet recovered
+    Unknown136 = 136,
+
+    // core.asi: handler found but format not yet recovered
+    Unknown137 = 137,
 
     // u16 vehicle_id, float intensity, u8 r, u8 g, u8 b
     SetVehicleColorSmoke = 139,
@@ -212,8 +239,20 @@ public enum ArizonaPacketId : byte
     // IDA: u8 style - loads HUD theme ("hud_default" or alt) + all 63 radar sprites
     SetHudStyle = 147,
 
-    // IDA: bool create - creates (true) or destroys (false) a 512x512 render target (Drone module)
+    // IDA: bit-bool create - creates (true) or destroys (false) a 512x512 render target (Drone module)
     ToggleRenderTarget = 149,
+
+    // IDA: u16 vehicle_id, bit-bool state - vehicle feature flag 1 (headlights rendering)
+    VehicleFeatureFlag1 = 150,
+
+    // IDA: u16 vehicle_id, bit-bool state - vehicle feature flag 0 (nitro base flag)
+    VehicleFeatureFlag0 = 151,
+
+    // IDA: u16 vehicle_id, bit-bool state - vehicle feature flag 2 (nitro color flag)
+    VehicleFeatureFlag2 = 152,
+
+    // IDA: u16 vehicle_id, bit-bool state - vehicle feature reset (reset + flag6)
+    VehicleFeatureReset = 156,
 
     // u16 vehicle_id, { u8 type, string8 text, stringUnread region }
     SetVehicleNumberPlate = 153,
@@ -221,16 +260,16 @@ public enum ArizonaPacketId : byte
     // u16 player_id, i32 index, bool create, { i32 bone, i32 model, vec3 off, vec3 rot, vec3 scale, i32 c1, i32 c2 }
     SetPlayerAttachedObject = 155,
 
-    // bool state - selector gate flag stored in byte_1028946C and consumed by GameFunctions_CanUseSelectorSlot
+    // bit-bool state - selector gate flag stored in byte_1028946C and consumed by GameFunctions_CanUseSelectorSlot
     ToggleUnknown163 = 163,
 
-    // bool state - selector gate flag stored in byte_1028946C and consumed by GameFunctions_CanUseSelectorSlot
+    // bit-bool state - selector gate flag stored in byte_1028946C and consumed by GameFunctions_CanUseSelectorSlot
     ToggleUnknown164 = 164,
 
     // string8 text
     LoadBinary = 165,
 
-    // IDA: bool state - toggles portal visibility flag (Portal module)
+    // IDA: bit-bool state - toggles portal visibility flag (Portal module)
     TogglePortal = 166,
 
     // IDA: u16 id (max 1004), u8 type (0=front, 1=back), vec3 offset, vec3 rotation
@@ -249,10 +288,10 @@ public enum ArizonaPacketId : byte
     // vec3 position, u16 pad, u8 interior, remaining bytes
     SetInterior = 175,
 
-    // u16 server_id, bool state
+    // IDA: bit-bool state, u16 server_id - toggle specific CEF panel
     UiToggle = 176,
 
-    // u16 vehicle_id, bool state
+    // u16 vehicle_id, bit-bool state (inferred from pattern, not confirmed via IDA)
     VehicleHeadlightsState = 180,
 
     // u32 world
@@ -283,8 +322,14 @@ public enum ArizonaPacketId : byte
     // u8 speed, bool loop, u32 color1, u32 color2 - GPS route line drawing system
     SetGpsRoute = 212,
 
-    // IDA: bool state - toggles first-person camera mode, patches camera control vars
+    // IDA: bit-bool state - toggles first-person camera mode, patches camera control vars
     SetFirstPersonCamera = 215,
+
+    // core.asi: handler found but format not yet recovered
+    Unknown216 = 216,
+
+    // core.asi: handler found but format not yet recovered
+    Unknown222 = 222,
 
     // -- outgoing (client -> server) --
 
