@@ -10,7 +10,6 @@ public partial class SFChat
 {
     public void Send(string message)
     {
-        SFLog.Info($"Chat.Send message={message}");
         if (message.StartsWith('/'))
         {
             CInput.Instance.Send(message);
@@ -22,7 +21,6 @@ public partial class SFChat
 
     public void Add(string text, uint textColor = 0xFFAAAAAA, string? prefix = null, uint prefixColor = 0xFFAAAAAA)
     {
-        SFLog.Info($"Chat.Add prefix={prefix ?? "<null>"} text={text}");
         CChat.Instance.AddEntry(EntryType.Debug, text, prefix, textColor, prefixColor);
     }
 }

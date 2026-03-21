@@ -38,11 +38,9 @@ public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
         string commandName = separatorIndex >= 0 ? commandLine[..separatorIndex] : commandLine;
         string? commandArgs = separatorIndex >= 0 ? commandLine[(separatorIndex + 1)..] : null;
 
-        SFLog.Info($"Client command send command={commandName} args={commandArgs ?? "<null>"}");
         if (_taskSourcesByCommand.TryGetValue(commandName, out CommandRegistration? registration))
         {
             _lastCommand = commandName;
-            SFLog.Info($"Client command intercepted command={commandName}");
             try
             {
                 registration.OnCommand(commandArgs);
@@ -59,7 +57,6 @@ public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
             return true;
         }
 
-        SFLog.Info($"Client command pass-through command={commandName}");
         return next(args);
     }
 }

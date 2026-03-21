@@ -158,19 +158,19 @@ public class SFModuleContainer
             SFLog.Info($"Module completed id={registration.Descriptor.Id} state={snapshot.State} stopReason={snapshot.LastStopReason}");
             if (snapshot.LastStopReason == ModuleStopReason.Faulted)
             {
-                SF.Chat.Add($"{registration.Descriptor.DisplayName} faulted.");
+                SF.Chat.Add(FormatChatAction("faulted", registration.Descriptor.DisplayName, "faulted", SFColors.Red));
             }
             else
             {
-                SF.Chat.Add($"{registration.Descriptor.DisplayName} stopped ({snapshot.LastStopReason}).");
+                SF.Chat.Add(FormatChatAction("stopped", registration.Descriptor.DisplayName, snapshot.LastStopReason.ToString(), SFColors.Orange));
             }
         }
         catch (Exception ex)
         {
             SFLog.Error(ex.GetBaseException(), $"Module faulted id={registration.Descriptor.Id}");
             Exception baseException = ex.GetBaseException();
-            SF.Chat.Add($"{registration.Descriptor.DisplayName} threw an exception:");
-            SF.Chat.Add($"{baseException.GetType().Name}: {baseException.Message}");
+            SF.Chat.Add(FormatChatAction("faulted", registration.Descriptor.DisplayName, "exception", SFColors.Red));
+            SF.Chat.Add((SFColors.Rose | SFColors.White).Apply($"{baseException.GetType().Name}: {baseException.Message}"));
         }
         finally
         {
@@ -213,7 +213,7 @@ public class SFModuleContainer
 
         if (segments.Length < 2)
         {
-            SF.Chat.Add("Usage: /sfs status | /sfs info|start|stop|restart <moduleId>");
+            SF.Chat.Add(FormatUsage());
             return;
         }
 
@@ -221,7 +221,7 @@ public class SFModuleContainer
         ModuleRegistration? registration = ResolveModule(query);
         if (registration is null)
         {
-            SF.Chat.Add($"Module '{query}' not found.");
+            SF.Chat.Add($"{Paint(SFColors.Rose, "Module not found")}: {Paint(SFColors.White | SFColors.Ice, query)}");
             return;
         }
 
@@ -232,15 +232,18 @@ public class SFModuleContainer
                 break;
             case "start":
                 StartModule(registration);
+                SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, "requested", SFColors.Green));
                 break;
             case "stop":
                 StopModule(registration, ModuleStopReason.UserRequested);
+                SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, "requested", SFColors.Orange));
                 break;
             case "restart":
                 RestartModule(registration);
+                SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, "requested", SFColors.Yellow));
                 break;
             default:
-                SF.Chat.Add("Usage: /sfs status | /sfs info|start|stop|restart <moduleId>");
+                SF.Chat.Add(FormatUsage());
                 break;
         }
     }
@@ -263,7 +266,18 @@ public class SFModuleContainer
         {
             ModuleRuntimeSnapshot snapshot = registration.Runtime.CreateSnapshot();
             string uptime = FormatDuration(snapshot.Uptime);
-            SF.Chat.Add($"{registration.Descriptor.Id}: {snapshot.State} | {registration.Descriptor.ExecutionModel} | uptime={uptime} | load={snapshot.EstimatedLoadPercent:0.0}%");
+            string line = string.Join(" ", [
+                Paint(SFColors.Cyan | SFColors.Blue, registration.Descriptor.Id),
+                Paint(SFColors.Slate, "|"),
+                FormatState(snapshot.State),
+                Paint(SFColors.Slate, "|"),
+                Paint(SFColor.FromHex("A8DADC"), snapshot.Descriptor.ExecutionModel.ToString()),
+                Paint(SFColors.Slate, "|"),
+                Paint(SFColors.Sand, $"uptime={uptime}"),
+                Paint(SFColors.Slate, "|"),
+                FormatLoad(snapshot.EstimatedLoadPercent)
+            ]);
+            SF.Chat.Add(line);
         }
     }
 
@@ -412,6 +426,12 @@ public class SFModuleContainer
     private static string Label(string value) => Paint(SFColors.Cyan | SFColors.Blue, value);
     private static string Value(string value) => Paint(SFColors.White | SFColors.Ice, value);
     private static string Paint(SFColor color, string value) => color.Apply(value);
+    private static string FormatUsage() => $"{Paint(SFColors.Yellow, "Usage")}: {Paint(SFColors.White | SFColors.Ice, "/sfs status | /sfs info|start|stop|restart <moduleId>")}";
+
+    private static string FormatChatAction(string action, string moduleName, string tail, SFColor accent)
+    {
+        return $"{Paint(accent, action)} {Paint(SFColors.White | SFColors.Ice, moduleName)} {Paint(SFColors.Slate, tail)}";
+    }
 
     private static string FormatState(ModuleLifecycleState state)
     {
