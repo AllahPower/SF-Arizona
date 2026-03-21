@@ -4,7 +4,7 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.5**
+Current release: **3.1.6**
 
 ## Highlights
 
@@ -16,6 +16,7 @@ Current release: **3.1.5**
 - Structured SAMP offsets in `SampOffsets.cs`
 - Live pointer resolution for `CChat`, `CDialog`, `CInput`, `CNetGame`, and other SAMP singletons
 - Expanded native player abstractions for `CPlayerPool`, `CLocalPlayer`, `CNetGame`, and `SF.Players`
+- Implemented baseline pool models for vehicles, objects, actors, pickups, menus, textdraws, gang zones, and labels
 - Local command interception via `CInput::Send`
 - Background worker logger writing to `sf_arz.log`
 - Arizona-specific transport definitions for raw packets `220` and `221`

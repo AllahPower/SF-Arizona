@@ -81,9 +81,27 @@ public unsafe ref struct CNetGame
         return _getPickupPool(RequireInstance());
     }
 
+    public CGangZonePool* GetGangZonePool()
+    {
+        CNetGamePools* pools = Pools;
+        return pools is null ? null : pools->GangZone;
+    }
+
+    public CLabelPool* GetLabelPool()
+    {
+        CNetGamePools* pools = Pools;
+        return pools is null ? null : pools->Label;
+    }
+
     public CMenuPool* GetMenuPool()
     {
         return _getMenuPool(RequireInstance());
+    }
+
+    public CTextDrawPool* GetTextDrawPool()
+    {
+        CNetGamePools* pools = Pools;
+        return pools is null ? null : pools->TextDraw;
     }
 
     public int GetState()
@@ -135,20 +153,11 @@ public unsafe struct CNetGamePools
     public CObjectPool* Object;
 
     [FieldOffset(0x18)]
-    public CTextDrawPool* TextDraw;
-
-    [FieldOffset(0x1C)]
     public CGangZonePool* GangZone;
 
-    [FieldOffset(0x20)]
+    [FieldOffset(0x1C)]
     public CLabelPool* Label;
-}
 
-public unsafe struct CActorPool;
-public unsafe struct CMenuPool;
-public unsafe struct CObjectPool;
-public unsafe struct CPickupPool;
-public unsafe struct CVehiclePool;
-public unsafe struct CTextDrawPool;
-public unsafe struct CGangZonePool;
-public unsafe struct CLabelPool;
+    [FieldOffset(0x20)]
+    public CTextDrawPool* TextDraw;
+}
