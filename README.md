@@ -4,7 +4,7 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.4**
+Current release: **3.1.5**
 
 ## Highlights
 
@@ -15,6 +15,7 @@ Current release: **3.1.4**
 - Async streaming API for RPC (`SF.Rpc`), packets (`SF.Packets`), and Arizona sub-packets (`SF.ArizonaPackets`) for modules
 - Structured SAMP offsets in `SampOffsets.cs`
 - Live pointer resolution for `CChat`, `CDialog`, `CInput`, `CNetGame`, and other SAMP singletons
+- Expanded native player abstractions for `CPlayerPool`, `CLocalPlayer`, `CNetGame`, and `SF.Players`
 - Local command interception via `CInput::Send`
 - Background worker logger writing to `sf_arz.log`
 - Arizona-specific transport definitions for raw packets `220` and `221`
