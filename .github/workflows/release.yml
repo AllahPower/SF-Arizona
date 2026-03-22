@@ -4,8 +4,7 @@ on:
   push:
     branches: [master]
     paths:
-      - 'src/**'
-      - '.github/workflows/release.yml'
+      - 'src/SF.csproj'
 
 permissions:
   contents: write
@@ -17,52 +16,57 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check version changed
+        id: version_diff
+        shell: pwsh
+        run: |
+          [xml]$current = Get-Content src/SF.csproj
+          $curVer = $current.Project.PropertyGroup[0].Version
+          $prevContent = git show HEAD~1:src/SF.csproj 2>$null
+          if ($prevContent) {
+            [xml]$prev = $prevContent
+            $prevVer = $prev.Project.PropertyGroup[0].Version
+          } else {
+            $prevVer = ""
+          }
+          echo "CURRENT=$curVer" >> $env:GITHUB_OUTPUT
+          if ($curVer -ne $prevVer) {
+            echo "CHANGED=true" >> $env:GITHUB_OUTPUT
+            echo "Version changed: $prevVer -> $curVer"
+          } else {
+            echo "CHANGED=false" >> $env:GITHUB_OUTPUT
+            echo "Version unchanged: $curVer"
+          }
 
       - name: Setup .NET 10
+        if: steps.version_diff.outputs.CHANGED == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
           dotnet-quality: 'preview'
 
       - name: Restore dependencies
+        if: steps.version_diff.outputs.CHANGED == 'true'
         run: dotnet restore src/SF.csproj
 
       - name: Publish (NativeAOT win-x86)
+        if: steps.version_diff.outputs.CHANGED == 'true'
         run: dotnet publish src/SF.csproj -c Release
 
-      - name: Extract version from csproj
-        id: version
-        shell: pwsh
-        run: |
-          [xml]$csproj = Get-Content src/SF.csproj
-          $ver = $csproj.Project.PropertyGroup[0].Version
-          echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
-          echo "TAG=v$ver" >> $env:GITHUB_OUTPUT
-
-      - name: Check if tag exists
-        id: tag_check
-        shell: pwsh
-        run: |
-          git fetch --tags
-          $tag = "v${{ steps.version.outputs.VERSION }}"
-          $exists = git tag -l $tag
-          if ($exists) {
-            echo "EXISTS=true" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "EXISTS=false" >> $env:GITHUB_OUTPUT
-          }
-
       - name: Create tag
-        if: steps.tag_check.outputs.EXISTS == 'false'
+        if: steps.version_diff.outputs.CHANGED == 'true'
         run: |
-          git tag ${{ steps.version.outputs.TAG }}
-          git push origin ${{ steps.version.outputs.TAG }}
+          git tag v${{ steps.version_diff.outputs.CURRENT }}
+          git push origin v${{ steps.version_diff.outputs.CURRENT }}
 
       - name: Create GitHub Release
-        if: steps.tag_check.outputs.EXISTS == 'false'
+        if: steps.version_diff.outputs.CHANGED == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.TAG }}
-          name: SF-Arizona ${{ steps.version.outputs.TAG }}
+          tag_name: v${{ steps.version_diff.outputs.CURRENT }}
+          name: SF-Arizona v${{ steps.version_diff.outputs.CURRENT }}
           generate_release_notes: true
           files: src/bin/Release/net10.0/win-x86/publish/SF.asi
