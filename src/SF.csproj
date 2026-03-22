@@ -10,10 +10,10 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>preview</LangVersion>
 		<DllMainSourceFile>dllmain.c</DllMainSourceFile>
-		<Version>3.1.9</Version>
-		<AssemblyVersion>3.1.9.0</AssemblyVersion>
-		<FileVersion>3.1.9.0</FileVersion>
-		<InformationalVersion>3.1.9</InformationalVersion>
+		<Version>3.2.0</Version>
+		<AssemblyVersion>3.2.0.0</AssemblyVersion>
+		<FileVersion>3.2.0.0</FileVersion>
+		<InformationalVersion>3.2.0</InformationalVersion>
 		<Product>SF-Arizona</Product>
 		<Authors>AllahPower</Authors>
 		<Company>AllahPower</Company>
@@ -31,9 +31,17 @@
 	  <IsTrimmable>False</IsTrimmable>
 	</PropertyGroup>
 
+	<PropertyGroup>
+	  <NoWarn>$(NoWarn);NU1510;IL3053</NoWarn>
+	</PropertyGroup>
+
 	<Target Name="RenameOutput" AfterTargets="CopyNativeBinary">
 		<Move SourceFiles="$(PublishDir)$(TargetName)$(NativeBinaryExt)" DestinationFiles="$(PublishDir)$(TargetName).asi" />
 	</Target>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="DllMain" Version="1.0.2" />
