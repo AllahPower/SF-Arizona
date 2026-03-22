@@ -4,7 +4,7 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.8**
+Current release: **3.1.9**
 
 ## Highlights
 
