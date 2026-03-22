@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SFSharp;
+using SFSharp.Interop.RakNet.Packets.Enum;
 using System.Collections.Concurrent;
 
 [SFModule("rpc-debugger", "RpcDebugger", Category = "Debug", Description = "Captures incoming and outgoing RPC/packet traffic with lightweight decoding.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 60)]

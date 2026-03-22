@@ -207,6 +207,11 @@ public unsafe ref struct BitStreamReader
             return string.Empty;
         }
 
+        if (TryReadEncodedStringNative(maxCharsToWrite, out string nativeText))
+        {
+            return nativeText;
+        }
+
         int sizeInBits = ReadCompressedUInt16();
         if (sizeInBits <= 0)
         {
@@ -348,6 +353,47 @@ public unsafe ref struct BitStreamReader
                 return false;
             }
         }
+
+        int nullIndex = Array.IndexOf(output, (byte)0);
+        if (nullIndex < 0)
+        {
+            nullIndex = output.Length;
+        }
+
+        text = _stringEncoding.GetString(output, 0, nullIndex);
+        return true;
+    }
+
+    private bool TryReadEncodedStringNative(int maxCharsToWrite, out string text)
+    {
+        nint instance = _getStringCompressorInstance();
+        if (instance == 0)
+        {
+            text = string.Empty;
+            return false;
+        }
+
+        int nativeBufferChars = Math.Max(maxCharsToWrite, 0x1000);
+        byte[] output = new byte[nativeBufferChars];
+        SampBitStream bitStream = new()
+        {
+            NumberOfBitsAllocated = _endBitOffset,
+            NumberOfBitsUsed = _endBitOffset,
+            ReadOffset = _offsetBits,
+            Data = _data
+        };
+
+        fixed (byte* outputPtr = output)
+        {
+            byte ok = _stringCompressorDecodeString(instance, outputPtr, nativeBufferChars, &bitStream, 0);
+            if (ok == 0)
+            {
+                text = string.Empty;
+                return false;
+            }
+        }
+
+        _offsetBits = bitStream.ReadOffset;
 
         int nullIndex = Array.IndexOf(output, (byte)0);
         if (nullIndex < 0)

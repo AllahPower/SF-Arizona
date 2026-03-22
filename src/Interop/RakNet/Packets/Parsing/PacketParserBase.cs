@@ -1,4 +1,6 @@
-﻿namespace SFSharp;
+﻿using SFSharp.Interop.RakNet.Packets.Enum;
+
+namespace SFSharp;
 
 public delegate TPacket IncomingPacketParseDelegate<TPacket>(IncomingPacketArgs args) where TPacket : class, IParsedIncomingPacket;
 public delegate TPacket OutgoingPacketParseDelegate<TPacket>(OutgoingPacketArgs args) where TPacket : class, IParsedOutgoingPacket;

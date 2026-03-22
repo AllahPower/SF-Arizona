@@ -1,3 +1,5 @@
+using SFSharp.Interop.RakNet.Arizona.Enum;
+using SFSharp.Interop.RakNet.Packets.Enum;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 

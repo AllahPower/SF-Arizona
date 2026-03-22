@@ -22,6 +22,7 @@ public static class Program
         container.RegisterModule<NodShaker>();
         container.RegisterModule<ChatViolationMonitor>();
         container.RegisterModule<RpcDebugger>();
+        container.RegisterModule<DebugModule>();
 
         using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ =>
         {

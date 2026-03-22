@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Interop.RakNet.Arizona.Enum;
 
 // Internal core.asi custom packet IDs observed in IDA.
 // This is a post-transport dispatcher layer used by Arizona core modules.

@@ -1,3 +1,5 @@
+using SFSharp.Interop.RakNet.Packets.Enum;
+
 namespace SFSharp;
 
 public sealed class PacketParserRegistry

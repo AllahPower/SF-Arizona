@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Interop.RakNet.Packets.Enum;
 
 /// <summary>
 /// Sync packet IDs for non-RPC raw packets.

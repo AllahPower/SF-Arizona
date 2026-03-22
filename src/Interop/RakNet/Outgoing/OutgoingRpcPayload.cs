@@ -1,3 +1,4 @@
+using SFSharp.Interop.RakNet.Packets.Enum;
 using System.Runtime.InteropServices;
 
 namespace SFSharp;
