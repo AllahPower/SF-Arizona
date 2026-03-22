@@ -4,13 +4,14 @@ Fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), adapted for **Arizo
 
 ## Version
 
-Current release: **3.1.9**
+Current release: **3.2.0**
 
 ## Highlights
 
 - NativeAOT `win-x86` build published as a single `SF.asi`
 - `MinHook.NET` based hook installation with trampoline calls
 - RakNet interception layer for incoming and outgoing RPC/raw packets
+- Split Arizona packet enums, models, and parser catalogs for easier maintenance
 - Expanded native pool models for players, vehicles, objects, actors, pickups, menus, textdraws, gang zones, and labels
 - Runtime module system with metadata, lifecycle tracking, telemetry, built-in module logger, and `/sfs` dashboard
 - Color builder API via `SFColor` and `SFColors` for chat and dialog styling
