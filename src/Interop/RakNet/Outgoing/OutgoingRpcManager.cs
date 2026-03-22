@@ -13,12 +13,12 @@ public sealed class OutgoingRpcManager : IDisposable
         }
     }
 
-    public bool HasSubscribers(RpcId rpcId)
+    public bool HasSubscribers(ERpcId rpcId)
     {
         return HasSubscribers((int)rpcId);
     }
 
-    public RpcSubscription Subscribe(RpcId rpcId, Action<OutgoingRpcArgs> handler)
+    public RpcSubscription Subscribe(ERpcId rpcId, Action<OutgoingRpcArgs> handler)
     {
         return Subscribe((int)rpcId, handler);
     }

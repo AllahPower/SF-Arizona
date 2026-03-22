@@ -11,7 +11,7 @@ public enum ServerChatKind
     ClientMessage
 }
 
-public record ServerChatEntry(ServerChatKind Kind, RpcId RpcId, ChatEntry Entry)
+public record ServerChatEntry(ServerChatKind Kind, ERpcId ERpcId, ChatEntry Entry)
 {
     public EntryType Type => Entry.Type;
     public string? Text => Entry.Text;
@@ -34,20 +34,20 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
             return;
         }
 
-        manager.Bind(RpcId.Chat, SampRpc.ParseChatMessage, static (payload, args) =>
+        manager.Bind(ERpcId.Chat, SampRpc.ParseChatMessage, static (payload, args) =>
         {
             // Chat prefixColor is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
             uint prefixColor = (payload.PrefixColor >> 8) | ((payload.PrefixColor & 0xFF) << 24);
             ChatEntry entry = new(EntryType.Chat, payload.Text, payload.Prefix, 0xFFFFFFFF, prefixColor);
-            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.Chat, RpcId.Chat, entry));
+            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.Chat, ERpcId.Chat, entry));
         }, name: "IncomingChatMessageRpc");
 
-        manager.Bind(RpcId.ClientMessage, SampRpc.ParseClientMessage, static (payload, args) =>
+        manager.Bind(ERpcId.ClientMessage, SampRpc.ParseClientMessage, static (payload, args) =>
         {
             // SendClientMessage color is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
             uint color = (payload.Color >> 8) | ((payload.Color & 0xFF) << 24);
             ChatEntry entry = new(EntryType.Info, payload.Text, null, color, 0);
-            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.ClientMessage, RpcId.ClientMessage, entry));
+            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.ClientMessage, ERpcId.ClientMessage, entry));
         }, name: "IncomingClientMessageRpc");
 
         _rpcBindingsRegistered = true;
@@ -113,7 +113,7 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 
     internal void PublishServerChatEntry(ServerChatEntry entry)
     {
-        //SFLog.Info($"Server chat entry kind={entry.Kind} rpcId={(int)entry.RpcId} type={entry.Type} textColor=0x{entry.TextColor:X8} prefixColor=0x{entry.PrefixColor:X8} prefix={entry.Prefix ?? "<null>"} text={entry.Text ?? "<null>"}");
+        //SFLog.Info($"Server chat entry kind={entry.Kind} rpcId={(int)entry.ERpcId} type={entry.Type} textColor=0x{entry.TextColor:X8} prefixColor=0x{entry.PrefixColor:X8} prefix={entry.Prefix ?? "<null>"} text={entry.Text ?? "<null>"}");
         foreach (ConcurrentQueue<ServerChatEntry> queue in _serverConsumerQueues)
         {
             queue.Enqueue(entry);

@@ -5,7 +5,7 @@ namespace SFSharp;
 // Remaining bytes = sub-packet payload parsed per-ID.
 // Source map: arizona-events init.lua + IDA reverse of core.asi.
 // Some ids are kept as source-only placeholders when we only know the id/name from arizona-events.
-public enum ArizonaPacketIdEx : ushort
+public enum EArizonaPacketIdEx : ushort
 {
     // -- incoming (server -> client) --
 

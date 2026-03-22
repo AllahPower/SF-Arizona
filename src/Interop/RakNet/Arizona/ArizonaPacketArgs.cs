@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public readonly record struct IncomingArizonaPacketArgs(int PacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
+public readonly record struct IncomingArizonaPacketArgs(int EPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
 {
     public unsafe BitStreamReader CreateReader()
     {
@@ -8,7 +8,7 @@ public readonly record struct IncomingArizonaPacketArgs(int PacketId, int SubId,
     }
 }
 
-public readonly record struct OutgoingArizonaPacketArgs(int PacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
+public readonly record struct OutgoingArizonaPacketArgs(int EPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
 {
     public unsafe BitStreamReader CreateReader()
     {

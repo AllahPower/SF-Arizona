@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public readonly record struct IncomingRpcArgs(int RpcId, nint DataPtr, int DataBitOffset, int DataBitLength)
+public readonly record struct IncomingRpcArgs(int ERpcId, nint DataPtr, int DataBitOffset, int DataBitLength)
 {
     public unsafe BitStreamReader CreateReader()
     {

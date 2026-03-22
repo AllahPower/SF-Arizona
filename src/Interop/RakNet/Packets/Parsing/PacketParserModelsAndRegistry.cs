@@ -13,37 +13,37 @@ public sealed class PacketParserRegistry
 
     public void Register(IIncomingPacketParser parser)
     {
-        _incoming[(int)parser.PacketId] = parser;
-        AddIncomingRoute(parser.ParsedType, new IncomingRoute(parser.PacketId, null, false, parser));
+        _incoming[(int)parser.EPacketId] = parser;
+        AddIncomingRoute(parser.ParsedType, new IncomingRoute(parser.EPacketId, null, false, parser));
     }
 
     public void Register(IOutgoingPacketParser parser)
     {
-        _outgoing[(int)parser.PacketId] = parser;
-        AddOutgoingRoute(parser.ParsedType, new OutgoingRoute(parser.PacketId, null, false, parser));
+        _outgoing[(int)parser.EPacketId] = parser;
+        AddOutgoingRoute(parser.ParsedType, new OutgoingRoute(parser.EPacketId, null, false, parser));
     }
 
     public void Register(IIncomingArizonaPacketParser parser)
     {
-        GetIncomingArizonaMap(parser.PacketId)[parser.SubId] = parser;
-        AddIncomingRoute(parser.ParsedType, new IncomingRoute(parser.PacketId, parser.SubId, parser.PacketId == PacketId.ArizonaCefEx, parser));
+        GetIncomingArizonaMap(parser.EPacketId)[parser.SubId] = parser;
+        AddIncomingRoute(parser.ParsedType, new IncomingRoute(parser.EPacketId, parser.SubId, parser.EPacketId == EPacketId.ArizonaCefEx, parser));
     }
 
     public void Register(IOutgoingArizonaPacketParser parser)
     {
-        GetOutgoingArizonaMap(parser.PacketId)[parser.SubId] = parser;
-        AddOutgoingRoute(parser.ParsedType, new OutgoingRoute(parser.PacketId, parser.SubId, parser.PacketId == PacketId.ArizonaCefEx, parser));
+        GetOutgoingArizonaMap(parser.EPacketId)[parser.SubId] = parser;
+        AddOutgoingRoute(parser.ParsedType, new OutgoingRoute(parser.EPacketId, parser.SubId, parser.EPacketId == EPacketId.ArizonaCefEx, parser));
     }
 
     public bool TryParseIncoming(IncomingPacketArgs args, out PacketParseResult result)
     {
-        PacketId packetId = (PacketId)args.PacketId;
-        if (packetId == PacketId.ArizonaCef || packetId == PacketId.ArizonaCefEx)
+        EPacketId packetId = (EPacketId)args.EPacketId;
+        if (packetId == EPacketId.ArizonaCef || packetId == EPacketId.ArizonaCefEx)
         {
             return TryParseIncomingArizona(args, packetId, out result);
         }
 
-        if (_incoming.TryGetValue(args.PacketId, out IIncomingPacketParser? parser))
+        if (_incoming.TryGetValue(args.EPacketId, out IIncomingPacketParser? parser))
         {
             return parser.TryParse(args, out result);
         }
@@ -54,13 +54,13 @@ public sealed class PacketParserRegistry
 
     public bool TryParseOutgoing(OutgoingPacketArgs args, out PacketParseResult result)
     {
-        PacketId packetId = (PacketId)args.PacketId;
-        if (packetId == PacketId.ArizonaCef || packetId == PacketId.ArizonaCefEx)
+        EPacketId packetId = (EPacketId)args.EPacketId;
+        if (packetId == EPacketId.ArizonaCef || packetId == EPacketId.ArizonaCefEx)
         {
             return TryParseOutgoingArizona(args, packetId, out result);
         }
 
-        if (_outgoing.TryGetValue(args.PacketId, out IOutgoingPacketParser? parser))
+        if (_outgoing.TryGetValue(args.EPacketId, out IOutgoingPacketParser? parser))
         {
             return parser.TryParse(args, out result);
         }
@@ -89,7 +89,7 @@ public sealed class PacketParserRegistry
         return Array.Empty<OutgoingRoute>();
     }
 
-    private bool TryParseIncomingArizona(IncomingPacketArgs args, PacketId packetId, out PacketParseResult result)
+    private bool TryParseIncomingArizona(IncomingPacketArgs args, EPacketId packetId, out PacketParseResult result)
     {
         if (!TryCreateIncomingArizonaArgs(args, packetId, out IncomingArizonaPacketArgs packetArgs))
         {
@@ -105,13 +105,13 @@ public sealed class PacketParserRegistry
 
         result = new PacketParseResult(
             true,
-            new IncomingUnknownArizonaPacket(packetId, packetArgs.SubId, packetArgs.PayloadBitLength, packetId == PacketId.ArizonaCef ? "ArizonaCef" : "ArizonaCefEx"),
+            new IncomingUnknownArizonaPacket(packetId, packetArgs.SubId, packetArgs.PayloadBitLength, packetId == EPacketId.ArizonaCef ? "ArizonaCef" : "ArizonaCefEx"),
             packetId.ToString(),
             PacketParseFailureReason.None);
         return true;
     }
 
-    private bool TryParseOutgoingArizona(OutgoingPacketArgs args, PacketId packetId, out PacketParseResult result)
+    private bool TryParseOutgoingArizona(OutgoingPacketArgs args, EPacketId packetId, out PacketParseResult result)
     {
         if (!TryCreateOutgoingArizonaArgs(args, packetId, out OutgoingArizonaPacketArgs packetArgs))
         {
@@ -127,16 +127,16 @@ public sealed class PacketParserRegistry
 
         result = new PacketParseResult(
             true,
-            new OutgoingUnknownArizonaPacket(packetId, packetArgs.SubId, packetArgs.PayloadBitLength, packetId == PacketId.ArizonaCef ? "ArizonaCef" : "ArizonaCefEx"),
+            new OutgoingUnknownArizonaPacket(packetId, packetArgs.SubId, packetArgs.PayloadBitLength, packetId == EPacketId.ArizonaCef ? "ArizonaCef" : "ArizonaCefEx"),
             packetId.ToString(),
             PacketParseFailureReason.None);
         return true;
     }
 
-    private static bool TryCreateIncomingArizonaArgs(IncomingPacketArgs args, PacketId packetId, out IncomingArizonaPacketArgs packetArgs)
+    private static bool TryCreateIncomingArizonaArgs(IncomingPacketArgs args, EPacketId packetId, out IncomingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
-        int payloadBitOffset = packetId == PacketId.ArizonaCef ? 16 : 24;
+        int payloadBitOffset = packetId == EPacketId.ArizonaCef ? 16 : 24;
         if (args.DataBitLength < payloadBitOffset)
         {
             return false;
@@ -146,16 +146,16 @@ public sealed class PacketParserRegistry
         {
             BitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            int subId = packetId == PacketId.ArizonaCef ? ArizonaPacket.ReadSubId220(ref reader) : ArizonaPacket.ReadSubId221(ref reader);
-            packetArgs = new(args.PacketId, subId, args.DataPtr, payloadBitOffset, args.DataBitLength - payloadBitOffset);
+            int subId = packetId == EPacketId.ArizonaCef ? ArizonaPacket.ReadSubId220(ref reader) : ArizonaPacket.ReadSubId221(ref reader);
+            packetArgs = new(args.EPacketId, subId, args.DataPtr, payloadBitOffset, args.DataBitLength - payloadBitOffset);
             return true;
         }
     }
     
-    private static bool TryCreateOutgoingArizonaArgs(OutgoingPacketArgs args, PacketId packetId, out OutgoingArizonaPacketArgs packetArgs)
+    private static bool TryCreateOutgoingArizonaArgs(OutgoingPacketArgs args, EPacketId packetId, out OutgoingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
-        int payloadBitOffset = packetId == PacketId.ArizonaCef ? 16 : 24;
+        int payloadBitOffset = packetId == EPacketId.ArizonaCef ? 16 : 24;
         if (args.DataBitLength < payloadBitOffset)
         {
             return false;
@@ -165,20 +165,20 @@ public sealed class PacketParserRegistry
         {
             BitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            int subId = packetId == PacketId.ArizonaCef ? ArizonaPacket.ReadSubId220(ref reader) : ArizonaPacket.ReadSubId221(ref reader);
-            packetArgs = new(args.PacketId, subId, args.DataPtr, payloadBitOffset, args.DataBitLength - payloadBitOffset);
+            int subId = packetId == EPacketId.ArizonaCef ? ArizonaPacket.ReadSubId220(ref reader) : ArizonaPacket.ReadSubId221(ref reader);
+            packetArgs = new(args.EPacketId, subId, args.DataPtr, payloadBitOffset, args.DataBitLength - payloadBitOffset);
             return true;
         }
     }
 
-    private Dictionary<int, IIncomingArizonaPacketParser> GetIncomingArizonaMap(PacketId packetId)
+    private Dictionary<int, IIncomingArizonaPacketParser> GetIncomingArizonaMap(EPacketId packetId)
     {
-        return packetId == PacketId.ArizonaCefEx ? _incomingArizona221 : _incomingArizona220;
+        return packetId == EPacketId.ArizonaCefEx ? _incomingArizona221 : _incomingArizona220;
     }
 
-    private Dictionary<int, IOutgoingArizonaPacketParser> GetOutgoingArizonaMap(PacketId packetId)
+    private Dictionary<int, IOutgoingArizonaPacketParser> GetOutgoingArizonaMap(EPacketId packetId)
     {
-        return packetId == PacketId.ArizonaCefEx ? _outgoingArizona221 : _outgoingArizona220;
+        return packetId == EPacketId.ArizonaCefEx ? _outgoingArizona221 : _outgoingArizona220;
     }
 
     private void AddIncomingRoute(Type type, IncomingRoute route)
@@ -203,6 +203,6 @@ public sealed class PacketParserRegistry
         routes.Add(route);
     }
 
-    public sealed record IncomingRoute(PacketId PacketId, int? SubId, bool IsEx, object Parser);
-    public sealed record OutgoingRoute(PacketId PacketId, int? SubId, bool IsEx, object Parser);
+    public sealed record IncomingRoute(EPacketId EPacketId, int? SubId, bool IsEx, object Parser);
+    public sealed record OutgoingRoute(EPacketId EPacketId, int? SubId, bool IsEx, object Parser);
 }

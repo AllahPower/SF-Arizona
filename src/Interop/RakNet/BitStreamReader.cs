@@ -63,11 +63,6 @@ public unsafe ref struct BitStreamReader
         return TryDecodeNative(encodedPayload, maxCharsToWrite, out text);
     }
 
-    public bool ReadBool()
-    {
-        return ReadUInt8() != 0;
-    }
-
     public bool ReadBitBool()
     {
         EnsureBits(1);
@@ -77,6 +72,12 @@ public unsafe ref struct BitStreamReader
         _offsetBits++;
         return value;
     }
+
+    public bool ReadBool8()
+    {
+        return ReadUInt8() != 0;
+    }
+
 
     public byte ReadUInt8()
     {
@@ -88,6 +89,13 @@ public unsafe ref struct BitStreamReader
     public ushort ReadUInt16()
     {
         ushort value = 0;
+        ReadBitsInternal((byte*)&value, 16, alignRight: false);
+        return value;
+    }
+
+    public short ReadInt16()
+    {
+        short value = 0;
         ReadBitsInternal((byte*)&value, 16, alignRight: false);
         return value;
     }
@@ -111,6 +119,11 @@ public unsafe ref struct BitStreamReader
         float value = 0;
         ReadBitsInternal((byte*)&value, 32, alignRight: false);
         return value;
+    }
+
+    public bool ReadBool32()
+    {
+        return ReadInt32() != 0;
     }
 
     public T Read<T>() where T : unmanaged
@@ -161,6 +174,71 @@ public unsafe ref struct BitStreamReader
         return ReadFixedString(length);
     }
 
+    public ushort ReadCompressedUInt16()
+    {
+        byte[] bytes = new byte[2];
+        int currentByte = 1;
+        while (currentByte > 0)
+        {
+            if (ReadBitBool())
+            {
+                bytes[currentByte] = 0;
+                currentByte--;
+                continue;
+            }
+
+            int bitsToRead = (currentByte + 1) * 8;
+            byte[] partialBytes = ReadUnalignedBits(bitsToRead, alignRight: true);
+            Array.Copy(partialBytes, bytes, partialBytes.Length);
+            return (ushort)(bytes[0] | (bytes[1] << 8));
+        }
+
+        bool halfByteMarker = ReadBitBool();
+        int lowBitsToRead = halfByteMarker ? 4 : 8;
+        byte[] lowPart = ReadUnalignedBits(lowBitsToRead, alignRight: true);
+        bytes[0] = lowPart[0];
+        return (ushort)(bytes[0] | (bytes[1] << 8));
+    }
+
+    public string ReadEncodedString(int maxCharsToWrite)
+    {
+        if (maxCharsToWrite <= 1)
+        {
+            return string.Empty;
+        }
+
+        int sizeInBits = ReadCompressedUInt16();
+        if (sizeInBits <= 0)
+        {
+            return string.Empty;
+        }
+
+        byte[] output = new byte[maxCharsToWrite - 1];
+        HuffmanNode currentNode = _stringCompressorRoot;
+        int outputWriteIndex = 0;
+        while (sizeInBits > 0)
+        {
+            bool bit = ReadBitBool();
+            sizeInBits--;
+            currentNode = bit ? currentNode.Right! : currentNode.Left!;
+            if (!currentNode.IsLeaf)
+            {
+                continue;
+            }
+
+            if (outputWriteIndex == output.Length)
+            {
+                SkipBits(sizeInBits);
+                break;
+            }
+
+            output[outputWriteIndex++] = currentNode.Value;
+            currentNode = _stringCompressorRoot;
+        }
+
+        return outputWriteIndex > 0 ? _stringEncoding.GetString(output, 0, outputWriteIndex).TrimEnd('\0') : string.Empty;
+    }
+
     public ReadOnlySpan<byte> ReadBytes(int count)
     {
         if (count <= 0)
@@ -203,6 +281,22 @@ public unsafe ref struct BitStreamReader
     public void SkipBytes(int count) => SkipBits(count * 8);
 
     public void Reset() => _offsetBits = _startBitOffset;
+
+    private byte[] ReadUnalignedBits(int bitCount, bool alignRight)
+    {
+        if (bitCount <= 0)
+        {
+            return Array.Empty<byte>();
+        }
+
+        byte[] bytes = new byte[(bitCount + 7) / 8];
+        fixed (byte* bytesPtr = bytes)
+        {
+            ReadBitsInternal(bytesPtr, bitCount, alignRight);
+        }
+
+        return bytes;
+    }
 
     private static bool TryDecodeManaged(ReadOnlySpan<byte> encodedPayload, int maxCharsToWrite, out string text)
     {

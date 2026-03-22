@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public readonly record struct OutgoingPacketPayload(PacketId PacketId, byte[] Data, int DataBitLength)
+public readonly record struct OutgoingPacketPayload(EPacketId EPacketId, byte[] Data, int DataBitLength)
 {
     public T Parse<T>(Func<OutgoingPacketArgs, T> parser)
     {
@@ -10,7 +10,7 @@ public readonly record struct OutgoingPacketPayload(PacketId PacketId, byte[] Da
         {
             fixed (byte* dataPtr = Data)
             {
-                OutgoingPacketArgs args = new((int)PacketId, (nint)dataPtr, DataBitLength);
+                OutgoingPacketArgs args = new((int)EPacketId, (nint)dataPtr, DataBitLength);
                 return parser(args);
             }
         }
@@ -22,7 +22,7 @@ public readonly record struct OutgoingPacketPayload(PacketId PacketId, byte[] Da
         {
             fixed (byte* dataPtr = Data)
             {
-                OutgoingPacketArgs args = new((int)PacketId, (nint)dataPtr, DataBitLength);
+                OutgoingPacketArgs args = new((int)EPacketId, (nint)dataPtr, DataBitLength);
                 action(args);
             }
         }
@@ -37,6 +37,6 @@ public readonly record struct OutgoingPacketPayload(PacketId PacketId, byte[] Da
             Marshal.Copy(args.DataPtr, data, 0, byteLength);
         }
 
-        return new OutgoingPacketPayload((PacketId)args.PacketId, data, args.DataBitLength);
+        return new OutgoingPacketPayload((EPacketId)args.EPacketId, data, args.DataBitLength);
     }
 }

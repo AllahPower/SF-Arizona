@@ -8,14 +8,14 @@ internal sealed class NetworkDispatcher
     private const int MaxDispatchPerTick = 24;
 
     // RPC queues
-    private readonly ConcurrentQueue<(int RpcId, byte[] Packet, int PayloadBitOffset, int PayloadBitLength)> _pendingIncomingRpc = new();
-    private readonly ConcurrentQueue<(int RpcId, byte[] Packet, int DataBitLength)> _pendingOutgoingRpc = new();
+    private readonly ConcurrentQueue<(int ERpcId, byte[] Packet, int PayloadBitOffset, int PayloadBitLength)> _pendingIncomingRpc = new();
+    private readonly ConcurrentQueue<(int ERpcId, byte[] Packet, int DataBitLength)> _pendingOutgoingRpc = new();
     private int _incomingRpcScheduled;
     private int _outgoingRpcScheduled;
 
     // Packet queues
-    private readonly ConcurrentQueue<(int PacketId, byte[] Data, int DataBitLength)> _pendingIncomingPacket = new();
-    private readonly ConcurrentQueue<(int PacketId, byte[] Data, int DataBitLength)> _pendingOutgoingPacket = new();
+    private readonly ConcurrentQueue<(int EPacketId, byte[] Data, int DataBitLength)> _pendingIncomingPacket = new();
+    private readonly ConcurrentQueue<(int EPacketId, byte[] Data, int DataBitLength)> _pendingOutgoingPacket = new();
     private int _incomingPacketScheduled;
     private int _outgoingPacketScheduled;
 
@@ -54,7 +54,7 @@ internal sealed class NetworkDispatcher
         int processed = 0;
         while (processed < MaxDispatchPerTick && _pendingIncomingRpc.TryDequeue(out var item))
         {
-            _incomingRpcHandlers.DispatchIncoming(item.RpcId, item.Packet, item.PayloadBitOffset, item.PayloadBitLength);
+            _incomingRpcHandlers.DispatchIncoming(item.ERpcId, item.Packet, item.PayloadBitOffset, item.PayloadBitLength);
             processed++;
         }
 
@@ -89,7 +89,7 @@ internal sealed class NetworkDispatcher
         int processed = 0;
         while (processed < MaxDispatchPerTick && _pendingOutgoingRpc.TryDequeue(out var item))
         {
-            _outgoingRpcHandlers.Dispatch(item.RpcId, item.Packet, item.DataBitLength);
+            _outgoingRpcHandlers.Dispatch(item.ERpcId, item.Packet, item.DataBitLength);
             processed++;
         }
 
@@ -124,7 +124,7 @@ internal sealed class NetworkDispatcher
         int processed = 0;
         while (processed < MaxDispatchPerTick && _pendingIncomingPacket.TryDequeue(out var item))
         {
-            _incomingPacketHandlers.Dispatch(item.PacketId, item.Data, item.DataBitLength);
+            _incomingPacketHandlers.Dispatch(item.EPacketId, item.Data, item.DataBitLength);
             processed++;
         }
 
@@ -159,7 +159,7 @@ internal sealed class NetworkDispatcher
         int processed = 0;
         while (processed < MaxDispatchPerTick && _pendingOutgoingPacket.TryDequeue(out var item))
         {
-            _outgoingPacketHandlers.Dispatch(item.PacketId, item.Data, item.DataBitLength);
+            _outgoingPacketHandlers.Dispatch(item.EPacketId, item.Data, item.DataBitLength);
             processed++;
         }
 

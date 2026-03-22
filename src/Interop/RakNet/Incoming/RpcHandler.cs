@@ -2,7 +2,7 @@ namespace SFSharp;
 
 public interface IRpcHandler : IDisposable
 {
-    RpcId RpcId { get; }
+    ERpcId ERpcId { get; }
     string Name { get; }
     bool IsAttached { get; }
 
@@ -16,7 +16,7 @@ public abstract class RpcHandlerBase : IRpcHandler
 
     protected RpcHandlerManager? Manager { get; private set; }
 
-    public abstract RpcId RpcId { get; }
+    public abstract ERpcId ERpcId { get; }
     public virtual string Name => GetType().Name;
     public bool IsAttached => _subscription is not null;
 
@@ -28,9 +28,9 @@ public abstract class RpcHandlerBase : IRpcHandler
         }
 
         Manager = manager;
-        _subscription = manager.Subscribe(RpcId, DispatchIncoming);
+        _subscription = manager.Subscribe(ERpcId, DispatchIncoming);
         OnAttached();
-        SFLog.Info($"RpcHandler attached name={Name} rpcId={(int)RpcId}");
+        SFLog.Info($"RpcHandler attached name={Name} rpcId={(int)ERpcId}");
     }
 
     public void Detach()
@@ -44,7 +44,7 @@ public abstract class RpcHandlerBase : IRpcHandler
         _subscription = null;
         OnDetached();
         Manager = null;
-        SFLog.Info($"RpcHandler detached name={Name} rpcId={(int)RpcId}");
+        SFLog.Info($"RpcHandler detached name={Name} rpcId={(int)ERpcId}");
     }
 
     public void Dispose()
@@ -70,7 +70,7 @@ public abstract class RpcHandlerBase : IRpcHandler
         }
         catch (Exception ex)
         {
-            SFLog.Error(ex, $"RpcHandler dispatch failed name={Name} rpcId={args.RpcId}");
+            SFLog.Error(ex, $"RpcHandler dispatch failed name={Name} rpcId={args.ERpcId}");
         }
     }
 }
@@ -89,12 +89,12 @@ public abstract class RpcHandler<TPayload> : RpcHandlerBase
 
 public sealed class DelegateRpcHandler<TPayload> : RpcHandler<TPayload>
 {
-    private readonly RpcId _rpcId;
+    private readonly ERpcId _rpcId;
     private readonly string _name;
     private readonly Func<IncomingRpcArgs, TPayload> _parser;
     private readonly Action<TPayload, IncomingRpcArgs> _handler;
 
-    public DelegateRpcHandler(RpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, Action<TPayload, IncomingRpcArgs> handler, string? name = null)
+    public DelegateRpcHandler(ERpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, Action<TPayload, IncomingRpcArgs> handler, string? name = null)
     {
         _rpcId = rpcId;
         _parser = parser;
@@ -102,7 +102,7 @@ public sealed class DelegateRpcHandler<TPayload> : RpcHandler<TPayload>
         _name = string.IsNullOrWhiteSpace(name) ? $"DelegateRpcHandler<{typeof(TPayload).Name}>" : name;
     }
 
-    public override RpcId RpcId => _rpcId;
+    public override ERpcId ERpcId => _rpcId;
     public override string Name => _name;
 
     protected override TPayload Parse(IncomingRpcArgs args)

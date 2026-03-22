@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public readonly record struct OutgoingRpcPayload(RpcId RpcId, byte[] Data, int DataBitLength)
+public readonly record struct OutgoingRpcPayload(ERpcId ERpcId, byte[] Data, int DataBitLength)
 {
     public T Parse<T>(Func<OutgoingRpcArgs, T> parser)
     {
@@ -10,7 +10,7 @@ public readonly record struct OutgoingRpcPayload(RpcId RpcId, byte[] Data, int D
         {
             fixed (byte* dataPtr = Data)
             {
-                OutgoingRpcArgs args = new((int)RpcId, (nint)dataPtr, DataBitLength);
+                OutgoingRpcArgs args = new((int)ERpcId, (nint)dataPtr, DataBitLength);
                 return parser(args);
             }
         }
@@ -22,7 +22,7 @@ public readonly record struct OutgoingRpcPayload(RpcId RpcId, byte[] Data, int D
         {
             fixed (byte* dataPtr = Data)
             {
-                OutgoingRpcArgs args = new((int)RpcId, (nint)dataPtr, DataBitLength);
+                OutgoingRpcArgs args = new((int)ERpcId, (nint)dataPtr, DataBitLength);
                 action(args);
             }
         }
@@ -37,6 +37,6 @@ public readonly record struct OutgoingRpcPayload(RpcId RpcId, byte[] Data, int D
             Marshal.Copy(args.DataPtr, data, 0, byteLength);
         }
 
-        return new OutgoingRpcPayload((RpcId)args.RpcId, data, args.DataBitLength);
+        return new OutgoingRpcPayload((ERpcId)args.ERpcId, data, args.DataBitLength);
     }
 }

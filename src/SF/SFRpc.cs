@@ -10,7 +10,7 @@ public sealed class SFRpc
 
     // - Incoming RPC (server -> client) -
 
-    public RpcSubscription Subscribe(RpcId rpcId, Action<IncomingRpcArgs> handler)
+    public RpcSubscription Subscribe(ERpcId rpcId, Action<IncomingRpcArgs> handler)
     {
         return Handlers.Subscribe(rpcId, handler);
     }
@@ -20,12 +20,12 @@ public sealed class SFRpc
         return Handlers.Bind(handler, token, attachNow);
     }
 
-    public IDisposable Bind<TPayload>(RpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, Action<TPayload, IncomingRpcArgs> handler, CancellationToken token = default, string? name = null)
+    public IDisposable Bind<TPayload>(ERpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, Action<TPayload, IncomingRpcArgs> handler, CancellationToken token = default, string? name = null)
     {
         return Handlers.Bind(rpcId, parser, handler, token, name);
     }
 
-    public async IAsyncEnumerable<IncomingRpcPayload> Stream(RpcId rpcId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<IncomingRpcPayload> Stream(ERpcId rpcId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<IncomingRpcPayload> queue = new();
         using RpcSubscription subscription = Subscribe(rpcId, args => queue.Enqueue(IncomingRpcPayload.From(args)));
@@ -41,7 +41,7 @@ public sealed class SFRpc
         }
     }
 
-    public async IAsyncEnumerable<TPayload> Stream<TPayload>(RpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> Stream<TPayload>(ERpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (IncomingRpcPayload payload in Stream(rpcId, token))
         {
@@ -51,12 +51,12 @@ public sealed class SFRpc
 
     // - Outgoing RPC (client -> server) -
 
-    public RpcSubscription SubscribeOutgoing(RpcId rpcId, Action<OutgoingRpcArgs> handler)
+    public RpcSubscription SubscribeOutgoing(ERpcId rpcId, Action<OutgoingRpcArgs> handler)
     {
         return OutgoingHandlers.Subscribe(rpcId, handler);
     }
 
-    public async IAsyncEnumerable<OutgoingRpcPayload> StreamOutgoing(RpcId rpcId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<OutgoingRpcPayload> StreamOutgoing(ERpcId rpcId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<OutgoingRpcPayload> queue = new();
         using RpcSubscription subscription = SubscribeOutgoing(rpcId, args => queue.Enqueue(OutgoingRpcPayload.From(args)));
@@ -72,7 +72,7 @@ public sealed class SFRpc
         }
     }
 
-    public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(RpcId rpcId, Func<OutgoingRpcArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(ERpcId rpcId, Func<OutgoingRpcArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (OutgoingRpcPayload payload in StreamOutgoing(rpcId, token))
         {

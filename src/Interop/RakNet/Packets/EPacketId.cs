@@ -1,0 +1,82 @@
+namespace SFSharp;
+
+/// <summary>
+/// Sync packet IDs for non-RPC raw packets.
+/// Reference: https://github.com/Brunoo16/samp-packet-list/wiki/Packet-List
+/// Internal: https://github.com/Brunoo16/samp-packet-list/wiki/Internal-Packet-List
+/// </summary>
+public enum EPacketId : byte
+{
+    // RakNet / SA:MP transport ids from local PacketEnumerations.h and SAMP.Lua raknet.lua
+    InternalPing = 6,
+    Ping = 7,
+    PingOpenConnections = 8,
+    ConnectedPong = 9,
+    RequestStaticData = 10,
+    ConnectionRequest = 11,
+    Authentication = 12,
+    AuthKey = 12,
+    BroadcastPings = 15,
+    SecuredConnectionResponse = 16,
+    SecuredConnectionConfirmation = 17,
+    RpcMapping = 18,
+    SetRandomNumberSeed = 19,
+    Rpc = 20,
+    RpcReply = 21,
+    DetectLostConnections = 23,
+    OpenConnectionRequest = 24,
+    OpenConnectionReply = 25,
+    ConnectionCookie = 26,
+    RsaPublicKeyMismatch = 28,
+    ConnectionAttemptFailed = 29,
+    ConnectionFailed = 29,
+    NewIncomingConnection = 30,
+    NoFreeIncomingConnections = 31,
+    DisconnectionNotification = 32,
+    ConnectionClosed = 32,
+    ConnectionLost = 33,
+    ConnectionRequestAccepted = 34,
+    InitializeEncryption = 35,
+    ConnectionBanned = 36,
+    InvalidPassword = 37,
+    ModifiedPacket = 38,
+    Pong = 39,
+    Timestamp = 40,
+    ReceivedStaticData = 41,
+    RemoteDisconnectionNotification = 42,
+    RemoteConnectionLost = 43,
+    RemoteNewIncomingConnection = 44,
+    RemoteExistingConnection = 45,
+    RemoteStaticData = 46,
+    AdvertiseSystem = 47,
+
+    // SA:MP sync packets (client <-> server)
+    IncarData = 200,
+    VehicleSync = 200,
+    RconCommand = 201,
+    RconResponse = 202,
+    AimData = 203,
+    AimSync = 203,
+    WeaponsData = 204,
+    WeaponsUpdate = 204,
+    StatsData = 205,
+    StatsUpdate = 205,
+    BulletData = 206,
+    BulletSync = 206,
+    OnfootData = 207,
+    PlayerSync = 207,
+    MarkersData = 208,
+    MarkersSync = 208,
+    UnoccupiedData = 209,
+    UnoccupiedSync = 209,
+    TrailerData = 210,
+    TrailerSync = 210,
+    PassengerData = 211,
+    PassengerSync = 211,
+    SpectatorData = 212,
+    SpectatorSync = 212,
+
+    // Arizona RP custom packets (CEF transport layer)
+    ArizonaCef = 220,
+    ArizonaCefEx = 221,
+}

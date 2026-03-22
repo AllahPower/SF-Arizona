@@ -2,7 +2,7 @@ namespace SFSharp;
 
 public interface IParsedPacket
 {
-    PacketId PacketId { get; }
+    EPacketId EPacketId { get; }
     string Name { get; }
     string? Detail { get; }
 }
@@ -22,7 +22,7 @@ public interface IParsedArizonaPacket : IParsedPacket
 
 public interface IIncomingPacketParser
 {
-    PacketId PacketId { get; }
+    EPacketId EPacketId { get; }
     Type ParsedType { get; }
     string Name { get; }
 
@@ -31,7 +31,7 @@ public interface IIncomingPacketParser
 
 public interface IOutgoingPacketParser
 {
-    PacketId PacketId { get; }
+    EPacketId EPacketId { get; }
     Type ParsedType { get; }
     string Name { get; }
 
@@ -40,7 +40,7 @@ public interface IOutgoingPacketParser
 
 public interface IIncomingArizonaPacketParser
 {
-    PacketId PacketId { get; }
+    EPacketId EPacketId { get; }
     int SubId { get; }
     Type ParsedType { get; }
     string Name { get; }
@@ -50,7 +50,7 @@ public interface IIncomingArizonaPacketParser
 
 public interface IOutgoingArizonaPacketParser
 {
-    PacketId PacketId { get; }
+    EPacketId EPacketId { get; }
     int SubId { get; }
     Type ParsedType { get; }
     string Name { get; }

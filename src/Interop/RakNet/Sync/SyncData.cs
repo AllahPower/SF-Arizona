@@ -5,7 +5,7 @@ namespace SFSharp;
 
 // SA-MP 0.3.7 R3-1 sync packet structures.
 // Reference: samp.dll packet readers and SAMP.Lua synchronization.lua.
-// All sync packets are prefixed with a PacketId byte which is NOT included in these structs.
+// All sync packets are prefixed with a EPacketId byte which is NOT included in these structs.
 
 // ---- shared types ----
 
@@ -148,7 +148,7 @@ internal static class SampSyncCodec
     }
 }
 
-// ---- OnfootData (PacketId 207) ----
+// ---- OnfootData (EPacketId 207) ----
 
 public readonly record struct OnfootSyncData(
     ushort LeftRightKeys,
@@ -291,7 +291,7 @@ public readonly record struct OutgoingOnfootSyncData(
     }
 }
 
-// ---- IncarData (PacketId 200) ----
+// ---- IncarData (EPacketId 200) ----
 
 public readonly record struct IncarSyncData(
     ushort VehicleId,
@@ -437,7 +437,7 @@ public readonly record struct OutgoingIncarSyncData(
     }
 }
 
-// ---- AimData (PacketId 203) ----
+// ---- AimData (EPacketId 203) ----
 
 public readonly record struct AimSyncData(
     byte CamMode,
@@ -467,7 +467,7 @@ public readonly record struct AimSyncData(
     }
 }
 
-// ---- BulletData (PacketId 206) ----
+// ---- BulletData (EPacketId 206) ----
 
 public readonly record struct BulletSyncData(
     byte TargetType,
@@ -494,7 +494,7 @@ public readonly record struct BulletSyncData(
     }
 }
 
-// ---- PassengerData (PacketId 211) ----
+// ---- PassengerData (EPacketId 211) ----
 
 public readonly record struct PassengerSyncData(
     ushort VehicleId,
@@ -537,7 +537,7 @@ public readonly record struct PassengerSyncData(
     }
 }
 
-// ---- UnoccupiedData (PacketId 209) ----
+// ---- UnoccupiedData (EPacketId 209) ----
 
 public readonly record struct UnoccupiedSyncData(
     ushort VehicleId,
@@ -568,7 +568,7 @@ public readonly record struct UnoccupiedSyncData(
     }
 }
 
-// ---- TrailerData (PacketId 210) ----
+// ---- TrailerData (EPacketId 210) ----
 
 public readonly record struct TrailerSyncData(
     ushort TrailerId,
@@ -599,7 +599,7 @@ public readonly record struct TrailerSyncData(
     }
 }
 
-// ---- SpectatorData (PacketId 212) ----
+// ---- SpectatorData (EPacketId 212) ----
 
 public readonly record struct SpectatorSyncData(
     ushort LeftRightKeys,
@@ -624,7 +624,7 @@ public readonly record struct SpectatorSyncData(
     }
 }
 
-// ---- WeaponsData (PacketId 204) ----
+// ---- WeaponsData (EPacketId 204) ----
 
 public readonly record struct WeaponSlot(byte Id, byte Unknown1, ushort Ammo)
 {
@@ -661,7 +661,7 @@ public readonly record struct WeaponsSyncData(
     }
 }
 
-// ---- StatsData (PacketId 205) ----
+// ---- StatsData (EPacketId 205) ----
 
 public readonly record struct StatsSyncData(int Money, int DrunkLevel)
 {
@@ -678,7 +678,7 @@ public readonly record struct StatsSyncData(int Money, int DrunkLevel)
     }
 }
 
-// ---- MarkersData (PacketId 208) ----
+// ---- MarkersData (EPacketId 208) ----
 
 public readonly record struct PlayerMarker(ushort PlayerId, bool Active, Vector3 Position)
 {

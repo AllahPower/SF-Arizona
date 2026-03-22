@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public readonly record struct OutgoingRpcArgs(int RpcId, nint DataPtr, int DataBitLength)
+public readonly record struct OutgoingRpcArgs(int ERpcId, nint DataPtr, int DataBitLength)
 {
     public unsafe BitStreamReader CreateReader()
     {

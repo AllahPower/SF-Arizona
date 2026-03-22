@@ -13,7 +13,7 @@ public sealed class IncomingPacketManager : IDisposable
         }
     }
 
-    public bool HasSubscribers(PacketId packetId)
+    public bool HasSubscribers(EPacketId packetId)
     {
         return HasSubscribers((int)packetId);
     }
@@ -31,7 +31,7 @@ public sealed class IncomingPacketManager : IDisposable
         }
     }
 
-    public RpcSubscription Subscribe(PacketId packetId, Action<IncomingPacketArgs> handler)
+    public RpcSubscription Subscribe(EPacketId packetId, Action<IncomingPacketArgs> handler)
     {
         return Subscribe((int)packetId, handler);
     }

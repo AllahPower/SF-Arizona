@@ -638,7 +638,7 @@ public static class ArizonaPacket
     public static ArzSetLocalDriver ParseSetLocalDriver(ref BitStreamReader r)
     {
         byte seatCode = r.ReadUInt8();
-        bool state = r.ReadBool();
+        bool state = r.ReadBool8();
         return new(seatCode, state);
     }
 
@@ -707,7 +707,7 @@ public static class ArizonaPacket
     public static ArzSetPlayerUnknownState ParseSetPlayerUnknownState(ref BitStreamReader r)
     {
         ushort pid = r.ReadUInt16();
-        bool u1 = r.ReadBool();
+        bool u1 = r.ReadBool8();
         byte state = r.ReadUInt8();
         return new(pid, u1, state);
     }
@@ -749,7 +749,7 @@ public static class ArizonaPacket
 
     public static ArzSetVisibleDistance3DMarker ParseSetVisibleDistance3DMarker(ref BitStreamReader r)
     {
-        bool status = r.ReadBool();
+        bool status = r.ReadBool8();
         float dist = r.ReadFloat();
         byte pad = r.ReadUInt8();
         return new(status, dist, pad);
@@ -777,7 +777,7 @@ public static class ArizonaPacket
 
     public static ArzToggleCompass ParseToggleCompass(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBool8());
     }
 
     public static ArzSetAnimationProperty ParseSetAnimationProperty(ref BitStreamReader r)
@@ -801,7 +801,7 @@ public static class ArizonaPacket
         uint port = r.ReadUInt32();
         string nickname = r.ReadStringUInt32Length();
         string password = r.ReadStringUInt32Length();
-        bool connectMode = r.ReadBool();
+        bool connectMode = r.ReadBool8();
         return new(host, port, nickname, password, connectMode);
     }
 
@@ -932,7 +932,7 @@ public static class ArizonaPacket
     {
         ushort pid = r.ReadUInt16();
         int index = r.ReadInt32();
-        bool create = r.ReadBool();
+        bool create = r.ReadBool8();
         int bone = r.ReadInt32();
         int modelId = r.ReadInt32();
         Vector3 offset = ReadVec3(ref r);
@@ -1028,7 +1028,7 @@ public static class ArizonaPacket
         uint z = r.ReadUInt32();
         uint timeOffset = r.ReadUInt32();
         uint unknown = r.ReadUInt32();
-        bool active = r.ReadBool();
+        bool active = r.ReadBool8();
         return new(id, x, y, z, timeOffset, unknown, active);
     }
 
@@ -1083,7 +1083,7 @@ public static class ArizonaPacket
         }
 
         byte speed = r.ReadUInt8();
-        bool loop = r.ReadBool();
+        bool loop = r.ReadBool8();
         int color1 = r.ReadInt32();
         int color2 = r.ReadInt32();
         ArzGpsRoutePoint? first = ParseGpsRoutePoint(ref r);
@@ -1147,7 +1147,7 @@ public static class ArizonaPacket
                 }
             case 2:
                 {
-                    bool useEntitySpace = r.ReadBool();
+                    bool useEntitySpace = r.ReadBool8();
                     ushort entityId = r.ReadUInt16();
                     ushort boneId = r.ReadUInt16();
                     return new ArzGpsRoutePedBonePoint(useEntitySpace, entityId, boneId);
@@ -1174,7 +1174,7 @@ public static class ArizonaPacket
 
     public static ArzSendSwitchChatState ParseSendSwitchChatState(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBool8());
     }
 
     public static ArzSendTurnLights ParseSendTurnLights(ref BitStreamReader r)
@@ -1206,7 +1206,7 @@ public static class ArizonaPacket
     public static ArzSendToggleDrawInterface ParseSendToggleDrawInterface(ref BitStreamReader r)
     {
         uint sid = r.ReadUInt32();
-        bool status = r.ReadBool();
+        bool status = r.ReadBool8();
         return new(sid, status);
     }
 
@@ -1228,7 +1228,7 @@ public static class ArizonaPacket
 
     public static ArzSendToggleActionState ParseSendToggleActionState(ref BitStreamReader r)
     {
-        return new(r.ReadBool());
+        return new(r.ReadBool8());
     }
 
     public static ArzSendTargetPosition ParseSendTargetPosition(ref BitStreamReader r)
@@ -1307,7 +1307,7 @@ public static class ArizonaPacket
     public static ArzSetBotInvulnerable ParseSetBotInvulnerable(ref BitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
-        bool invuln = r.ReadBool();
+        bool invuln = r.ReadBool8();
         return new(botId, invuln);
     }
 

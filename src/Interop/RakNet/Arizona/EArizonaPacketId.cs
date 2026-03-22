@@ -6,7 +6,7 @@ namespace SFSharp;
 // Source map: arizona-events init.lua + IDA reverse of core.asi and vorbisFile.dll.
 // Some ids below are intentionally listed as source-only/unimplemented so the known packet map stays complete
 // even when we do not yet have a proven parser.
-public enum ArizonaPacketId : byte
+public enum EArizonaPacketId : byte
 {
     // -- incoming (server -> client) --
 

@@ -1,6 +1,6 @@
-using System.Collections.Concurrent;
-
+using Microsoft.Extensions.Logging;
 using SFSharp;
+using System.Collections.Concurrent;
 
 [SFModule("rpc-debugger", "RpcDebugger", Category = "Debug", Description = "Captures incoming and outgoing RPC/packet traffic with lightweight decoding.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 60)]
 public class RpcDebugger : SFModuleBase
@@ -50,13 +50,13 @@ public class RpcDebugger : SFModuleBase
         List<RpcSubscription> subscriptions = new();
         try
         {
-            foreach (RpcId rpcId in Enum.GetValues<RpcId>())
+            foreach (ERpcId rpcId in Enum.GetValues<ERpcId>())
             {
                 subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
                 subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
             }
 
-            foreach (PacketId packetId in Enum.GetValues<PacketId>())
+            foreach (EPacketId packetId in Enum.GetValues<EPacketId>())
             {
                 subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
                 subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
@@ -92,10 +92,10 @@ public class RpcDebugger : SFModuleBase
             return;
         }
 
-        string? name = Enum.IsDefined((RpcId)args.RpcId) ? ((RpcId)args.RpcId).ToString() : null;
-        string? detail = $"direction=Incoming rpcId={args.RpcId}";
-        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Rpc, args.RpcId, name, detail, args.DataBitLength, Environment.TickCount64));
-        Context.Heartbeat($"rpc-in:{args.RpcId}");
+        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
+        string? detail = $"direction=Incoming rpcId={args.ERpcId}";
+        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Rpc, args.ERpcId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"rpc-in:{args.ERpcId}");
     }
 
     private void OnOutgoingRpc(OutgoingRpcArgs args)
@@ -107,10 +107,10 @@ public class RpcDebugger : SFModuleBase
             return;
         }
 
-        string? name = Enum.IsDefined((RpcId)args.RpcId) ? ((RpcId)args.RpcId).ToString() : null;
-        string? detail = $"direction=Outgoing rpcId={args.RpcId}";
-        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Rpc, args.RpcId, name, detail, args.DataBitLength, Environment.TickCount64));
-        Context.Heartbeat($"rpc-out:{args.RpcId}");
+        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
+        string? detail = $"direction=Outgoing rpcId={args.ERpcId}";
+        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Rpc, args.ERpcId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"rpc-out:{args.ERpcId}");
     }
 
     private void OnIncomingPacket(IncomingPacketArgs args)
@@ -123,8 +123,8 @@ public class RpcDebugger : SFModuleBase
         }
 
         (string? name, string? detail) = DecodeIncomingPacket(args);
-        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Packet, args.PacketId, name, detail, args.DataBitLength, Environment.TickCount64));
-        Context.Heartbeat($"pkt-in:{args.PacketId}");
+        Enqueue(new NetLogEntry(Direction.Incoming, MessageKind.Packet, args.EPacketId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"pkt-in:{args.EPacketId}");
     }
 
     private void OnOutgoingPacket(OutgoingPacketArgs args)
@@ -137,36 +137,36 @@ public class RpcDebugger : SFModuleBase
         }
 
         (string? name, string? detail) = DecodeOutgoingPacket(args);
-        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Packet, args.PacketId, name, detail, args.DataBitLength, Environment.TickCount64));
-        Context.Heartbeat($"pkt-out:{args.PacketId}");
+        Enqueue(new NetLogEntry(Direction.Outgoing, MessageKind.Packet, args.EPacketId, name, detail, args.DataBitLength, Environment.TickCount64));
+        Context.Heartbeat($"pkt-out:{args.EPacketId}");
     }
 
     private static (string? Name, string? Detail) DecodeIncomingPacket(IncomingPacketArgs args)
     {
         if (SF.PacketParsers.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)
         {
-            return FormatParsedPacket(packet, args.PacketId);
+            return FormatParsedPacket(packet, args.EPacketId);
         }
 
-        return FormatPacketParseFailure(args.PacketId, result, TryReadArizonaSubId(args));
+        return FormatPacketParseFailure(args.EPacketId, result, TryReadArizonaSubId(args));
     }
 
     private static (string? Name, string? Detail) DecodeOutgoingPacket(OutgoingPacketArgs args)
     {
         if (SF.PacketParsers.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
         {
-            return FormatParsedPacket(packet, args.PacketId);
+            return FormatParsedPacket(packet, args.EPacketId);
         }
 
-        return FormatPacketParseFailure(args.PacketId, result, TryReadArizonaSubId(args));
+        return FormatPacketParseFailure(args.EPacketId, result, TryReadArizonaSubId(args));
     }
 
     private static (string? Name, string? Detail) FormatParsedPacket(IParsedPacket packet, int rawPacketId)
     {
         if (packet is IParsedArizonaPacket arizonaPacket)
         {
-            PacketId packetId = (PacketId)rawPacketId;
-            string transport = packetId == PacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
+            EPacketId packetId = (EPacketId)rawPacketId;
+            string transport = packetId == EPacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
             string name = $"{transport}:{packet.Name}";
             string detail = packet.Detail is { Length: > 0 }
                 ? $"subId={arizonaPacket.SubId} {packet.Detail}"
@@ -180,11 +180,11 @@ public class RpcDebugger : SFModuleBase
     private static (string? Name, string? Detail) FormatPacketParseFailure(int rawPacketId, PacketParseResult result, int? arizonaSubId)
     {
         PacketParseFailureReason reason = result.FailureReason;
-        string? fallbackName = Enum.IsDefined((PacketId)rawPacketId) ? ((PacketId)rawPacketId).ToString() : null;
+        string? fallbackName = Enum.IsDefined((EPacketId)rawPacketId) ? ((EPacketId)rawPacketId).ToString() : null;
         if (arizonaSubId is int subId)
         {
-            PacketId packetId = (PacketId)rawPacketId;
-            string transport = packetId == PacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
+            EPacketId packetId = (EPacketId)rawPacketId;
+            string transport = packetId == EPacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
             string? detail = reason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
                 ? $"subId={subId}"
                 : $"subId={subId} parse={reason}" + (string.IsNullOrWhiteSpace(result.Error) ? string.Empty : $" error={result.Error}");
@@ -199,8 +199,8 @@ public class RpcDebugger : SFModuleBase
 
     private static int? TryReadArizonaSubId(IncomingPacketArgs args)
     {
-        PacketId packetId = (PacketId)args.PacketId;
-        if (packetId is not (PacketId.ArizonaCef or PacketId.ArizonaCefEx))
+        EPacketId packetId = (EPacketId)args.EPacketId;
+        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx))
         {
             return null;
         }
@@ -209,7 +209,7 @@ public class RpcDebugger : SFModuleBase
         {
             BitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            return packetId == PacketId.ArizonaCef
+            return packetId == EPacketId.ArizonaCef
                 ? ArizonaPacket.ReadSubId220(ref reader)
                 : ArizonaPacket.ReadSubId221(ref reader);
         }
@@ -221,8 +221,8 @@ public class RpcDebugger : SFModuleBase
 
     private static int? TryReadArizonaSubId(OutgoingPacketArgs args)
     {
-        PacketId packetId = (PacketId)args.PacketId;
-        if (packetId is not (PacketId.ArizonaCef or PacketId.ArizonaCefEx))
+        EPacketId packetId = (EPacketId)args.EPacketId;
+        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx))
         {
             return null;
         }
@@ -231,7 +231,7 @@ public class RpcDebugger : SFModuleBase
         {
             BitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            return packetId == PacketId.ArizonaCef
+            return packetId == EPacketId.ArizonaCef
                 ? ArizonaPacket.ReadSubId220(ref reader)
                 : ArizonaPacket.ReadSubId221(ref reader);
         }
