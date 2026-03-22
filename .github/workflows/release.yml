@@ -56,17 +56,12 @@ jobs:
         if: steps.version_diff.outputs.CHANGED == 'true'
         run: dotnet publish src/SF.csproj -c Release
 
-      - name: Create tag
-        if: steps.version_diff.outputs.CHANGED == 'true'
-        run: |
-          git tag v${{ steps.version_diff.outputs.CURRENT }}
-          git push origin v${{ steps.version_diff.outputs.CURRENT }}
-
       - name: Create GitHub Release
         if: steps.version_diff.outputs.CHANGED == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version_diff.outputs.CURRENT }}
           name: SF-Arizona v${{ steps.version_diff.outputs.CURRENT }}
+          make_latest: true
           generate_release_notes: true
           files: src/bin/Release/net10.0/win-x86/publish/SF.asi
