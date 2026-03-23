@@ -45,7 +45,7 @@ public static partial class RpcParserCatalog
         RegisterIncoming(registry, ERpcId.Destroy3DTextLabel, SampRpc.ParseDestroy3DTextLabel);
         RegisterIncoming(registry, ERpcId.ChatBubble, SampRpc.ParseChatBubble);
         RegisterIncoming(registry, ERpcId.UpdateTime, SampRpc.ParseUpdateTime);
-        RegisterIncoming(registry, ERpcId.ShowDialog, SampRpc.ParseShowDialogHeader);
+        RegisterIncoming(registry, ERpcId.ShowDialog, SampRpc.ParseShowDialog);
         RegisterIncoming(registry, ERpcId.DestroyPickup, SampRpc.ParseDestroyPickup);
         RegisterIncoming(registry, ERpcId.LinkVehicleToInterior, SampRpc.ParseLinkVehicleToInterior);
         RegisterIncoming(registry, ERpcId.SetPlayerArmour, SampRpc.ParseSetPlayerArmour);

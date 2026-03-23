@@ -25,7 +25,7 @@ public readonly record struct WorldPlayerAddRpc(ushort PlayerId, byte Team, int 
 public readonly record struct SetShopNameRpc(string Name);
 public readonly record struct SetPlayerSkillLevelRpc(ushort PlayerId, int Skill, ushort Level);
 public readonly record struct SetPlayerDrunkLevelRpc(int DrunkLevel);
-public readonly record struct Create3DTextLabelRpc(ushort Id, int Color, Vector3 Position, float Distance, bool TestLOS, ushort AttachedPlayerId, ushort AttachedVehicleId, byte[] EncodedText);
+public readonly record struct Create3DTextLabelRpc(ushort Id, int Color, Vector3 Position, float Distance, bool TestLOS, ushort AttachedPlayerId, ushort AttachedVehicleId, string Text);
 public readonly record struct DisableCheckpointRpc();
 public readonly record struct SetRaceCheckpointRpc(byte Type, Vector3 CurrentPosition, Vector3 NextPosition, float Size);
 public readonly record struct DisableRaceCheckpointRpc();
@@ -59,7 +59,7 @@ public readonly record struct RemoveVehicleComponentRpc(ushort VehicleId, ushort
 public readonly record struct Destroy3DTextLabelRpc(ushort TextLabelId);
 public readonly record struct ChatBubbleRpc(ushort PlayerId, int Color, float Distance, int Duration, string Message);
 public readonly record struct UpdateTimeRpc(int Time);
-public readonly record struct ShowDialogRpcHeader(ushort DialogId, DialogStyle Style, string Title, string LeftButton, string RightButton, byte[] EncodedTextPayload);
+public readonly record struct ShowDialogRpc(ushort DialogId, DialogStyle Style, string Title, string LeftButton, string RightButton, string Text);
 public readonly record struct DestroyPickupRpc(int Id);
 public readonly record struct LinkVehicleToInteriorRpc(ushort VehicleId, byte InteriorId);
 public readonly record struct SetPlayerArmourRpc(float Armour);
@@ -518,7 +518,7 @@ public static class SampRpc
         bool testLOS = r.ReadBool8();
         ushort attachedPlayer = r.ReadUInt16();
         ushort attachedVehicle = r.ReadUInt16();
-        byte[] text = r.ReadRemainingBytes();
+        string text = r.ReadEncodedString(4096);
         return new(id, color, pos, dist, testLOS, attachedPlayer, attachedVehicle, text);
     }
 
@@ -693,7 +693,7 @@ public static class SampRpc
         return new(r.ReadInt32());
     }
 
-    public static ShowDialogRpcHeader ParseShowDialogHeader(IncomingRpcArgs args)
+    public static ShowDialogRpc ParseShowDialog(IncomingRpcArgs args)
     {
         BitStreamReader r = args.CreateReader();
         ushort dialogId = r.ReadUInt16();
@@ -701,8 +701,8 @@ public static class SampRpc
         string title = r.ReadStringUInt8Length();
         string leftButton = r.ReadStringUInt8Length();
         string rightButton = r.ReadStringUInt8Length();
-        byte[] encodedTextPayload = r.ReadRemainingBytes();
-        return new(dialogId, style, title, leftButton, rightButton, encodedTextPayload);
+        string text = r.ReadEncodedString(4096);
+        return new(dialogId, style, title, leftButton, rightButton, text);
     }
 
     public static DestroyPickupRpc ParseDestroyPickup(IncomingRpcArgs args)
