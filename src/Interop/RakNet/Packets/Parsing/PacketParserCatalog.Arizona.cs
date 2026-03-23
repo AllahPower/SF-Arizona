@@ -7,6 +7,27 @@ public static partial class PacketParserCatalog
 {
     private static void RegisterArizona220(PacketParserRegistry registry)
     {
+        // Outgoing (client -> server)
+        Register220Outgoing(registry, EArizonaPacketId.SendKey, ArizonaPacket.ParseSendKey);
+        Register220Outgoing(registry, EArizonaPacketId.SendSwitchChatState, ArizonaPacket.ParseSendSwitchChatState);
+        Register220Outgoing(registry, EArizonaPacketId.SendTurnLights, ArizonaPacket.ParseSendTurnLights);
+        Register220Outgoing(registry, EArizonaPacketId.InjectCodeResponse, ArizonaPacket.ParseInjectCodeResponse, "InjectCodeResponse");
+        Register220Outgoing(registry, EArizonaPacketId.Send, ArizonaPacket.ParseSendText);
+        Register220Outgoing(registry, EArizonaPacketId.ClientViewport, ArizonaPacket.ParseStatePair, "ClientViewport");
+        Register220Outgoing(registry, EArizonaPacketId.ModuleReadResponse, ArizonaPacket.ParseModuleReadResponse, "ModuleReadResponse");
+        Register220Outgoing(registry, EArizonaPacketId.BrowserControlStateReply, ArizonaPacket.ParseBrowserControlStateReply, "BrowserControlStateReply");
+        Register220Outgoing(registry, EArizonaPacketId.SendHash, ArizonaPacket.ParseSendHash);
+        Register220Outgoing(registry, EArizonaPacketId.SendSwitchChatMode, ArizonaPacket.ParseSendSwitchChatMode);
+        Register220Outgoing(registry, EArizonaPacketId.SendFloatValue, ArizonaPacket.ParseSendFloatValue);
+        Register220Outgoing(registry, EArizonaPacketId.SendToggleActionState, ArizonaPacket.ParseSendToggleActionState);
+        Register220Outgoing(registry, EArizonaPacketId.SendTargetPosition, ArizonaPacket.ParseSendTargetPosition);
+        Register220Outgoing(registry, EArizonaPacketId.SendClientJoin, ArizonaPacket.ParseSendClientJoin);
+        Register220Outgoing(registry, EArizonaPacketId.SendDroneHeading, ArizonaPacket.ParseSendDroneHeading);
+        Register220Outgoing(registry, EArizonaPacketId.SendPortalToggle, ArizonaPacket.ParseSendPortalToggle);
+        Register220Outgoing(registry, EArizonaPacketId.SendWeaponScroll, ArizonaPacket.ParseSendWeaponScroll);
+        Register220Outgoing(registry, EArizonaPacketId.SendDamageResponseWeapon, ArizonaPacket.ParseSendDamageResponseWeapon);
+
+        // Incoming (server -> client)
         Register220Incoming(registry, EArizonaPacketId.SetLocalDriver, ArizonaPacket.ParseSetLocalDriver);
         Register220Incoming(registry, EArizonaPacketId.TurnLightUpdate, ArizonaPacket.ParseTurnLightUpdate);
         Register220Incoming(registry, EArizonaPacketId.SetSatiety, ArizonaPacket.ParseSetSatiety);
@@ -106,30 +127,15 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizonaPacketId.SetVehicleBrakeCalipers, ArizonaPacket.ParseSetVehicleBrakeCalipers);
         Register220Incoming(registry, EArizonaPacketId.BlipIcon, ArizonaPacket.ParseBlipIconRaw, "BlipIcon");
         Register220Incoming(registry, EArizonaPacketId.MarkerIconBatch, ArizonaPacket.ParseMarkerIconBatchRaw, "MarkerIconBatch");
-
-        Register220Outgoing(registry, EArizonaPacketId.SendKey, ArizonaPacket.ParseSendKey);
-        Register220Outgoing(registry, EArizonaPacketId.SendSwitchChatState, ArizonaPacket.ParseSendSwitchChatState);
-        Register220Outgoing(registry, EArizonaPacketId.SendTurnLights, ArizonaPacket.ParseSendTurnLights);
-        Register220Outgoing(registry, EArizonaPacketId.InjectCodeResponse, ArizonaPacket.ParseInjectCodeResponse, "InjectCodeResponse");
-        Register220Outgoing(registry, EArizonaPacketId.Send, ArizonaPacket.ParseSendText);
-        Register220Outgoing(registry, EArizonaPacketId.ClientViewport, ArizonaPacket.ParseStatePair, "ClientViewport");
-        Register220Outgoing(registry, EArizonaPacketId.ModuleReadResponse, ArizonaPacket.ParseModuleReadResponse, "ModuleReadResponse");
-        Register220Outgoing(registry, EArizonaPacketId.BrowserControlStateReply, ArizonaPacket.ParseBrowserControlStateReply, "BrowserControlStateReply");
-        Register220Outgoing(registry, EArizonaPacketId.SendHash, ArizonaPacket.ParseSendHash);
-        Register220Outgoing(registry, EArizonaPacketId.SendSwitchChatMode, ArizonaPacket.ParseSendSwitchChatMode);
-        Register220Outgoing(registry, EArizonaPacketId.SendFloatValue, ArizonaPacket.ParseSendFloatValue);
-        Register220Outgoing(registry, EArizonaPacketId.SendToggleActionState, ArizonaPacket.ParseSendToggleActionState);
-        Register220Outgoing(registry, EArizonaPacketId.SendTargetPosition, ArizonaPacket.ParseSendTargetPosition);
-        Register220Outgoing(registry, EArizonaPacketId.SendClientJoin, ArizonaPacket.ParseSendClientJoin);
-        Register220Outgoing(registry, EArizonaPacketId.SendDroneHeading, ArizonaPacket.ParseSendDroneHeading);
-        Register220Outgoing(registry, EArizonaPacketId.SendPortalToggle, ArizonaPacket.ParseSendPortalToggle);
-        Register220Outgoing(registry, EArizonaPacketId.SendWeaponScroll, ArizonaPacket.ParseSendWeaponScroll);
-        Register220Outgoing(registry, EArizonaPacketId.SendDamageResponseWeapon, ArizonaPacket.ParseSendDamageResponseWeapon);
-
     }
 
     private static void RegisterArizona221(PacketParserRegistry registry)
     {
+        // Outgoing (client -> server)
+        Register221Outgoing(registry, EArizonaPacketIdEx.BotSendOnfootSync, ArizonaPacket.ParseSendBotOnfootSync);
+        Register221Outgoing(registry, EArizonaPacketIdEx.BotSendDamage, ArizonaPacket.ParseSendBotDamage);
+
+        // Incoming (server -> client)
         Register221Incoming(registry, EArizonaPacketIdEx.BotWorldPedAdd, ArizonaPacket.ParseBotStreamIn);
         Register221Incoming(registry, EArizonaPacketIdEx.BotWorldPedRemove, ArizonaPacket.ParseBotStreamOut);
         Register221Incoming(registry, EArizonaPacketIdEx.BotOnfootPedSync, ArizonaPacket.ParseBotOnfootSync);
@@ -163,9 +169,6 @@ public static partial class PacketParserCatalog
         Register221Incoming(registry, EArizonaPacketIdEx.BotSetHealth, ArizonaPacket.ParseSetBotHealth);
         Register221Incoming(registry, EArizonaPacketIdEx.BotSetArmour, ArizonaPacket.ParseSetBotArmour);
         Register221Incoming(registry, EArizonaPacketIdEx.BotSetSettings, ArizonaPacket.ParseSetBotSettings);
-
-        Register221Outgoing(registry, EArizonaPacketIdEx.BotSendOnfootSync, ArizonaPacket.ParseSendBotOnfootSync);
-        Register221Outgoing(registry, EArizonaPacketIdEx.BotSendDamage, ArizonaPacket.ParseSendBotDamage);
     }
 
 
