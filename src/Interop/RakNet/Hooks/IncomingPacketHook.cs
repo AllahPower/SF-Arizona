@@ -50,6 +50,9 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
                         Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
                     }
 
+                    // Enqueue BEFORE returning so that the incoming entry is ordered
+                    // before any outgoing responses the game may generate while
+                    // processing this packet on the next Receive -> game loop tick.
                     SFBootstrap.EnqueueIncomingPacket(packetId, packet, bitSize);
                 }
             }
