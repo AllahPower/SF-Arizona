@@ -49,6 +49,7 @@ public sealed class CreateObjectRpc
     public required byte TexturesCount { get; init; }
     public required List<ObjectMaterialTextureRpc> Materials { get; init; }
     public required List<ObjectMaterialTextRpc> MaterialText { get; init; }
+    public override string ToString() => $"CreateObjectRpc {{ ObjectId = {ObjectId}, ModelId = {ModelId}, Position = {Position}, DrawDistance = {DrawDistance} }}";
 }
 public readonly record struct SetObjectPosRpc(ushort ObjectId, Vector3 Position);
 public readonly record struct SetObjectRotRpc(ushort ObjectId, Vector3 Rotation);
@@ -82,6 +83,7 @@ public sealed class InitMenuRpc
     public required List<MenuColumnRpc> Columns { get; init; }
     public required int[] Rows { get; init; }
     public required bool Menu { get; init; }
+    public override string ToString() => $"InitMenuRpc {{ MenuId = {MenuId}, Title = {Title}, TwoColumns = {TwoColumns} }}";
 }
 public readonly record struct ShowMenuRpc(byte MenuId);
 public readonly record struct HideMenuRpc(byte MenuId);
@@ -93,6 +95,7 @@ public sealed class SetObjectMaterialRpc
 {
     public required ushort ObjectId { get; init; }
     public required ObjectMaterialRpc Material { get; init; }
+    public override string ToString() => $"SetObjectMaterialRpc {{ ObjectId = {ObjectId}, Type = {Material.Type}, MaterialId = {Material.MaterialId} }}";
 }
 public readonly record struct GangZoneStopFlashRpc(ushort ZoneId);
 public readonly record struct ApplyPlayerAnimationRpc(ushort PlayerId, string AnimLib, string AnimName, float FrameDelta, bool Loop, bool LockX, bool LockY, bool Freeze, int Time);
@@ -126,6 +129,7 @@ public sealed class ShowTextDrawRpc
 {
     public required ushort TextDrawId { get; init; }
     public required ShowTextDrawDataRpc TextDraw { get; init; }
+    public override string ToString() => $"ShowTextDrawRpc {{ TextDrawId = {TextDrawId}, Style = {TextDraw.Style}, Text = {TextDraw.Text} }}";
 }
 public readonly record struct HideTextDrawRpc(ushort TextDrawId);
 public readonly record struct ServerJoinRpc(ushort PlayerId, int Color, bool IsNpc, string Nickname);
@@ -137,6 +141,7 @@ public sealed class InitGameRpc
     public required InitGameSettingsRpc Settings { get; init; }
     public required byte[] VehicleModels { get; init; }
     public required bool VehicleFriendlyFire { get; init; }
+    public override string ToString() => $"InitGameRpc {{ PlayerId = {PlayerId}, HostName = {HostName} }}";
 }
 public readonly record struct RemovePlayerMapIconRpc(byte IconId);
 public readonly record struct SetPlayerAmmoRpc(byte WeaponId, ushort Ammo);
@@ -159,6 +164,7 @@ public sealed class WorldVehicleAddRpc
 {
     public required ushort VehicleId { get; init; }
     public required WorldVehicleInfoRpc Data { get; init; }
+    public override string ToString() => $"WorldVehicleAddRpc {{ VehicleId = {VehicleId}, Type = {Data.Type}, Position = {Data.Position} }}";
 }
 public readonly record struct WorldVehicleRemoveRpc(ushort VehicleId);
 public readonly record struct WorldPlayerDeathRpc(ushort PlayerId);
@@ -185,6 +191,7 @@ public readonly record struct UpdateVehicleDamageStatusRpc(ushort VehicleId, int
 public sealed class UpdateScoresAndPingsRpc
 {
     public required Dictionary<ushort, ScorePingRpc> Players { get; init; }
+    public override string ToString() => $"UpdateScoresAndPingsRpc {{ Players = {Players.Count} }}";
 }
 public readonly record struct EditAttachedObjectIncomingRpc(int Index);
 public readonly record struct EditObjectIncomingRpc(bool PlayerObject, ushort ObjectId);
@@ -225,6 +232,9 @@ public readonly record struct CameraTargetUpdateRpc(ushort ObjectId, ushort Vehi
 public readonly record struct GiveActorDamageRpc(bool Unused, ushort ActorId, float Damage, int Weapon, int Bodypart);
 public readonly record struct SelectObjectOutgoingRpc(int Type, ushort ObjectId, int Model, Vector3 Position);
 public readonly record struct UpdateScoresAndPingsOutgoingRpc();
+public readonly record struct ScriptCashRpc(int Amount, int IncreaseType);
+public readonly record struct SrvNetStatsRequestRpc();
+public readonly record struct WeaponPickupDestroyRpc(ushort Id);
 
 public readonly record struct VehicleParamsExStatusRpc(byte Engine, byte Lights, byte Alarm, byte Doors, byte Bonnet, byte Boot, byte Objective, byte Unknown);
 public readonly record struct VehicleDoorStateRpc(byte Driver, byte Passenger, byte BackLeft, byte BackRight);
@@ -359,6 +369,7 @@ public sealed class SetPlayerAttachedObjectRpc
     public required int Index { get; init; }
     public required bool Create { get; init; }
     public required PlayerAttachedObjectInfoRpc Object { get; init; }
+    public override string ToString() => $"SetPlayerAttachedObjectRpc {{ PlayerId = {PlayerId}, Index = {Index}, Create = {Create}, ModelId = {Object.ModelId} }}";
 }
 
 public static class SampRpc
@@ -1772,6 +1783,23 @@ public static class SampRpc
     public static UpdateScoresAndPingsOutgoingRpc ParseUpdateScoresAndPingsOutgoing(OutgoingRpcArgs args)
     {
         return new();
+    }
+
+    public static ScriptCashRpc ParseScriptCash(OutgoingRpcArgs args)
+    {
+        BitStreamReader r = args.CreateReader();
+        return new(r.ReadInt32(), r.ReadInt32());
+    }
+
+    public static SrvNetStatsRequestRpc ParseSrvNetStatsRequest(OutgoingRpcArgs args)
+    {
+        return new();
+    }
+
+    public static WeaponPickupDestroyRpc ParseWeaponPickupDestroy(OutgoingRpcArgs args)
+    {
+        BitStreamReader r = args.CreateReader();
+        return new(r.ReadUInt16());
     }
 
     // ---- Scoring helpers ----

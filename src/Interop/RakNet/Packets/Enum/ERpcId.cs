@@ -149,11 +149,14 @@ public enum ERpcId : byte
     // Outgoing (client -> server)
     ClickPlayer = 23,
     ClientJoin = 25,
+    ScriptCash = 31,
     ServerCommand = 50,
     Spawn = 52,
     Death = 53,
     NpcJoin = 54,
     DialogResponse = 62,
+    WeaponPickupDestroy = 97,
+    SrvNetStats = 102,
     GiveTakeDamage = 115,
     SetInteriorId = 118,
     MapMarker = 119,
@@ -161,6 +164,10 @@ public enum ERpcId : byte
     MenuSelect = 132,
     VehicleDestroyed = 136,
     MenuQuit = 140,
+    DestroyWeaponPickup = 151,
     CameraTargetUpdate = 168,
     GiveActorDamage = 177,
+
+    // Bidirectional (used with different parsers for incoming/outgoing)
+    SelectObject = 27,
 }

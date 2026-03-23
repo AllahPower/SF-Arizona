@@ -35,5 +35,9 @@ public static partial class RpcParserCatalog
         RegisterOutgoing(registry, ERpcId.CameraTargetUpdate, SampRpc.ParseCameraTargetUpdate);
         RegisterOutgoing(registry, ERpcId.GiveActorDamage, SampRpc.ParseGiveActorDamage);
         RegisterOutgoing(registry, ERpcId.UpdateScoresAndPings, SampRpc.ParseUpdateScoresAndPingsOutgoing, name: "UpdateScoresAndPingsOutgoing");
+        RegisterOutgoing(registry, ERpcId.SelectObject, SampRpc.ParseSelectObjectOutgoing, name: "SelectObjectOutgoing");
+        RegisterOutgoing(registry, ERpcId.ScriptCash, SampRpc.ParseScriptCash);
+        RegisterOutgoing(registry, ERpcId.SrvNetStats, SampRpc.ParseSrvNetStatsRequest, name: "SrvNetStatsRequest");
+        RegisterOutgoing(registry, ERpcId.WeaponPickupDestroy, SampRpc.ParseWeaponPickupDestroy);
     }
 }

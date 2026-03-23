@@ -144,5 +144,8 @@ public static partial class RpcParserCatalog
         RegisterIncoming(registry, ERpcId.EditObject, SampRpc.ParseEditObjectIncoming);
         RegisterIncoming(registry, ERpcId.RequestClass, SampRpc.ParseRequestClassResponse);
         RegisterIncoming(registry, ERpcId.RequestSpawn, SampRpc.ParseRequestSpawnResponse);
+        RegisterIncoming(registry, ERpcId.DestroyWeaponPickup, SampRpc.ParseDestroyWeaponPickup);
+        RegisterIncoming(registry, ERpcId.SelectObject, SampRpc.ParseSelectObject);
+        RegisterIncoming(registry, ERpcId.SrvNetStats, SampRpc.ParseServerNetStatsResponse, name: "ServerNetStatsResponse");
     }
 }
