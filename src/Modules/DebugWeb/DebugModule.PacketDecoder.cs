@@ -3,6 +3,28 @@ using SFSharp.Interop.RakNet.Packets.Enum;
 
 public partial class DebugModule
 {
+    private static (string? Name, string? Detail, string? Parsed) DecodeIncomingRpc(IncomingRpcArgs args)
+    {
+        if (SF.RpcParsers.TryParseIncoming(args, out RpcParseResult result) && result.Rpc is IParsedIncomingRpc rpc)
+        {
+            return (rpc.Name, $"rpcId={args.ERpcId} {rpc.Detail}", rpc.Detail);
+        }
+
+        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
+        return (name, $"rpcId={args.ERpcId}", null);
+    }
+
+    private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingRpc(OutgoingRpcArgs args)
+    {
+        if (SF.RpcParsers.TryParseOutgoing(args, out RpcParseResult result) && result.Rpc is IParsedOutgoingRpc rpc)
+        {
+            return (rpc.Name, $"rpcId={args.ERpcId} {rpc.Detail}", rpc.Detail);
+        }
+
+        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
+        return (name, $"rpcId={args.ERpcId}", null);
+    }
+
     private static (string? Name, string? Detail, string? Parsed) DecodeIncomingPacket(IncomingPacketArgs args)
     {
         if (SF.PacketParsers.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)

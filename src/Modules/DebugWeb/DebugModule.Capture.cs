@@ -8,9 +8,9 @@ public partial class DebugModule
         Interlocked.Increment(ref _totalInRpc);
         if (!_captureEnabled || !_captureIncoming || !_captureRpc) return;
 
-        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
+        (string? name, string? detail, string? parsed) = DecodeIncomingRpc(args);
         Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Rpc, args.ERpcId, name,
-            null, $"rpcId={args.ERpcId}", (args.DataBitLength + 7) / 8, Environment.TickCount64));
+            parsed, detail, (args.DataBitLength + 7) / 8, Environment.TickCount64));
     }
 
     private void OnOutgoingRpc(OutgoingRpcArgs args)
@@ -18,9 +18,9 @@ public partial class DebugModule
         Interlocked.Increment(ref _totalOutRpc);
         if (!_captureEnabled || !_captureOutgoing || !_captureRpc) return;
 
-        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
+        (string? name, string? detail, string? parsed) = DecodeOutgoingRpc(args);
         Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Rpc, args.ERpcId, name,
-            null, $"rpcId={args.ERpcId}", (args.DataBitLength + 7) / 8, Environment.TickCount64));
+            parsed, detail, (args.DataBitLength + 7) / 8, Environment.TickCount64));
     }
 
     private void OnIncomingPacket(IncomingPacketArgs args)

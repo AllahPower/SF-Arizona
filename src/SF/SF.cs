@@ -10,6 +10,7 @@ public static class SF
     public static SFPackets Packets { get; } = new SFPackets();
     public static SFArizonaPackets ArizonaPackets { get; } = new SFArizonaPackets();
     public static SFPacketParsers PacketParsers { get; } = new SFPacketParsers();
+    public static SFRpcParsers RpcParsers { get; } = new SFRpcParsers();
 
     public static string UserFilesDirectory { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GTA San Andreas User Files");
 }
