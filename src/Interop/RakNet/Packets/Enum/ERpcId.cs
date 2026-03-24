@@ -170,4 +170,5 @@ public enum ERpcId : byte
 
     // Bidirectional (used with different parsers for incoming/outgoing)
     SelectObject = 27,
+
 }

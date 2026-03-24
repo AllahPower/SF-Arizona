@@ -79,4 +79,8 @@ public enum EPacketId : byte
     // Arizona RP custom packets (CEF transport layer)
     ArizonaCef = 220,
     ArizonaCefEx = 221,
+
+    // AZVoice plugin: packet 252 carries a u8 sub-ID (3-23) for control commands,
+    // or raw voice data (Opus frames) without sub-ID dispatch.
+    AZVoice = 252,
 }

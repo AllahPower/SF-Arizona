@@ -11,12 +11,28 @@ public static class HookManager
     internal static OutgoingRpcPacketHook OutgoingRpcPacket { get; } = new OutgoingRpcPacketHook();
     private static OutgoingPacketHook? _outgoingPacket;
     private static IncomingPacketHook? _incomingPacket;
+    private static IncomingAZVoicePacketHook? _incomingAZVoicePacket;
+    private static bool _azVoiceHookChecked;
 
     //public static Hook<PeekMessageArgs, PeekMessageResult> PeekMessage { get; } = new PeekMessageHook();
     public static HookBase<CChatAddEntryArgs, NoRetValue> CChatAddEntry { get; } = new CChatAddEntryHook();
     internal static IncomingRpcPacketHook IncomingRpcPacket { get; } = new IncomingRpcPacketHook();
     internal static OutgoingPacketHook OutgoingPacket => _outgoingPacket ??= new OutgoingPacketHook();
     internal static IncomingPacketHook IncomingPacket => _incomingPacket ??= new IncomingPacketHook();
+
+    internal static IncomingAZVoicePacketHook? IncomingAZVoicePacket
+    {
+        get
+        {
+            if (!_azVoiceHookChecked)
+            {
+                _azVoiceHookChecked = true;
+                if (ModuleResolver.IsModuleLoaded("AZVoice.asi"))
+                    _incomingAZVoicePacket = new IncomingAZVoicePacketHook();
+            }
+            return _incomingAZVoicePacket;
+        }
+    }
     public static HookBase<CDialogCloseArgs, NoRetValue> CDialogClose => _cDialogClose ??= !ModuleResolver.IsModuleLoaded("sampfuncs.asi") ? new CDialogCloseHook() : new CDialogCloseHook_SF();
     public static HookBase<CDialogHideArgs, NoRetValue> CDialogHide => _cDialogHide ??= new CDialogHideHook();
     public static HookBase<CDialogShowHookArgs, NoRetValue> CDialogShow => _cDialogShow ??= new CDialogShowHook();

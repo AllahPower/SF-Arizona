@@ -54,7 +54,12 @@ public partial class DebugModule
         if (packet is IParsedArizonaPacket arizonaPacket)
         {
             EPacketId packetId = (EPacketId)rawPacketId;
-            string transport = packetId == EPacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
+            string transport = packetId switch
+            {
+                EPacketId.ArizonaCefEx => "Arizona221",
+                EPacketId.AZVoice => "AZVoice",
+                _ => "Arizona220",
+            };
             string name = $"{transport}:{packet.Name}";
             string detail = packet.Detail is { Length: > 0 }
                 ? $"subId={arizonaPacket.SubId} {packet.Detail}"
@@ -70,7 +75,12 @@ public partial class DebugModule
         if (arizonaSubId is int subId)
         {
             EPacketId packetId = (EPacketId)rawPacketId;
-            string transport = packetId == EPacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
+            string transport = packetId switch
+            {
+                EPacketId.ArizonaCefEx => "Arizona221",
+                EPacketId.AZVoice => "AZVoice",
+                _ => "Arizona220",
+            };
             return ($"{transport}:{fallbackName}", $"subId={subId}");
         }
         return (fallbackName, $"packetId={rawPacketId}");
@@ -79,14 +89,19 @@ public partial class DebugModule
     private static int? TryReadArizonaSubId(IncomingPacketArgs args)
     {
         EPacketId packetId = (EPacketId)args.EPacketId;
-        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx)) return null;
+        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx or EPacketId.AZVoice)) return null;
         try
         {
             BitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            return packetId == EPacketId.ArizonaCef
-                ? ArizonaPacket.ReadSubId220(ref reader)
-                : ArizonaPacket.ReadSubId221(ref reader);
+            if (packetId == EPacketId.AZVoice)
+            {
+                int rpcId = reader.ReadUInt8();
+                return Enum.IsDefined(typeof(EAZVoiceSubRpcId), (byte)rpcId) ? rpcId : null;
+            }
+            return packetId == EPacketId.ArizonaCefEx
+                ? ArizonaPacket.ReadSubId221(ref reader)
+                : ArizonaPacket.ReadSubId220(ref reader);
         }
         catch { return null; }
     }
@@ -94,14 +109,16 @@ public partial class DebugModule
     private static int? TryReadArizonaSubId(OutgoingPacketArgs args)
     {
         EPacketId packetId = (EPacketId)args.EPacketId;
-        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx)) return null;
+        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx or EPacketId.AZVoice)) return null;
         try
         {
             BitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            return packetId == EPacketId.ArizonaCef
-                ? ArizonaPacket.ReadSubId220(ref reader)
-                : ArizonaPacket.ReadSubId221(ref reader);
+            if (packetId == EPacketId.AZVoice)
+                return null;
+            return packetId == EPacketId.ArizonaCefEx
+                ? ArizonaPacket.ReadSubId221(ref reader)
+                : ArizonaPacket.ReadSubId220(ref reader);
         }
         catch { return null; }
     }

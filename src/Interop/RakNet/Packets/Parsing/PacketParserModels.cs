@@ -260,3 +260,17 @@ public sealed record OutgoingUnknownArizonaPacket(EPacketId EPacketId, int SubId
 {
     public string Detail => $"subId={SubId} bits={PayloadBitLength}";
 }
+
+public sealed record IncomingAZVoiceDataPacket(AzvVoiceData Data) : IParsedIncomingPacket
+{
+    public EPacketId EPacketId => EPacketId.AZVoice;
+    public string Name => "AZVoice:VoiceData";
+    public string Detail => $"sender={Data.SenderId} pkt={Data.PacketNumber} streams={Data.StreamIds.Length} opus={Data.OpusData.Length}B";
+}
+
+public sealed record OutgoingAZVoiceDataPacket(AzvOutgoingVoiceData Data) : IParsedOutgoingPacket
+{
+    public EPacketId EPacketId => EPacketId.AZVoice;
+    public string Name => "AZVoice:VoiceData";
+    public string Detail => $"pkt={Data.PacketNumber} streams=1 stream={Data.StreamId} opus={Data.OpusData.Length}B";
+}

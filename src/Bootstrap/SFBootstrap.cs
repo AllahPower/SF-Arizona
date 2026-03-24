@@ -93,6 +93,11 @@ public static class SFBootstrap
         _ = HookManager.IncomingPacket;
         SFLog.Info("Incoming packet hook prepared");
 
+        if (HookManager.IncomingAZVoicePacket is not null)
+            SFLog.Info("AZVoice incoming packet hook prepared");
+        else
+            SFLog.Info("AZVoice.asi not loaded, skipping AZVoice hook");
+
         HookManager.CDialogShow.AddSubHook(SF.Dialog);
         HookManager.CDialogHide.AddSubHook(SF.Dialog);
         HookManager.CDialogClose.AddSubHook(SF.Dialog);
