@@ -20,20 +20,19 @@ public enum EArizonaPacketIdEx : ushort
     // u16 ped_id
     BotWorldPedRemove = 51,
 
-    // current parser shape: u16 ped_id, u16 unknown0, u32 unknown1, bit-bool unknown2, float hp, float max_hp, float armour, float max_armour
-    // libcef.asi confirms this is RPC_OnfootPedSync
+    // u16 ped_id, byte[4] raw_sync, bit-bool padding, float health, float max_health, float armour, float max_armour, u8 trailing
     BotOnfootPedSync = 52,
 
-    // u16 ped_id, u16 unknown0, u32 color, bit-bool unknown1
+    // u16 ped_id, u32 color, bit-bool trailing
     BotSetPedColor = 54,
 
-    // u16 ped_id, u16 unknown0, u8 fight_style
+    // u16 ped_id, u8 fight_style
     BotSetPedFightStyle = 55,
 
-    // u16 ped_id, u16 unknown0, bit-bool invulnerable
+    // u16 ped_id, bit-bool invulnerable
     BotSetPedInvulnerable = 56,
 
-    // u16 ped_id, u16 unknown0, string32 name, bit-bool unknown1
+    // u16 ped_id, string32 name, bit-bool trailing
     BotSetPedName = 57,
 
     // u16 ped_id, u16 unknown0, u16 skin_id
@@ -42,16 +41,16 @@ public enum EArizonaPacketIdEx : ushort
     // u16 ped_id, u16 unknown0, u16 weapon_id, u8 trailing
     BotSetPedWeapon = 65,
 
-    // u16 ped_id, u16 unknown0, vec3 position
+    // u16 ped_id, vec3 position
     BotSetPedPos = 66,
 
-    // u16 ped_id, u16 unknown0, vec3 position, u16 unknown1, u32 unknown2
+    // u16 ped_id, vec3 position, u16 unknown0, u32 unknown1
     BotMovePedToPos = 67,
 
     // u16 ped_id, u16 unknown0, vec3 target_pos
     BotShootPedAtPos = 68,
 
-    // current parser shape: u16 ped_id, u16 unknown0, string32 anim_lib, string32 anim_name, float blend_delta, 4 bit-bool flags, u32 duration_ms
+    // u16 ped_id, string32 anim_lib, string32 anim_name, float blend_delta, 4 bit-bool flags, u32 duration_ms
     BotApplyPedAnimation = 69,
 
     // u16 ped_id, u16 unknown0
@@ -63,25 +62,25 @@ public enum EArizonaPacketIdEx : ushort
     // u16 ped_id, u16 unknown0, u16 player_id, u32 unknown1
     BotAttackPlayer = 80,
 
-    // u16 ped_id, u16 vehicle_id, u16 seat_id, u16 unknown0, u32 unknown1
+    // u16 ped_id, u16 vehicle_id, u16 seat_id, u32 unknown0
     BotEnterToVehicle = 81,
 
-    // u16 ped_id, u16 vehicle_id, u16 seat_id, u16 unknown0, float hp, float armour
+    // u16 ped_id, u16 vehicle_id, u16 seat_id, float health, float armour
     BotPassengerPedSync = 82,
 
-    // u16 ped_id, u16 vehicle_id, u16 unknown0, float hp, float armour
+    // u16 ped_id, u16 vehicle_id, u16 unknown0, u32 state0, u32 state1
     BotDrivePedSync = 83,
 
-    // u16 ped_id, u16 unknown0
+    // u16 ped_id
     BotRemoveFromVehicle = 84,
 
-    // u16 ped_id, u16 unknown0, string32 text, i32 color, float distance, i32 duration
+    // u16 ped_id, string32 text, i32 color, float distance, i32 duration
     BotChatBubble = 85,
 
     // u16 ped_id, u16 slot, i32 model_id, i16 bone_id, vec3 offset, vec3 rotation, vec3 scale, i32 color1, i32 color2
     BotAttachObject = 86,
 
-    // u16 ped_id, u16 slot, u16 unknown0
+    // u16 ped_id, u16 slot
     BotDetachObject = 87,
 
     // u16 ped_id, u16 unknown0, float angle
@@ -96,13 +95,16 @@ public enum EArizonaPacketIdEx : ushort
     // u16 ped_id, u16 unknown0, string8 animation_group
     BotSetAnimationGroup = 98,
 
-    // u16 ped_id, u16 unknown0, bit-bool state
+    // u16 ped_id, u16 target_ped_id, u32 unknown0
+    BotAttackPed = 101,
+
+    // u16 ped_id, bool state
     BotToggleCollision = 102,
 
     // same layout as id 86 plus one trailing bit-bool flag
     BotAttachSimpleObject = 103,
 
-    // u16 ped_id, u16 slot, u16 unknown0
+    // u16 ped_id, u16 slot
     BotDetachSimpleObject = 104,
 
     // u16 ped_id, u16 unknown0, u32 status, float current_value, float max_value
@@ -111,8 +113,8 @@ public enum EArizonaPacketIdEx : ushort
     // u16 ped_id, u16 unknown0, u32 status, float current_value, float max_value
     BotSetArmour = 112,
 
-    // u16 ped_id, u16 settings_mask
-    BotSetSettings = 113,
+    // u16 onfoot_sync_rate
+    BotSetOnfootSyncRate = 113,
 
     // -- outgoing (client -> server) --
 

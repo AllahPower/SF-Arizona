@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SFSharp;
+using SFSharp.Interop.RakNet.Arizona.Enum;
 using SFSharp.Interop.RakNet.Packets.Enum;
 
 [SFModule("debug-web", "DebugWeb",
@@ -74,10 +76,51 @@ public partial class DebugModule : SFModuleBase
 
         foreach (EPacketId packetId in Enum.GetValues<EPacketId>())
         {
+            if (packetId == EPacketId.AZVoice)
+            {
+                continue;
+            }
+
             subs.Add((RpcSubscription)Context.RegisterDisposable(
                 SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
             subs.Add((RpcSubscription)Context.RegisterDisposable(
                 SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
+        }
+
+        foreach (EAZVoiceSubRpcId subId in Enum.GetValues<EAZVoiceSubRpcId>())
+        {
+            subs.Add((RpcSubscription)Context.RegisterDisposable(
+                SF.Arizona.SubscribeIncomingAZVoice(subId, args => OnIncomingAZVoiceControl(args))));
+        }
+
+        subs.Add((RpcSubscription)Context.RegisterDisposable(
+            SF.Arizona.SubscribeIncomingAZVoiceData(args => OnIncomingPacket(args))));
+        subs.Add((RpcSubscription)Context.RegisterDisposable(
+            SF.Arizona.SubscribeOutgoingAZVoiceData(args => OnOutgoingPacket(args))));
+    }
+
+    private void OnIncomingAZVoiceControl(IncomingArizonaPacketArgs args)
+    {
+        Interlocked.Increment(ref _totalInPkt);
+        if (!_captureEnabled || !_captureIncoming || !_capturePackets) return;
+
+        int dataBitLength = args.PayloadBitOffset + args.PayloadBitLength;
+        int dataByteLength = (dataBitLength + 7) / 8;
+        byte[] data = new byte[dataByteLength];
+        if (dataByteLength > 0)
+        {
+            Marshal.Copy(args.DataPtr, data, 0, dataByteLength);
+        }
+
+        unsafe
+        {
+            fixed (byte* dataPtr = data)
+            {
+                IncomingPacketArgs packetArgs = new(args.EPacketId, (nint)dataPtr, dataBitLength);
+                (string? name, string? detail, string? parsed) = DecodeIncomingPacket(packetArgs);
+                Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.EPacketId, name,
+                    parsed, detail, dataByteLength, Environment.TickCount64));
+            }
         }
     }
 

@@ -131,6 +131,12 @@ public enum EArizonaPacketId : byte
     // core.asi BattleroyaleCompass: float x, float y (compass target position)
     SetCompassCoords = 88,
 
+    // core.asi StunIcon: u8 value0, u8 value1, u8 value2 - shows stun icon overlay with 3 counters/values
+    ShowStunIcon = 89,
+
+    // core.asi StunIcon: no payload - hides stun icon overlay
+    HideStunIcon = 90,
+
     // bool state - patches VirtualProtect byte in GameFunctions
     AutoDrinkBeer = 91,
 
@@ -143,8 +149,8 @@ public enum EArizonaPacketId : byte
     // u32 value - animation property offset
     SetAnimationProperty = 97,
 
-    // unknown payload (vorbisFile.dll only)
-    Unknown98 = 98,
+    // core.asi CGPS: bit-bool enabled - enables/disables custom GPS route processing/rendering
+    ToggleCgps = 98,
 
     // bit-bool state - patches three code locations in GameFunctions
     ToggleMapColors = 101,
@@ -161,12 +167,15 @@ public enum EArizonaPacketId : byte
     // unknown payload
     Unknown105 = 105,
 
-    // u32 player_id, is_open
-    SwitchChatState = 108,
+    // core.asi ChatIcon: u32 playerId, bit-bool active - creates/removes rotating chat icon over a player
+    SetChatIconState = 108,
 
     // core.asi GreenZone: u8 mode (0=off, 1=greenzone active)
     // vorbisFile.dll reuses this id for UiConfig (u8 type, u16 len)
     SetGreenZone = 110,
+
+    // core.asi VehicleSpeedLimiter: f32 speedLimitOrMinusOne, u32 modelCount, u16[modelCount] vehicleModels
+    SetVehicleModelSpeedLimit = 111,
 
     // u8 state, u8 unknown - spectator/camera memory patches
     SetSpectatorPatches = 112,
@@ -241,7 +250,7 @@ public enum EArizonaPacketId : byte
     // u16 vehicle_id, bit-bool state - vehicle feature flag 2 (nitro color)
     VehicleFeatureFlag2 = 152,
 
-    // u16 vehicle_id, { u8 type, string8 text, stringUnread region }
+    // core.asi NumberPlate: u16 vehicleId, u8 plateStyle; if plateStyle!=0 then string8 plateText, string8 plateRegion
     SetVehicleNumberPlate = 153,
 
     // u16 player_id, i32 index, bool create, { i32 bone, i32 model, vec3 off, vec3 rot, vec3 scale, i32 c1, i32 c2 }
@@ -319,8 +328,8 @@ public enum EArizonaPacketId : byte
     // core.asi WeaponUpgrades: u8 weaponId, u8 count + per-slot entries; weaponId=0 reapplies all
     UpdateWeaponSlots = 196,
 
-    // u8 skin_id
-    SetPlayerSkin = 200,
+    // core.asi HitInformer: u8 value - local-player feedback/UI path, exact meaning still unresolved
+    Unknown200 = 200,
 
     // core.asi VehicleStrobeLights: u16 vehicleId, u8 step, float speed, bit-bool beam
     SetVehicleStrobelights = 209,

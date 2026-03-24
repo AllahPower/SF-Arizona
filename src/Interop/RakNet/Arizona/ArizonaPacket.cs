@@ -180,11 +180,11 @@ public static partial class ArizonaPacket
         return new(bgType, timeout);
     }
 
-    public static ArzSwitchChatState ParseSwitchChatState(ref BitStreamReader r)
+    public static ArzSetChatIconState ParseSetChatIconState(ref BitStreamReader r)
     {
         uint pid = r.ReadUInt32();
-        bool isOpen = r.ReadBitBool();
-        return new(pid, isOpen);
+        bool active = r.ReadBitBool();
+        return new(pid, active);
     }
 
     public static ArzUiConfig ParseUiConfig(ref BitStreamReader r)
@@ -192,6 +192,19 @@ public static partial class ArizonaPacket
         byte type = r.ReadUInt8();
         byte len = r.ReadUInt8();
         return new(type, len);
+    }
+
+    public static ArzSetVehicleModelSpeedLimit ParseSetVehicleModelSpeedLimit(ref BitStreamReader r)
+    {
+        float speedLimitOrMinusOne = r.ReadFloat();
+        uint modelCount = r.ReadUInt32();
+        ushort[] vehicleModels = new ushort[modelCount];
+        for (int i = 0; i < vehicleModels.Length; i++)
+        {
+            vehicleModels[i] = r.ReadUInt16();
+        }
+
+        return new(speedLimitOrMinusOne, vehicleModels);
     }
 
     public static ArzSetSpectatorPatches ParseSetSpectatorPatches(ref BitStreamReader r)
@@ -300,8 +313,15 @@ public static partial class ArizonaPacket
     {
         ushort vid = r.ReadUInt16();
         byte plateType = r.ReadUInt8();
-        string plateText = r.ReadStringUInt8Length();
-        string plateRegion = ReadStringRemaining(ref r);
+        string plateText = string.Empty;
+        string plateRegion = string.Empty;
+
+        if (plateType != 0)
+        {
+            plateText = r.ReadStringUInt8Length();
+            plateRegion = r.ReadStringUInt8Length();
+        }
+
         return new(vid, plateType, plateText, plateRegion);
     }
 
@@ -435,9 +455,10 @@ public static partial class ArizonaPacket
         return new(id, type);
     }
 
-    public static ArzSetPlayerSkin ParseSetPlayerSkin(ref BitStreamReader r)
+    public static ArzUnknown200 ParseUnknown200(ref BitStreamReader r)
     {
-        return new(r.ReadUInt8());
+        byte mode = r.ReadUInt8();
+        return new(mode);
     }
 
     public static ArzSetGpsRoute ParseSetGpsRoute(ref BitStreamReader r)
@@ -662,6 +683,24 @@ public static partial class ArizonaPacket
         float x = r.ReadFloat();
         float y = r.ReadFloat();
         return new(x, y);
+    }
+
+    public static ArzShowStunIcon ParseShowStunIcon(ref BitStreamReader r)
+    {
+        byte primaryCounter = r.ReadUInt8();
+        byte secondaryCounter = r.ReadUInt8();
+        byte tertiaryCounter = r.ReadUInt8();
+        return new(primaryCounter, secondaryCounter, tertiaryCounter);
+    }
+
+    public static ArzHideStunIcon ParseHideStunIcon(ref BitStreamReader r)
+    {
+        return new();
+    }
+
+    public static ArzToggleCgps ParseToggleCgps(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetGreenZone ParseSetGreenZone(ref BitStreamReader r)

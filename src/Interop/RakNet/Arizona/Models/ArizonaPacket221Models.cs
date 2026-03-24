@@ -88,16 +88,28 @@ public readonly record struct ArzShootBotAtPlayer(ushort BotId, ushort Unknown0,
 public readonly record struct ArzBotAttackPlayer(ushort BotId, ushort Unknown0, ushort PlayerId, uint Unknown1);
 
 // id=81 | bot enters a vehicle
-public readonly record struct ArzBotEnterVehicle(ushort BotId, ushort VehicleId, ushort SeatId, ushort Unknown0, uint Unknown1);
+public readonly record struct ArzBotEnterVehicle(ushort BotId, ushort VehicleId, ushort SeatId, uint Unknown0);
 
 // id=82 | bot riding as passenger sync
-public readonly record struct ArzBotPassengerSync(ushort BotId, ushort VehicleId, ushort SeatId, ushort Unknown0, float Health, float Armour);
+public readonly record struct ArzBotPassengerSync(
+    ushort BotId,
+    ushort VehicleId,
+    ushort SeatId,
+    float Health,
+    float Armour
+);
 
 // id=83 | bot driving vehicle sync
-public readonly record struct ArzBotDriveSync(ushort BotId, ushort VehicleId, ushort Unknown0, float Health, float Armour);
+public readonly record struct ArzBotDriveSync(
+    ushort BotId,
+    ushort VehicleId,
+    ushort Unknown0,
+    uint StateValue0,
+    uint StateValue1
+);
 
 // id=84 | bot exits vehicle
-public readonly record struct ArzBotExitVehicle(ushort BotId, ushort Unknown0);
+public readonly record struct ArzBotExitVehicle(ushort BotId);
 
 // id=85 | chat bubble above bot
 public readonly record struct ArzBotChatBubble(ushort BotId, string Text, int Color, float Distance, int Duration);
@@ -111,7 +123,7 @@ public readonly record struct ArzSetBotAttachedObject(
 );
 
 // id=87 | detach object from bot
-public readonly record struct ArzRemoveBotAttachedObject(ushort BotId, ushort Slot, ushort Unknown0);
+public readonly record struct ArzRemoveBotAttachedObject(ushort BotId, ushort Slot);
 
 // id=89 | set bot facing angle
 public readonly record struct ArzSetBotAngle(ushort BotId, ushort Unknown0, float Angle);
@@ -124,6 +136,9 @@ public readonly record struct ArzShootBotAtBot(ushort ShooterBotId, ushort Targe
 
 // id=98 | assign named animation group to bot
 public readonly record struct ArzSetBotAnimationGroup(ushort BotId, ushort Unknown0, string GroupName);
+
+// id=101 | bot attacks another remote ped/bot
+public readonly record struct ArzBotAttackPed(ushort BotId, ushort TargetBotId, uint Unknown0);
 
 // id=102 | collision toggle for a remote ped
 public readonly record struct ArzTogglePedCollision(ushort BotId, bool State);
@@ -138,7 +153,7 @@ public readonly record struct ArzSetBotAttachedSimpleObject(
 );
 
 // id=104 | detach simple object from bot
-public readonly record struct ArzRemoveBotAttachedSimpleObject(ushort BotId, ushort Slot, ushort Unknown0);
+public readonly record struct ArzRemoveBotAttachedSimpleObject(ushort BotId, ushort Slot);
 
 // id=105 | set bot health values
 public readonly record struct ArzSetBotHealth(ushort BotId, ushort Unknown0, uint Status, float CurrentValue, float MaximumValue);
@@ -146,8 +161,8 @@ public readonly record struct ArzSetBotHealth(ushort BotId, ushort Unknown0, uin
 // id=112 | set bot armour values
 public readonly record struct ArzSetBotArmour(ushort BotId, ushort Unknown0, uint Status, float CurrentValue, float MaximumValue);
 
-// id=113 | set bot settings/mask
-public readonly record struct ArzSetBotSettings(ushort BotId, ushort SettingsMask);
+// id=113 | set libPED on-foot sync rate
+public readonly record struct ArzSetBotOnfootSyncRate(ushort Rate);
 
 // --- Packet 221 outgoing (client -> server) ---
 

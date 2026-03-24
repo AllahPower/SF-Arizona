@@ -194,21 +194,19 @@ public static partial class ArizonaPacket
         ushort botId = r.ReadUInt16();
         ushort vid = r.ReadUInt16();
         ushort seatId = r.ReadUInt16();
-        ushort unknown0 = r.ReadUInt16();
-        uint unknown1 = r.ReadUInt32();
-        return new(botId, vid, seatId, unknown0, unknown1);
+        uint unknown0 = r.ReadUInt32();
+        return new(botId, vid, seatId, unknown0);
     }
 
     public static ArzBotPassengerSync ParseBotPassengerSync(ref BitStreamReader r)
     {
         ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotPassengerPedSync);
         ushort botId = r.ReadUInt16();
-        ushort vid = r.ReadUInt16();
+        ushort vehicleId = r.ReadUInt16();
         ushort seatId = r.ReadUInt16();
-        ushort unknown0 = r.ReadUInt16();
-        float hp = r.ReadFloat();
+        float health = r.ReadFloat();
         float armour = r.ReadFloat();
-        return new(botId, vid, seatId, unknown0, hp, armour);
+        return new(botId, vehicleId, seatId, health, armour);
     }
 
     public static ArzBotDriveSync ParseBotDriveSync(ref BitStreamReader r)
@@ -217,17 +215,16 @@ public static partial class ArizonaPacket
         ushort botId = r.ReadUInt16();
         ushort vehicleId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
-        float health = r.ReadFloat();
-        float armour = r.ReadFloat();
-        return new(botId, vehicleId, unknown0, health, armour);
+        uint stateValue0 = r.ReadUInt32();
+        uint stateValue1 = r.ReadUInt32();
+        return new(botId, vehicleId, unknown0, stateValue0, stateValue1);
     }
 
     public static ArzBotExitVehicle ParseBotExitVehicle(ref BitStreamReader r)
     {
         ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotRemoveFromVehicle);
         ushort botId = r.ReadUInt16();
-        ushort unknown0 = r.ReadUInt16();
-        return new(botId, unknown0);
+        return new(botId);
     }
 
     public static ArzBotChatBubble ParseBotChatBubble(ref BitStreamReader r)
@@ -261,8 +258,7 @@ public static partial class ArizonaPacket
         ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotDetachObject);
         ushort botId = r.ReadUInt16();
         ushort slot = r.ReadUInt16();
-        ushort unknown0 = r.ReadUInt16();
-        return new(botId, slot, unknown0);
+        return new(botId, slot);
     }
 
     public static ArzSetBotAngle ParseSetBotAngle(ref BitStreamReader r)
@@ -300,6 +296,15 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, groupName);
     }
 
+    public static ArzBotAttackPed ParseBotAttackPed(ref BitStreamReader r)
+    {
+        ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotAttackPed);
+        ushort botId = r.ReadUInt16();
+        ushort targetBotId = r.ReadUInt16();
+        uint unknown0 = r.ReadUInt32();
+        return new(botId, targetBotId, unknown0);
+    }
+
     public static ArzTogglePedCollision ParseTogglePedCollision(ref BitStreamReader r)
     {
         ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotToggleCollision);
@@ -329,8 +334,7 @@ public static partial class ArizonaPacket
         ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotDetachSimpleObject);
         ushort botId = r.ReadUInt16();
         ushort slot = r.ReadUInt16();
-        ushort unknown0 = r.ReadUInt16();
-        return new(botId, slot, unknown0);
+        return new(botId, slot);
     }
 
     public static ArzSetBotHealth ParseSetBotHealth(ref BitStreamReader r)
@@ -355,12 +359,11 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, status, currentValue, maximumValue);
     }
 
-    public static ArzSetBotSettings ParseSetBotSettings(ref BitStreamReader r)
+    public static ArzSetBotOnfootSyncRate ParseSetBotOnfootSyncRate(ref BitStreamReader r)
     {
-        ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotSetSettings);
-        ushort botId = r.ReadUInt16();
-        ushort settingsMask = r.ReadUInt16();
-        return new(botId, settingsMask);
+        ExpectBotRpcId(ref r, EArizonaPacketIdEx.BotSetOnfootSyncRate);
+        ushort rate = r.ReadUInt16();
+        return new(rate);
     }
 
     // ---- Packet 221 outgoing parsers ----

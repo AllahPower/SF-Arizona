@@ -48,7 +48,7 @@ public sealed class SFPacketParsers
             IIncomingArizonaPacketParser parserArizona = (IIncomingArizonaPacketParser)route.Parser;
             if (route.IsEx)
             {
-                group.Add(SF.ArizonaPackets.SubscribeIncomingEx((EArizonaPacketIdEx)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeIncomingEx((EArizonaPacketIdEx)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {
@@ -58,7 +58,7 @@ public sealed class SFPacketParsers
             }
             else
             {
-                group.Add(SF.ArizonaPackets.SubscribeIncoming((EArizonaPacketId)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeIncoming((EArizonaPacketId)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {
@@ -100,7 +100,7 @@ public sealed class SFPacketParsers
             IOutgoingArizonaPacketParser parserArizona = (IOutgoingArizonaPacketParser)route.Parser;
             if (route.IsEx)
             {
-                group.Add(SF.ArizonaPackets.SubscribeOutgoingEx((EArizonaPacketIdEx)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeOutgoingEx((EArizonaPacketIdEx)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {
@@ -110,7 +110,7 @@ public sealed class SFPacketParsers
             }
             else
             {
-                group.Add(SF.ArizonaPackets.SubscribeOutgoing((EArizonaPacketId)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeOutgoing((EArizonaPacketId)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {

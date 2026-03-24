@@ -64,15 +64,19 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizonaPacketId.SetRadarVisibility, ArizonaPacket.ParseSetRadarVisibility);
         Register220Incoming(registry, EArizonaPacketId.SetCompassMode, ArizonaPacket.ParseSetCompassMode);
         Register220Incoming(registry, EArizonaPacketId.SetCompassCoords, ArizonaPacket.ParseSetCompassCoords);
+        Register220Incoming(registry, EArizonaPacketId.ShowStunIcon, ArizonaPacket.ParseShowStunIcon);
+        Register220Incoming(registry, EArizonaPacketId.HideStunIcon, ArizonaPacket.ParseHideStunIcon);
         Register220Incoming(registry, EArizonaPacketId.AutoDrinkBeer, ArizonaPacket.ParseAutoDrinkBeer);
         Register220Incoming(registry, EArizonaPacketId.SetDayNightColors, ArizonaPacket.ParseSetDayNightColors);
         Register220Incoming(registry, EArizonaPacketId.ToggleCompass, ArizonaPacket.ParseToggleCompass);
         Register220Incoming(registry, EArizonaPacketId.SetAnimationProperty, ArizonaPacket.ParseSetAnimationProperty);
+        Register220Incoming(registry, EArizonaPacketId.ToggleCgps, ArizonaPacket.ParseToggleCgps);
         Register220Incoming(registry, EArizonaPacketId.ToggleMapColors, ArizonaPacket.ParseToggleMapColors);
         Register220Incoming(registry, EArizonaPacketId.ChangeServer, ArizonaPacket.ParseChangeServer);
         Register220Incoming(registry, EArizonaPacketId.ShowLoadScreenVc, ArizonaPacket.ParseShowLoadScreenVc);
-        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingArizonaPacket<ArzSwitchChatState>>(EPacketId.ArizonaCef, (int)EArizonaPacketId.SwitchChatState, args => ParseIncoming220(args, EArizonaPacketId.SwitchChatState, EArizonaPacketId.SwitchChatState.ToString(), ArizonaPacket.ParseSwitchChatState), name: $"Arizona220:{EArizonaPacketId.SwitchChatState}", minimumPayloadBitLength: 33));
+        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingArizonaPacket<ArzSetChatIconState>>(EPacketId.ArizonaCef, (int)EArizonaPacketId.SetChatIconState, args => ParseIncoming220(args, EArizonaPacketId.SetChatIconState, EArizonaPacketId.SetChatIconState.ToString(), ArizonaPacket.ParseSetChatIconState), name: $"Arizona220:{EArizonaPacketId.SetChatIconState}", minimumPayloadBitLength: 33));
         Register220Incoming(registry, EArizonaPacketId.SetGreenZone, ArizonaPacket.ParseUiConfig);
+        Register220Incoming(registry, EArizonaPacketId.SetVehicleModelSpeedLimit, ArizonaPacket.ParseSetVehicleModelSpeedLimit);
         Register220Incoming(registry, EArizonaPacketId.SetSpectatorPatches, ArizonaPacket.ParseSetSpectatorPatches);
         Register220Incoming(registry, EArizonaPacketId.SetViceCityFlag, ArizonaPacket.ParseSetViceCityFlag);
         Register220Incoming(registry, EArizonaPacketId.SetTuningConfig, ArizonaPacket.ParseSetTuningConfig);
@@ -117,7 +121,7 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizonaPacketId.SetLines, ArizonaPacket.ParseSetLines);
         Register220Incoming(registry, EArizonaPacketId.SetVehicleLights, ArizonaPacket.ParseSetVehicleLights);
         Register220Incoming(registry, EArizonaPacketId.UpdateWeaponSlots, ArizonaPacket.ParseUpdateWeaponSlots);
-        Register220Incoming(registry, EArizonaPacketId.SetPlayerSkin, ArizonaPacket.ParseSetPlayerSkin);
+        Register220Incoming(registry, EArizonaPacketId.Unknown200, ArizonaPacket.ParseUnknown200);
         Register220Incoming(registry, EArizonaPacketId.SetVehicleStrobelights, ArizonaPacket.ParseSetVehicleStrobelights);
         Register220Incoming(registry, EArizonaPacketId.SetGpsRoute, ArizonaPacket.ParseSetGpsRoute);
         Register220Incoming(registry, EArizonaPacketId.SetFirstPersonCamera, ArizonaPacket.ParseSetFirstPersonCamera);
@@ -163,12 +167,13 @@ public static partial class PacketParserCatalog
         Register221Incoming(registry, EArizonaPacketIdEx.BotStopAllAction, ArizonaPacket.ParseStopBotAction);
         Register221Incoming(registry, EArizonaPacketIdEx.BotShootPedAtPed, ArizonaPacket.ParseShootBotAtBot);
         Register221Incoming(registry, EArizonaPacketIdEx.BotSetAnimationGroup, ArizonaPacket.ParseSetBotAnimationGroup);
+        Register221Incoming(registry, EArizonaPacketIdEx.BotAttackPed, ArizonaPacket.ParseBotAttackPed);
         Register221Incoming(registry, EArizonaPacketIdEx.BotToggleCollision, ArizonaPacket.ParseTogglePedCollision);
         Register221Incoming(registry, EArizonaPacketIdEx.BotAttachSimpleObject, ArizonaPacket.ParseSetBotAttachedSimpleObject);
         Register221Incoming(registry, EArizonaPacketIdEx.BotDetachSimpleObject, ArizonaPacket.ParseRemoveBotAttachedSimpleObject);
         Register221Incoming(registry, EArizonaPacketIdEx.BotSetHealth, ArizonaPacket.ParseSetBotHealth);
         Register221Incoming(registry, EArizonaPacketIdEx.BotSetArmour, ArizonaPacket.ParseSetBotArmour);
-        Register221Incoming(registry, EArizonaPacketIdEx.BotSetSettings, ArizonaPacket.ParseSetBotSettings);
+        Register221Incoming(registry, EArizonaPacketIdEx.BotSetOnfootSyncRate, ArizonaPacket.ParseSetBotOnfootSyncRate);
     }
 
 

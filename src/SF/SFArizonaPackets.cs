@@ -9,6 +9,7 @@ public sealed class SFArizonaPackets
 {
     private const int Packet220PayloadBitOffset = 16;
     private const int Packet221PayloadBitOffset = 24;
+    private const int AZVoiceControlPayloadBitOffset = 16;
 
     public RpcSubscription SubscribeIncoming(EArizonaPacketId subId, Action<IncomingArizonaPacketArgs> handler)
     {
@@ -60,6 +61,35 @@ public sealed class SFArizonaPackets
 
             handler(packetArgs);
         });
+    }
+
+    public RpcSubscription SubscribeIncomingAZVoice(EAZVoiceSubRpcId subId, Action<IncomingArizonaPacketArgs> handler)
+    {
+        return SF.Packets.SubscribeIncoming(EPacketId.AZVoice, args =>
+        {
+            if (!TryCreateIncomingAZVoice(args, out IncomingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
+            {
+                return;
+            }
+
+            handler(packetArgs);
+        });
+    }
+
+    public RpcSubscription SubscribeIncomingAZVoiceData(Action<IncomingPacketArgs> handler)
+    {
+        return SF.Packets.SubscribeIncoming(EPacketId.AZVoice, args =>
+        {
+            if (!TryCreateIncomingAZVoice(args, out _))
+            {
+                handler(args);
+            }
+        });
+    }
+
+    public RpcSubscription SubscribeOutgoingAZVoiceData(Action<OutgoingPacketArgs> handler)
+    {
+        return SF.Packets.SubscribeOutgoing(EPacketId.AZVoice, handler);
     }
 
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncoming(EArizonaPacketId subId, [EnumeratorCancellation] CancellationToken token = default)
@@ -126,6 +156,54 @@ public sealed class SFArizonaPackets
         }
     }
 
+    public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingAZVoice(EAZVoiceSubRpcId subId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        ConcurrentQueue<IncomingArizonaPacketPayload> queue = new();
+        using RpcSubscription subscription = SubscribeIncomingAZVoice(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
+
+        while (!token.IsCancellationRequested)
+        {
+            while (queue.TryDequeue(out IncomingArizonaPacketPayload payload))
+            {
+                yield return payload;
+            }
+
+            await Task.Yield();
+        }
+    }
+
+    public async IAsyncEnumerable<IncomingPacketPayload> StreamIncomingAZVoiceData([EnumeratorCancellation] CancellationToken token = default)
+    {
+        ConcurrentQueue<IncomingPacketPayload> queue = new();
+        using RpcSubscription subscription = SubscribeIncomingAZVoiceData(args => queue.Enqueue(IncomingPacketPayload.From(args)));
+
+        while (!token.IsCancellationRequested)
+        {
+            while (queue.TryDequeue(out IncomingPacketPayload payload))
+            {
+                yield return payload;
+            }
+
+            await Task.Yield();
+        }
+    }
+
+    public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoingAZVoiceData([EnumeratorCancellation] CancellationToken token = default)
+    {
+        ConcurrentQueue<OutgoingPacketPayload> queue = new();
+        using RpcSubscription subscription = SubscribeOutgoingAZVoiceData(args => queue.Enqueue(OutgoingPacketPayload.From(args)));
+
+        while (!token.IsCancellationRequested)
+        {
+            while (queue.TryDequeue(out OutgoingPacketPayload payload))
+            {
+                yield return payload;
+            }
+
+            await Task.Yield();
+        }
+    }
+
     public async IAsyncEnumerable<TPayload> StreamIncoming<TPayload>(EArizonaPacketId subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (IncomingArizonaPacketPayload payload in StreamIncoming(subId, token))
@@ -153,6 +231,30 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<TPayload> StreamOutgoingEx<TPayload>(EArizonaPacketIdEx subId, Func<OutgoingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoingEx(subId, token))
+        {
+            yield return payload.Parse(parser);
+        }
+    }
+
+    public async IAsyncEnumerable<TPayload> StreamIncomingAZVoice<TPayload>(EAZVoiceSubRpcId subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (IncomingArizonaPacketPayload payload in StreamIncomingAZVoice(subId, token))
+        {
+            yield return payload.Parse(parser);
+        }
+    }
+
+    public async IAsyncEnumerable<TPayload> StreamIncomingAZVoiceData<TPayload>(Func<IncomingPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (IncomingPacketPayload payload in StreamIncomingAZVoiceData(token))
+        {
+            yield return payload.Parse(parser);
+        }
+    }
+
+    public async IAsyncEnumerable<TPayload> StreamOutgoingAZVoiceData<TPayload>(Func<OutgoingPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (OutgoingPacketPayload payload in StreamOutgoingAZVoiceData(token))
         {
             yield return payload.Parse(parser);
         }
@@ -226,6 +328,29 @@ public sealed class SFArizonaPackets
             reader.SkipBytes(1);
             ushort subId = ArizonaPacket.ReadSubId221(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet221PayloadBitOffset, args.DataBitLength - Packet221PayloadBitOffset);
+            return true;
+        }
+    }
+
+    private static bool TryCreateIncomingAZVoice(IncomingPacketArgs args, out IncomingArizonaPacketArgs packetArgs)
+    {
+        packetArgs = default;
+        if (args.EPacketId != (int)EPacketId.AZVoice || args.DataBitLength < AZVoiceControlPayloadBitOffset)
+        {
+            return false;
+        }
+
+        unsafe
+        {
+            BitStreamReader reader = args.CreateReader();
+            reader.SkipBytes(1);
+            byte subId = reader.ReadUInt8();
+            if (!Enum.IsDefined(typeof(EAZVoiceSubRpcId), subId))
+            {
+                return false;
+            }
+
+            packetArgs = new(args.EPacketId, subId, args.DataPtr, AZVoiceControlPayloadBitOffset, args.DataBitLength - AZVoiceControlPayloadBitOffset);
             return true;
         }
     }
