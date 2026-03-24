@@ -4,7 +4,7 @@ namespace SFSharp.Interop.RakNet.Arizona.Enum;
 // Transport: first byte of Packet 220 payload = this enum value (uint8).
 // Remaining bytes = sub-packet payload parsed per-ID.
 // Source map: arizona-events init.lua + IDA reverse of core.asi and vorbisFile.dll.
-public enum EArizonaPacketId : byte
+public enum EArizona : byte
 {
     // -- incoming (server -> client) --
 
@@ -82,6 +82,8 @@ public enum EArizonaPacketId : byte
 
     // numericString browserId, bool state
     SetBrowserControlState = 25,
+
+    //SetGreenZone = 26,
 
     // unknown payload
     Unknown27 = 27,
@@ -189,7 +191,7 @@ public enum EArizonaPacketId : byte
     // core.asi SimpleTuning + CarMods: u8 value (both modules store it globally)
     SetTuningConfig = 118,
 
-    // compact nametag/settings blob, variable-length
+    // not handled in core.asi custom-packet subscribers; raw payload only
     SetPlayerNametagFlags = 120,
 
     // core.asi SharedTxd: u8 stringLen, char[len] texture data, loads into "site16M" TXD

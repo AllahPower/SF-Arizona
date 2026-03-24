@@ -12,6 +12,7 @@ public static class HookManager
     private static OutgoingPacketHook? _outgoingPacket;
     private static IncomingPacketHook? _incomingPacket;
     private static IncomingAZVoicePacketHook? _incomingAZVoicePacket;
+    private static IncomingAZVoiceRpcHook? _incomingAZVoiceRpc;
     private static bool _azVoiceHookChecked;
 
     //public static Hook<PeekMessageArgs, PeekMessageResult> PeekMessage { get; } = new PeekMessageHook();
@@ -31,6 +32,24 @@ public static class HookManager
                     _incomingAZVoicePacket = new IncomingAZVoicePacketHook();
             }
             return _incomingAZVoicePacket;
+        }
+    }
+
+    internal static IncomingAZVoiceRpcHook? IncomingAZVoiceRpc
+    {
+        get
+        {
+            if (!_azVoiceHookChecked)
+            {
+                _ = IncomingAZVoicePacket;
+            }
+
+            if (_incomingAZVoiceRpc is null && ModuleResolver.IsModuleLoaded("AZVoice.asi"))
+            {
+                _incomingAZVoiceRpc = new IncomingAZVoiceRpcHook();
+            }
+
+            return _incomingAZVoiceRpc;
         }
     }
     public static HookBase<CDialogCloseArgs, NoRetValue> CDialogClose => _cDialogClose ??= !ModuleResolver.IsModuleLoaded("sampfuncs.asi") ? new CDialogCloseHook() : new CDialogCloseHook_SF();

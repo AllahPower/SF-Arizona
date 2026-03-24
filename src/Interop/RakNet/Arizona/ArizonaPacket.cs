@@ -219,7 +219,7 @@ public static partial class ArizonaPacket
         return new(r.ReadBitBool());
     }
 
-    public static ArzSetPlayerNametagFlags ParseSetPlayerNametagFlags(ref BitStreamReader r)
+    public static SetPlayerNametagFlags ParseSetPlayerNametagFlags(ref BitStreamReader r)
     {
         ushort pid = r.ReadUInt16();
         byte[] rawPayload = r.RemainingBits >= 8 ? r.ReadBytes(r.RemainingBits / 8).ToArray() : [];

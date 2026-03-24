@@ -7,25 +7,25 @@ public static partial class PacketParserCatalog
     private static void RegisterAZVoice(PacketParserRegistry registry)
     {
         // Incoming (server -> client) — AZVoice control sub-packets (sub-ID 3-23)
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.PluginInit, AZVoiceRpc.ParsePluginInit);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.CreateStaticAudioStream, AZVoiceRpc.ParseCreateStaticAudioStream);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.DeleteStream, AZVoiceRpc.ParseDeleteStream);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.ResetStreams, AZVoiceRpc.ParseResetStreams);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.SetStreamParameter, AZVoiceRpc.ParseSetStreamParameter);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.CreateFullStream, AZVoiceRpc.ParseCreateFullStream);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.DeleteStreamByChannel, AZVoiceRpc.ParseDeleteStreamByChannel);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.SetStreamChannel, AZVoiceRpc.ParseSetStreamChannel);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.ResumeStream, AZVoiceRpc.ParseResumeStream);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.SetStreamPlaybackPosition, AZVoiceRpc.ParseSetStreamPlaybackPosition);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.SetStreamPlaybackPosition2, AZVoiceRpc.ParseSetStreamPlaybackPosition2);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.PauseStream, AZVoiceRpc.ParsePauseStream);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.UpdateStreamEffect, AZVoiceRpc.ParseUpdateStreamEffect);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.StopStreamPlayback, AZVoiceRpc.ParseStopStreamPlayback);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.SetStreamTransient, AZVoiceRpc.ParseSetStreamTransient);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.UpdateStreamSource, AZVoiceRpc.ParseUpdateStreamSource);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.DestroyStreamObject, AZVoiceRpc.ParseDestroyStreamObject);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.Disconnect, AZVoiceRpc.ParseDisconnect);
-        RegisterAZVoiceIncoming(registry, EAZVoiceSubRpcId.SetReadyFlag, AZVoiceRpc.ParseSetReadyFlag);
+        RegisterAZVoiceIncoming(registry, EAZVoice.PluginInit, AZVoiceRpc.ParsePluginInit);
+        RegisterAZVoiceIncoming(registry, EAZVoice.CreateStaticAudioStream, AZVoiceRpc.ParseCreateStaticAudioStream);
+        RegisterAZVoiceIncoming(registry, EAZVoice.DeleteStream, AZVoiceRpc.ParseDeleteStream);
+        RegisterAZVoiceIncoming(registry, EAZVoice.ResetStreams, AZVoiceRpc.ParseResetStreams);
+        RegisterAZVoiceIncoming(registry, EAZVoice.SetStreamParameter, AZVoiceRpc.ParseSetStreamParameter);
+        RegisterAZVoiceIncoming(registry, EAZVoice.CreateFullStream, AZVoiceRpc.ParseCreateFullStream);
+        RegisterAZVoiceIncoming(registry, EAZVoice.DeleteStreamByChannel, AZVoiceRpc.ParseDeleteStreamByChannel);
+        RegisterAZVoiceIncoming(registry, EAZVoice.SetStreamChannel, AZVoiceRpc.ParseSetStreamChannel);
+        RegisterAZVoiceIncoming(registry, EAZVoice.ResumeStream, AZVoiceRpc.ParseResumeStream);
+        RegisterAZVoiceIncoming(registry, EAZVoice.SetStreamPlaybackPosition, AZVoiceRpc.ParseSetStreamPlaybackPosition);
+        RegisterAZVoiceIncoming(registry, EAZVoice.SetStreamPlaybackPosition2, AZVoiceRpc.ParseSetStreamPlaybackPosition2);
+        RegisterAZVoiceIncoming(registry, EAZVoice.PauseStream, AZVoiceRpc.ParsePauseStream);
+        RegisterAZVoiceIncoming(registry, EAZVoice.UpdateStreamEffect, AZVoiceRpc.ParseUpdateStreamEffect);
+        RegisterAZVoiceIncoming(registry, EAZVoice.StopStreamPlayback, AZVoiceRpc.ParseStopStreamPlayback);
+        RegisterAZVoiceIncoming(registry, EAZVoice.SetStreamTransient, AZVoiceRpc.ParseSetStreamTransient);
+        RegisterAZVoiceIncoming(registry, EAZVoice.UpdateStreamSource, AZVoiceRpc.ParseUpdateStreamSource);
+        RegisterAZVoiceIncoming(registry, EAZVoice.DestroyStreamObject, AZVoiceRpc.ParseDestroyStreamObject);
+        RegisterAZVoiceIncoming(registry, EAZVoice.Disconnect, AZVoiceRpc.ParseDisconnect);
+        RegisterAZVoiceIncoming(registry, EAZVoice.SetReadyFlag, AZVoiceRpc.ParseSetReadyFlag);
 
         // Outgoing (client -> server) — raw voice data only (no sub-ID dispatch)
         registry.Register(new DelegateOutgoingPacketParser<OutgoingAZVoiceDataPacket>(

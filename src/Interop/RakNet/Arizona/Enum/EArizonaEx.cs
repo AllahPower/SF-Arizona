@@ -5,7 +5,7 @@ namespace SFSharp.Interop.RakNet.Arizona.Enum;
 //   [u8 packet_id=221] [u16 sub_id] [... payload ...]
 // libcef.asi confirms that the Packet 221 payload is then decoded by the libPED RPC registry.
 // Only IDs confirmed in libcef.asi are named here.
-public enum EArizonaPacketIdEx : ushort
+public enum EArizonaEx : ushort
 {
     // -- incoming (server -> client) --
 

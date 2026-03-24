@@ -5,7 +5,7 @@ namespace SFSharp;
 /// The first byte of the RPC payload is the sub-RPC ID,
 /// followed by a sub-RPC-specific bitstream payload.
 /// </summary>
-public enum EAZVoiceSubRpcId : byte
+public enum EAZVoice : byte
 {
     PluginInit = 3,
     CreateStaticAudioStream = 6,

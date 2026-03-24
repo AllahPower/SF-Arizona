@@ -73,7 +73,7 @@ public readonly record struct ArzSetVehicleModelSpeedLimit(float SpeedLimitOrMin
 public readonly record struct ArzSetSpectatorPatches(byte State, byte Unknown);
 public readonly record struct ArzSetViceCityFlag(bool State);
 public readonly record struct ArzSetTuningConfig(byte Value);
-public readonly record struct ArzSetPlayerNametagFlags(ushort PlayerId, byte[] RawPayload, bool? TrailingBit);
+public readonly record struct SetPlayerNametagFlags(ushort Id, byte[] RawPayload, bool? TrailingBit);
 public readonly record struct ArzLoadSharedTexture(byte[] Data);
 public readonly record struct ArzToggleSharedTxdFlag(bool State);
 public readonly record struct ArzSetMapIcon(byte IconId, byte[] Pad14, ushort IconModel, Vector3 Position, string IconName, byte Pad);

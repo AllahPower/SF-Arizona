@@ -96,8 +96,7 @@ public partial class DebugModule
             reader.SkipBytes(1);
             if (packetId == EPacketId.AZVoice)
             {
-                int rpcId = reader.ReadUInt8();
-                return Enum.IsDefined(typeof(EAZVoiceSubRpcId), (byte)rpcId) ? rpcId : null;
+                return AZVoiceTransport.TryReadIncomingControlId(args, out byte rpcId) ? rpcId : null;
             }
             return packetId == EPacketId.ArizonaCefEx
                 ? ArizonaPacket.ReadSubId221(ref reader)

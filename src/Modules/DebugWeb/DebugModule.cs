@@ -87,7 +87,7 @@ public partial class DebugModule : SFModuleBase
                 SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
         }
 
-        foreach (EAZVoiceSubRpcId subId in Enum.GetValues<EAZVoiceSubRpcId>())
+        foreach (EAZVoice subId in Enum.GetValues<EAZVoice>())
         {
             subs.Add((RpcSubscription)Context.RegisterDisposable(
                 SF.Arizona.SubscribeIncomingAZVoice(subId, args => OnIncomingAZVoiceControl(args))));

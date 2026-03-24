@@ -14,6 +14,8 @@ internal sealed class NetworkDispatcher
         OutgoingRpc,
         IncomingPacket,
         OutgoingPacket,
+        IncomingAZVoiceControl,
+        IncomingAZVoiceData,
     }
 
     private readonly struct NetworkEvent
@@ -41,11 +43,15 @@ internal sealed class NetworkDispatcher
     private OutgoingRpcManager _outgoingRpcHandlers = new();
     private IncomingPacketManager _incomingPacketHandlers = new();
     private OutgoingPacketManager _outgoingPacketHandlers = new();
+    private IncomingAZVoiceControlManager _incomingAZVoiceControlHandlers = new();
+    private IncomingAZVoiceDataManager _incomingAZVoiceDataHandlers = new();
 
     public RpcHandlerManager IncomingRpcHandlers => _incomingRpcHandlers;
     public OutgoingRpcManager OutgoingRpcHandlers => _outgoingRpcHandlers;
     public IncomingPacketManager IncomingPacketHandlers => _incomingPacketHandlers;
     public OutgoingPacketManager OutgoingPacketHandlers => _outgoingPacketHandlers;
+    public IncomingAZVoiceControlManager IncomingAZVoiceControlHandlers => _incomingAZVoiceControlHandlers;
+    public IncomingAZVoiceDataManager IncomingAZVoiceDataHandlers => _incomingAZVoiceDataHandlers;
 
     public void Reset()
     {
@@ -53,6 +59,8 @@ internal sealed class NetworkDispatcher
         _outgoingRpcHandlers = new OutgoingRpcManager();
         _incomingPacketHandlers = new IncomingPacketManager();
         _outgoingPacketHandlers = new OutgoingPacketManager();
+        _incomingAZVoiceControlHandlers = new IncomingAZVoiceControlManager();
+        _incomingAZVoiceDataHandlers = new IncomingAZVoiceDataManager();
     }
 
     public void EnqueueIncomingRpc(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)
@@ -76,6 +84,18 @@ internal sealed class NetworkDispatcher
     public void EnqueueOutgoingPacket(int packetId, byte[] data, int dataBitLength)
     {
         _pendingEvents.Enqueue(new NetworkEvent(EventKind.OutgoingPacket, packetId, data, dataBitLength));
+        ScheduleDispatch();
+    }
+
+    public void EnqueueIncomingAZVoiceControl(int subId, byte[] data, int dataBitLength)
+    {
+        _pendingEvents.Enqueue(new NetworkEvent(EventKind.IncomingAZVoiceControl, subId, data, dataBitLength));
+        ScheduleDispatch();
+    }
+
+    public void EnqueueIncomingAZVoiceData(byte[] data, int dataBitLength)
+    {
+        _pendingEvents.Enqueue(new NetworkEvent(EventKind.IncomingAZVoiceData, 0, data, dataBitLength));
         ScheduleDispatch();
     }
 
@@ -105,6 +125,12 @@ internal sealed class NetworkDispatcher
                     break;
                 case EventKind.OutgoingPacket:
                     _outgoingPacketHandlers.Dispatch(ev.Id, ev.Data, ev.BitParam1);
+                    break;
+                case EventKind.IncomingAZVoiceControl:
+                    _incomingAZVoiceControlHandlers.Dispatch(ev.Id, ev.Data, ev.BitParam1);
+                    break;
+                case EventKind.IncomingAZVoiceData:
+                    _incomingAZVoiceDataHandlers.Dispatch(ev.Data, ev.BitParam1);
                     break;
             }
             processed++;

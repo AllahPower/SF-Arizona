@@ -12,6 +12,8 @@ public static class SFBootstrap
     public static OutgoingRpcManager OutgoingRpcHandlers => _dispatcher.OutgoingRpcHandlers;
     public static IncomingPacketManager IncomingPacketHandlers => _dispatcher.IncomingPacketHandlers;
     public static OutgoingPacketManager OutgoingPacketHandlers => _dispatcher.OutgoingPacketHandlers;
+    public static IncomingAZVoiceControlManager IncomingAZVoiceControlHandlers => _dispatcher.IncomingAZVoiceControlHandlers;
+    public static IncomingAZVoiceDataManager IncomingAZVoiceDataHandlers => _dispatcher.IncomingAZVoiceDataHandlers;
 
     public static void PostToMainThread(Action action)
     {
@@ -50,6 +52,16 @@ public static class SFBootstrap
     public static void EnqueueOutgoingPacket(int packetId, byte[] data, int dataBitLength)
     {
         _dispatcher.EnqueueOutgoingPacket(packetId, data, dataBitLength);
+    }
+
+    public static void EnqueueIncomingAZVoiceControl(int subId, byte[] data, int dataBitLength)
+    {
+        _dispatcher.EnqueueIncomingAZVoiceControl(subId, data, dataBitLength);
+    }
+
+    public static void EnqueueIncomingAZVoiceData(byte[] data, int dataBitLength)
+    {
+        _dispatcher.EnqueueIncomingAZVoiceData(data, dataBitLength);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]
@@ -97,6 +109,11 @@ public static class SFBootstrap
             SFLog.Info("AZVoice incoming packet hook prepared");
         else
             SFLog.Info("AZVoice.asi not loaded, skipping AZVoice hook");
+
+        if (HookManager.IncomingAZVoiceRpc is not null)
+            SFLog.Info("AZVoice incoming RPC hook prepared");
+        else
+            SFLog.Info("AZVoice.asi not loaded, skipping AZVoice RPC hook");
 
         HookManager.CDialogShow.AddSubHook(SF.Dialog);
         HookManager.CDialogHide.AddSubHook(SF.Dialog);

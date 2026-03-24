@@ -4,10 +4,6 @@ namespace SFSharp;
 
 public sealed class PacketParserRegistry
 {
-    private const int AZVoiceControlPayloadBitOffset = 16;
-    private const int AZVoiceMinimumVoiceFrameBits = 56;
-    private const int AZVoiceMaximumRoundedPayloadBits = 0x1007;
-
     private readonly Dictionary<int, IIncomingPacketParser> _incoming = new();
     private readonly Dictionary<int, IOutgoingPacketParser> _outgoing = new();
     private readonly Dictionary<int, IIncomingArizonaPacketParser> _incomingArizona220 = new();
@@ -247,17 +243,9 @@ public sealed class PacketParserRegistry
     private static bool TryReadAZVoiceControlId(IncomingPacketArgs args, out int rpcId)
     {
         rpcId = default;
-        if (args.DataBitLength < AZVoiceControlPayloadBitOffset)
-        {
-            return false;
-        }
-
         try
         {
-            BitStreamReader reader = args.CreateReader();
-            reader.SkipBytes(1);
-            int value = reader.ReadUInt8();
-            if (!Enum.IsDefined(typeof(EAZVoiceSubRpcId), (byte)value))
+            if (!AZVoiceTransport.TryReadIncomingControlId(args, out byte value))
             {
                 return false;
             }
@@ -275,56 +263,25 @@ public sealed class PacketParserRegistry
     private static bool TryCreateIncomingAZVoiceArgs(IncomingPacketArgs args, int rpcId, out IncomingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
-        if (args.DataBitLength < AZVoiceControlPayloadBitOffset)
+        if (args.DataBitLength < AZVoiceTransport.ControlPayloadBitOffset)
         {
             return false;
         }
 
-        packetArgs = new(args.EPacketId, rpcId, args.DataPtr, AZVoiceControlPayloadBitOffset, args.DataBitLength - AZVoiceControlPayloadBitOffset);
+        packetArgs = new(args.EPacketId, rpcId, args.DataPtr, AZVoiceTransport.ControlPayloadBitOffset, args.DataBitLength - AZVoiceTransport.ControlPayloadBitOffset);
         return true;
     }
 
     private static bool TryParseIncomingAZVoiceVoiceData(IncomingPacketArgs args, out PacketParseResult result)
     {
         result = default;
-        if (args.DataBitLength < AZVoiceMinimumVoiceFrameBits)
-        {
-            return false;
-        }
-
         try
         {
-            BitStreamReader reader = args.CreateReader();
-            reader.SkipBytes(1);
-            ushort senderId = reader.ReadUInt16();
-            ushort packetNumber = reader.ReadUInt16();
-            ushort streamCount = reader.ReadUInt16();
-            int streamIdsBits = streamCount * 16;
-            if (reader.RemainingBits < streamIdsBits)
+            if (!AZVoiceTransport.TryParseIncomingVoiceData(args, out AzvVoiceData data))
             {
                 return false;
             }
 
-            ushort[] streamIds = new ushort[streamCount];
-            for (int i = 0; i < streamCount; i++)
-            {
-                streamIds[i] = reader.ReadUInt16();
-            }
-
-            int roundedRemainingBits = reader.RemainingBits + 7;
-            if ((uint)roundedRemainingBits > AZVoiceMaximumRoundedPayloadBits)
-            {
-                return false;
-            }
-
-            int opusBytes = roundedRemainingBits >> 3;
-            if (opusBytes <= 2)
-            {
-                opusBytes = 0;
-            }
-
-            byte[] opusData = opusBytes > 0 ? reader.ReadBytes(opusBytes).ToArray() : [];
-            AzvVoiceData data = new(senderId, packetNumber, streamIds, opusData);
             IncomingAZVoiceDataPacket packet = new(data);
             result = new PacketParseResult(true, packet, packet.Name, PacketParseFailureReason.None);
             return true;

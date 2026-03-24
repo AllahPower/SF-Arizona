@@ -33,6 +33,10 @@ internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, Incoming
             throw new UnreachableException();
         }
 
+        byte[]? normalizedPacket = null;
+        byte normalizedPacketId = 0;
+        int normalizedBitSize = 0;
+
         if (packetPtr != 0)
         {
             byte* data = *(byte**)(packetPtr + SampOffsets.RakNetPacket.Data);
@@ -40,21 +44,29 @@ internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, Incoming
 
             if (TryGetNormalizedPacket(data, length, out byte packetId, out byte* normalizedData, out int normalizedLength))
             {
-                if (packetId == PacketIdAZVoice && SFBootstrap.IncomingPacketHandlers.HasSubscribers(packetId))
+                if (packetId == PacketIdAZVoice && SFBootstrap.IncomingAZVoiceDataHandlers.HasSubscribers())
                 {
-                    int bitSize = normalizedLength * 8;
-                    byte[] packet = new byte[normalizedLength];
-                    fixed (byte* dst = packet)
+                    normalizedBitSize = normalizedLength * 8;
+                    normalizedPacketId = packetId;
+                    normalizedPacket = new byte[normalizedLength];
+                    fixed (byte* dst = normalizedPacket)
                     {
                         Buffer.MemoryCopy(normalizedData, dst, normalizedLength, normalizedLength);
                     }
-
-                    SFBootstrap.EnqueueIncomingPacket(packetId, packet, bitSize);
                 }
             }
         }
 
-        return _instance.OriginalFunction(thisPtr, peerPtr, packetPtr);
+        int result = _instance.OriginalFunction(thisPtr, peerPtr, packetPtr);
+
+        // ARZ::OnReceivePacket returns 0 only when packet 252 was accepted as voice data
+        // and consumed by the plugin. Control RPCs continue through a different dispatcher.
+        if (result == 0 && normalizedPacket is not null)
+        {
+            SFBootstrap.EnqueueIncomingAZVoiceData(normalizedPacket, normalizedBitSize);
+        }
+
+        return result;
     }
 
     protected override int InvokeOriginalFunction(nint args)
