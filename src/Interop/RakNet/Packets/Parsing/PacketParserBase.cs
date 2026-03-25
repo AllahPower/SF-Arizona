@@ -7,6 +7,44 @@ public delegate TPacket OutgoingPacketParseDelegate<TPacket>(OutgoingPacketArgs 
 public delegate TPacket IncomingArizonaPacketParseDelegate<TPacket>(IncomingArizonaPacketArgs args) where TPacket : class, IParsedIncomingPacket;
 public delegate TPacket OutgoingArizonaPacketParseDelegate<TPacket>(OutgoingArizonaPacketArgs args) where TPacket : class, IParsedOutgoingPacket;
 
+internal static class PacketParseHelper
+{
+    public static bool TryExecuteParse<TArgs>(
+        TArgs args,
+        int dataBitLength,
+        int minimumBitLength,
+        int? exactBitLength,
+        string parserName,
+        Func<TArgs, PacketParseResult> parseFunc,
+        string errorContext,
+        out PacketParseResult result)
+    {
+        if (dataBitLength < minimumBitLength)
+        {
+            result = PacketParseResult.TooShort(parserName);
+            return false;
+        }
+
+        if (exactBitLength.HasValue && dataBitLength != exactBitLength.Value)
+        {
+            result = PacketParseResult.SizeMismatch(parserName);
+            return false;
+        }
+
+        try
+        {
+            result = parseFunc(args);
+            return result.Success;
+        }
+        catch (Exception ex)
+        {
+            SFLog.Error($"Packet parse failed: parser={parserName} bits={dataBitLength} {errorContext}: {ex.Message}");
+            result = PacketParseResult.FromException(parserName, ex);
+            return false;
+        }
+    }
+}
+
 public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
     where TPacket : class, IParsedIncomingPacket
 {
@@ -18,30 +56,19 @@ public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
 
     public bool TryParse(IncomingPacketArgs args, out PacketParseResult result)
     {
-        if (args.DataBitLength < MinimumBitLength)
-        {
-            result = PacketParseResult.TooShort(Name);
-            return false;
-        }
-
-        if (ExactBitLength.HasValue && args.DataBitLength != ExactBitLength.Value)
-        {
-            result = PacketParseResult.SizeMismatch(Name);
-            return false;
-        }
-
-        try
-        {
-            TPacket packet = Parse(args);
-            result = new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SFLog.Error($"Packet parse exception parser={Name} packetId={EPacketId} bits={args.DataBitLength}: {ex}");
-            result = PacketParseResult.FromException(Name, ex);
-            return false;
-        }
+        return PacketParseHelper.TryExecuteParse(
+            args,
+            args.DataBitLength,
+            MinimumBitLength,
+            ExactBitLength,
+            Name,
+            args =>
+            {
+                TPacket packet = Parse(args);
+                return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
+            },
+            $"packetId={EPacketId}",
+            out result);
     }
 
     protected abstract TPacket Parse(IncomingPacketArgs args);
@@ -58,30 +85,19 @@ public abstract class OutgoingPacketParserBase<TPacket> : IOutgoingPacketParser
 
     public bool TryParse(OutgoingPacketArgs args, out PacketParseResult result)
     {
-        if (args.DataBitLength < MinimumBitLength)
-        {
-            result = PacketParseResult.TooShort(Name);
-            return false;
-        }
-
-        if (ExactBitLength.HasValue && args.DataBitLength != ExactBitLength.Value)
-        {
-            result = PacketParseResult.SizeMismatch(Name);
-            return false;
-        }
-
-        try
-        {
-            TPacket packet = Parse(args);
-            result = new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SFLog.Error($"Packet parse exception parser={Name} packetId={EPacketId} bits={args.DataBitLength}: {ex}");
-            result = PacketParseResult.FromException(Name, ex);
-            return false;
-        }
+        return PacketParseHelper.TryExecuteParse(
+            args,
+            args.DataBitLength,
+            MinimumBitLength,
+            ExactBitLength,
+            Name,
+            args =>
+            {
+                TPacket packet = Parse(args);
+                return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
+            },
+            $"packetId={EPacketId}",
+            out result);
     }
 
     protected abstract TPacket Parse(OutgoingPacketArgs args);
@@ -99,30 +115,19 @@ public abstract class IncomingArizonaPacketParserBase<TPacket> : IIncomingArizon
 
     public bool TryParse(IncomingArizonaPacketArgs args, out PacketParseResult result)
     {
-        if (args.PayloadBitLength < MinimumPayloadBitLength)
-        {
-            result = PacketParseResult.TooShort(Name);
-            return false;
-        }
-
-        if (ExactPayloadBitLength.HasValue && args.PayloadBitLength != ExactPayloadBitLength.Value)
-        {
-            result = PacketParseResult.SizeMismatch(Name);
-            return false;
-        }
-
-        try
-        {
-            TPacket packet = Parse(args);
-            result = new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SFLog.Error($"Arizona packet parse exception parser={Name} packetId={EPacketId} subId={SubId} bits={args.PayloadBitLength}: {ex}");
-            result = PacketParseResult.FromException(Name, ex);
-            return false;
-        }
+        return PacketParseHelper.TryExecuteParse(
+            args,
+            args.PayloadBitLength,
+            MinimumPayloadBitLength,
+            ExactPayloadBitLength,
+            Name,
+            args =>
+            {
+                TPacket packet = Parse(args);
+                return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
+            },
+            $"packetId={EPacketId} subId={SubId}",
+            out result);
     }
 
     protected abstract TPacket Parse(IncomingArizonaPacketArgs args);
@@ -140,30 +145,19 @@ public abstract class OutgoingArizonaPacketParserBase<TPacket> : IOutgoingArizon
 
     public bool TryParse(OutgoingArizonaPacketArgs args, out PacketParseResult result)
     {
-        if (args.PayloadBitLength < MinimumPayloadBitLength)
-        {
-            result = PacketParseResult.TooShort(Name);
-            return false;
-        }
-
-        if (ExactPayloadBitLength.HasValue && args.PayloadBitLength != ExactPayloadBitLength.Value)
-        {
-            result = PacketParseResult.SizeMismatch(Name);
-            return false;
-        }
-
-        try
-        {
-            TPacket packet = Parse(args);
-            result = new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SFLog.Error($"Arizona packet parse exception parser={Name} packetId={EPacketId} subId={SubId} bits={args.PayloadBitLength}: {ex}");
-            result = PacketParseResult.FromException(Name, ex);
-            return false;
-        }
+        return PacketParseHelper.TryExecuteParse(
+            args,
+            args.PayloadBitLength,
+            MinimumPayloadBitLength,
+            ExactPayloadBitLength,
+            Name,
+            args =>
+            {
+                TPacket packet = Parse(args);
+                return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
+            },
+            $"packetId={EPacketId} subId={SubId}",
+            out result);
     }
 
     protected abstract TPacket Parse(OutgoingArizonaPacketArgs args);

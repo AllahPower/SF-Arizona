@@ -10,17 +10,17 @@ public readonly record struct IncomingRpcArgs(int ERpcId, nint DataPtr, int Data
     }
 }
 
-public sealed class RpcSubscription : IDisposable
+public class NetworkSubscription : IDisposable
 {
     private readonly Action _unsubscribe;
     private int _disposed;
 
-    internal RpcSubscription(Action unsubscribe)
+    internal NetworkSubscription(Action unsubscribe)
     {
         _unsubscribe = unsubscribe;
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
@@ -28,5 +28,13 @@ public sealed class RpcSubscription : IDisposable
         }
 
         _unsubscribe();
+    }
+}
+
+public sealed class RpcSubscription : NetworkSubscription
+{
+    internal RpcSubscription(Action unsubscribe)
+        : base(unsubscribe)
+    {
     }
 }

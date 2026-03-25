@@ -10,7 +10,7 @@ public sealed class SFArizonaPackets
     private const int Packet220PayloadBitOffset = 16;
     private const int Packet221PayloadBitOffset = 24;
 
-    public RpcSubscription SubscribeIncoming(EArizona subId, Action<IncomingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeIncoming(EArizona subId, Action<IncomingArizonaPacketArgs> handler)
     {
         return SF.Packets.SubscribeIncoming(EPacketId.ArizonaCef, args =>
         {
@@ -23,7 +23,7 @@ public sealed class SFArizonaPackets
         });
     }
 
-    public RpcSubscription SubscribeIncomingEx(EArizonaEx subId, Action<IncomingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeIncomingEx(EArizonaEx subId, Action<IncomingArizonaPacketArgs> handler)
     {
         return SF.Packets.SubscribeIncoming(EPacketId.ArizonaCefEx, args =>
         {
@@ -36,7 +36,7 @@ public sealed class SFArizonaPackets
         });
     }
 
-    public RpcSubscription SubscribeOutgoing(EArizona subId, Action<OutgoingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoing(EArizona subId, Action<OutgoingArizonaPacketArgs> handler)
     {
         return SF.Packets.SubscribeOutgoing(EPacketId.ArizonaCef, args =>
         {
@@ -49,7 +49,7 @@ public sealed class SFArizonaPackets
         });
     }
 
-    public RpcSubscription SubscribeOutgoingEx(EArizonaEx subId, Action<OutgoingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoingEx(EArizonaEx subId, Action<OutgoingArizonaPacketArgs> handler)
     {
         return SF.Packets.SubscribeOutgoing(EPacketId.ArizonaCefEx, args =>
         {
@@ -62,17 +62,17 @@ public sealed class SFArizonaPackets
         });
     }
 
-    public RpcSubscription SubscribeIncomingAZVoice(EAZVoice subId, Action<IncomingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeIncomingAZVoice(EAZVoice subId, Action<IncomingArizonaPacketArgs> handler)
     {
         return SFBootstrap.IncomingAZVoiceControlHandlers.Subscribe((int)subId, handler);
     }
 
-    public RpcSubscription SubscribeIncomingAZVoiceData(Action<IncomingPacketArgs> handler)
+    public NetworkSubscription SubscribeIncomingAZVoiceData(Action<IncomingPacketArgs> handler)
     {
         return SFBootstrap.IncomingAZVoiceDataHandlers.Subscribe(handler);
     }
 
-    public RpcSubscription SubscribeOutgoingAZVoiceData(Action<OutgoingPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoingAZVoiceData(Action<OutgoingPacketArgs> handler)
     {
         return SF.Packets.SubscribeOutgoing(EPacketId.AZVoice, handler);
     }
@@ -80,7 +80,7 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncoming(EArizona subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<IncomingArizonaPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeIncoming(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeIncoming(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {
@@ -96,7 +96,7 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingEx(EArizonaEx subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<IncomingArizonaPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeIncomingEx(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeIncomingEx(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {
@@ -112,7 +112,7 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoing(EArizona subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<OutgoingArizonaPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeOutgoing(subId, args => queue.Enqueue(OutgoingArizonaPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeOutgoing(subId, args => queue.Enqueue(OutgoingArizonaPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {
@@ -128,7 +128,7 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoingEx(EArizonaEx subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<OutgoingArizonaPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeOutgoingEx(subId, args => queue.Enqueue(OutgoingArizonaPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeOutgoingEx(subId, args => queue.Enqueue(OutgoingArizonaPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {
@@ -144,7 +144,7 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingAZVoice(EAZVoice subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<IncomingArizonaPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeIncomingAZVoice(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeIncomingAZVoice(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {
@@ -160,7 +160,7 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<IncomingPacketPayload> StreamIncomingAZVoiceData([EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<IncomingPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeIncomingAZVoiceData(args => queue.Enqueue(IncomingPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeIncomingAZVoiceData(args => queue.Enqueue(IncomingPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {
@@ -176,7 +176,7 @@ public sealed class SFArizonaPackets
     public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoingAZVoiceData([EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<OutgoingPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeOutgoingAZVoiceData(args => queue.Enqueue(OutgoingPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeOutgoingAZVoiceData(args => queue.Enqueue(OutgoingPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {

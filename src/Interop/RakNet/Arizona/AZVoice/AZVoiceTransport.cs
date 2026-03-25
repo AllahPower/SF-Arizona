@@ -8,6 +8,36 @@ internal static class AZVoiceTransport
     private const int MinimumVoiceFrameBits = 56;
     private const int MaximumRoundedPayloadBits = 0x1007;
 
+    public enum IncomingKind
+    {
+        Control,
+        VoiceData,
+    }
+
+    public readonly record struct IncomingPacketClassification(
+        IncomingKind Kind,
+        IncomingArizonaPacketArgs ControlArgs,
+        AzvVoiceData VoiceData);
+
+    public static bool TryClassifyIncomingPacket(IncomingPacketArgs args, out IncomingPacketClassification classification)
+    {
+        classification = default;
+
+        if (TryParseIncomingVoiceData(args, out AzvVoiceData voiceData))
+        {
+            classification = new IncomingPacketClassification(IncomingKind.VoiceData, default, voiceData);
+            return true;
+        }
+
+        if (TryCreateIncomingControlArgs(args, out IncomingArizonaPacketArgs controlArgs))
+        {
+            classification = new IncomingPacketClassification(IncomingKind.Control, controlArgs, default);
+            return true;
+        }
+
+        return false;
+    }
+
     public static bool TryCreateIncomingControlArgs(IncomingPacketArgs args, out IncomingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
@@ -41,8 +71,9 @@ internal static class AZVoiceTransport
             controlId = value;
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            SFLog.Error($"Packet parse failed: parser={nameof(TryReadIncomingControlId)} bits={args.DataBitLength}: {ex.Message}");
             return false;
         }
     }
@@ -91,8 +122,9 @@ internal static class AZVoiceTransport
             data = new AzvVoiceData(senderId, packetNumber, streamIds, opusData);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            SFLog.Error($"Packet parse failed: parser={nameof(TryParseIncomingVoiceData)} bits={args.DataBitLength}: {ex.Message}");
             return false;
         }
     }

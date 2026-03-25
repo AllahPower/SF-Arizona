@@ -33,12 +33,12 @@ public sealed class OutgoingPacketManager : IDisposable
         }
     }
 
-    public RpcSubscription Subscribe(EPacketId packetId, Action<OutgoingPacketArgs> handler)
+    public NetworkSubscription Subscribe(EPacketId packetId, Action<OutgoingPacketArgs> handler)
     {
         return Subscribe((int)packetId, handler);
     }
 
-    public RpcSubscription Subscribe(int packetId, Action<OutgoingPacketArgs> handler)
+    public NetworkSubscription Subscribe(int packetId, Action<OutgoingPacketArgs> handler)
     {
         lock (_sync)
         {
@@ -51,7 +51,7 @@ public sealed class OutgoingPacketManager : IDisposable
             list.Add(handler);
         }
 
-        return new RpcSubscription(() =>
+        return new NetworkSubscription(() =>
         {
             lock (_sync)
             {

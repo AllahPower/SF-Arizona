@@ -15,14 +15,14 @@ public sealed class IncomingAZVoiceDataManager : IDisposable
         }
     }
 
-    public RpcSubscription Subscribe(Action<IncomingPacketArgs> handler)
+    public NetworkSubscription Subscribe(Action<IncomingPacketArgs> handler)
     {
         lock (_sync)
         {
             _listeners.Add(handler);
         }
 
-        return new RpcSubscription(() =>
+        return new NetworkSubscription(() =>
         {
             lock (_sync)
             {

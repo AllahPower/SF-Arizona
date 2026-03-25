@@ -48,19 +48,19 @@ public class RpcDebugger : SFModuleBase
         UpdateRuntimeFlags();
         using IDisposable command = Context.RegisterChatCommand("rpcd", OnCommand);
 
-        List<RpcSubscription> subscriptions = new();
+        List<IDisposable> subscriptions = new();
         try
         {
             foreach (ERpcId rpcId in Enum.GetValues<ERpcId>())
             {
-                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
-                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
+                subscriptions.Add(Context.RegisterDisposable(SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
+                subscriptions.Add(Context.RegisterDisposable(SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
             }
 
             foreach (EPacketId packetId in Enum.GetValues<EPacketId>())
             {
-                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
-                subscriptions.Add((RpcSubscription)Context.RegisterDisposable(SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
+                subscriptions.Add(Context.RegisterDisposable(SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
+                subscriptions.Add(Context.RegisterDisposable(SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
             }
 
             Context.SetDetail("subscriptions", subscriptions.Count.ToString());
@@ -77,7 +77,7 @@ public class RpcDebugger : SFModuleBase
         }
         finally
         {
-            foreach (RpcSubscription sub in subscriptions)
+            foreach (IDisposable sub in subscriptions)
             {
                 sub.Dispose();
             }
@@ -188,13 +188,13 @@ public class RpcDebugger : SFModuleBase
             string transport = packetId == EPacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
             string? detail = reason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
                 ? $"subId={subId}"
-                : $"subId={subId} parse={reason}" + (string.IsNullOrWhiteSpace(result.Error) ? string.Empty : $" error={result.Error}");
+                : $"subId={subId} parse={reason}" + (string.IsNullOrWhiteSpace(result.ErrorMessage) ? string.Empty : $" error={result.ErrorMessage}");
             return ($"{transport}:{fallbackName}", detail);
         }
 
         string? failure = reason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
             ? null
-            : $"parse={reason}" + (string.IsNullOrWhiteSpace(result.Error) ? string.Empty : $" error={result.Error}");
+            : $"parse={reason}" + (string.IsNullOrWhiteSpace(result.ErrorMessage) ? string.Empty : $" error={result.ErrorMessage}");
         return (fallbackName, failure);
     }
 

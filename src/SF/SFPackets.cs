@@ -11,7 +11,7 @@ public sealed class SFPackets
 
     // - Incoming packets (server -> client) -
 
-    public RpcSubscription SubscribeIncoming(EPacketId packetId, Action<IncomingPacketArgs> handler)
+    public NetworkSubscription SubscribeIncoming(EPacketId packetId, Action<IncomingPacketArgs> handler)
     {
         return IncomingHandlers.Subscribe(packetId, handler);
     }
@@ -19,7 +19,7 @@ public sealed class SFPackets
     public async IAsyncEnumerable<IncomingPacketPayload> StreamIncoming(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<IncomingPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeIncoming(packetId, args => queue.Enqueue(IncomingPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeIncoming(packetId, args => queue.Enqueue(IncomingPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {
@@ -42,7 +42,7 @@ public sealed class SFPackets
 
     // - Outgoing packets (client -> server) -
 
-    public RpcSubscription SubscribeOutgoing(EPacketId packetId, Action<OutgoingPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoing(EPacketId packetId, Action<OutgoingPacketArgs> handler)
     {
         return OutgoingHandlers.Subscribe(packetId, handler);
     }
@@ -50,7 +50,7 @@ public sealed class SFPackets
     public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoing(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
         ConcurrentQueue<OutgoingPacketPayload> queue = new();
-        using RpcSubscription subscription = SubscribeOutgoing(packetId, args => queue.Enqueue(OutgoingPacketPayload.From(args)));
+        using NetworkSubscription subscription = SubscribeOutgoing(packetId, args => queue.Enqueue(OutgoingPacketPayload.From(args)));
 
         while (!token.IsCancellationRequested)
         {

@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace SFSharp;
 
-public static class AZVoiceRpc
+public static class AZVoiceParsers
 {
     // ---- Helpers ----
 

@@ -1,4 +1,5 @@
 using SFSharp;
+using SFSharp.Interop.RakNet.Arizona.Enum;
 using SFSharp.Interop.RakNet.Packets.Enum;
 
 public partial class DebugModule
@@ -37,6 +38,19 @@ public partial class DebugModule
         return (fn, fd, null);
     }
 
+    private static (string? Name, string? Detail, string? Parsed) DecodeIncomingAZVoiceControl(IncomingArizonaPacketArgs args)
+    {
+        if (SF.PacketParsers.Registry.TryParseIncomingAZVoiceControl(args, out PacketParseResult result)
+            && result.Packet is IParsedIncomingPacket packet)
+        {
+            (string? name, string? detail) = FormatParsedPacket(packet, args.EPacketId);
+            return (name, detail, packet.Detail);
+        }
+
+        string? fallbackName = Enum.IsDefined(typeof(EAZVoice), args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
+        return ($"AZVoice:{fallbackName}", $"subId={args.SubId}", null);
+    }
+
     private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingPacket(OutgoingPacketArgs args)
     {
         if (SF.PacketParsers.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
@@ -71,6 +85,9 @@ public partial class DebugModule
 
     private static (string? Name, string? Detail) FormatPacketParseFailure(int rawPacketId, PacketParseResult result, int? arizonaSubId)
     {
+        string baseDetail = result.ErrorMessage is { Length: > 0 } errorMessage
+            ? $"error={errorMessage}"
+            : $"reason={result.FailureReason}";
         string? fallbackName = Enum.IsDefined((EPacketId)rawPacketId) ? ((EPacketId)rawPacketId).ToString() : null;
         if (arizonaSubId is int subId)
         {
@@ -81,9 +98,9 @@ public partial class DebugModule
                 EPacketId.AZVoice => "AZVoice",
                 _ => "Arizona220",
             };
-            return ($"{transport}:{fallbackName}", $"subId={subId}");
+            return ($"{transport}:{fallbackName}", $"subId={subId} {baseDetail}");
         }
-        return (fallbackName, $"packetId={rawPacketId}");
+        return (fallbackName, $"packetId={rawPacketId} {baseDetail}");
     }
 
     private static int? TryReadArizonaSubId(IncomingPacketArgs args)

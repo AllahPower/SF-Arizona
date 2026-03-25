@@ -241,15 +241,21 @@ public sealed record OutgoingMarkersPacket(MarkersSyncData Data) : IParsedOutgoi
     public string Detail => Data.ToString();
 }
 
-public sealed record IncomingArizonaPacket<TPayload>(EPacketId EPacketId, int SubId, string Name, TPayload Payload) : IParsedIncomingPacket, IParsedArizonaPacket
+public record IncomingSubPacket<TPayload>(EPacketId EPacketId, int SubId, string Name, TPayload Payload) : IParsedIncomingPacket, IParsedArizonaPacket
 {
     public string? Detail => Payload is null ? null : Payload.ToString();
 }
 
-public sealed record OutgoingArizonaPacket<TPayload>(EPacketId EPacketId, int SubId, string Name, TPayload Payload) : IParsedOutgoingPacket, IParsedArizonaPacket
+public record OutgoingSubPacket<TPayload>(EPacketId EPacketId, int SubId, string Name, TPayload Payload) : IParsedOutgoingPacket, IParsedArizonaPacket
 {
     public string? Detail => Payload is null ? null : Payload.ToString();
 }
+
+public sealed record IncomingArizonaPacket<TPayload>(EPacketId EPacketId, int SubId, string Name, TPayload Payload)
+    : IncomingSubPacket<TPayload>(EPacketId, SubId, Name, Payload);
+
+public sealed record OutgoingArizonaPacket<TPayload>(EPacketId EPacketId, int SubId, string Name, TPayload Payload)
+    : OutgoingSubPacket<TPayload>(EPacketId, SubId, Name, Payload);
 
 public sealed record IncomingUnknownArizonaPacket(EPacketId EPacketId, int SubId, int PayloadBitLength, string Name) : IParsedIncomingPacket, IParsedArizonaPacket
 {

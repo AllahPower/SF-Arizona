@@ -7,7 +7,7 @@ public readonly record struct PacketParseResult(
     IParsedPacket? Packet,
     string ParserName,
     PacketParseFailureReason FailureReason,
-    string? Error = null)
+    string? ErrorMessage = null)
 {
     public static PacketParseResult Unsupported(EPacketId packetId)
     {

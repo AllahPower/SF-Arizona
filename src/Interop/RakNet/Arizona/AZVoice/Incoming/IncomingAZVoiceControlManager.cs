@@ -31,7 +31,7 @@ public sealed class IncomingAZVoiceControlManager : IDisposable
         }
     }
 
-    public RpcSubscription Subscribe(int subId, Action<IncomingArizonaPacketArgs> handler)
+    public NetworkSubscription Subscribe(int subId, Action<IncomingArizonaPacketArgs> handler)
     {
         lock (_sync)
         {
@@ -44,7 +44,7 @@ public sealed class IncomingAZVoiceControlManager : IDisposable
             list.Add(handler);
         }
 
-        return new RpcSubscription(() =>
+        return new NetworkSubscription(() =>
         {
             lock (_sync)
             {

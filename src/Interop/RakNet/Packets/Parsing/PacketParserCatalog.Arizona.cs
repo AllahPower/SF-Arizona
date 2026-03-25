@@ -74,7 +74,7 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.ToggleMapColors, ArizonaPacket.ParseToggleMapColors);
         Register220Incoming(registry, EArizona.ChangeServer, ArizonaPacket.ParseChangeServer);
         Register220Incoming(registry, EArizona.ShowLoadScreenVc, ArizonaPacket.ParseShowLoadScreenVc);
-        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingArizonaPacket<ArzSetChatIconState>>(EPacketId.ArizonaCef, (int)EArizona.SetChatIconState, args => ParseIncoming220(args, EArizona.SetChatIconState, EArizona.SetChatIconState.ToString(), ArizonaPacket.ParseSetChatIconState), name: $"Arizona220:{EArizona.SetChatIconState}", minimumPayloadBitLength: 33));
+        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<ArzSetChatIconState>>(EPacketId.ArizonaCef, (int)EArizona.SetChatIconState, args => ParseIncoming220(args, EArizona.SetChatIconState, EArizona.SetChatIconState.ToString(), ArizonaPacket.ParseSetChatIconState), name: $"Arizona220:{EArizona.SetChatIconState}", minimumPayloadBitLength: 33));
         Register220Incoming(registry, EArizona.SetGreenZone, ArizonaPacket.ParseUiConfig);
         Register220Incoming(registry, EArizona.SetVehicleModelSpeedLimit, ArizonaPacket.ParseSetVehicleModelSpeedLimit);
         Register220Incoming(registry, EArizona.SetSpectatorPatches, ArizonaPacket.ParseSetSpectatorPatches);

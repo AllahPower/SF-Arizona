@@ -11,7 +11,6 @@ public sealed class PacketParserRegistry
     private readonly Dictionary<int, IIncomingArizonaPacketParser> _incomingAZVoice = new();
     private readonly Dictionary<int, IOutgoingArizonaPacketParser> _outgoingArizona220 = new();
     private readonly Dictionary<int, IOutgoingArizonaPacketParser> _outgoingArizona221 = new();
-    private IOutgoingPacketParser? _outgoingAZVoice;
     private readonly Dictionary<Type, List<IncomingRoute>> _incomingRoutesByType = new();
     private readonly Dictionary<Type, List<OutgoingRoute>> _outgoingRoutesByType = new();
 
@@ -23,15 +22,7 @@ public sealed class PacketParserRegistry
 
     public void Register(IOutgoingPacketParser parser)
     {
-        if (parser.EPacketId == EPacketId.AZVoice)
-        {
-            _outgoingAZVoice = parser;
-        }
-        else
-        {
-            _outgoing[(int)parser.EPacketId] = parser;
-        }
-
+        _outgoing[(int)parser.EPacketId] = parser;
         AddOutgoingRoute(parser.ParsedType, new OutgoingRoute(parser.EPacketId, null, false, parser));
     }
 
@@ -52,7 +43,7 @@ public sealed class PacketParserRegistry
         EPacketId packetId = (EPacketId)args.EPacketId;
         if (packetId == EPacketId.AZVoice)
         {
-            return TryParseIncomingAZVoice(args, out result);
+            return TryParseIncomingAZVoicePacket(args, out result);
         }
 
         if (packetId is EPacketId.ArizonaCef or EPacketId.ArizonaCefEx)
@@ -72,11 +63,6 @@ public sealed class PacketParserRegistry
     public bool TryParseOutgoing(OutgoingPacketArgs args, out PacketParseResult result)
     {
         EPacketId packetId = (EPacketId)args.EPacketId;
-        if (packetId == EPacketId.AZVoice)
-        {
-            return TryParseOutgoingAZVoice(args, out result);
-        }
-
         if (packetId is EPacketId.ArizonaCef or EPacketId.ArizonaCefEx)
         {
             return TryParseOutgoingArizona(args, packetId, out result);
@@ -91,32 +77,36 @@ public sealed class PacketParserRegistry
         return false;
     }
 
-    private bool TryParseIncomingAZVoice(IncomingPacketArgs args, out PacketParseResult result)
+    public bool TryParseIncomingAZVoiceControl(IncomingArizonaPacketArgs args, out PacketParseResult result)
     {
-        if (TryParseIncomingAZVoiceVoiceData(args, out result))
+        if (_incomingAZVoice.TryGetValue(args.SubId, out IIncomingArizonaPacketParser? parser))
         {
-            return true;
+            return parser.TryParse(args, out result);
         }
 
-        if (TryReadAZVoiceControlId(args, out int rpcId)
-            && _incomingAZVoice.TryGetValue(rpcId, out IIncomingArizonaPacketParser? parser)
-            && TryCreateIncomingAZVoiceArgs(args, rpcId, out IncomingArizonaPacketArgs packetArgs))
+        result = new PacketParseResult(
+            true,
+            new IncomingUnknownArizonaPacket(EPacketId.AZVoice, args.SubId, args.PayloadBitLength, "AZVoice"),
+            EPacketId.AZVoice.ToString(),
+            PacketParseFailureReason.None);
+        return true;
+    }
+
+    private bool TryParseIncomingAZVoicePacket(IncomingPacketArgs args, out PacketParseResult result)
+    {
+        if (AZVoiceTransport.TryClassifyIncomingPacket(args, out AZVoiceTransport.IncomingPacketClassification classification))
         {
-            return parser.TryParse(packetArgs, out result);
+            if (classification.Kind == AZVoiceTransport.IncomingKind.VoiceData)
+            {
+                IncomingAZVoiceDataPacket packet = new(classification.VoiceData);
+                result = new PacketParseResult(true, packet, packet.Name, PacketParseFailureReason.None);
+                return true;
+            }
+
+            return TryParseIncomingAZVoiceControl(classification.ControlArgs, out result);
         }
 
         SFLog.Warn($"AZVoice packet parse failed: packetId={EPacketId.AZVoice} bits={args.DataBitLength} error=unrecognized raw 252 payload");
-        result = PacketParseResult.Unsupported(EPacketId.AZVoice);
-        return false;
-    }
-
-    private bool TryParseOutgoingAZVoice(OutgoingPacketArgs args, out PacketParseResult result)
-    {
-        if (_outgoingAZVoice is not null)
-        {
-            return _outgoingAZVoice.TryParse(args, out result);
-        }
-
         result = PacketParseResult.Unsupported(EPacketId.AZVoice);
         return false;
     }
@@ -158,7 +148,6 @@ public sealed class PacketParserRegistry
         string transportName = packetId switch
         {
             EPacketId.ArizonaCefEx => "ArizonaCefEx",
-            EPacketId.AZVoice => "AZVoice",
             _ => "ArizonaCef",
         };
         result = new PacketParseResult(
@@ -186,7 +175,6 @@ public sealed class PacketParserRegistry
         string transportName = packetId switch
         {
             EPacketId.ArizonaCefEx => "ArizonaCefEx",
-            EPacketId.AZVoice => "AZVoice",
             _ => "ArizonaCef",
         };
         result = new PacketParseResult(
@@ -237,59 +225,6 @@ public sealed class PacketParserRegistry
                 : ArizonaPacket.ReadSubId220(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, payloadBitOffset, args.DataBitLength - payloadBitOffset);
             return true;
-        }
-    }
-
-    private static bool TryReadAZVoiceControlId(IncomingPacketArgs args, out int rpcId)
-    {
-        rpcId = default;
-        try
-        {
-            if (!AZVoiceTransport.TryReadIncomingControlId(args, out byte value))
-            {
-                return false;
-            }
-
-            rpcId = value;
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SFLog.Warn($"AZVoice control discriminator read failed: bits={args.DataBitLength} error={ex.GetType().Name}: {ex.Message}");
-            return false;
-        }
-    }
-
-    private static bool TryCreateIncomingAZVoiceArgs(IncomingPacketArgs args, int rpcId, out IncomingArizonaPacketArgs packetArgs)
-    {
-        packetArgs = default;
-        if (args.DataBitLength < AZVoiceTransport.ControlPayloadBitOffset)
-        {
-            return false;
-        }
-
-        packetArgs = new(args.EPacketId, rpcId, args.DataPtr, AZVoiceTransport.ControlPayloadBitOffset, args.DataBitLength - AZVoiceTransport.ControlPayloadBitOffset);
-        return true;
-    }
-
-    private static bool TryParseIncomingAZVoiceVoiceData(IncomingPacketArgs args, out PacketParseResult result)
-    {
-        result = default;
-        try
-        {
-            if (!AZVoiceTransport.TryParseIncomingVoiceData(args, out AzvVoiceData data))
-            {
-                return false;
-            }
-
-            IncomingAZVoiceDataPacket packet = new(data);
-            result = new PacketParseResult(true, packet, packet.Name, PacketParseFailureReason.None);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            SFLog.Warn($"AZVoice voice-data discriminator failed: bits={args.DataBitLength} error={ex.GetType().Name}: {ex.Message}");
-            return false;
         }
     }
 

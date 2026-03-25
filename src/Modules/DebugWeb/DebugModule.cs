@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
@@ -33,7 +32,7 @@ public partial class DebugModule : SFModuleBase
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        List<RpcSubscription> subs = [];
+        List<IDisposable> subs = [];
         try
         {
             SubscribeAll(subs);
@@ -60,17 +59,17 @@ public partial class DebugModule : SFModuleBase
         }
         finally
         {
-            foreach (var sub in subs) sub.Dispose();
+            foreach (IDisposable sub in subs) sub.Dispose();
         }
     }
 
-    private void SubscribeAll(List<RpcSubscription> subs)
+    private void SubscribeAll(List<IDisposable> subs)
     {
         foreach (ERpcId rpcId in Enum.GetValues<ERpcId>())
         {
-            subs.Add((RpcSubscription)Context.RegisterDisposable(
+            subs.Add(Context.RegisterDisposable(
                 SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
-            subs.Add((RpcSubscription)Context.RegisterDisposable(
+            subs.Add(Context.RegisterDisposable(
                 SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
         }
 
@@ -81,21 +80,21 @@ public partial class DebugModule : SFModuleBase
                 continue;
             }
 
-            subs.Add((RpcSubscription)Context.RegisterDisposable(
+            subs.Add(Context.RegisterDisposable(
                 SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
-            subs.Add((RpcSubscription)Context.RegisterDisposable(
+            subs.Add(Context.RegisterDisposable(
                 SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
         }
 
         foreach (EAZVoice subId in Enum.GetValues<EAZVoice>())
         {
-            subs.Add((RpcSubscription)Context.RegisterDisposable(
+            subs.Add(Context.RegisterDisposable(
                 SF.Arizona.SubscribeIncomingAZVoice(subId, args => OnIncomingAZVoiceControl(args))));
         }
 
-        subs.Add((RpcSubscription)Context.RegisterDisposable(
+        subs.Add(Context.RegisterDisposable(
             SF.Arizona.SubscribeIncomingAZVoiceData(args => OnIncomingPacket(args))));
-        subs.Add((RpcSubscription)Context.RegisterDisposable(
+        subs.Add(Context.RegisterDisposable(
             SF.Arizona.SubscribeOutgoingAZVoiceData(args => OnOutgoingPacket(args))));
     }
 
@@ -104,24 +103,10 @@ public partial class DebugModule : SFModuleBase
         Interlocked.Increment(ref _totalInPkt);
         if (!_captureEnabled || !_captureIncoming || !_capturePackets) return;
 
-        int dataBitLength = args.PayloadBitOffset + args.PayloadBitLength;
-        int dataByteLength = (dataBitLength + 7) / 8;
-        byte[] data = new byte[dataByteLength];
-        if (dataByteLength > 0)
-        {
-            Marshal.Copy(args.DataPtr, data, 0, dataByteLength);
-        }
-
-        unsafe
-        {
-            fixed (byte* dataPtr = data)
-            {
-                IncomingPacketArgs packetArgs = new(args.EPacketId, (nint)dataPtr, dataBitLength);
-                (string? name, string? detail, string? parsed) = DecodeIncomingPacket(packetArgs);
-                Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.EPacketId, name,
-                    parsed, detail, dataByteLength, Environment.TickCount64));
-            }
-        }
+        (string? name, string? detail, string? parsed) = DecodeIncomingAZVoiceControl(args);
+        int dataByteLength = (args.PayloadBitOffset + args.PayloadBitLength + 7) / 8;
+        Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.EPacketId, name,
+            parsed, detail, dataByteLength, Environment.TickCount64));
     }
 
     private void Push(TrafficEntry entry)

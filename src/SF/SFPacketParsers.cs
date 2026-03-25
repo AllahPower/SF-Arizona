@@ -1,4 +1,5 @@
 using SFSharp.Interop.RakNet.Arizona.Enum;
+using SFSharp.Interop.RakNet.Packets.Enum;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
@@ -46,7 +47,17 @@ public sealed class SFPacketParsers
             }
 
             IIncomingArizonaPacketParser parserArizona = (IIncomingArizonaPacketParser)route.Parser;
-            if (route.IsEx)
+            if (route.EPacketId == EPacketId.AZVoice)
+            {
+                group.Add(SF.Arizona.SubscribeIncomingAZVoice((EAZVoice)route.SubId.Value, args =>
+                {
+                    if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
+                    {
+                        handler(packet);
+                    }
+                }));
+            }
+            else if (route.IsEx)
             {
                 group.Add(SF.Arizona.SubscribeIncomingEx((EArizonaEx)route.SubId.Value, args =>
                 {
