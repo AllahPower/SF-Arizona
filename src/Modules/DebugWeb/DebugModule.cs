@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,9 +20,12 @@ public partial class DebugModule : SFModuleBase
 {
     private const int WebPort = 7777;
     private const int ServerBufferSize = 200;
+    private const int BroadcastIntervalMs = 50;
 
     private readonly ConcurrentQueue<TrafficEntry> _buffer = new();
-    private readonly ConcurrentDictionary<string, WebSocket> _clients = new();
+    private readonly ConcurrentDictionary<string, ClientState> _clients = new();
+    private readonly Channel<TrafficEntry> _broadcastChannel = Channel.CreateBounded<TrafficEntry>(
+        new BoundedChannelOptions(8192) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true });
     private volatile bool _captureEnabled;
     private volatile bool _captureIncoming = true;
     private volatile bool _captureOutgoing = true;
@@ -29,6 +33,13 @@ public partial class DebugModule : SFModuleBase
     private volatile bool _capturePackets = true;
     private int _totalInRpc, _totalOutRpc, _totalInPkt, _totalOutPkt;
     private long _entrySeq;
+
+    private sealed class ClientState
+    {
+        public readonly WebSocket Socket;
+        public readonly SemaphoreSlim SendLock = new(1, 1);
+        public ClientState(WebSocket socket) => Socket = socket;
+    }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -51,6 +62,8 @@ public partial class DebugModule : SFModuleBase
             SF.Chat.Add($"{{58A6FF}}DebugWeb: {{FFFFFF}}http://localhost:{WebPort}/");
 
             await app.StartAsync(cancellationToken);
+
+            _ = Task.Run(() => BroadcastLoopAsync(cancellationToken), cancellationToken);
 
             try { await Task.Delay(Timeout.Infinite, cancellationToken); }
             catch (OperationCanceledException) { }
@@ -115,30 +128,83 @@ public partial class DebugModule : SFModuleBase
         _buffer.Enqueue(entry);
         while (_buffer.Count > ServerBufferSize) _buffer.TryDequeue(out _);
 
-        if (_clients.IsEmpty) return;
+        _broadcastChannel.Writer.TryWrite(entry);
+    }
 
-        var msg = new WsMessage<TrafficEntry>("entry", entry);
-        var json = JsonSerializer.SerializeToUtf8Bytes(msg, DebugJsonContext.Default.WsMessageTrafficEntry);
-        BroadcastRaw(json);
+    private async Task BroadcastLoopAsync(CancellationToken ct)
+    {
+        var reader = _broadcastChannel.Reader;
+        var batch = new List<TrafficEntry>(128);
+
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await reader.WaitToReadAsync(ct);
+
+                batch.Clear();
+                while (reader.TryRead(out var entry))
+                {
+                    batch.Add(entry);
+                }
+
+                if (batch.Count == 0 || _clients.IsEmpty) continue;
+
+                byte[] json;
+                if (batch.Count == 1)
+                {
+                    var msg = new WsMessage<TrafficEntry>("entry", batch[0]);
+                    json = JsonSerializer.SerializeToUtf8Bytes(msg, DebugJsonContext.Default.WsMessageTrafficEntry);
+                }
+                else
+                {
+                    var msg = new WsMessage<TrafficEntry[]>("batch", batch.ToArray());
+                    json = JsonSerializer.SerializeToUtf8Bytes(msg, DebugJsonContext.Default.WsMessageTrafficEntryArray);
+                }
+
+                await BroadcastRawAsync(json);
+
+                // throttle: don't spin faster than BroadcastIntervalMs
+                await Task.Delay(BroadcastIntervalMs, ct);
+            }
+            catch (OperationCanceledException) { break; }
+            catch (Exception ex)
+            {
+                SFLog.Error($"BroadcastLoop error: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task BroadcastRawAsync(byte[] json)
+    {
+        foreach (var (id, client) in _clients)
+        {
+            if (client.Socket.State != WebSocketState.Open)
+            {
+                _clients.TryRemove(id, out _);
+                continue;
+            }
+
+            if (!client.SendLock.Wait(0)) continue;
+            try
+            {
+                await client.Socket.SendAsync(json, WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            catch
+            {
+                _clients.TryRemove(id, out _);
+            }
+            finally
+            {
+                client.SendLock.Release();
+            }
+        }
     }
 
     private void BroadcastJson<T>(T value, JsonTypeInfo<T> typeInfo)
     {
         var json = JsonSerializer.SerializeToUtf8Bytes(value, typeInfo);
-        BroadcastRaw(json);
-    }
-
-    private void BroadcastRaw(byte[] json)
-    {
-        foreach (var (id, ws) in _clients)
-        {
-            if (ws.State != WebSocketState.Open)
-            {
-                _clients.TryRemove(id, out _);
-                continue;
-            }
-            _ = ws.SendAsync(json, WebSocketMessageType.Text, true, CancellationToken.None);
-        }
+        _ = BroadcastRawAsync(json);
     }
 
     private void UpdateDetails()

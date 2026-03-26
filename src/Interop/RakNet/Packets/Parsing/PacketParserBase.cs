@@ -62,7 +62,7 @@ public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
             MinimumBitLength,
             ExactBitLength,
             Name,
-            args =>
+            a =>
             {
                 TPacket packet = Parse(args);
                 return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);

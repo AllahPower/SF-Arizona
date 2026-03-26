@@ -62,7 +62,8 @@ public partial class DebugModule
     {
         var ws = await ctx.WebSockets.AcceptWebSocketAsync();
         string id = Guid.NewGuid().ToString("N");
-        _clients[id] = ws;
+        var client = new ClientState(ws);
+        _clients[id] = client;
 
         try
         {
