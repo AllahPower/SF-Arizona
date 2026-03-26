@@ -43,46 +43,46 @@ public static class AZVoiceParsers
     private static AzvCreateFullStreamPlaybackEntry ReadCreateFullStreamPlaybackEntry(ref BitStreamReader r)
     {
         bool hasInlineSource = r.ReadBitBool();
-        string? inlineSourceName = null;
+        string? sourceName = null;
         ushort? directSourceId = null;
         if (hasInlineSource)
         {
-            inlineSourceName = ReadAzvString16(ref r);
+            sourceName = ReadAzvString16(ref r);
         }
         else
         {
             directSourceId = r.ReadUInt16();
         }
 
-        uint baseTimestamp = r.ReadUInt32();
+        uint baseTimestampOrZero = r.ReadUInt32();
         float volume = r.ReadFloat();
-        bool flag0 = r.ReadBitBool();
+        bool allowOverlap = r.ReadBitBool();
         uint? delaySeconds = null;
-        bool flag1;
-        uint timeValue;
+        bool looping;
+        uint playbackPositionMs;
 
-        if (baseTimestamp != 0)
+        if (baseTimestampOrZero != 0)
         {
-            flag1 = r.ReadBitBool();
-            timeValue = r.ReadUInt32();
+            looping = r.ReadBitBool();
+            playbackPositionMs = r.ReadUInt32();
         }
         else
         {
             delaySeconds = r.ReadUInt32();
-            flag1 = r.ReadBitBool();
-            timeValue = r.ReadUInt32();
+            looping = r.ReadBitBool();
+            playbackPositionMs = r.ReadUInt32();
         }
 
         return new AzvCreateFullStreamPlaybackEntry(
             hasInlineSource,
-            inlineSourceName,
+            sourceName,
             directSourceId,
-            baseTimestamp,
+            baseTimestampOrZero,
             delaySeconds,
             volume,
-            flag0,
-            flag1,
-            timeValue);
+            allowOverlap,
+            looping,
+            playbackPositionMs);
     }
 
     private static AzvCreateFullStreamAction ReadCreateFullStreamAction(ref BitStreamReader r)
@@ -90,12 +90,12 @@ public static class AZVoiceParsers
         var actionType = (EAzvCreateFullStreamActionType)r.ReadUInt8();
         Vector4? parameters = actionType switch
         {
-            EAzvCreateFullStreamActionType.Unknown1 => new Vector4(
+            EAzvCreateFullStreamActionType.EchoEffect => new Vector4(
                 r.ReadFloat(),
                 r.ReadFloat(),
                 r.ReadFloat(),
                 r.ReadFloat()),
-            EAzvCreateFullStreamActionType.Unknown2 => null,
+            EAzvCreateFullStreamActionType.BqfPeakingEqChain => null,
             _ => throw new InvalidOperationException($"Unknown AZVoice CreateFullStream action type: {(byte)actionType}"),
         };
 
@@ -122,9 +122,9 @@ public static class AZVoiceParsers
 
     public static AzvCreateStaticAudioStream ParseCreateStaticAudioStream(ref BitStreamReader r)
     {
-        byte streamType = r.ReadUInt8();
+        byte channelKey = r.ReadUInt8();
         string name = ReadAzvString16(ref r);
-        return new AzvCreateStaticAudioStream(streamType, name);
+        return new AzvCreateStaticAudioStream(channelKey, name);
     }
 
     public static AzvDeleteStream ParseDeleteStream(ref BitStreamReader r)
@@ -238,8 +238,36 @@ public static class AZVoiceParsers
     public static AzvUpdateStreamEffect ParseUpdateStreamEffect(ref BitStreamReader r)
     {
         ushort streamId = r.ReadUInt16();
-        byte[] data = r.RemainingBits > 0 ? r.ReadRemainingBytes() : [];
-        return new AzvUpdateStreamEffect(streamId, data);
+        bool hasInlineSource = r.ReadBitBool();
+        string? sourceName = null;
+        ushort? directSourceId = null;
+        if (hasInlineSource)
+        {
+            sourceName = ReadAzvString16(ref r);
+        }
+        else
+        {
+            directSourceId = r.ReadUInt16();
+        }
+
+        uint baseTimestampOrZero = r.ReadUInt32();
+        float volume = r.ReadFloat();
+        bool allowOverlap = r.ReadBitBool();
+        uint? delaySeconds = null;
+        if (baseTimestampOrZero == 0)
+        {
+            delaySeconds = r.ReadUInt32();
+        }
+
+        return new AzvUpdateStreamEffect(
+            streamId,
+            hasInlineSource,
+            sourceName,
+            directSourceId,
+            baseTimestampOrZero,
+            delaySeconds,
+            volume,
+            allowOverlap);
     }
 
     public static AzvStopStreamPlayback ParseStopStreamPlayback(ref BitStreamReader r)
@@ -249,9 +277,9 @@ public static class AZVoiceParsers
 
     public static AzvSetStreamTransient ParseSetStreamTransient(ref BitStreamReader r)
     {
-        ushort channelId = r.ReadUInt16();
-        bool flag = r.ReadBitBool();
-        return new AzvSetStreamTransient(channelId, flag);
+        ushort targetId = r.ReadUInt16();
+        bool isTransient = r.ReadBitBool();
+        return new AzvSetStreamTransient(targetId, isTransient);
     }
 
     public static AzvUpdateStreamSource ParseUpdateStreamSource(ref BitStreamReader r)

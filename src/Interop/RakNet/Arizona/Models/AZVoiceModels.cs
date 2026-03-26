@@ -7,13 +7,13 @@ namespace SFSharp;
 public readonly record struct AzvPluginInitStream(ushort ChannelId, string Name, bool HasUrl);
 public readonly record struct AzvPluginInit(uint Version, AzvPluginInitStream[] Streams);
 
-public readonly record struct AzvCreateStaticAudioStream(byte StreamType, string Name);
+public readonly record struct AzvCreateStaticAudioStream(byte ChannelKey, string Name);
 
-public readonly record struct AzvDeleteStream(byte StreamId);
+public readonly record struct AzvDeleteStream(byte ChannelKey);
 
 public readonly record struct AzvResetStreams;
 
-public readonly record struct AzvSetStreamParameter(uint Parameter);
+public readonly record struct AzvSetStreamParameter(uint Value);
 
 public enum EAzvStreamType : byte
 {
@@ -25,28 +25,29 @@ public enum EAzvStreamType : byte
 
 public readonly record struct AzvCreateFullStreamPlaybackEntry(
     bool HasInlineSource,
-    string? InlineSourceName,
+    string? SourceName,
     ushort? DirectSourceId,
-    uint BaseTimestamp,
+    uint BaseTimestampOrZero,
     uint? DelaySeconds,
     float Volume,
-    bool Flag0,
-    bool Flag1,
-    uint TimeValue);
+    bool AllowOverlap,
+    bool Looping,
+    uint PlaybackPositionMs);
 
 public enum EAzvCreateFullStreamActionType : byte
 {
-    Unknown1 = 1,
-    Unknown2 = 2,
+    EchoEffect = 1,
+    BqfPeakingEqChain = 2,
 }
 
 /// <summary>
 /// Trailing action block processed by ARZ::StopStreamPlaybackImpl.
-/// Type 1 carries four floats, type 2 has no extra payload.
+/// Type 1 creates AudioEffectEcho and carries four floats.
+/// Type 2 applies a built-in AudioEffectBQF + AudioEffectPeakingEq chain and has no extra payload.
 /// </summary>
 public readonly record struct AzvCreateFullStreamAction(
     EAzvCreateFullStreamActionType ActionType,
-    Vector4? Parameters);
+    Vector4? Float4Parameters);
 
 public readonly record struct AzvCreateFullStream(
     ushort StreamId,
@@ -61,7 +62,7 @@ public readonly record struct AzvCreateFullStream(
     AzvCreateFullStreamPlaybackEntry[] PlaybackEntries,
     AzvCreateFullStreamAction[] Actions);
 
-public readonly record struct AzvDeleteStreamByChannel(ushort ChannelId);
+public readonly record struct AzvDeleteStreamByChannel(ushort StreamId);
 
 public readonly record struct AzvSetStreamChannel(ushort StreamId, ushort ChannelId);
 
@@ -73,11 +74,19 @@ public readonly record struct AzvSetStreamPlaybackPosition2(ushort StreamId, uin
 
 public readonly record struct AzvPauseStream(ushort StreamId);
 
-public readonly record struct AzvUpdateStreamEffect(ushort StreamId, byte[] Data);
+public readonly record struct AzvUpdateStreamEffect(
+    ushort StreamId,
+    bool HasInlineSource,
+    string? SourceName,
+    ushort? DirectSourceId,
+    uint BaseTimestampOrZero,
+    uint? DelaySeconds,
+    float Volume,
+    bool AllowOverlap);
 
 public readonly record struct AzvStopStreamPlayback(ushort StreamId);
 
-public readonly record struct AzvSetStreamTransient(ushort ChannelId, bool Flag);
+public readonly record struct AzvSetStreamTransient(ushort TargetId, bool IsTransient);
 
 public readonly record struct AzvUpdateStreamSource(ushort ChannelId, string Name, bool HasUrl);
 
