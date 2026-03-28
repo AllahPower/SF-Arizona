@@ -3,17 +3,15 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-// Hook target is resolved from the live RakClient vtable.
-// Current live mapping recovered from the process: slot 6 = Send(BitStream), slot 7 = Send(data), slot 8 = Receive.
-internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacketHook.SendPacketBitStreamNative>
+internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacketHook.SendBitStreamNative>
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-    internal unsafe delegate bool SendPacketBitStreamNative(
+    internal unsafe delegate bool SendBitStreamNative(
         nint thisPtr,
         nint bitStream,
         int priority,
         int reliability,
-        int orderingChannel);
+        byte orderingChannel);
 
     private static OutgoingPacketHook? _instance;
 
@@ -25,7 +23,7 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
             SampOffsets.CNetGame.Instance,
             SampOffsets.CNetGame.RakClient,
             SampOffsets.RakClientVTable.Send_BitStream);
-        InstallHook(targetAddress, new SendPacketBitStreamNative(HookProc));
+        InstallHook(targetAddress, new SendBitStreamNative(HookProc));
     }
 
     private static unsafe bool HookProc(
@@ -33,7 +31,7 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
         nint bitStream,
         int priority,
         int reliability,
-        int orderingChannel)
+        byte orderingChannel)
     {
         if (_instance is null)
         {
@@ -42,32 +40,28 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
 
         if (bitStream != 0)
         {
-            int bitLength = *(int*)(bitStream + SampOffsets.RakNetBitStream.NumberOfBitsUsed);
+            int bitsUsed = *(int*)(bitStream + SampOffsets.RakNetBitStream.NumberOfBitsUsed);
             byte* data = *(byte**)(bitStream + SampOffsets.RakNetBitStream.Data);
 
-            if (data != null && bitLength >= 8)
+            if (data != null && bitsUsed >= 8)
             {
                 int packetId = data[0];
+
                 if (SFBootstrap.OutgoingPacketHandlers.HasSubscribers(packetId))
                 {
-                    int byteLength = (bitLength + 7) / 8;
-                    byte[] packet = new byte[byteLength];
+                    int dataByteLength = (bitsUsed + 7) / 8;
+                    byte[] packet = new byte[dataByteLength];
                     fixed (byte* dst = packet)
                     {
-                        Buffer.MemoryCopy(data, dst, byteLength, byteLength);
+                        Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
                     }
 
-                    SFBootstrap.EnqueueOutgoingPacket(packetId, packet, bitLength);
+                    SFBootstrap.EnqueueOutgoingPacket(packetId, packet, bitsUsed);
                 }
             }
         }
 
-        return _instance.OriginalFunction(
-            thisPtr,
-            bitStream,
-            priority,
-            reliability,
-            orderingChannel);
+        return _instance.OriginalFunction(thisPtr, bitStream, priority, reliability, orderingChannel);
     }
 
     protected override bool InvokeOriginalFunction(nint args)

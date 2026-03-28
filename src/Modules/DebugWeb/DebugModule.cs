@@ -43,6 +43,16 @@ public partial class DebugModule : SFModuleBase
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        if (!Directory.Exists(WebDebuggerWwwRootPath) || !File.Exists(WebDebuggerIndexPath))
+        {
+            string missingTarget = !Directory.Exists(WebDebuggerWwwRootPath) ? WebDebuggerWwwRootPath : WebDebuggerIndexPath;
+            Context.SetDetail("status", "missing web assets");
+            Context.SetDetail("path", missingTarget);
+            Log.LogWarning("DebugWeb assets are missing: {Path}", missingTarget);
+            SF.Chat.Add($"{{FF6B6B}}DebugWeb: {{FFFFFF}}missing web assets: {missingTarget}");
+            return;
+        }
+
         List<IDisposable> subs = [];
         try
         {
@@ -64,6 +74,7 @@ public partial class DebugModule : SFModuleBase
             await app.StartAsync(cancellationToken);
 
             _ = Task.Run(() => BroadcastLoopAsync(cancellationToken), cancellationToken);
+            _ = Task.Run(() => WorldBroadcastLoopAsync(cancellationToken), cancellationToken);
 
             try { await Task.Delay(Timeout.Infinite, cancellationToken); }
             catch (OperationCanceledException) { }

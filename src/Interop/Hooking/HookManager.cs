@@ -8,7 +8,7 @@ public static class HookManager
     private static HookBase<CInputCommandSendArgs, bool>? _cInputCommandSend;
     private static HookBase<UpdateScoresPingsIpsArgs, NoRetValue>? _updateScoresPingsIps;
 
-    internal static OutgoingRpcPacketHook OutgoingRpcPacket { get; } = new OutgoingRpcPacketHook();
+    private static OutgoingRpcPacketHook? _outgoingRpcPacket;
     private static OutgoingPacketHook? _outgoingPacket;
     private static IncomingPacketHook? _incomingPacket;
     private static IncomingAZVoicePacketHook? _incomingAZVoicePacket;
@@ -18,6 +18,7 @@ public static class HookManager
     //public static Hook<PeekMessageArgs, PeekMessageResult> PeekMessage { get; } = new PeekMessageHook();
     public static HookBase<CChatAddEntryArgs, NoRetValue> CChatAddEntry { get; } = new CChatAddEntryHook();
     internal static IncomingRpcPacketHook IncomingRpcPacket { get; } = new IncomingRpcPacketHook();
+    internal static OutgoingRpcPacketHook OutgoingRpcPacket => _outgoingRpcPacket ??= new OutgoingRpcPacketHook();
     internal static OutgoingPacketHook OutgoingPacket => _outgoingPacket ??= new OutgoingPacketHook();
     internal static IncomingPacketHook IncomingPacket => _incomingPacket ??= new IncomingPacketHook();
 

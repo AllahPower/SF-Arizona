@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using Microsoft.Extensions.FileProviders;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +9,8 @@ public partial class DebugModule
 {
     private void MapEndpoints(WebApplication app)
     {
+        Directory.CreateDirectory(WebDebuggerWwwRootPath);
+
         app.Use(async (ctx, next) =>
         {
             if (ctx.Request.Path == "/ws" && ctx.WebSockets.IsWebSocketRequest)
@@ -18,7 +21,30 @@ public partial class DebugModule
             await next(ctx);
         });
 
-        app.MapGet("/", () => Results.Content(DashboardHtml, "text/html"));
+        var webRootProvider = new PhysicalFileProvider(WebDebuggerWwwRootPath);
+        app.UseDefaultFiles(new DefaultFilesOptions
+        {
+            FileProvider = webRootProvider,
+            DefaultFileNames = { "index.html" }
+        });
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = webRootProvider
+        });
+
+        app.MapGet("/", async (HttpContext ctx) =>
+        {
+            if (!File.Exists(WebDebuggerIndexPath))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                ctx.Response.ContentType = "text/plain; charset=utf-8";
+                await ctx.Response.WriteAsync($"Debug web root is missing: {WebDebuggerIndexPath}");
+                return;
+            }
+
+            ctx.Response.ContentType = "text/html; charset=utf-8";
+            await ctx.Response.SendFileAsync(WebDebuggerIndexPath);
+        });
 
         app.MapGet("/api/config", () =>
         {
@@ -82,6 +108,10 @@ public partial class DebugModule
             var statsMsg = new WsMessage<StatsResponse>("stats", BuildStats());
             var statsJson = JsonSerializer.SerializeToUtf8Bytes(statsMsg, DebugJsonContext.Default.WsMessageStatsResponse);
             await ws.SendAsync(statsJson, WebSocketMessageType.Text, true, CancellationToken.None);
+
+            var worldMsg = new WsMessage<WorldSnapshotDto>("world", BuildWorldSnapshot());
+            var worldJson = JsonSerializer.SerializeToUtf8Bytes(worldMsg, DebugJsonContext.Default.WsMessageWorldSnapshotDto);
+            await ws.SendAsync(worldJson, WebSocketMessageType.Text, true, CancellationToken.None);
 
             var buf = new byte[256];
             while (ws.State == WebSocketState.Open)

@@ -1,5 +1,6 @@
 using SFSharp;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using unsafe ChatDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, byte*, void>;
@@ -16,12 +17,94 @@ public unsafe ref struct CLocalPlayer
     private static CLocalPlayer* CurrentInstance => CPlayerPool.Instance.GetLocalPlayer();
     public static ref readonly CLocalPlayer Instance => ref *RequireInstance();
 
+    [FieldOffset(0x00)]
+    private readonly CPed* _ped;
+
+    [FieldOffset(0x04)]
+    private readonly SampIncarData _incarData;
+
+    [FieldOffset(0x43)]
+    private readonly SampAimData _aimData;
+
+    [FieldOffset(0x62)]
+    private readonly SampTrailerData _trailerData;
+
+    [FieldOffset(0x98)]
+    private readonly SampOnfootData _onfootData;
+
+    [FieldOffset(0xDC)]
+    private readonly SampPassengerData _passengerData;
+
+    [FieldOffset(0xFC)]
+    private readonly ushort _currentVehicleId;
+
+    [FieldOffset(0xFE)]
+    private readonly ushort _lastVehicleId;
+
+    [FieldOffset(0x107)]
+    private readonly byte _team;
+
+    [FieldOffset(0x11F)]
+    private readonly CLocalPlayerCameraTarget _cameraTarget;
+
+    [FieldOffset(0x127)]
+    private readonly CPlayerHeadState _head;
+
+    [FieldOffset(0x14F)]
+    private readonly CLocalPlayerSpawnInfo _spawnInfo;
+
+    [FieldOffset(0x17D)]
+    private readonly int _hasSpawnInfoRaw;
+
     [FieldOffset(389)]
-    public WeaponsData WeaponsData;
+    public CLocalPlayerWeaponsData WeaponsData;
+
+    [FieldOffset(0x1CB)]
+    private readonly int _passengerDriveByRaw;
+
+    [FieldOffset(0x1CF)]
+    private readonly byte _currentInterior;
+
+    [FieldOffset(0x1D0)]
+    private readonly int _inRcModeRaw;
+
+    [FieldOffset(0x1D4)]
+    private unsafe fixed byte _name[256];
+
+    [FieldOffset(0x2D4)]
+    private readonly CLocalPlayerSurfingState _surfing;
+
+    [FieldOffset(0x2FA)]
+    private readonly CLocalPlayerClassSelectionState _classSelection;
+
+    [FieldOffset(0x312)]
+    private readonly CLocalPlayerSpectatingState _spectating;
+
+    [FieldOffset(0x31C)]
+    private readonly CLocalPlayerDamageState _damage;
 
     public ushort AimedPlayerId => WeaponsData.AimedPlayer;
     public ushort AimedActorId => WeaponsData.AimedActor;
     public byte CurrentWeapon => WeaponsData.CurrentWeapon;
+    public ushort CurrentVehicleId => _currentVehicleId;
+    public ushort LastVehicleId => _lastVehicleId;
+    public byte Team => _team;
+    public bool HasSpawnInfo => _hasSpawnInfoRaw != 0;
+    public bool IsPassengerDriveBy => _passengerDriveByRaw != 0;
+    public byte CurrentInterior => _currentInterior;
+    public bool IsInRcMode => _inRcModeRaw != 0;
+    public SampIncarData IncarData => _incarData;
+    public SampAimData AimData => _aimData;
+    public SampTrailerData TrailerData => _trailerData;
+    public SampOnfootData OnfootData => _onfootData;
+    public SampPassengerData PassengerData => _passengerData;
+    public CLocalPlayerCameraTarget CameraTarget => _cameraTarget;
+    public CPlayerHeadState Head => _head;
+    public CLocalPlayerSpawnInfo SpawnInfo => _spawnInfo;
+    public CLocalPlayerSurfingState Surfing => _surfing;
+    public CLocalPlayerClassSelectionState ClassSelection => _classSelection;
+    public CLocalPlayerSpectatingState Spectating => _spectating;
+    public CLocalPlayerDamageState Damage => _damage;
 
     private static readonly GetPedDelegate _getPed = (GetPedDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CLocalPlayer.GetPed);
     private static readonly GetSpecialActionDelegate _getSpecialAction = (GetSpecialActionDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CLocalPlayer.GetSpecialAction);
@@ -34,6 +117,26 @@ public unsafe ref struct CLocalPlayer
     public CPed* GetPed()
     {
         return _getPed(RequireInstance());
+    }
+
+    public string? GetName()
+    {
+        fixed (byte* name = _name)
+        {
+            return AnsiString.Decode(name);
+        }
+    }
+
+    public bool TryGetSurfingVehicle(out CVehicle* vehicle)
+    {
+        vehicle = null;
+        if (!_surfing.IsActive || _surfing.EntityId >= SampOffsets.CVehiclePool.MaxVehicles)
+        {
+            return false;
+        }
+
+        vehicle = CVehiclePool.Instance.Get(_surfing.EntityId);
+        return vehicle != null;
     }
 
     public byte GetSpecialAction()
@@ -64,7 +167,7 @@ public unsafe ref struct CLocalPlayer
     public int GetWeaponAmmo(int slot)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slot, WeaponsData.WeaponSlotCount);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slot, CLocalPlayerWeaponsData.WeaponSlotCount);
         fixed (int* ammo = WeaponsData.LastWeaponAmmo)
         {
             return ammo[slot];
@@ -74,7 +177,7 @@ public unsafe ref struct CLocalPlayer
     public byte GetWeaponId(int slot)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slot, WeaponsData.WeaponSlotCount);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slot, CLocalPlayerWeaponsData.WeaponSlotCount);
         fixed (byte* weapons = WeaponsData.LastWeapon)
         {
             return weapons[slot];
@@ -98,8 +201,6 @@ public unsafe ref struct CLocalPlayer
         return instance;
     }
 }
-
-public unsafe struct CPed;
 
 public unsafe struct WeaponsData
 {

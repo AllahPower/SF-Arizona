@@ -3,8 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-// MinHook detour on RakClient::RPC (BitStream overload) at samp.dll+0x33EE0
-// bool __thiscall RPC(this, int* uniqueID, BitStream* bitStream, PacketPriority, PacketReliability, char orderingChannel, bool shiftTimestamp)
 internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpcPacketHook.OutgoingRpcPacketNative>
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
@@ -17,7 +15,6 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
         byte orderingChannel,
         [MarshalAs(UnmanagedType.U1)] bool shiftTimestamp);
 
-    // BitStream layout offsets (RakNet)
     private const int BitStreamNumberOfBitsUsed = 4;
     private const int BitStreamData = 12;
 
@@ -68,7 +65,6 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
             }
         }
 
-        // Call original via MinHook trampoline
         return _instance.OriginalFunction(thisPtr, uniqueID, bitStream, priority, reliability, orderingChannel, shiftTimestamp);
     }
 

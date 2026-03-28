@@ -14,10 +14,30 @@ public static class SampOffsets
         public const int GetObjectPool = 0x2DF0;
         public const int GetActorPool = 0x2E00;
         public const int GetState = 0x2E10;
+        public const int LanMode = 0x2E20;
         public const int GetPickupPool = 0x8170;
         public const int GetMenuPool = 0x8180;
         public const int SetState = 0x8190;
+        public const int InitializePools = 0x81D0;
+        public const int InitialNotification = 0x83F0;
+        public const int GetCounter = 0x8570;
+        public const int InitializeGameLogic = 0x8580;
+        public const int Connect = 0x85D0;
+        public const int SpawnScreen = 0x8640;
+        public const int GetRakClient = 0x1A40;
         public const int UpdatePlayers = 0x8BA0;
+        public const int ResetPlayerPool = 0x8C70;
+        public const int ResetVehiclePool = 0x8D10;
+        public const int ResetTextDrawPool = 0x8DB0;
+        public const int ResetObjectPool = 0x8E50;
+        public const int ResetGangZonePool = 0x8EF0;
+        public const int ResetPickupPool = 0x8F90;
+        public const int ResetMenuPool = 0x8FF0;
+        public const int ResetLabelPool = 0x9080;
+        public const int ResetActorPool = 0x9120;
+        public const int ResetMarkers = 0x9F50;
+        public const int ResetPools = 0xA190;
+        public const int ShutdownForRestart = 0xA1E0;
     }
 
     public static class CVehiclePool
@@ -52,6 +72,28 @@ public static class SampOffsets
         public const int DrawLast = 0x12880;
     }
 
+    public static class CObject
+    {
+        public const int Constructor = 0xA8880;
+        public const int GetDistance = 0xA7730;
+        public const int Stop = 0xA77A0;
+        public const int SetRotation = 0xA7810;
+        public const int SetAttachedToVehicle = 0xA7880;
+        public const int SetAttachedToObject = 0xA7910;
+        public const int AttachToVehicle = 0xA79B0;
+        public const int AttachToObject = 0xA7A30;
+        public const int Rotate = 0xA7B30;
+        public const int AttachedToMovingEntity = 0xA7C30;
+        public const int SetMaterial = 0xA7CA0;
+        public const int SetMaterialText = 0xA7E20;
+        public const int GetMaterialSize = 0xA83F0;
+        public const int ShutdownMaterialText = 0xA8640;
+        public const int Render = 0xA86D0;
+        public const int Process = 0xA8DC0;
+        public const int ConstructMaterialText = 0xA9650;
+        public const int Draw = 0xA9700;
+    }
+
     public static class CActorPool
     {
         public const int MaxActors = 1000;
@@ -65,6 +107,17 @@ public static class SampOffsets
         public const int Create = 0x18F0;
     }
 
+    public static class CActor
+    {
+        public const int Constructor = 0x9BBA0;
+        public const int Destroy = 0x9BCF0;
+        public const int PerformAnimation = 0x9BD50;
+        public const int SetRotation = 0x9BE60;
+        public const int GetHealth = 0x9BEA0;
+        public const int SetHealth = 0x9BEC0;
+        public const int SetInvulnerable = 0x9BFF0;
+    }
+
     public static class CPickupPool
     {
         public const int MaxPickups = 4096;
@@ -74,6 +127,8 @@ public static class SampOffsets
         public const int Timers = 0x8004;
         public const int Weapons = 0xC004;
         public const int Pickups = 0xF004;
+        public const int Constructor = 0x8130;
+        public const int Destructor = 0x130C0;
         public const int CreateWeapon = 0x12E30;
         public const int Create = 0x12F20;
         public const int Delete = 0x12FD0;
@@ -90,6 +145,8 @@ public static class SampOffsets
         public const int OccupancyArray = 0x0200;
         public const int CurrentMenu = 0x0400;
         public const int Cancelled = 0x0402;
+        public const int Constructor = 0x7AE0;
+        public const int Destructor = 0x7E50;
         public const int Create = 0x7B30;
         public const int Delete = 0x7C00;
         public const int Show = 0x7C50;
@@ -98,11 +155,26 @@ public static class SampOffsets
         public const int Process = 0x7E90;
     }
 
+    public static class CMenu
+    {
+        public const int Constructor = 0xA6CE0;
+        public const int AddItem = 0xA6D80;
+        public const int SetColumnTitle = 0xA6DB0;
+        public const int Hide = 0xA6DE0;
+        public const int GetItem = 0xA6E00;
+        public const int GetTitle = 0xA6E20;
+        public const int GetString = 0xA6E50;
+        public const int GetActiveRow = 0xA6E80;
+        public const int Show = 0xA6EB0;
+    }
+
     public static class CGangZonePool
     {
         public const int MaxGangZones = 1024;
         public const int ObjectArray = 0x0000;
         public const int OccupancyArray = 0x1000;
+        public const int Constructor = 0x2100;
+        public const int Destructor = 0x2130;
         public const int Create = 0x2160;
         public const int StartFlashing = 0x21E0;
         public const int StopFlashing = 0x2200;
@@ -115,8 +187,11 @@ public static class SampOffsets
         public const int MaxLabels = 2048;
         public const int ObjectArray = 0x0000;
         public const int OccupancyArray = 0xE800;
+        public const int Constructor = 0x1180;
+        public const int Destructor = 0x15D0;
         public const int Create = 0x11C0;
         public const int Delete = 0x12D0;
+        public const int Draw = 0x1340;
     }
 
     public static class CTextDrawPool
@@ -126,9 +201,19 @@ public static class SampOffsets
         public const int TotalTextDraws = MaxTextDraws + MaxLocalTextDraws;
         public const int OccupancyArray = 0x0000;
         public const int ObjectArray = 0x2400;
+        public const int Constructor = 0x1E050;
+        public const int Destructor = 0x1E180;
         public const int Delete = 0x1E0A0;
         public const int Draw = 0x1E0E0;
         public const int Create = 0x1E1C0;
+    }
+
+    public static class CTextDraw
+    {
+        public const int Constructor = 0xB2E50;
+        public const int Destructor = 0xB26C0;
+        public const int SetText = 0xB26D0;
+        public const int Draw = 0xB2BF0;
     }
 
     public static class CInput
@@ -154,6 +239,89 @@ public static class SampOffsets
         public const int GetColorAsArgb = 0x3DA0;
         public const int RequestSpawn = 0x3ED0;
         public const int Chat = 0x5820;
+    }
+
+    public static class CEntity
+    {
+        public const int GetMatrix = 0x9E400;
+        public const int SetMatrix = 0x9E4B0;
+        public const int UpdateRwFrame = 0x9E570;
+        public const int GetSpeed = 0x9E5D0;
+        public const int SetSpeed = 0x9E600;
+        public const int GetTurnSpeed = 0x9E720;
+        public const int SetTurnSpeed = 0x9E750;
+        public const int ApplyTurnSpeed = 0x9E780;
+        public const int SetModelIndex = 0x9E840;
+        public const int GetModelIndex = 0x9E920;
+        public const int Teleport = 0x9E930;
+        public const int GetDistanceToLocalPlayer = 0x9E9B0;
+        public const int GetDistanceToCamera = 0x9EA80;
+        public const int GetDistanceToLocalPlayerNoHeight = 0x9EAE0;
+        public const int GetDistanceToPoint = 0x9EBA0;
+        public const int DoesExist = 0x9ECC0;
+        public const int GetCollisionFlag = 0x9EF50;
+        public const int SetCollisionFlag = 0x9EF20;
+        public const int SetCollisionProcessed = 0x9EF70;
+        public const int GetEulerInverted = 0x9F1E0;
+    }
+
+    public static class CPed
+    {
+        public const int GetHealth = 0xAB4C0;
+        public const int SetHealth = 0xAB4E0;
+        public const int GetArmour = 0xAB500;
+        public const int SetArmour = 0xAB520;
+        public const int GetState = 0xAB5B0;
+        public const int SetState = 0xAB5C0;
+        public const int GetRotation = 0xAB600;
+        public const int ForceRotation = 0xAB680;
+        public const int SetRotation = 0xAB6D0;
+        public const int IsPassenger = 0xAB730;
+        public const int GetVehicle = 0xAB770;
+        public const int GetCurrentWeapon = 0xAB3C0;
+        public const int GetCurrentWeaponAmmo = 0xAC8C0;
+        public const int GetVehicleSeatIndex = 0xAB970;
+        public const int ClearWeapons = 0xAB780;
+        public const int EnableJetpack = 0xAC480;
+        public const int DisableJetpack = 0xAC4D0;
+        public const int HasJetpack = 0xAC530;
+        public const int GetAimZ = 0xAD060;
+        public const int SetAimZ = 0xAD0A0;
+        public const int HasAccessory = 0xAE5A0;
+        public const int DeleteAccessory = 0xAE5C0;
+        public const int GetAccessoryState = 0xAE620;
+        public const int GetAccessory = 0x13330;
+        public const int DeleteAllAccessories = 0xB0220;
+        public const int AddAccessory = 0xB0280;
+    }
+
+    public static class CRemotePlayer
+    {
+        public const int GetDistanceToLocalPlayer = 0x15BB0;
+        public const int SetColor = 0x15BE0;
+        public const int GetColorAsRgba = 0x15C00;
+        public const int GetColorAsArgb = 0x15C10;
+        public const int GetStatus = 0x15DB0;
+        public const int DoesExist = 0x1080;
+    }
+
+    public static class CVehicle
+    {
+        public const int HasDriver = 0xB6850;
+        public const int IsOccupied = 0xB68A0;
+        public const int SetInvulnerable = 0xB6900;
+        public const int SetLocked = 0xB69A0;
+        public const int GetHealth = 0xB6A10;
+        public const int SetHealth = 0xB6A30;
+        public const int SetColor = 0xB6A50;
+        public const int UpdateColor = 0xB6AA0;
+        public const int EnableSiren = 0xB6CB0;
+        public const int SirenEnabled = 0xB6CD0;
+        public const int GetTrailer = 0xB7400;
+        public const int DoesExist = 0xB78A0;
+        public const int SetLicensePlateText = 0xB78B0;
+        public const int SetRotation = 0xB78D0;
+        public const int EnableEngine = 0xB81D0;
     }
 
     public static class CPlayerPool
