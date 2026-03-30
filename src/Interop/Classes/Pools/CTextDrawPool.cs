@@ -30,6 +30,18 @@ public unsafe ref struct CTextDrawPool
         return GetObjectArray(instance)[textDrawId];
     }
 
+    public bool TryGet(ushort textDrawId, out CTextDraw* textDraw)
+    {
+        textDraw = null;
+        if (!DoesExist(textDrawId))
+        {
+            return false;
+        }
+
+        textDraw = Get(textDrawId);
+        return textDraw != null;
+    }
+
     public bool DoesExist(ushort textDrawId)
     {
         CTextDrawPool* instance = RequireInstance();

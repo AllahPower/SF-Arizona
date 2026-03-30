@@ -23,6 +23,12 @@ public sealed unsafe class SFLabels
         return true;
     }
 
+    public bool TryGetSnapshot(ushort labelId, out SFLabelSnapshot snapshot)
+    {
+        snapshot = default;
+        return TryGet(labelId, out SFLabel label) && label.TryGetSnapshot(out snapshot);
+    }
+
     public IEnumerable<ushort> EnumerateIds()
     {
         foreach (ushort labelId in CLabelPool.Instance.GetExistingIds())

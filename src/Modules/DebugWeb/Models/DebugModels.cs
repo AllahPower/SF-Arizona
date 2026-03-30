@@ -21,9 +21,17 @@ public record struct StatsResponse(
     int TotalInPkt, int TotalOutPkt,
     TopEntry[] TopRpc, TopEntry[] TopPkt);
 
-public record class ConfigDto(
+public record class DebugServerSettingsDto(
     bool Capture, bool Incoming, bool Outgoing,
     bool Rpc, bool Packets);
+
+public record struct PacketIdFilterDto(string Key, string Mode);
+
+public record class PacketViewStateDto(
+    string SearchText,
+    bool IsPaused,
+    bool AutoScroll,
+    PacketIdFilterDto[] IdFilters);
 
 public record struct WsMessage<T>(string Type, T Data);
 
@@ -32,6 +40,11 @@ public record struct Vec3Dto(float X, float Y, float Z);
 public record struct WorldPoolUsageDto(string Key, string Name, int Count, int Max);
 
 public record struct WorldOverviewDto(WorldPoolUsageDto[] Pools);
+
+public record class WorldViewStateDto(
+    string Section,
+    string? Search,
+    bool StreamZone);
 
 public record struct WorldLocalPlayerDto(
     bool IsConnected,
@@ -53,6 +66,7 @@ public record struct WorldPlayerRowDto(
     ushort? VehicleId,
     byte State,
     Vec3Dto Position,
+    bool IsStreamed,
     bool IsLocal,
     bool IsNpc);
 
@@ -111,6 +125,7 @@ public record struct WorldGangZoneRowDto(
     float MaxX,
     float MaxY,
     uint Color,
+    uint AltColor,
     bool IsFlashing);
 
 public record struct WorldActorRowDto(
@@ -138,9 +153,12 @@ public record struct WorldSnapshotDto(
 [JsonSerializable(typeof(TrafficEntry[]))]
 [JsonSerializable(typeof(TrafficEntry))]
 [JsonSerializable(typeof(StatsResponse))]
-[JsonSerializable(typeof(ConfigDto))]
+[JsonSerializable(typeof(DebugServerSettingsDto))]
+[JsonSerializable(typeof(PacketViewStateDto))]
+[JsonSerializable(typeof(PacketIdFilterDto[]))]
 [JsonSerializable(typeof(TopEntry[]))]
 [JsonSerializable(typeof(WorldSnapshotDto))]
+[JsonSerializable(typeof(WorldViewStateDto))]
 [JsonSerializable(typeof(WorldPoolUsageDto[]))]
 [JsonSerializable(typeof(WorldPlayerRowDto[]))]
 [JsonSerializable(typeof(WorldVehicleRowDto[]))]
@@ -152,9 +170,11 @@ public record struct WorldSnapshotDto(
 [JsonSerializable(typeof(WorldActorRowDto[]))]
 [JsonSerializable(typeof(WsMessage<TrafficEntry>))]
 [JsonSerializable(typeof(WsMessage<TrafficEntry[]>))]
-[JsonSerializable(typeof(WsMessage<ConfigDto>))]
+[JsonSerializable(typeof(WsMessage<DebugServerSettingsDto>))]
+[JsonSerializable(typeof(WsMessage<PacketViewStateDto>))]
 [JsonSerializable(typeof(WsMessage<StatsResponse>))]
 [JsonSerializable(typeof(WsMessage<WorldSnapshotDto>))]
+[JsonSerializable(typeof(WsMessage<WorldViewStateDto>))]
 [JsonSerializable(typeof(WsMessage<object?>))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 internal partial class DebugJsonContext : JsonSerializerContext;

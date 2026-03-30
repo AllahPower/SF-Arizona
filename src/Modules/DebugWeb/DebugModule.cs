@@ -23,7 +23,7 @@ public partial class DebugModule : SFModuleBase
     private const int BroadcastIntervalMs = 50;
 
     private readonly ConcurrentQueue<TrafficEntry> _buffer = new();
-    private readonly ConcurrentDictionary<string, ClientState> _clients = new();
+    private readonly ConcurrentDictionary<string, DebugClientSession> _clients = new();
     private readonly Channel<TrafficEntry> _broadcastChannel = Channel.CreateBounded<TrafficEntry>(
         new BoundedChannelOptions(8192) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true });
     private volatile bool _captureEnabled;
@@ -34,11 +34,31 @@ public partial class DebugModule : SFModuleBase
     private int _totalInRpc, _totalOutRpc, _totalInPkt, _totalOutPkt;
     private long _entrySeq;
 
-    private sealed class ClientState
+    private sealed record PacketViewState(
+        string SearchText,
+        bool IsPaused,
+        bool AutoScroll,
+        IReadOnlyDictionary<string, string> IdFilters)
     {
-        public readonly WebSocket Socket;
-        public readonly SemaphoreSlim SendLock = new(1, 1);
-        public ClientState(WebSocket socket) => Socket = socket;
+        public static PacketViewState Default => new("", false, true, new Dictionary<string, string>());
+    }
+
+    private sealed record WorldViewState(
+        string Section,
+        string? SearchText,
+        bool StreamZoneOnly)
+    {
+        public static WorldViewState Default => new("overview", null, false);
+    }
+
+    private sealed class DebugClientSession
+    {
+        public WebSocket Socket { get; }
+        public SemaphoreSlim SendLock { get; } = new(1, 1);
+        public volatile PacketViewState PacketView = PacketViewState.Default;
+        public volatile WorldViewState WorldView = WorldViewState.Default;
+
+        public DebugClientSession(WebSocket socket) => Socket = socket;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -74,7 +94,7 @@ public partial class DebugModule : SFModuleBase
             await app.StartAsync(cancellationToken);
 
             _ = Task.Run(() => BroadcastLoopAsync(cancellationToken), cancellationToken);
-            _ = Task.Run(() => WorldBroadcastLoopAsync(cancellationToken), cancellationToken);
+            _ = Task.Run(() => BroadcastWorldUpdatesLoopAsync(cancellationToken), cancellationToken);
 
             try { await Task.Delay(Timeout.Infinite, cancellationToken); }
             catch (OperationCanceledException) { }
@@ -196,19 +216,41 @@ public partial class DebugModule : SFModuleBase
                 continue;
             }
 
-            if (!client.SendLock.Wait(0)) continue;
-            try
+            await SendRawAsync(client, json, id);
+        }
+    }
+
+    private async Task SendRawAsync(DebugClientSession client, byte[] json, string? clientId = null)
+    {
+        if (!client.SendLock.Wait(0))
+        {
+            return;
+        }
+
+        try
+        {
+            await client.Socket.SendAsync(json, WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+        catch
+        {
+            if (clientId is not null)
             {
-                await client.Socket.SendAsync(json, WebSocketMessageType.Text, true, CancellationToken.None);
+                _clients.TryRemove(clientId, out _);
+                return;
             }
-            catch
+
+            foreach (var pair in _clients)
             {
-                _clients.TryRemove(id, out _);
+                if (ReferenceEquals(pair.Value, client))
+                {
+                    _clients.TryRemove(pair.Key, out _);
+                    break;
+                }
             }
-            finally
-            {
-                client.SendLock.Release();
-            }
+        }
+        finally
+        {
+            client.SendLock.Release();
         }
     }
 

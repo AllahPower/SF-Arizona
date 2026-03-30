@@ -48,13 +48,13 @@ public partial class DebugModule
 
         app.MapGet("/api/config", () =>
         {
-            var cfg = new ConfigDto(_captureEnabled, _captureIncoming, _captureOutgoing, _captureRpc, _capturePackets);
-            return Results.Json(cfg, DebugJsonContext.Default.ConfigDto);
+            var cfg = new DebugServerSettingsDto(_captureEnabled, _captureIncoming, _captureOutgoing, _captureRpc, _capturePackets);
+            return Results.Json(cfg, DebugJsonContext.Default.DebugServerSettingsDto);
         });
 
         app.MapPost("/api/config", async (HttpContext ctx) =>
         {
-            var cfg = await JsonSerializer.DeserializeAsync(ctx.Request.Body, DebugJsonContext.Default.ConfigDto);
+            var cfg = await JsonSerializer.DeserializeAsync(ctx.Request.Body, DebugJsonContext.Default.DebugServerSettingsDto);
             if (cfg is null) return Results.BadRequest();
             _captureEnabled = cfg.Capture;
             _captureIncoming = cfg.Incoming;
@@ -62,8 +62,8 @@ public partial class DebugModule
             _captureRpc = cfg.Rpc;
             _capturePackets = cfg.Packets;
             UpdateDetails();
-            BroadcastJson(new WsMessage<ConfigDto>("config", cfg), DebugJsonContext.Default.WsMessageConfigDto);
-            return Results.Json(cfg, DebugJsonContext.Default.ConfigDto);
+            BroadcastJson(new WsMessage<DebugServerSettingsDto>("server-settings", cfg), DebugJsonContext.Default.WsMessageDebugServerSettingsDto);
+            return Results.Json(cfg, DebugJsonContext.Default.DebugServerSettingsDto);
         });
 
         app.MapPost("/api/clear", () =>
@@ -88,7 +88,7 @@ public partial class DebugModule
     {
         var ws = await ctx.WebSockets.AcceptWebSocketAsync();
         string id = Guid.NewGuid().ToString("N");
-        var client = new ClientState(ws);
+        var client = new DebugClientSession(ws);
         _clients[id] = client;
 
         try
@@ -101,24 +101,30 @@ public partial class DebugModule
                 await ws.SendAsync(json, WebSocketMessageType.Text, true, CancellationToken.None);
             }
 
-            var cfgMsg = new WsMessage<ConfigDto>("config", new ConfigDto(_captureEnabled, _captureIncoming, _captureOutgoing, _captureRpc, _capturePackets));
-            var cfgJson = JsonSerializer.SerializeToUtf8Bytes(cfgMsg, DebugJsonContext.Default.WsMessageConfigDto);
+            var cfgMsg = new WsMessage<DebugServerSettingsDto>("server-settings", new DebugServerSettingsDto(_captureEnabled, _captureIncoming, _captureOutgoing, _captureRpc, _capturePackets));
+            var cfgJson = JsonSerializer.SerializeToUtf8Bytes(cfgMsg, DebugJsonContext.Default.WsMessageDebugServerSettingsDto);
             await ws.SendAsync(cfgJson, WebSocketMessageType.Text, true, CancellationToken.None);
 
             var statsMsg = new WsMessage<StatsResponse>("stats", BuildStats());
             var statsJson = JsonSerializer.SerializeToUtf8Bytes(statsMsg, DebugJsonContext.Default.WsMessageStatsResponse);
             await ws.SendAsync(statsJson, WebSocketMessageType.Text, true, CancellationToken.None);
 
-            var worldMsg = new WsMessage<WorldSnapshotDto>("world", BuildWorldSnapshot());
+            var worldSnapshot = await CaptureWorldSnapshotOnMainThreadAsync(client.WorldView);
+            var worldMsg = new WsMessage<WorldSnapshotDto>("world", worldSnapshot);
             var worldJson = JsonSerializer.SerializeToUtf8Bytes(worldMsg, DebugJsonContext.Default.WsMessageWorldSnapshotDto);
             await ws.SendAsync(worldJson, WebSocketMessageType.Text, true, CancellationToken.None);
 
-            var buf = new byte[256];
+            var buf = new byte[2048];
             while (ws.State == WebSocketState.Open)
             {
                 var result = await ws.ReceiveAsync(buf, CancellationToken.None);
                 if (result.MessageType == WebSocketMessageType.Close) break;
-            }
+                if (result.MessageType == WebSocketMessageType.Text)
+                {
+                        ApplyClientSessionMessage(client, buf.AsSpan(0, result.Count));
+                        await SendWorldSnapshotAsync(client);
+                    }
+                }
         }
         finally
         {
@@ -126,6 +132,76 @@ public partial class DebugModule
             if (ws.State is WebSocketState.Open or WebSocketState.CloseReceived)
                 await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
         }
+    }
+
+    private static void ApplyClientSessionMessage(DebugClientSession client, ReadOnlySpan<byte> payload)
+    {
+        using JsonDocument doc = JsonDocument.Parse(payload.ToArray());
+        JsonElement root = doc.RootElement;
+        if (!root.TryGetProperty("type", out JsonElement typeNode))
+        {
+            return;
+        }
+
+        string? messageType = typeNode.GetString();
+        if (!root.TryGetProperty("data", out JsonElement dataNode) || dataNode.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        switch (messageType)
+        {
+            case "world-view:update":
+                client.WorldView = ParseWorldViewState(dataNode);
+                break;
+            case "packets-view:update":
+                client.PacketView = ParsePacketViewState(dataNode);
+                break;
+        }
+    }
+
+    private static WorldViewState ParseWorldViewState(JsonElement dataNode)
+    {
+        string section = NormalizeWorldSectionKey(dataNode.TryGetProperty("section", out JsonElement sectionNode)
+            ? sectionNode.GetString()
+            : dataNode.TryGetProperty("pool", out JsonElement poolNode) ? poolNode.GetString() : null);
+        string? searchText = NormalizeWorldQueryText(dataNode.TryGetProperty("search", out JsonElement searchNode) ? searchNode.GetString() : null);
+        bool streamZoneOnly = dataNode.TryGetProperty("streamZone", out JsonElement streamNode) && streamNode.ValueKind == JsonValueKind.True;
+        return new WorldViewState(section, searchText, streamZoneOnly);
+    }
+
+    private static PacketViewState ParsePacketViewState(JsonElement dataNode)
+    {
+        string searchText = dataNode.TryGetProperty("search", out JsonElement searchNode) ? searchNode.GetString() ?? string.Empty : string.Empty;
+        bool isPaused = dataNode.TryGetProperty("paused", out JsonElement pausedNode) && pausedNode.ValueKind == JsonValueKind.True;
+        bool autoScroll = !dataNode.TryGetProperty("autoScroll", out JsonElement autoScrollNode) || autoScrollNode.ValueKind == JsonValueKind.True;
+        Dictionary<string, string> filters = [];
+        if (dataNode.TryGetProperty("idFilters", out JsonElement filtersNode) && filtersNode.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement filterNode in filtersNode.EnumerateArray())
+            {
+                if (!filterNode.TryGetProperty("key", out JsonElement keyNode) || keyNode.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                if (!filterNode.TryGetProperty("mode", out JsonElement modeNode) || modeNode.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                string? key = keyNode.GetString();
+                string? mode = modeNode.GetString();
+                if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(mode))
+                {
+                    continue;
+                }
+
+                filters[key] = mode;
+            }
+        }
+
+        return new PacketViewState(searchText, isPaused, autoScroll, filters);
     }
 
     private StatsResponse BuildStats()

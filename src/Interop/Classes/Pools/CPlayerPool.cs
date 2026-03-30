@@ -63,8 +63,20 @@ public unsafe ref struct CPlayerPool
 
     public bool TryGetPlayer(ushort playerId, out CRemotePlayer* player)
     {
-        player = GetPlayer(playerId);
+        CPlayerPool* instance = RequireInstance();
+        player = null;
+        if (!IsValidPlayerId(playerId) || _isConnected(instance, playerId) == 0)
+        {
+            return false;
+        }
+
+        player = _getPlayer(instance, playerId);
         return player != null;
+    }
+
+    public bool TryGetConnectedPlayer(ushort playerId, out CRemotePlayer* player)
+    {
+        return TryGetPlayer(playerId, out player);
     }
 
     public CPlayerInfo* GetPlayerInfo(ushort playerId)

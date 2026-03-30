@@ -15,7 +15,7 @@ public sealed unsafe class SFRemotePlayer : SFPlayer
     public override bool IsLocal => false;
     public override bool IsConnected => CPlayerPool.Instance.IsConnected(_id);
 
-    public CRemotePlayer* Native => CPlayerPool.Instance.GetPlayer(_id);
+    public CRemotePlayer* Native => CPlayerPool.Instance.TryGetConnectedPlayer(_id, out CRemotePlayer* player) ? player : null;
     public bool Exists => Native is not null && Native->DoesExist();
     public float DistanceToLocalPlayer => Native is null ? 0f : Native->GetDistanceToLocalPlayer();
     public uint ColorRgba => Native is null ? 0u : Native->GetColorAsRgba();
@@ -52,7 +52,12 @@ public sealed unsafe class SFRemotePlayer : SFPlayer
         get
         {
             CRemotePlayer* native = Native;
-            return native is null || native->Ped is null ? null : new SFPed(native->Ped, this);
+            if (native is null || !native->DoesExist() || native->Ped is null || !SFPed.TryCreate(native->Ped, this, out SFPed ped))
+            {
+                return null;
+            }
+
+            return ped;
         }
     }
 
@@ -61,7 +66,7 @@ public sealed unsafe class SFRemotePlayer : SFPlayer
         get
         {
             CRemotePlayer* native = Native;
-            if (native is null || native->Vehicle is null)
+            if (native is null || native->Vehicle is null || !native->Vehicle->DoesExist())
             {
                 return null;
             }

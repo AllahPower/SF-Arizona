@@ -26,7 +26,7 @@ public sealed unsafe class SFVehicle : SFEntity
     public bool EngineState => _native is not null && _native->EngineState;
     public bool HasDriver => _native is not null && _native->HasDriver();
     public bool IsOccupied => _native is not null && _native->IsOccupied();
-    public bool Exists => _native is not null && _native->DoesExist();
+    public new bool Exists => _native is not null && _native->DoesExist();
     public bool SirenEnabled => _native is not null && _native->SirenEnabled();
     public byte PrimaryColor => _native is null ? byte.MaxValue : _native->PrimaryColor;
     public byte SecondaryColor => _native is null ? byte.MaxValue : _native->SecondaryColor;

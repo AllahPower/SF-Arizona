@@ -1,4 +1,17 @@
+using System.Numerics;
+
 namespace SFSharp;
+
+public readonly record struct SFPedSnapshot(
+    Vector3 Position,
+    float Health,
+    float Armour,
+    byte State,
+    float Rotation,
+    byte CurrentWeapon,
+    ushort CurrentWeaponAmmo,
+    bool HasJetpack,
+    float AimZ);
 
 public sealed unsafe class SFPed : SFEntity
 {
@@ -20,21 +33,117 @@ public sealed unsafe class SFPed : SFEntity
     public CPed* Native => _native;
     public nint GamePedPointer => _native is null ? 0 : _native->GamePed;
     public byte PlayerNumber => _native is null ? byte.MaxValue : _native->PlayerNumber;
-    public float Health => _native is null ? 0f : _native->GetHealth();
-    public float Armour => _native is null ? 0f : _native->GetArmour();
-    public byte State => _native is null ? byte.MaxValue : _native->GetState();
-    public float Rotation => _native is null ? 0f : _native->GetRotation();
-    public bool IsPassenger => _native is not null && _native->IsPassenger();
+    public bool ExistsInGame => TryValidateNativePed(_native, out _);
+    public new Vector3 Position => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.Position : Vector3.Zero;
+    public float Health => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.Health : 0f;
+    public float Armour => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.Armour : 0f;
+    public byte State => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.State : byte.MaxValue;
+    public float Rotation => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.Rotation : 0f;
+    public bool IsPassenger => TryGetValidatedNative(out CPed* native) && native->IsPassenger();
     public int VehicleSeatIndex => _native is null ? -1 : _native->GetVehicleSeatIndex();
-    public byte CurrentWeapon => _native is null ? byte.MaxValue : _native->GetCurrentWeapon();
-    public ushort CurrentWeaponAmmo => _native is null ? (ushort)0 : _native->GetCurrentWeaponAmmo();
-    public bool HasJetpack => _native is not null && _native->HasJetpack();
-    public float AimZ => _native is null ? 0f : _native->GetAimZ();
-    public bool IsUsingCellphone => _native is not null && _native->IsUsingCellphone;
-    public bool HasAccessory => _native is not null && _native->HasAccessory();
-    public SFVehicle? Vehicle => _native is null || _native->GetVehicle() is null ? null : new SFVehicle(_native->GetVehicle());
+    public byte CurrentWeapon => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.CurrentWeapon : byte.MaxValue;
+    public ushort CurrentWeaponAmmo => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.CurrentWeaponAmmo : (ushort)0;
+    public bool HasJetpack => TryGetSnapshot(out SFPedSnapshot snapshot) && snapshot.HasJetpack;
+    public float AimZ => TryGetSnapshot(out SFPedSnapshot snapshot) ? snapshot.AimZ : 0f;
+    public bool IsUsingCellphone => TryGetValidatedNative(out CPed* native) && native->IsUsingCellphone;
+    public bool HasAccessory => TryGetValidatedNative(out CPed* native) && native->HasAccessory();
+    public Vector3 GetBonePosition(SFPedBone bone)
+    {
+        return TryGetBonePosition(bone, out Vector3 position) ? position : Vector3.Zero;
+    }
+
+    public bool TryGetBonePosition(SFPedBone bone, out Vector3 position)
+    {
+        position = default;
+        return TryGetBonePosition((int)bone, out position);
+    }
+
+    public bool TryGetBonePosition(int boneId, out Vector3 position)
+    {
+        position = default;
+        if (!TryGetValidatedNative(out CPed* native))
+        {
+            return false;
+        }
+
+        position = native->GetBonePosition(boneId);
+        return true;
+    }
+
+    public SFVehicle? Vehicle
+    {
+        get
+        {
+            if (!TryGetValidatedNative(out CPed* native))
+            {
+                return null;
+            }
+
+            CVehicle* vehicle = native->GetVehicle();
+            return vehicle is null || !NativeMemoryValidator.IsReadable((nint)vehicle, (nuint)sizeof(CVehicle)) || !vehicle->DoesExist()
+                ? null
+                : new SFVehicle(vehicle);
+        }
+    }
 
     protected override CEntity* NativeEntity => (CEntity*)_native;
+
+    internal static bool TryCreate(CPed* native, SFPlayer? player, out SFPed ped)
+    {
+        if (!TryValidateNativePed(native, out _))
+        {
+            ped = null!;
+            return false;
+        }
+
+        ped = new SFPed(native, player);
+        return true;
+    }
+
+    public bool TryGetSnapshot(out SFPedSnapshot snapshot)
+    {
+        snapshot = default;
+        if (!TryGetValidatedNative(out CPed* native))
+        {
+            return false;
+        }
+
+        CEntity* entity = (CEntity*)native;
+        snapshot = new SFPedSnapshot(
+            Position: entity->GetPosition(),
+            Health: native->GetHealth(),
+            Armour: native->GetArmour(),
+            State: native->GetState(),
+            Rotation: native->GetRotation(),
+            CurrentWeapon: native->GetCurrentWeapon(),
+            CurrentWeaponAmmo: native->GetCurrentWeaponAmmo(),
+            HasJetpack: native->HasJetpack(),
+            AimZ: native->GetAimZ());
+        return true;
+    }
+
+    private bool TryGetValidatedNative(out CPed* native)
+    {
+        native = _native;
+        return TryValidateNativePed(native, out _);
+    }
+
+    private static bool TryValidateNativePed(CPed* native, out CEntity* entity)
+    {
+        entity = (CEntity*)native;
+        if (native is null || !NativeMemoryValidator.IsReadable((nint)native, (nuint)sizeof(CPed)))
+        {
+            return false;
+        }
+
+        nint gameEntity = entity->GameEntity;
+        if (gameEntity == 0 || !NativeMemoryValidator.IsReadable(gameEntity, (nuint)sizeof(nint) * 4))
+        {
+            return false;
+        }
+
+        return entity->DoesExist();
+    }
 
     public void SetHealth(float value)
     {

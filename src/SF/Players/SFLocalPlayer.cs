@@ -19,7 +19,7 @@ public sealed unsafe class SFLocalPlayer : SFPlayer
                 return null;
 
             CPed* ped = localPlayer->GetPed();
-            return ped is null ? null : new SFPed(ped, this);
+            return ped is not null && SFPed.TryCreate(ped, this, out SFPed wrappedPed) ? wrappedPed : null;
         }
     }
 

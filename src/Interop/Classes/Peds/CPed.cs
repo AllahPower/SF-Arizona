@@ -13,6 +13,7 @@ using unsafe GetAccessoryDelegate = delegate* unmanaged[Thiscall]<CPed*, int, ni
 using unsafe GetAccessoryStateDelegate = delegate* unmanaged[Thiscall]<CPed*, int, int>;
 using unsafe GetAimZDelegate = delegate* unmanaged[Thiscall]<CPed*, float>;
 using unsafe GetArmourDelegate = delegate* unmanaged[Thiscall]<CPed*, float>;
+using unsafe GetBonePositionDelegate = delegate* unmanaged[Thiscall]<CPed*, uint, System.Numerics.Vector3*, void>;
 using unsafe GetCurrentWeaponAmmoDelegate = delegate* unmanaged[Thiscall]<CPed*, ushort>;
 using unsafe GetCurrentWeaponDelegate = delegate* unmanaged[Thiscall]<CPed*, byte>;
 using unsafe GetHealthDelegate = delegate* unmanaged[Thiscall]<CPed*, float>;
@@ -71,6 +72,7 @@ public unsafe struct CPed
     private static readonly DisableJetpackDelegate _disableJetpack = (DisableJetpackDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPed.DisableJetpack);
     private static readonly HasJetpackDelegate _hasJetpack = (HasJetpackDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPed.HasJetpack);
     private static readonly GetAimZDelegate _getAimZ = (GetAimZDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPed.GetAimZ);
+    private static readonly GetBonePositionDelegate _getBonePosition = (GetBonePositionDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPed.GetBonePosition);
     private static readonly SetAimZDelegate _setAimZ = (SetAimZDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPed.SetAimZ);
     private static readonly HasAccessoryDelegate _hasAccessory = (HasAccessoryDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPed.HasAccessory);
     private static readonly DeleteAccessoryDelegate _deleteAccessory = (DeleteAccessoryDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPed.DeleteAccessory);
@@ -103,6 +105,19 @@ public unsafe struct CPed
     public void DisableJetpack() => _disableJetpack((CPed*)Unsafe.AsPointer(ref this));
     public bool HasJetpack() => _hasJetpack((CPed*)Unsafe.AsPointer(ref this)) != 0;
     public float GetAimZ() => _getAimZ((CPed*)Unsafe.AsPointer(ref this));
+    public Vector3 GetBonePosition(uint boneId)
+    {
+        Vector3 position = default;
+        _getBonePosition((CPed*)Unsafe.AsPointer(ref this), boneId, &position);
+        return position;
+    }
+
+    public Vector3 GetBonePosition(int boneId)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(boneId);
+        return GetBonePosition((uint)boneId);
+    }
+
     public void SetAimZ(float value) => _setAimZ((CPed*)Unsafe.AsPointer(ref this), value);
     public bool HasAccessory() => _hasAccessory((CPed*)Unsafe.AsPointer(ref this)) != 0;
     public bool GetAccessoryState(int slot) => _getAccessoryState((CPed*)Unsafe.AsPointer(ref this), slot) != 0;

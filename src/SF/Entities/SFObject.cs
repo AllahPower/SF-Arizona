@@ -14,7 +14,7 @@ public sealed unsafe class SFObject : SFEntity
 
     public ushort Id { get; }
     public CObject* Native => _native;
-    public bool Exists => _native != null && CObjectPool.Instance.IsAllocated(Id);
+    public new bool Exists => _native != null && CObjectPool.Instance.IsAllocated(Id);
     public int Model => _native is null ? 0 : _native->Model;
     public bool DontCollideWithCamera => _native is not null && _native->DontCollideWithCamera;
     public float DrawDistance => _native is null ? 0f : _native->DrawDistance;

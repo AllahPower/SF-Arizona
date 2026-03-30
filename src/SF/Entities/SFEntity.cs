@@ -10,6 +10,7 @@ public abstract unsafe class SFEntity : ISFEntity
     public nint GamePointer => NativeEntity is null ? 0 : NativeEntity->GameEntity;
     public int Handle => NativeEntity is null ? 0 : NativeEntity->Handle;
     public bool IsAvailable => NativeEntity is not null && NativeEntity->IsAvailable;
+    public bool Exists => NativeEntity is not null && NativeEntity->DoesExist();
     public Vector3 Position => NativeEntity is null ? Vector3.Zero : NativeEntity->GetPosition();
     public Vector3 Speed => NativeEntity is null ? Vector3.Zero : NativeEntity->GetSpeed();
     public Vector3 TurnSpeed => NativeEntity is null ? Vector3.Zero : NativeEntity->GetTurnSpeed();

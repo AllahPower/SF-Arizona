@@ -30,6 +30,19 @@ public unsafe ref struct CLabelPool
         return ref GetObjectArray(instance)[labelId];
     }
 
+    public bool TryGet(ushort labelId, out TextLabel label)
+    {
+        CLabelPool* instance = RequireInstance();
+        if (!IsValidId(labelId) || GetOccupancyArray(instance)[labelId] == 0)
+        {
+            label = default;
+            return false;
+        }
+
+        label = GetObjectArray(instance)[labelId];
+        return true;
+    }
+
     public bool DoesExist(ushort labelId)
     {
         CLabelPool* instance = RequireInstance();

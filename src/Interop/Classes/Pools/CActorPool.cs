@@ -40,6 +40,12 @@ public unsafe ref struct CActorPool
 
     public bool TryGet(ushort actorId, out CActor* actor)
     {
+        actor = null;
+        if (!DoesExist(actorId))
+        {
+            return false;
+        }
+
         actor = Get(actorId);
         return actor != null;
     }

@@ -286,6 +286,7 @@ public static class SampOffsets
         public const int DisableJetpack = 0xAC4D0;
         public const int HasJetpack = 0xAC530;
         public const int GetAimZ = 0xAD060;
+        public const int GetBonePosition = 0xADC00;
         public const int SetAimZ = 0xAD0A0;
         public const int HasAccessory = 0xAE5A0;
         public const int DeleteAccessory = 0xAE5C0;

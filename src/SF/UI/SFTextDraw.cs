@@ -62,4 +62,24 @@ public sealed unsafe class SFTextDraw
             _native->Draw();
         }
     }
+
+    public bool TryGetSnapshot(out SFTextDrawSnapshot snapshot)
+    {
+        if (!CTextDrawPool.Instance.TryGet(Id, out CTextDraw* textDraw))
+        {
+            snapshot = default;
+            return false;
+        }
+
+        snapshot = new SFTextDrawSnapshot(
+            textDraw->GetText(),
+            textDraw->GetString(),
+            textDraw->Data);
+        return true;
+    }
 }
+
+public readonly record struct SFTextDrawSnapshot(
+    string? Text,
+    string? String,
+    CTextDrawData Data);

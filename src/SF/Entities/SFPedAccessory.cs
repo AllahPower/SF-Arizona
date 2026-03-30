@@ -11,4 +11,7 @@ public readonly record struct SFPedAccessory(
     Vector3 Scale,
     uint MaterialColor1,
     uint MaterialColor2,
-    nint ObjectPointer);
+    nint ObjectPointer)
+{
+    public SFPedBone? Bone => Enum.IsDefined(typeof(SFPedBone), BoneId) ? (SFPedBone)BoneId : null;
+}

@@ -11,7 +11,7 @@ public sealed unsafe class SFActor : SFEntity
     }
 
     public ushort Id { get; }
-    public bool Exists => _native != null && CActorPool.Instance.DoesExist(Id);
+    public new bool Exists => _native != null && CActorPool.Instance.DoesExist(Id);
     public nint GamePedPointer => _native is null ? 0 : _native->GamePed;
     public int Marker => _native is null ? 0 : _native->Marker;
     public int Arrow => _native is null ? 0 : _native->Arrow;

@@ -11,8 +11,7 @@ public sealed unsafe class SFTextDraws
 
     public bool TryGet(ushort textDrawId, out SFTextDraw textDraw)
     {
-        CTextDraw* nativeTextDraw = CTextDrawPool.Instance.Get(textDrawId);
-        if (nativeTextDraw == null || !CTextDrawPool.Instance.DoesExist(textDrawId))
+        if (!CTextDrawPool.Instance.TryGet(textDrawId, out CTextDraw* nativeTextDraw))
         {
             textDraw = null!;
             return false;
@@ -20,6 +19,12 @@ public sealed unsafe class SFTextDraws
 
         textDraw = new SFTextDraw(textDrawId, nativeTextDraw);
         return true;
+    }
+
+    public bool TryGetSnapshot(ushort textDrawId, out SFTextDrawSnapshot snapshot)
+    {
+        snapshot = default;
+        return TryGet(textDrawId, out SFTextDraw textDraw) && textDraw.TryGetSnapshot(out snapshot);
     }
 
     public IEnumerable<ushort> EnumerateIds()
