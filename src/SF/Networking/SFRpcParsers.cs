@@ -21,7 +21,6 @@ public sealed class SFRpcParsers
     }
 
     public IDisposable BindIncoming<TRpc>(Action<TRpc> handler, CancellationToken token = default)
-        where TRpc : class, IParsedIncomingRpc
     {
         IReadOnlyList<RpcParserRegistry.IncomingRpcRoute> routes = Registry.GetIncomingRoutes<TRpc>();
         if (routes.Count == 0)
@@ -35,7 +34,7 @@ public sealed class SFRpcParsers
             IIncomingRpcParser parser = (IIncomingRpcParser)route.Parser;
             group.Add(SF.Rpc.Subscribe(route.ERpcId, args =>
             {
-                if (parser.TryParse(args, out RpcParseResult result) && result.Rpc is TRpc rpc)
+                if (parser.TryParse(args, out RpcParseResult result) && TryExtractIncoming(result, out TRpc rpc))
                 {
                     handler(rpc);
                 }
@@ -47,7 +46,6 @@ public sealed class SFRpcParsers
     }
 
     public IDisposable BindOutgoing<TRpc>(Action<TRpc> handler, CancellationToken token = default)
-        where TRpc : class, IParsedOutgoingRpc
     {
         IReadOnlyList<RpcParserRegistry.OutgoingRpcRoute> routes = Registry.GetOutgoingRoutes<TRpc>();
         if (routes.Count == 0)
@@ -61,7 +59,7 @@ public sealed class SFRpcParsers
             IOutgoingRpcParser parser = (IOutgoingRpcParser)route.Parser;
             group.Add(SF.Rpc.SubscribeOutgoing(route.ERpcId, args =>
             {
-                if (parser.TryParse(args, out RpcParseResult result) && result.Rpc is TRpc rpc)
+                if (parser.TryParse(args, out RpcParseResult result) && TryExtractOutgoing(result, out TRpc rpc))
                 {
                     handler(rpc);
                 }
@@ -73,14 +71,13 @@ public sealed class SFRpcParsers
     }
 
     public async IAsyncEnumerable<TRpc> StreamIncoming<TRpc>([EnumeratorCancellation] CancellationToken token = default)
-        where TRpc : class, IParsedIncomingRpc
     {
         ConcurrentQueue<TRpc> queue = new();
         using IDisposable binding = BindIncoming<TRpc>(rpc => queue.Enqueue(rpc), token);
 
         while (!token.IsCancellationRequested)
         {
-            while (queue.TryDequeue(out TRpc? rpc))
+            while (queue.TryDequeue(out var rpc))
             {
                 yield return rpc;
             }
@@ -90,14 +87,13 @@ public sealed class SFRpcParsers
     }
 
     public async IAsyncEnumerable<TRpc> StreamOutgoing<TRpc>([EnumeratorCancellation] CancellationToken token = default)
-        where TRpc : class, IParsedOutgoingRpc
     {
         ConcurrentQueue<TRpc> queue = new();
         using IDisposable binding = BindOutgoing<TRpc>(rpc => queue.Enqueue(rpc), token);
 
         while (!token.IsCancellationRequested)
         {
-            while (queue.TryDequeue(out TRpc? rpc))
+            while (queue.TryDequeue(out var rpc))
             {
                 yield return rpc;
             }
@@ -141,5 +137,41 @@ public sealed class SFRpcParsers
 
             _items.Clear();
         }
+    }
+
+    private static bool TryExtractIncoming<TRpc>(RpcParseResult result, out TRpc rpc)
+    {
+        if (result.Rpc is TRpc direct)
+        {
+            rpc = direct;
+            return true;
+        }
+
+        if (result.Rpc is IncomingRpc<TRpc> wrapped)
+        {
+            rpc = wrapped.Payload;
+            return true;
+        }
+
+        rpc = default!;
+        return false;
+    }
+
+    private static bool TryExtractOutgoing<TRpc>(RpcParseResult result, out TRpc rpc)
+    {
+        if (result.Rpc is TRpc direct)
+        {
+            rpc = direct;
+            return true;
+        }
+
+        if (result.Rpc is OutgoingRpc<TRpc> wrapped)
+        {
+            rpc = wrapped.Payload;
+            return true;
+        }
+
+        rpc = default!;
+        return false;
     }
 }

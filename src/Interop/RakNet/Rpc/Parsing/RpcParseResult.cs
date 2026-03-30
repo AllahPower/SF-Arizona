@@ -9,7 +9,7 @@ public readonly record struct RpcParseResult(
     PacketParseFailureReason FailureReason,
     string? Error = null)
 {
-    public bool TryGet<TRpc>(out TRpc rpc) where TRpc : class, IParsedRpc
+    public bool TryGet<TRpc>(out TRpc rpc) where TRpc : IParsedRpc
     {
         if (Success && Rpc is TRpc typed)
         {

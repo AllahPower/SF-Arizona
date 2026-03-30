@@ -22,7 +22,6 @@ public sealed class SFPacketParsers
     }
 
     public IDisposable BindIncoming<TPacket>(Action<TPacket> handler, CancellationToken token = default)
-        where TPacket : class, IParsedIncomingPacket
     {
         IReadOnlyList<PacketParserRegistry.IncomingRoute> routes = Registry.GetIncomingRoutes<TPacket>();
         if (routes.Count == 0)
@@ -38,11 +37,11 @@ public sealed class SFPacketParsers
                 IIncomingPacketParser parser = (IIncomingPacketParser)route.Parser;
                 group.Add(SF.Packets.SubscribeIncoming(route.EPacketId, args =>
                 {
-                    if (parser.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
-                    {
-                        handler(packet);
-                    }
-                }));
+                if (parser.TryParse(args, out PacketParseResult result) && TryExtractIncoming(result, out TPacket packet))
+                {
+                    handler(packet);
+                }
+            }));
                 continue;
             }
 
@@ -84,7 +83,6 @@ public sealed class SFPacketParsers
     }
 
     public IDisposable BindOutgoing<TPacket>(Action<TPacket> handler, CancellationToken token = default)
-        where TPacket : class, IParsedOutgoingPacket
     {
         IReadOnlyList<PacketParserRegistry.OutgoingRoute> routes = Registry.GetOutgoingRoutes<TPacket>();
         if (routes.Count == 0)
@@ -100,11 +98,11 @@ public sealed class SFPacketParsers
                 IOutgoingPacketParser parser = (IOutgoingPacketParser)route.Parser;
                 group.Add(SF.Packets.SubscribeOutgoing(route.EPacketId, args =>
                 {
-                    if (parser.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
-                    {
-                        handler(packet);
-                    }
-                }));
+                if (parser.TryParse(args, out PacketParseResult result) && TryExtractOutgoing(result, out TPacket packet))
+                {
+                    handler(packet);
+                }
+            }));
                 continue;
             }
 
@@ -136,14 +134,13 @@ public sealed class SFPacketParsers
     }
 
     public async IAsyncEnumerable<TPacket> StreamIncoming<TPacket>([EnumeratorCancellation] CancellationToken token = default)
-        where TPacket : class, IParsedIncomingPacket
     {
         ConcurrentQueue<TPacket> queue = new();
         using IDisposable binding = BindIncoming<TPacket>(packet => queue.Enqueue(packet), token);
 
         while (!token.IsCancellationRequested)
         {
-            while (queue.TryDequeue(out TPacket? packet))
+            while (queue.TryDequeue(out var packet))
             {
                 yield return packet;
             }
@@ -153,14 +150,13 @@ public sealed class SFPacketParsers
     }
 
     public async IAsyncEnumerable<TPacket> StreamOutgoing<TPacket>([EnumeratorCancellation] CancellationToken token = default)
-        where TPacket : class, IParsedOutgoingPacket
     {
         ConcurrentQueue<TPacket> queue = new();
         using IDisposable binding = BindOutgoing<TPacket>(packet => queue.Enqueue(packet), token);
 
         while (!token.IsCancellationRequested)
         {
-            while (queue.TryDequeue(out TPacket? packet))
+            while (queue.TryDequeue(out var packet))
             {
                 yield return packet;
             }
@@ -204,5 +200,41 @@ public sealed class SFPacketParsers
 
             _items.Clear();
         }
+    }
+
+    private static bool TryExtractIncoming<TPacket>(PacketParseResult result, out TPacket packet)
+    {
+        if (result.Packet is TPacket direct)
+        {
+            packet = direct;
+            return true;
+        }
+
+        if (result.Packet is IncomingSubPacket<TPacket> wrapped)
+        {
+            packet = wrapped.Payload;
+            return true;
+        }
+
+        packet = default!;
+        return false;
+    }
+
+    private static bool TryExtractOutgoing<TPacket>(PacketParseResult result, out TPacket packet)
+    {
+        if (result.Packet is TPacket direct)
+        {
+            packet = direct;
+            return true;
+        }
+
+        if (result.Packet is OutgoingSubPacket<TPacket> wrapped)
+        {
+            packet = wrapped.Payload;
+            return true;
+        }
+
+        packet = default!;
+        return false;
     }
 }

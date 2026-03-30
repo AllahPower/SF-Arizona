@@ -34,7 +34,7 @@ public readonly record struct PacketParseResult(
         return new PacketParseResult(false, null, parserName, PacketParseFailureReason.Exception, ex.Message);
     }
 
-    public bool TryGet<TPacket>(out TPacket packet) where TPacket : class, IParsedPacket
+    public bool TryGet<TPacket>(out TPacket packet) where TPacket : IParsedPacket
     {
         if (Packet is TPacket typed)
         {
@@ -42,7 +42,7 @@ public readonly record struct PacketParseResult(
             return true;
         }
 
-        packet = null!;
+        packet = default!;
         return false;
     }
 }

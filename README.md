@@ -42,6 +42,7 @@ The project is a fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), re
 | **Web Debugger** | Built-in ASP.NET Core Minimal API server on `localhost:7777` for live traffic inspection with filtering, stats, and color-coded packet views |
 | **Native Pools** | Typed abstractions over SA-MP memory pools: players, vehicles, objects, actors, pickups, menus, textdraws, gang zones, and labels |
 | **Color API** | `SFColor` and `SFColors` builder for SA-MP `{RRGGBB}` text styling with bitwise composition |
+| **Parsed Event Surface** | Unified `SF.Events` API over parsed RPC and packet payloads, plus `ModuleContext` helpers for module-friendly subscriptions |
 | **Command Interception** | Hook into `CInput::Send` for local command processing before packets are transmitted |
 | **Structured Logging** | Background file logger writing to `sf_arz.log` with module-scoped prefixes via `Microsoft.Extensions.Logging` |
 
@@ -159,6 +160,10 @@ container.RegisterModule<ExampleModule>();
 | `Context.TrackLoop(...)` | Measure loop iteration load |
 | `Context.RegisterChatCommand(...)` | Bind an in-game `/command` |
 | `Context.RegisterDisposable(...)` | Track disposable resources |
+| `Context.RegisterIncomingRpc<T>(...)` | Subscribe a module to a parsed incoming RPC |
+| `Context.RegisterOutgoingRpc<T>(...)` | Subscribe a module to a parsed outgoing RPC |
+| `Context.RegisterIncomingPacket<T>(...)` | Subscribe a module to a parsed incoming packet |
+| `Context.RegisterOutgoingPacket<T>(...)` | Subscribe a module to a parsed outgoing packet |
 | `Context.SwitchToMainThreadAsync()` | Marshal execution to the game thread |
 | `Context.RunBackground(...)` | Offload work to a background thread |
 
@@ -234,18 +239,19 @@ SF-Arizona/
 │   │       ├── Incoming/                  # Incoming RPC/packet handlers
 │   │       ├── Outgoing/                  # Outgoing RPC/packet handlers
 │   │       ├── Packets/                   # Packet models and parser catalog
+│   │       ├── Rpc/                       # RPC models and parser catalog
 │   │       ├── Sync/                      # Sync data structures
 │   │       └── Hooks/                     # RakNet function hooks
 │   ├── Modules/
 │   │   ├── Program.cs                     # Module registration
-│   │   ├── SFModuleContainer.cs           # Container and lifecycle management
-│   │   ├── SFModuleRuntime.cs             # Execution and telemetry runtime
+│   │   ├── Core/                          # Container, runtime, context helpers
 │   │   ├── ChatViolationMonitor.cs        # Chat monitoring module
 │   │   ├── DialogScraper.cs               # Dialog interception module
 │   │   ├── RpcDebugger.cs                 # In-game RPC debugger
 │   │   ├── DebugWeb/                      # Web-based traffic debugger
 │   │   └── ...                            # Other modules
 │   └── SF/                                # High-level SA-MP wrapper APIs
+│       ├── Events/                        #   Parsed RPC/packet event surface
 │       ├── SFColor.cs                     #   Color builder
 │       ├── SFColors.cs                    #   Predefined color palette
 │       └── ...                            #   Chat, dialog, player, vehicle APIs

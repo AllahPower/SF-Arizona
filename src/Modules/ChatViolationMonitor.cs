@@ -16,14 +16,9 @@ public class ChatViolationMonitor : SFModuleBase
         using IDisposable violationsCommand = Context.RegisterChatCommand("violations", OnCommand);
         using IDisposable shortCommand = Context.RegisterChatCommand("viollog", OnCommand);
 
-        await foreach (ServerChatEntry entry in SF.Chat.StreamServerChatEntries(cancellationToken))
+        await foreach (ClientMessageRpc entry in SF.Events.StreamIncomingRpc<ClientMessageRpc>(cancellationToken))
         {
             Context.IncrementCounter("chat.entries");
-
-            if (entry.Kind != ServerChatKind.ClientMessage)
-            {
-                continue;
-            }
 
             if (string.IsNullOrWhiteSpace(entry.Text))
             {
@@ -172,6 +167,12 @@ public class ChatViolationMonitor : SFModuleBase
     private static string TrimForList(string value)
     {
         const int maxLength = 36;
+        string sanitized = NormalizeForDetection(value);
+        return sanitized.Length <= maxLength ? sanitized : sanitized[..(maxLength - 3)] + "...";
+    }
+
+    private static string TrimForChat(string value, int maxLength)
+    {
         string sanitized = NormalizeForDetection(value);
         return sanitized.Length <= maxLength ? sanitized : sanitized[..(maxLength - 3)] + "...";
     }

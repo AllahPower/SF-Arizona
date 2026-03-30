@@ -2,11 +2,11 @@ using SFSharp.Interop.RakNet.Packets.Enum;
 
 namespace SFSharp;
 
-public delegate TRpc IncomingRpcParseDelegate<TRpc>(IncomingRpcArgs args) where TRpc : class, IParsedIncomingRpc;
-public delegate TRpc OutgoingRpcParseDelegate<TRpc>(OutgoingRpcArgs args) where TRpc : class, IParsedOutgoingRpc;
+public delegate TRpc IncomingRpcParseDelegate<TRpc>(IncomingRpcArgs args) where TRpc : IParsedIncomingRpc;
+public delegate TRpc OutgoingRpcParseDelegate<TRpc>(OutgoingRpcArgs args) where TRpc : IParsedOutgoingRpc;
 
 public abstract class IncomingRpcParserBase<TRpc> : IIncomingRpcParser
-    where TRpc : class, IParsedIncomingRpc
+    where TRpc : IParsedIncomingRpc
 {
     public abstract ERpcId ERpcId { get; }
     public virtual string Name => GetType().Name;
@@ -46,7 +46,7 @@ public abstract class IncomingRpcParserBase<TRpc> : IIncomingRpcParser
 }
 
 public abstract class OutgoingRpcParserBase<TRpc> : IOutgoingRpcParser
-    where TRpc : class, IParsedOutgoingRpc
+    where TRpc : IParsedOutgoingRpc
 {
     public abstract ERpcId ERpcId { get; }
     public virtual string Name => GetType().Name;
@@ -86,7 +86,7 @@ public abstract class OutgoingRpcParserBase<TRpc> : IOutgoingRpcParser
 }
 
 public sealed class DelegateIncomingRpcParser<TRpc> : IncomingRpcParserBase<TRpc>
-    where TRpc : class, IParsedIncomingRpc
+    where TRpc : IParsedIncomingRpc
 {
     private readonly ERpcId _rpcId;
     private readonly string _name;
@@ -115,7 +115,7 @@ public sealed class DelegateIncomingRpcParser<TRpc> : IncomingRpcParserBase<TRpc
 }
 
 public sealed class DelegateOutgoingRpcParser<TRpc> : OutgoingRpcParserBase<TRpc>
-    where TRpc : class, IParsedOutgoingRpc
+    where TRpc : IParsedOutgoingRpc
 {
     private readonly ERpcId _rpcId;
     private readonly string _name;

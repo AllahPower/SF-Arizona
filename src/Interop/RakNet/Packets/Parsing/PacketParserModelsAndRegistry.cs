@@ -17,25 +17,37 @@ public sealed class PacketParserRegistry
     public void Register(IIncomingPacketParser parser)
     {
         _incoming[(int)parser.EPacketId] = parser;
-        AddIncomingRoute(parser.ParsedType, new IncomingRoute(parser.EPacketId, null, false, parser));
+        IncomingRoute route = new(parser.EPacketId, null, false, parser);
+        AddIncomingRoute(parser.ParsedType, route);
     }
 
     public void Register(IOutgoingPacketParser parser)
     {
         _outgoing[(int)parser.EPacketId] = parser;
-        AddOutgoingRoute(parser.ParsedType, new OutgoingRoute(parser.EPacketId, null, false, parser));
+        OutgoingRoute route = new(parser.EPacketId, null, false, parser);
+        AddOutgoingRoute(parser.ParsedType, route);
     }
 
     public void Register(IIncomingArizonaPacketParser parser)
     {
         GetIncomingArizonaMap(parser.EPacketId)[parser.SubId] = parser;
-        AddIncomingRoute(parser.ParsedType, new IncomingRoute(parser.EPacketId, parser.SubId, parser.EPacketId == EPacketId.ArizonaCefEx, parser));
+        IncomingRoute route = new(parser.EPacketId, parser.SubId, parser.EPacketId == EPacketId.ArizonaCefEx, parser);
+        AddIncomingRoute(parser.ParsedType, route);
+        if (TryGetWrappedPayloadType(parser.ParsedType, typeof(IncomingSubPacket<>), out Type payloadType))
+        {
+            AddIncomingRoute(payloadType, route);
+        }
     }
 
     public void Register(IOutgoingArizonaPacketParser parser)
     {
         GetOutgoingArizonaMap(parser.EPacketId)[parser.SubId] = parser;
-        AddOutgoingRoute(parser.ParsedType, new OutgoingRoute(parser.EPacketId, parser.SubId, parser.EPacketId == EPacketId.ArizonaCefEx, parser));
+        OutgoingRoute route = new(parser.EPacketId, parser.SubId, parser.EPacketId == EPacketId.ArizonaCefEx, parser);
+        AddOutgoingRoute(parser.ParsedType, route);
+        if (TryGetWrappedPayloadType(parser.ParsedType, typeof(OutgoingSubPacket<>), out Type payloadType))
+        {
+            AddOutgoingRoute(payloadType, route);
+        }
     }
 
     public bool TryParseIncoming(IncomingPacketArgs args, out PacketParseResult result)
@@ -111,7 +123,7 @@ public sealed class PacketParserRegistry
         return false;
     }
 
-    public IReadOnlyList<IncomingRoute> GetIncomingRoutes<TPacket>() where TPacket : class, IParsedIncomingPacket
+    public IReadOnlyList<IncomingRoute> GetIncomingRoutes<TPacket>()
     {
         if (_incomingRoutesByType.TryGetValue(typeof(TPacket), out List<IncomingRoute>? routes))
         {
@@ -121,7 +133,7 @@ public sealed class PacketParserRegistry
         return Array.Empty<IncomingRoute>();
     }
 
-    public IReadOnlyList<OutgoingRoute> GetOutgoingRoutes<TPacket>() where TPacket : class, IParsedOutgoingPacket
+    public IReadOnlyList<OutgoingRoute> GetOutgoingRoutes<TPacket>()
     {
         if (_outgoingRoutesByType.TryGetValue(typeof(TPacket), out List<OutgoingRoute>? routes))
         {
@@ -267,6 +279,18 @@ public sealed class PacketParserRegistry
         }
 
         routes.Add(route);
+    }
+
+    private static bool TryGetWrappedPayloadType(Type parsedType, Type wrapperGenericType, out Type payloadType)
+    {
+        payloadType = null!;
+        if (!parsedType.IsGenericType || parsedType.GetGenericTypeDefinition() != wrapperGenericType)
+        {
+            return false;
+        }
+
+        payloadType = parsedType.GetGenericArguments()[0];
+        return true;
     }
 
     public sealed record IncomingRoute(EPacketId EPacketId, int? SubId, bool IsEx, object Parser);

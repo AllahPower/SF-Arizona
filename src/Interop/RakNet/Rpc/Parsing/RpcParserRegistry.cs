@@ -12,13 +12,23 @@ public sealed class RpcParserRegistry
     public void Register(IIncomingRpcParser parser)
     {
         _incoming[(int)parser.ERpcId] = parser;
-        AddIncomingRoute(parser.ParsedType, new IncomingRpcRoute(parser.ERpcId, parser));
+        IncomingRpcRoute route = new(parser.ERpcId, parser);
+        AddIncomingRoute(parser.ParsedType, route);
+        if (TryGetWrappedPayloadType(parser.ParsedType, typeof(IncomingRpc<>), out Type payloadType))
+        {
+            AddIncomingRoute(payloadType, route);
+        }
     }
 
     public void Register(IOutgoingRpcParser parser)
     {
         _outgoing[(int)parser.ERpcId] = parser;
-        AddOutgoingRoute(parser.ParsedType, new OutgoingRpcRoute(parser.ERpcId, parser));
+        OutgoingRpcRoute route = new(parser.ERpcId, parser);
+        AddOutgoingRoute(parser.ParsedType, route);
+        if (TryGetWrappedPayloadType(parser.ParsedType, typeof(OutgoingRpc<>), out Type payloadType))
+        {
+            AddOutgoingRoute(payloadType, route);
+        }
     }
 
     public bool TryParseIncoming(IncomingRpcArgs args, out RpcParseResult result)
@@ -51,7 +61,7 @@ public sealed class RpcParserRegistry
         return true;
     }
 
-    public IReadOnlyList<IncomingRpcRoute> GetIncomingRoutes<TRpc>() where TRpc : class, IParsedIncomingRpc
+    public IReadOnlyList<IncomingRpcRoute> GetIncomingRoutes<TRpc>()
     {
         if (_incomingRoutesByType.TryGetValue(typeof(TRpc), out List<IncomingRpcRoute>? routes))
         {
@@ -61,7 +71,7 @@ public sealed class RpcParserRegistry
         return Array.Empty<IncomingRpcRoute>();
     }
 
-    public IReadOnlyList<OutgoingRpcRoute> GetOutgoingRoutes<TRpc>() where TRpc : class, IParsedOutgoingRpc
+    public IReadOnlyList<OutgoingRpcRoute> GetOutgoingRoutes<TRpc>()
     {
         if (_outgoingRoutesByType.TryGetValue(typeof(TRpc), out List<OutgoingRpcRoute>? routes))
         {
@@ -91,6 +101,18 @@ public sealed class RpcParserRegistry
         }
 
         routes.Add(route);
+    }
+
+    private static bool TryGetWrappedPayloadType(Type parsedType, Type wrapperGenericType, out Type payloadType)
+    {
+        payloadType = null!;
+        if (!parsedType.IsGenericType || parsedType.GetGenericTypeDefinition() != wrapperGenericType)
+        {
+            return false;
+        }
+
+        payloadType = parsedType.GetGenericArguments()[0];
+        return true;
     }
 
     public sealed record IncomingRpcRoute(ERpcId ERpcId, object Parser);

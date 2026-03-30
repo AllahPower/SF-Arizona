@@ -2,10 +2,10 @@
 
 namespace SFSharp;
 
-public delegate TPacket IncomingPacketParseDelegate<TPacket>(IncomingPacketArgs args) where TPacket : class, IParsedIncomingPacket;
-public delegate TPacket OutgoingPacketParseDelegate<TPacket>(OutgoingPacketArgs args) where TPacket : class, IParsedOutgoingPacket;
-public delegate TPacket IncomingArizonaPacketParseDelegate<TPacket>(IncomingArizonaPacketArgs args) where TPacket : class, IParsedIncomingPacket;
-public delegate TPacket OutgoingArizonaPacketParseDelegate<TPacket>(OutgoingArizonaPacketArgs args) where TPacket : class, IParsedOutgoingPacket;
+public delegate TPacket IncomingPacketParseDelegate<TPacket>(IncomingPacketArgs args) where TPacket : IParsedIncomingPacket;
+public delegate TPacket OutgoingPacketParseDelegate<TPacket>(OutgoingPacketArgs args) where TPacket : IParsedOutgoingPacket;
+public delegate TPacket IncomingArizonaPacketParseDelegate<TPacket>(IncomingArizonaPacketArgs args) where TPacket : IParsedIncomingPacket;
+public delegate TPacket OutgoingArizonaPacketParseDelegate<TPacket>(OutgoingArizonaPacketArgs args) where TPacket : IParsedOutgoingPacket;
 
 internal static class PacketParseHelper
 {
@@ -46,7 +46,7 @@ internal static class PacketParseHelper
 }
 
 public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
-    where TPacket : class, IParsedIncomingPacket
+    where TPacket : IParsedIncomingPacket
 {
     public abstract EPacketId EPacketId { get; }
     public virtual string Name => GetType().Name;
@@ -75,7 +75,7 @@ public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
 }
 
 public abstract class OutgoingPacketParserBase<TPacket> : IOutgoingPacketParser
-    where TPacket : class, IParsedOutgoingPacket
+    where TPacket : IParsedOutgoingPacket
 {
     public abstract EPacketId EPacketId { get; }
     public virtual string Name => GetType().Name;
@@ -104,7 +104,7 @@ public abstract class OutgoingPacketParserBase<TPacket> : IOutgoingPacketParser
 }
 
 public abstract class IncomingArizonaPacketParserBase<TPacket> : IIncomingArizonaPacketParser
-    where TPacket : class, IParsedIncomingPacket
+    where TPacket : IParsedIncomingPacket
 {
     public abstract EPacketId EPacketId { get; }
     public abstract int SubId { get; }
@@ -134,7 +134,7 @@ public abstract class IncomingArizonaPacketParserBase<TPacket> : IIncomingArizon
 }
 
 public abstract class OutgoingArizonaPacketParserBase<TPacket> : IOutgoingArizonaPacketParser
-    where TPacket : class, IParsedOutgoingPacket
+    where TPacket : IParsedOutgoingPacket
 {
     public abstract EPacketId EPacketId { get; }
     public abstract int SubId { get; }
@@ -164,7 +164,7 @@ public abstract class OutgoingArizonaPacketParserBase<TPacket> : IOutgoingArizon
 }
 
 public sealed class DelegateIncomingPacketParser<TPacket> : IncomingPacketParserBase<TPacket>
-    where TPacket : class, IParsedIncomingPacket
+    where TPacket : IParsedIncomingPacket
 {
     private readonly EPacketId _packetId;
     private readonly string _name;
@@ -193,7 +193,7 @@ public sealed class DelegateIncomingPacketParser<TPacket> : IncomingPacketParser
 }
 
 public sealed class DelegateOutgoingPacketParser<TPacket> : OutgoingPacketParserBase<TPacket>
-    where TPacket : class, IParsedOutgoingPacket
+    where TPacket : IParsedOutgoingPacket
 {
     private readonly EPacketId _packetId;
     private readonly string _name;
@@ -222,7 +222,7 @@ public sealed class DelegateOutgoingPacketParser<TPacket> : OutgoingPacketParser
 }
 
 public sealed class DelegateIncomingArizonaPacketParser<TPacket> : IncomingArizonaPacketParserBase<TPacket>
-    where TPacket : class, IParsedIncomingPacket
+    where TPacket : IParsedIncomingPacket
 {
     private readonly EPacketId _packetId;
     private readonly int _subId;
@@ -254,7 +254,7 @@ public sealed class DelegateIncomingArizonaPacketParser<TPacket> : IncomingArizo
 }
 
 public sealed class DelegateOutgoingArizonaPacketParser<TPacket> : OutgoingArizonaPacketParserBase<TPacket>
-    where TPacket : class, IParsedOutgoingPacket
+    where TPacket : IParsedOutgoingPacket
 {
     private readonly EPacketId _packetId;
     private readonly int _subId;
