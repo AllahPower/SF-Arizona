@@ -1,5 +1,4 @@
 using SFSharp.Interop.RakNet.Packets.Enum;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace SFSharp;
@@ -72,35 +71,40 @@ public sealed class SFRpcParsers
 
     public async IAsyncEnumerable<TRpc> StreamIncoming<TRpc>([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<TRpc> queue = new();
-        using IDisposable binding = BindIncoming<TRpc>(rpc => queue.Enqueue(rpc), token);
+        var channel = SFChannel.CreateUnbounded<TRpc>();
+        using IDisposable binding = BindIncoming<TRpc>(rpc => channel.Writer.TryWrite(rpc), token);
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out var rpc))
+            await foreach (TRpc rpc in channel.Reader.ReadAllAsync(token))
             {
                 yield return rpc;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<TRpc> StreamOutgoing<TRpc>([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<TRpc> queue = new();
-        using IDisposable binding = BindOutgoing<TRpc>(rpc => queue.Enqueue(rpc), token);
+        var channel = SFChannel.CreateUnbounded<TRpc>();
+        using IDisposable binding = BindOutgoing<TRpc>(rpc => channel.Writer.TryWrite(rpc), token);
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out var rpc))
+            await foreach (TRpc rpc in channel.Reader.ReadAllAsync(token))
             {
                 yield return rpc;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
+
 
     private sealed class SubscriptionGroup : IDisposable
     {

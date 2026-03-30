@@ -15,6 +15,8 @@ public class ChatViolationMonitor : SFModuleBase
     {
         using IDisposable violationsCommand = Context.RegisterChatCommand("violations", OnCommand);
         using IDisposable shortCommand = Context.RegisterChatCommand("viollog", OnCommand);
+        using IDisposable joinDebug = Context.RegisterIncomingRpc<ServerJoinRpc>(
+            rpc => SF.Chat.Add($"[ChatViolationMonitor] ServerJoin: {rpc.Nickname}[{rpc.PlayerId}] npc={rpc.IsNpc}"));
 
         await foreach (ClientMessageRpc entry in SF.Events.StreamIncomingRpc<ClientMessageRpc>(cancellationToken))
         {
@@ -167,12 +169,6 @@ public class ChatViolationMonitor : SFModuleBase
     private static string TrimForList(string value)
     {
         const int maxLength = 36;
-        string sanitized = NormalizeForDetection(value);
-        return sanitized.Length <= maxLength ? sanitized : sanitized[..(maxLength - 3)] + "...";
-    }
-
-    private static string TrimForChat(string value, int maxLength)
-    {
         string sanitized = NormalizeForDetection(value);
         return sanitized.Length <= maxLength ? sanitized : sanitized[..(maxLength - 3)] + "...";
     }

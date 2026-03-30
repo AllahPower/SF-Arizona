@@ -1,6 +1,6 @@
 using SFSharp.Interop.RakNet.Packets.Enum;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 
 namespace SFSharp;
 
@@ -23,8 +23,8 @@ public record ServerChatEntry(ServerChatKind Kind, ERpcId ERpcId, ChatEntry Entr
 
 public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 {
-    private static readonly List<ConcurrentQueue<ServerChatEntry>> _serverConsumerQueues = new();
-    private static readonly List<ConcurrentQueue<ChatEntry>> _localConsumerQueues = new();
+    private static readonly List<ChannelWriter<ServerChatEntry>> _serverConsumerWriters = new();
+    private static readonly List<ChannelWriter<ChatEntry>> _localConsumerWriters = new();
     private static int _suppressOwnLocalAddEntry;
     private bool _rpcBindingsRegistered;
 
@@ -56,23 +56,20 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 
     public async IAsyncEnumerable<ServerChatEntry> StreamServerChatEntries([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<ServerChatEntry> queue = new();
-        _serverConsumerQueues.Add(queue);
+        var channel = SFChannel.CreateUnbounded<ServerChatEntry>();
+
+        _serverConsumerWriters.Add(channel.Writer);
         try
         {
-            while (!token.IsCancellationRequested)
+            await foreach (ServerChatEntry entry in channel.Reader.ReadAllAsync(token))
             {
-                while (queue.TryDequeue(out ServerChatEntry? entry))
-                {
-                    yield return entry;
-                }
-
-                await Task.Yield();
+                yield return entry;
             }
         }
         finally
         {
-            _serverConsumerQueues.Remove(queue);
+            _serverConsumerWriters.Remove(channel.Writer);
+            channel.Writer.TryComplete();
         }
     }
 
@@ -86,23 +83,20 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 
     public async IAsyncEnumerable<ChatEntry> StreamLocalChatEntries([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<ChatEntry> queue = new();
-        _localConsumerQueues.Add(queue);
+        var channel = SFChannel.CreateUnbounded<ChatEntry>();
+
+        _localConsumerWriters.Add(channel.Writer);
         try
         {
-            while (!token.IsCancellationRequested)
+            await foreach (ChatEntry entry in channel.Reader.ReadAllAsync(token))
             {
-                while (queue.TryDequeue(out ChatEntry? entry))
-                {
-                    yield return entry;
-                }
-
-                await Task.Yield();
+                yield return entry;
             }
         }
         finally
         {
-            _localConsumerQueues.Remove(queue);
+            _localConsumerWriters.Remove(channel.Writer);
+            channel.Writer.TryComplete();
         }
     }
 
@@ -114,18 +108,17 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 
     internal void PublishServerChatEntry(ServerChatEntry entry)
     {
-        //SFLog.Info($"Server chat entry kind={entry.Kind} rpcId={(int)entry.ERpcId} type={entry.Type} textColor=0x{entry.TextColor:X8} prefixColor=0x{entry.PrefixColor:X8} prefix={entry.Prefix ?? "<null>"} text={entry.Text ?? "<null>"}");
-        foreach (ConcurrentQueue<ServerChatEntry> queue in _serverConsumerQueues)
+        foreach (ChannelWriter<ServerChatEntry> writer in _serverConsumerWriters)
         {
-            queue.Enqueue(entry);
+            writer.TryWrite(entry);
         }
     }
 
     internal void PublishLocalChatEntry(ChatEntry entry)
     {
-        foreach (ConcurrentQueue<ChatEntry> queue in _localConsumerQueues)
+        foreach (ChannelWriter<ChatEntry> writer in _localConsumerWriters)
         {
-            queue.Enqueue(entry);
+            writer.TryWrite(entry);
         }
     }
 

@@ -1,5 +1,4 @@
 using SFSharp.Interop.RakNet.Packets.Enum;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace SFSharp;
@@ -28,17 +27,19 @@ public sealed class SFRpc
 
     public async IAsyncEnumerable<IncomingRpcPayload> Stream(ERpcId rpcId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<IncomingRpcPayload> queue = new();
-        using RpcSubscription subscription = Subscribe(rpcId, args => queue.Enqueue(IncomingRpcPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<IncomingRpcPayload>();
+        using RpcSubscription subscription = Subscribe(rpcId, args => channel.Writer.TryWrite(IncomingRpcPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out IncomingRpcPayload payload))
+            await foreach (IncomingRpcPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
@@ -59,19 +60,22 @@ public sealed class SFRpc
 
     public async IAsyncEnumerable<OutgoingRpcPayload> StreamOutgoing(ERpcId rpcId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<OutgoingRpcPayload> queue = new();
-        using RpcSubscription subscription = SubscribeOutgoing(rpcId, args => queue.Enqueue(OutgoingRpcPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<OutgoingRpcPayload>();
+        using RpcSubscription subscription = SubscribeOutgoing(rpcId, args => channel.Writer.TryWrite(OutgoingRpcPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out OutgoingRpcPayload payload))
+            await foreach (OutgoingRpcPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
+
 
     public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(ERpcId rpcId, Func<OutgoingRpcArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {

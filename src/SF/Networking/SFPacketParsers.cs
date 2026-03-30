@@ -1,6 +1,5 @@
 using SFSharp.Interop.RakNet.Arizona.Enum;
 using SFSharp.Interop.RakNet.Packets.Enum;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace SFSharp;
@@ -37,11 +36,11 @@ public sealed class SFPacketParsers
                 IIncomingPacketParser parser = (IIncomingPacketParser)route.Parser;
                 group.Add(SF.Packets.SubscribeIncoming(route.EPacketId, args =>
                 {
-                if (parser.TryParse(args, out PacketParseResult result) && TryExtractIncoming(result, out TPacket packet))
-                {
-                    handler(packet);
-                }
-            }));
+                    if (parser.TryParse(args, out PacketParseResult result) && TryExtractIncoming(result, out TPacket packet))
+                    {
+                        handler(packet);
+                    }
+                }));
                 continue;
             }
 
@@ -98,11 +97,11 @@ public sealed class SFPacketParsers
                 IOutgoingPacketParser parser = (IOutgoingPacketParser)route.Parser;
                 group.Add(SF.Packets.SubscribeOutgoing(route.EPacketId, args =>
                 {
-                if (parser.TryParse(args, out PacketParseResult result) && TryExtractOutgoing(result, out TPacket packet))
-                {
-                    handler(packet);
-                }
-            }));
+                    if (parser.TryParse(args, out PacketParseResult result) && TryExtractOutgoing(result, out TPacket packet))
+                    {
+                        handler(packet);
+                    }
+                }));
                 continue;
             }
 
@@ -135,35 +134,40 @@ public sealed class SFPacketParsers
 
     public async IAsyncEnumerable<TPacket> StreamIncoming<TPacket>([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<TPacket> queue = new();
-        using IDisposable binding = BindIncoming<TPacket>(packet => queue.Enqueue(packet), token);
+        var channel = SFChannel.CreateUnbounded<TPacket>();
+        using IDisposable binding = BindIncoming<TPacket>(packet => channel.Writer.TryWrite(packet), token);
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out var packet))
+            await foreach (TPacket packet in channel.Reader.ReadAllAsync(token))
             {
                 yield return packet;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<TPacket> StreamOutgoing<TPacket>([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<TPacket> queue = new();
-        using IDisposable binding = BindOutgoing<TPacket>(packet => queue.Enqueue(packet), token);
+        var channel = SFChannel.CreateUnbounded<TPacket>();
+        using IDisposable binding = BindOutgoing<TPacket>(packet => channel.Writer.TryWrite(packet), token);
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out var packet))
+            await foreach (TPacket packet in channel.Reader.ReadAllAsync(token))
             {
                 yield return packet;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
+
 
     private sealed class SubscriptionGroup : IDisposable
     {

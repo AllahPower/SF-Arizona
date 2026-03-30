@@ -1,6 +1,5 @@
 using SFSharp.Interop.RakNet.Arizona.Enum;
 using SFSharp.Interop.RakNet.Packets.Enum;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace SFSharp;
@@ -79,115 +78,130 @@ public sealed class SFArizonaPackets
 
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncoming(EArizona subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<IncomingArizonaPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeIncoming(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<IncomingArizonaPacketPayload>();
+        using NetworkSubscription subscription = SubscribeIncoming(subId, args => channel.Writer.TryWrite(IncomingArizonaPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out IncomingArizonaPacketPayload payload))
+            await foreach (IncomingArizonaPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingEx(EArizonaEx subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<IncomingArizonaPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeIncomingEx(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<IncomingArizonaPacketPayload>();
+        using NetworkSubscription subscription = SubscribeIncomingEx(subId, args => channel.Writer.TryWrite(IncomingArizonaPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out IncomingArizonaPacketPayload payload))
+            await foreach (IncomingArizonaPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoing(EArizona subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<OutgoingArizonaPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeOutgoing(subId, args => queue.Enqueue(OutgoingArizonaPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<OutgoingArizonaPacketPayload>();
+        using NetworkSubscription subscription = SubscribeOutgoing(subId, args => channel.Writer.TryWrite(OutgoingArizonaPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out OutgoingArizonaPacketPayload payload))
+            await foreach (OutgoingArizonaPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoingEx(EArizonaEx subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<OutgoingArizonaPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeOutgoingEx(subId, args => queue.Enqueue(OutgoingArizonaPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<OutgoingArizonaPacketPayload>();
+        using NetworkSubscription subscription = SubscribeOutgoingEx(subId, args => channel.Writer.TryWrite(OutgoingArizonaPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out OutgoingArizonaPacketPayload payload))
+            await foreach (OutgoingArizonaPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingAZVoice(EAZVoice subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<IncomingArizonaPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeIncomingAZVoice(subId, args => queue.Enqueue(IncomingArizonaPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<IncomingArizonaPacketPayload>();
+        using NetworkSubscription subscription = SubscribeIncomingAZVoice(subId, args => channel.Writer.TryWrite(IncomingArizonaPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out IncomingArizonaPacketPayload payload))
+            await foreach (IncomingArizonaPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<IncomingPacketPayload> StreamIncomingAZVoiceData([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<IncomingPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeIncomingAZVoiceData(args => queue.Enqueue(IncomingPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<IncomingPacketPayload>();
+        using NetworkSubscription subscription = SubscribeIncomingAZVoiceData(args => channel.Writer.TryWrite(IncomingPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out IncomingPacketPayload payload))
+            await foreach (IncomingPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
     public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoingAZVoiceData([EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<OutgoingPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeOutgoingAZVoiceData(args => queue.Enqueue(OutgoingPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<OutgoingPacketPayload>();
+        using NetworkSubscription subscription = SubscribeOutgoingAZVoiceData(args => channel.Writer.TryWrite(OutgoingPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out OutgoingPacketPayload payload))
+            await foreach (OutgoingPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
+
 
     public async IAsyncEnumerable<TPayload> StreamIncoming<TPayload>(EArizona subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {

@@ -7,28 +7,22 @@ public sealed class SFCamera
 {
     public bool IsAvailable => CCamera.IsAvailable;
 
-    public Vector3 Position => CCamera.IsAvailable ? CCamera.Position : Vector3.Zero;
-    public Vector3 Front => CCamera.IsAvailable ? CCamera.Front : Vector3.UnitY;
-    public Vector3 Up => CCamera.IsAvailable ? CCamera.Up : Vector3.UnitZ;
-    public Vector3 Right => CCamera.IsAvailable ? CCamera.Right : Vector3.UnitX;
-    public float FieldOfView => CCamera.IsAvailable ? CCamera.FieldOfView : 70f;
-    public byte Mode => CCamera.IsAvailable ? CCamera.Mode : (byte)0;
-    public float ShakeForce => CCamera.IsAvailable ? CCamera.ShakeForce : 0f;
-    public bool IsWideScreen => CCamera.IsAvailable && CCamera.IsWideScreen;
-    public byte FadeAlpha => CCamera.IsAvailable ? CCamera.FadeAlpha : (byte)0;
-    public byte FadeState => CCamera.IsAvailable ? CCamera.FadeState : (byte)0;
-    public bool IsFading => FadeState != 0;
-    public CMatrix Matrix => CCamera.IsAvailable ? CCamera.GetMatrix() : default;
+    public Vector3 Position => CCamera.Position;
+    public Vector3 Front => CCamera.Front;
+    public Vector3 Up => CCamera.Up;
+    public Vector3 Right => CCamera.Right;
+    public float FieldOfView => CCamera.FieldOfView;
+    public byte Mode => CCamera.Mode;
+    public float ShakeForce => CCamera.ShakeForce;
+    public bool IsWideScreen => CCamera.IsWideScreen;
+    public byte FadeAlpha => CCamera.FadeAlpha;
+    public byte FadeState => CCamera.FadeState;
+    public bool IsFading => CCamera.FadeState != 0;
+    public CMatrix Matrix => CCamera.GetMatrix();
 
-    public Vector3 GetLookAtPoint(float distance = 100f)
-    {
-        return CCamera.IsAvailable ? CCamera.GetLookAtPoint(distance) : Vector3.Zero;
-    }
+    public Vector3 GetLookAtPoint(float distance = 100f) => CCamera.GetLookAtPoint(distance);
 
-    public float GetDistanceTo(Vector3 point)
-    {
-        return CCamera.IsAvailable ? CCamera.GetDistanceTo(point) : 0f;
-    }
+    public float GetDistanceTo(Vector3 point) => CCamera.GetDistanceTo(point);
 
     public byte AimCameraMode => CLocalPlayer.Instance.AimData.CameraMode;
     public Vector3 AimDirection => CLocalPlayer.Instance.AimData.AimDirection;

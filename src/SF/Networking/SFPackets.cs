@@ -1,5 +1,4 @@
 using SFSharp.Interop.RakNet.Packets.Enum;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace SFSharp;
@@ -18,17 +17,19 @@ public sealed class SFPackets
 
     public async IAsyncEnumerable<IncomingPacketPayload> StreamIncoming(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<IncomingPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeIncoming(packetId, args => queue.Enqueue(IncomingPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<IncomingPacketPayload>();
+        using NetworkSubscription subscription = SubscribeIncoming(packetId, args => channel.Writer.TryWrite(IncomingPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out IncomingPacketPayload payload))
+            await foreach (IncomingPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
 
@@ -49,19 +50,22 @@ public sealed class SFPackets
 
     public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoing(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        ConcurrentQueue<OutgoingPacketPayload> queue = new();
-        using NetworkSubscription subscription = SubscribeOutgoing(packetId, args => queue.Enqueue(OutgoingPacketPayload.From(args)));
+        var channel = SFChannel.CreateUnbounded<OutgoingPacketPayload>();
+        using NetworkSubscription subscription = SubscribeOutgoing(packetId, args => channel.Writer.TryWrite(OutgoingPacketPayload.From(args)));
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            while (queue.TryDequeue(out OutgoingPacketPayload payload))
+            await foreach (OutgoingPacketPayload payload in channel.Reader.ReadAllAsync(token))
             {
                 yield return payload;
             }
-
-            await Task.Yield();
+        }
+        finally
+        {
+            channel.Writer.TryComplete();
         }
     }
+
 
     public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(EPacketId packetId, Func<OutgoingPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {

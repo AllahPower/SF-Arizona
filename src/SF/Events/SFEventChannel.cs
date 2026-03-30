@@ -62,12 +62,7 @@ internal sealed class SFEventChannel<T>
 
     public async IAsyncEnumerable<T> Stream([EnumeratorCancellation] CancellationToken token = default)
     {
-        Channel<T> stream = Channel.CreateUnbounded<T>(new UnboundedChannelOptions
-        {
-            SingleReader = true,
-            SingleWriter = false,
-            AllowSynchronousContinuations = false
-        });
+        var stream = SFChannel.CreateUnbounded<T>();
 
         lock (_sync)
         {
