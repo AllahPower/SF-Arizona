@@ -54,6 +54,7 @@ public readonly record struct ArzSetChatGroup(byte ChatId, string Icon, int Colo
     public uint ArgbColor => ((uint)Color >> 8) | 0xFF000000;
 }
 public readonly record struct ArzHideDynamicRoom(byte RoomId);
+public readonly record struct ArzSrcursorSyncMode(byte Mode, float? MinCursorDelta);
 public readonly record struct ArzSetChatFlag(byte State);
 public readonly record struct ArzChatMessageRelay(uint ColorRgba, byte ChatType, byte[] RawPayload)
 {
@@ -64,6 +65,8 @@ public readonly record struct ArzSetNicknameMode(byte Mode);
 public readonly record struct ArzSwitchChatMode(byte Mode);
 public readonly record struct ArzSetVisibleDistance3DMarker(bool Status, float Distance, byte Pad);
 public readonly record struct ArzShowPositionInDiscord(bool Status);
+public readonly record struct ArzChatCommandHelperEnabled(bool Enabled);
+public readonly record struct ArzUnknown74(byte Value);
 public readonly record struct ArzSetRadarVisibility(bool State);
 public readonly record struct ArzSetCompassMode(byte Mode);
 public readonly record struct ArzSetCompassCoords(float X, float Y);
@@ -112,6 +115,37 @@ public readonly record struct ArzSetInterior(Vector3 Position, ushort Pad, byte 
 public readonly record struct ArzUiToggle(ushort BrowserId, bool State);
 public readonly record struct ArzSetWaterLevel(byte Mode, float Level, float? TargetLevel, uint? DurationMs);
 public readonly record struct ArzVehicleHeadlightsState(ushort VehicleId, bool State);
+public readonly record struct ArzWaypoint3DSetPosition(bool Enabled, Vector3? Position);
+public readonly record struct ArzDiscordSetStateText(string Text);
+public readonly record struct ArzDiscordClearStateText;
+public readonly record struct ArzStreamFixMode(byte Mode);
+public readonly record struct ArzAttachVehicleToVehicleDataDescriptor(
+    Vector3 Offset,
+    Vector3 RotationDegrees,
+    byte[] ComponentIds,
+    byte FeatureFlags,
+    byte VariantId,
+    ushort ModelId,
+    byte ExtraByte0,
+    byte ExtraByte1,
+    float DrawDistance);
+
+public readonly record struct ArzAttachVehicleToVehicleData(
+    ushort VehicleId,
+    byte Slot,
+    bool HasData,
+    ArzAttachVehicleToVehicleDataDescriptor? Data);
+public readonly record struct ArzWallHackToggle(bool Enabled);
+public readonly record struct ArzRadarFixPlayerStyle(ushort PlayerIndex, byte? Style, bool? LockFlag);
+public readonly record struct ArzSimpleAttachmentsSetMaterial(ushort PlayerId, ushort AttachIndex, byte Selector, string MaterialName, string TextureName, byte Byte0, byte Byte1, byte Byte2, byte Byte3);
+public readonly record struct ArzNavigationArrowTarget(ushort X, ushort Y, ushort Z, ushort Radius);
+public readonly record struct ArzNavigationArrowTargets(bool FollowVertical, bool SpecialMode, ArzNavigationArrowTarget[] Targets);
+public readonly record struct ArzGoogleAnalyticsMessage(string Text, uint Flags);
+public readonly record struct ArzAttachVehicleToVehicleToggle(bool Enabled);
+public readonly record struct ArzVehicleDamageDoorPanelRule(ushort Key, float Value);
+public readonly record struct ArzVehicleDamageDoorPanelRules(ushort GroupId, ArzVehicleDamageDoorPanelRule[] Entries);
+public readonly record struct ArzDirtySampObjectsMakeObjectDirty(bool IsAttachedObject, byte DirtyLevel, ushort ObjectId, byte? AttachIndex, byte? Extra);
+public readonly record struct ArzTranslateObservedTextDrawPosition(ushort TextDrawId, float X, float Y);
 public readonly record struct ArzSetVirtualWorld(uint World);
 public readonly record struct ArzSetVehicleDriftMode(ushort VehicleId, bool State);
 public readonly record struct ArzSetLines(byte Action, ushort LineId, byte[] RawPayload);
@@ -153,13 +187,18 @@ public readonly record struct ArzSendText(string Text, uint BrowserId);
 public readonly record struct ArzStatePair(uint Width, uint Height);
 public readonly record struct ArzModuleReadResponse(uint ModuleOffset, string ModuleName, byte Status, byte[] Data);
 public readonly record struct ArzBrowserControlStateReply(uint BrowserId, bool State);
-public readonly record struct ArzSendHash(byte[] Hash);
+// vorbisFile.dll builds this from storage/device data and volume serial,
+// XORs with the serial-derived key, then sends SHA-256 as lowercase hex bytes.
+public readonly record struct ArzSendHWID(byte[] HexDigestBytes);
 public readonly record struct ArzSendSwitchChatMode(byte Mode);
+public readonly record struct ArzSendSrcursorPosition(float X, float Y);
+public readonly record struct ArzInCarNanCheckReport(byte ReportKind, ushort VehicleId);
 public readonly record struct ArzSendFloatValue(float Value);
 public readonly record struct ArzSendToggleActionState(bool State);
 public readonly record struct ArzSendTargetPosition(Vector3 Position);
-public readonly record struct ArzSendClientJoin(string Text);
+public readonly record struct ArzSendCommandLine(string CommandLine);
 public readonly record struct ArzSendDroneHeading(float Heading);
+public readonly record struct ArzSendNavigationArrowSelection(byte SelectedIndex);
 public readonly record struct ArzSendPortalToggle(byte State);
 public readonly record struct ArzSendWeaponScroll(byte Direction);
 public readonly record struct ArzSendDamageResponseWeapon(byte WeaponId);

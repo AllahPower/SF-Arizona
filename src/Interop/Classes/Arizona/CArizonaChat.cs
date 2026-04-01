@@ -46,9 +46,6 @@ public readonly record struct ArizonaChatRoomSnapshot(
 
 public delegate void ArizonaChatRoomVisitor(in ArizonaChatRoomSnapshot room);
 
-// TODO: Add a high-level SFArizonaChat wrapper that tracks custom user rooms and exposes safe room management.
-// Full implementation will likely need stable hooks into _chat.asi lifecycle, but the current native interop is
-// already sufficient for a minimal recreate/write workflow.
 public static unsafe class CArizonaChat
 {
     private const string ModuleName = "_chat.asi";
@@ -56,6 +53,18 @@ public static unsafe class CArizonaChat
     private static readonly UTF8Encoding Utf8Strict = new(false, true);
     private const int MaxRoomStringBytes = 260;
 
+    // Exact RVAs below were confirmed against the current Arizona _chat.asi build.
+    // If Arizona updates _chat.asi and strips our names/comments in IDA, restore them from these use-sites:
+    // 1. ScreenChat_Initialize:
+    //    - after chat_rooms.json/chat_rooms_user.json are loaded, it iterates the general room registry
+    //    - look for writes into the dynamic fast-map table for type == 6 rooms
+    // 2. ScreenChat_UpdateRoomSelectorUi:
+    //    - walks the general room registry using buckets/base/count/active index
+    //    - this is the best anchor for ActiveRoomIndex + RoomRegistry{Buckets,Mask,BaseIndex,Count}
+    // 3. ScreenChat_DispatchToRoomHandler / ScreenChatRoomRegistry_{Upsert,Hide,Reset}DynamicRoom:
+    //    - these anchor the dynamic room fast-map globals {Buckets,Mask,BaseId,Count}
+    // Important: _chat.asi stores bucket count in the "Mask" globals, and then uses (bucketCount - 1) as the
+    // actual bitmask before AND. Do not treat these values as a ready-to-use mask.
     private static class RoomRuntimeRva
     {
         public const uint ActiveRoomIndex = 0x955CC;
@@ -71,6 +80,10 @@ public static unsafe class CArizonaChat
 
     private static class RoomOffsets
     {
+        // Restored from room object constructors and selector/runtime use-sites:
+        // - ScreenChatRoomConfig_LoadFromJson
+        // - ScreenChat_UpdateRoomSelectorUi
+        // - ScreenChat_Initialize dynamic room mapping loop
         public const int Type = 0x04;
         public const int Name = 0x08;
         public const int Color = 0x20;
@@ -83,6 +96,9 @@ public static unsafe class CArizonaChat
 
     private static class SmallStringOffsets
     {
+        // Arizona _chat.asi uses the same small-string layout repeatedly across room names and tokens:
+        // [0x00] inline chars or heap ptr, [0x14] capacity, inline capacity = 15.
+        // Reconfirm from any room/string copy helper if the module is updated.
         public const int Data = 0x00;
         public const int Capacity = 0x14;
         public const int InlineCapacity = 15;
@@ -156,6 +172,9 @@ public static unsafe class CArizonaChat
 
     public static bool IsAvailable => ResolveAll() && _addEntryThunk != 0;
     public static bool AreRoomsAvailable => TryReadRoomRegistryHeader(out _);
+
+    internal static nint HideDynamicRoomAddress { get { ResolveAll(); return _hideDynamicRoom; } }
+    internal static nint ResetDynamicRoomsAddress { get { ResolveAll(); return _resetDynamicRooms; } }
 
     public static bool TryAddEntry(EntryType type, string? text, string? prefix, uint textColor, uint prefixColor)
     {
@@ -483,6 +502,10 @@ public static unsafe class CArizonaChat
     private static bool TryReadRoomPointer(ArizonaChatRoomRegistryHeader header, int registryIndex, out nint roomPtr)
     {
         roomPtr = 0;
+        // In _chat.asi code this is always:
+        // bucketIndex = (registryIndex >> 2) & (bucketCount - 1)
+        // bucketSlot  = buckets[bucketIndex]
+        // roomPtr     = bucketSlot[registryIndex & 3]
         int bucketMask = header.BucketCount - 1;
         int bucketIndex = (registryIndex >> 2) & bucketMask;
         nint bucketSlotAddress = header.Buckets + bucketIndex * sizeof(nint);

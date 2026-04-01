@@ -111,6 +111,13 @@ public static partial class ArizonaPacket
         return new(r.ReadUInt8());
     }
 
+    public static ArzSrcursorSyncMode ParseSrcursorSyncMode(ref BitStreamReader r)
+    {
+        byte mode = r.ReadUInt8();
+        float? minCursorDelta = mode == 2 && r.RemainingBits >= 32 ? r.ReadFloat() : null;
+        return new(mode, minCursorDelta);
+    }
+
     public static ArzSetChatFlag ParseSetChatFlag(ref BitStreamReader r)
     {
         return new(r.ReadUInt8());
@@ -152,6 +159,28 @@ public static partial class ArizonaPacket
         return new(r.ReadUInt8() != 0);
     }
 
+    public static ArzChatCommandHelperEnabled ParseChatCommandHelperEnabled(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
+    }
+
+    public static ArzUnknown74 ParseUnknown74(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
+
+    public static ArzDiscordSetStateText ParseDiscordSetStateText(ref BitStreamReader r)
+    {
+        uint byteLength = r.ReadUInt32();
+        string text = byteLength > 0 ? Encoding.UTF8.GetString(r.ReadBytes((int)byteLength).ToArray()) : string.Empty;
+        return new(text);
+    }
+
+    public static ArzDiscordClearStateText ParseDiscordClearStateText(ref BitStreamReader r)
+    {
+        return new();
+    }
     public static ArzSetRadarVisibility ParseSetRadarVisibility(ref BitStreamReader r)
     {
         return new(r.ReadBitBool());
@@ -246,6 +275,11 @@ public static partial class ArizonaPacket
         return new(pid, rawPayload, trailingBit);
     }
 
+    public static ArzStreamFixMode ParseStreamFixMode(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
     public static ArzSetMapIcon ParseSetMapIcon(ref BitStreamReader r)
     {
         byte iconId = r.ReadUInt8();
@@ -283,6 +317,30 @@ public static partial class ArizonaPacket
     public static ArzSetVehicleFlight ParseSetVehicleFlight(ref BitStreamReader r)
     {
         return new(r.ReadBitBool());
+    }
+
+    public static ArzAttachVehicleToVehicleData ParseAttachVehicleToVehicleData(ref BitStreamReader r)
+    {
+        ushort vehicleId = r.ReadUInt16();
+        byte slot = r.ReadUInt8();
+        bool hasData = r.ReadBitBool();
+        ArzAttachVehicleToVehicleDataDescriptor? data = null;
+
+        if (hasData && r.RemainingBits >= 48 * 8)
+        {
+            Vector3 offset = ReadVec3(ref r);
+            Vector3 rotationDegrees = ReadVec3(ref r);
+            byte[] componentIds = r.ReadBytes(14).ToArray();
+            byte featureFlags = r.ReadUInt8();
+            byte variantId = r.ReadUInt8();
+            ushort modelId = r.ReadUInt16();
+            byte extraByte0 = r.ReadUInt8();
+            byte extraByte1 = r.ReadUInt8();
+            float drawDistance = r.ReadFloat();
+            data = new(offset, rotationDegrees, componentIds, featureFlags, variantId, modelId, extraByte0, extraByte1, drawDistance);
+        }
+
+        return new(vehicleId, slot, hasData, data);
     }
 
     public static ArzSetVehicleColorSmoke ParseSetVehicleColorSmoke(ref BitStreamReader r)
@@ -478,6 +536,96 @@ public static partial class ArizonaPacket
     {
         byte mode = r.ReadUInt8();
         return new(mode);
+    }
+
+    public static ArzWallHackToggle ParseWallHackToggle(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
+    }
+
+    public static ArzRadarFixPlayerStyle ParseRadarFixPlayerStyle(ref BitStreamReader r)
+    {
+        ushort playerIndex = r.ReadUInt16();
+        byte? style = r.RemainingBits >= 8 ? r.ReadUInt8() : null;
+        bool? lockFlag = r.RemainingBits > 0 ? r.ReadBitBool() : null;
+        return new(playerIndex, style, lockFlag);
+    }
+
+    public static ArzSimpleAttachmentsSetMaterial ParseSimpleAttachmentsSetMaterial(ref BitStreamReader r)
+    {
+        ushort playerId = r.ReadUInt16();
+        ushort attachIndex = r.ReadUInt16();
+        byte selector = r.ReadUInt8();
+        string materialName = r.ReadStringUInt8Length();
+        string textureName = r.ReadStringUInt8Length();
+        byte byte0 = r.ReadUInt8();
+        byte byte1 = r.ReadUInt8();
+        byte byte2 = r.ReadUInt8();
+        byte byte3 = r.ReadUInt8();
+        return new(playerId, attachIndex, selector, materialName, textureName, byte0, byte1, byte2, byte3);
+    }
+
+    public static ArzNavigationArrowTargets ParseNavigationArrowTargets(ref BitStreamReader r)
+    {
+        bool followVertical = r.ReadBitBool();
+        bool specialMode = r.ReadBitBool();
+        byte count = r.ReadUInt8();
+        ArzNavigationArrowTarget[] targets = new ArzNavigationArrowTarget[count];
+        for (int i = 0; i < count; i++)
+        {
+            targets[i] = new(r.ReadUInt16(), r.ReadUInt16(), r.ReadUInt16(), r.ReadUInt16());
+        }
+        return new(followVertical, specialMode, targets);
+    }
+
+    public static ArzGoogleAnalyticsMessage ParseGoogleAnalyticsMessage(ref BitStreamReader r)
+    {
+        byte len = r.ReadUInt8();
+        string text = len > 0 ? r.ReadFixedString(len) : string.Empty;
+        uint flags = r.ReadUInt32();
+        return new(text, flags);
+    }
+
+    public static ArzAttachVehicleToVehicleToggle ParseAttachVehicleToVehicleToggle(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
+    }
+
+    public static ArzVehicleDamageDoorPanelRules ParseVehicleDamageDoorPanelRules(ref BitStreamReader r)
+    {
+        ushort groupId = r.ReadUInt16();
+        ushort count = r.ReadUInt16();
+        ArzVehicleDamageDoorPanelRule[] entries = new ArzVehicleDamageDoorPanelRule[count];
+        for (int i = 0; i < count; i++)
+        {
+            entries[i] = new(r.ReadUInt16(), r.ReadFloat());
+        }
+        return new(groupId, entries);
+    }
+
+    public static ArzDirtySampObjectsMakeObjectDirty ParseDirtySampObjectsMakeObjectDirty(ref BitStreamReader r)
+    {
+        bool isAttachedObject = r.ReadBitBool();
+        byte dirtyLevel = r.ReadUInt8();
+        ushort objectId = r.ReadUInt16();
+        byte? attachIndex = isAttachedObject && r.RemainingBits >= 8 ? r.ReadUInt8() : null;
+        byte? extra = r.RemainingBits >= 8 ? r.ReadUInt8() : null;
+        return new(isAttachedObject, dirtyLevel, objectId, attachIndex, extra);
+    }
+
+    public static ArzTranslateObservedTextDrawPosition ParseTranslateObservedTextDrawPosition(ref BitStreamReader r)
+    {
+        ushort textDrawId = r.ReadUInt16();
+        float x = r.ReadFloat();
+        float y = r.ReadFloat();
+        return new(textDrawId, x, y);
+    }
+
+    public static ArzWaypoint3DSetPosition ParseWaypoint3DSetPosition(ref BitStreamReader r)
+    {
+        bool enabled = r.ReadBitBool();
+        Vector3? position = enabled ? ReadVec3(ref r) : null;
+        return new(enabled, position);
     }
 
     public static ArzSetGpsRoute ParseSetGpsRoute(ref BitStreamReader r)
@@ -873,15 +1021,29 @@ public static partial class ArizonaPacket
         return new(browserId, state);
     }
 
-    public static ArzSendHash ParseSendHash(ref BitStreamReader r)
+    public static ArzSendHWID ParseSendHWID(ref BitStreamReader r)
     {
-        byte[] hash = r.ReadBytes(64).ToArray();
-        return new(hash);
+        byte[] hexDigestBytes = r.ReadRemainingBytes();
+        return new(hexDigestBytes);
     }
 
     public static ArzSendSwitchChatMode ParseSendSwitchChatMode(ref BitStreamReader r)
     {
         return new(r.ReadUInt8());
+    }
+
+    public static ArzSendSrcursorPosition ParseSendSrcursorPosition(ref BitStreamReader r)
+    {
+        float x = r.ReadFloat();
+        float y = r.ReadFloat();
+        return new(x, y);
+    }
+
+    public static ArzInCarNanCheckReport ParseInCarNanCheckReport(ref BitStreamReader r)
+    {
+        byte reportKind = r.ReadUInt8();
+        ushort vehicleId = r.ReadUInt16();
+        return new(reportKind, vehicleId);
     }
 
     public static ArzSendFloatValue ParseSendFloatValue(ref BitStreamReader r)
@@ -899,7 +1061,7 @@ public static partial class ArizonaPacket
         return new(ReadVec3(ref r));
     }
 
-    public static ArzSendClientJoin ParseSendClientJoin(ref BitStreamReader r)
+    public static ArzSendCommandLine ParseSendCommandLine(ref BitStreamReader r)
     {
         return new(r.ReadStringUInt16Length());
     }
@@ -907,6 +1069,11 @@ public static partial class ArizonaPacket
     public static ArzSendDroneHeading ParseSendDroneHeading(ref BitStreamReader r)
     {
         return new(r.ReadFloat());
+    }
+
+    public static ArzSendNavigationArrowSelection ParseSendNavigationArrowSelection(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
     }
 
     public static ArzSendPortalToggle ParseSendPortalToggle(ref BitStreamReader r)

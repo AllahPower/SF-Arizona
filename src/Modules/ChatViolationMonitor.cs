@@ -11,10 +11,15 @@ public class ChatViolationMonitor : SFModuleBase
     private readonly object _sync = new();
     private readonly List<ChatViolationRecord> _records = new();
 
+    private const byte ViolationRoomId = 201;
+
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         using IDisposable violationsCommand = Context.RegisterChatCommand("violations", OnCommand);
         using IDisposable shortCommand = Context.RegisterChatCommand("viollog", OnCommand);
+
+        SF.ArizonaChat.CreateRoom(ViolationRoomId, "Violations", 0xFFFF4444, "viollog", true);
+        SF.ArizonaChat.WriteToRoom(ViolationRoomId, "Chat violation monitor started.", 0xFFAAAAAAu);
 
         await foreach (ClientMessageRpc entry in SF.Events.StreamIncomingRpc<ClientMessageRpc>(cancellationToken))
         {
@@ -37,6 +42,7 @@ public class ChatViolationMonitor : SFModuleBase
             }
 
             AddRecord(new(DateTime.Now, playerName, violationType, matchedFragment, entry.Text));
+            SF.ArizonaChat.WriteToRoom(ViolationRoomId, $"[{DateTime.Now:HH:mm:ss}] {playerName}: {violationType} — {TrimForList(matchedFragment)}", 0xFFFF6666u);
             Context.IncrementCounter("violations.detected");
             Context.SetDetail("records", GetSnapshot().Length.ToString());
             Context.Heartbeat($"violation:{violationType}");

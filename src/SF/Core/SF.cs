@@ -11,6 +11,7 @@ public static class SF
     public static SFRpc Rpc { get; } = new SFRpc();
     public static SFPackets Packets { get; } = new SFPackets();
     public static SFArizonaPackets Arizona { get; } = new SFArizonaPackets();
+    public static SFArizonaChat ArizonaChat { get; } = new SFArizonaChat();
     public static SFPacketParsers PacketParsers { get; } = new SFPacketParsers();
     public static SFRpcParsers RpcParsers { get; } = new SFRpcParsers();
     public static SFCamera Camera { get; } = new SFCamera();

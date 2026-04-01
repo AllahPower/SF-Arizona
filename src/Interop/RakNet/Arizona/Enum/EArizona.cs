@@ -85,6 +85,9 @@ public enum EArizona : byte
 
     //SetGreenZone = 26,
 
+    // SRCursor: u8 mode, if mode==2 then f32 min cursor delta for outgoing sync
+    SrcursorSyncMode = 57,
+
     // unknown payload
     Unknown27 = 27,
 
@@ -108,8 +111,14 @@ public enum EArizona : byte
     // _chat.asi: u8 room_id — soft-hides a dynamic chat room by setting inactive flag
     HideDynamicRoom = 37,
 
+    // Translate: u16 textDrawId, f32 x, f32 y
+    TranslateObservedTextDrawPosition = 58,
+
     // u8 state
     SetLocalInVehicle = 40,
+
+    // Waypoint3D: bit-bool enabled, if enabled then f32 x, f32 y, f32 z
+    Waypoint3DSetPosition = 65,
 
     // u8 mode
     SetNicknameMode = 42,
@@ -126,11 +135,26 @@ public enum EArizona : byte
     // u8 mode
     SwitchChatMode = 52,
 
+    // Waypoint3D: bit-bool enabled, if enabled then f32 radius
+    Waypoint3DSetRadius = 64,
+
     // bool status, float distance, u8 pad
     SetVisibleDistance3DMarker = 64,
 
     // bool8 status
     ShowPositionInDiscord = 71,
+
+    // ChatCommandHelper: bit-bool enabled
+    ChatCommandHelperEnabled = 72,
+
+    // u8 value - shares callback with SetRadarMode(9), exact module logic still being recovered
+    Unknown74 = 74,
+
+    // Discord: u32 byteLength, utf8 text bytes
+    DiscordSetStateText = 80,
+
+    // Discord: empty payload, clears rich presence state text
+    DiscordClearStateText = 82,
 
     // core.asi CRadarHook: single-bit flag that toggles radar visibility/display state
     SetRadarVisibility = 86,
@@ -208,6 +232,9 @@ public enum EArizona : byte
     // core.asi SharedTxd: 1 bit toggle
     ToggleSharedTxdFlag = 122,
 
+    // StreamFix: u8 mode - controls extra 4-byte append path in hooked stream builder
+    StreamFixMode = 126,
+
     // u8 icon_id, byte[14] pad, u16 icon_model, vec3 position, string8 icon_name, u8 pad
     SetMapIcon = 127,
 
@@ -232,6 +259,20 @@ public enum EArizona : byte
 
     // core.asi AdminCheats: bit-bool state - toggle vehicle flight cheat
     SetVehicleFlight = 137,
+
+    // AttachVehicleToVehicleData:
+    // u16 vehicleId, u8 slot, bit-bool hasData
+    // if hasData:
+    //   vec3 offset
+    //   vec3 rotationDegrees
+    //   u8[14] componentIds
+    //   u8 featureFlags
+    //   u8 variantId
+    //   u16 modelId
+    //   u8 extraByte0
+    //   u8 extraByte1
+    //   f32 drawDistance
+    AttachVehicleToVehicleData = 138,
 
     // u16 vehicle_id, float intensity, u8 r, u8 g, u8 b
     SetVehicleColorSmoke = 139,
@@ -271,6 +312,9 @@ public enum EArizona : byte
 
     // core.asi WeaponUpgrades: u8 weaponId, u8 upgradeCount, per-upgrade entries
     SetWeaponUpgrade = 157,
+
+    // WallHack: bit-bool enabled
+    WallHackToggle = 179,
 
     // core.asi PlayerAnimGroup: u16 playerId, u8 count, per-entry: (string group, u32 packed, string anim, u8 selector)
     SetPlayerAnimGroups = 161,
@@ -323,6 +367,18 @@ public enum EArizona : byte
     // core.asi Lines: u8 action (0-5), u16 line_id, variable payload per action
     SetLines = 188,
 
+    // RadarFix: u16 playerIndex, optional u8 style, optional bit-bool lockFlag
+    RadarFixPlayerStyle = 192,
+
+    // SimpleAttachments: u16 playerId, u16 attachIndex, u8 selector, string8 materialName, string8 textureName, u8[4] extra
+    SimpleAttachmentsSetMaterial = 194,
+
+    // navigation_arrow: bit-bool followVertical, bit-bool specialMode, u8 count, count * { u16 x, u16 y, u16 z, u16 radius }
+    NavigationArrowTargets = 197,
+
+    // GoogleAnalytics / referral tracking bridge: u8 len, bytes[len] text, u32 flags
+    GoogleAnalyticsMessage = 202,
+
     // raw payload, cef_loader blip icon bridge
     BlipIcon = 0xBE,
 
@@ -350,14 +406,23 @@ public enum EArizona : byte
     // If dword_10095554 is set, also relays as SAMP RPC 93 (ClientMessage).
     ChatMessageRelay = 210,
 
+    // AttachVehicleToVehicle: bit-bool enabled
+    AttachVehicleToVehicleToggle = 211,
+
     // u8 action (0=destroy, 1=create), u8 slot, endpoint data, u8 speed, bool loop, u32 color1, u32 color2
     SetGpsRoute = 212,
+
+    // VehicleDamage: u16 groupId, u16 count, count * { u16 key, f32 value }
+    VehicleDamageDoorPanelRules = 213,
 
     // bit-bool state - toggles first-person camera mode
     SetFirstPersonCamera = 215,
 
     // core.asi ExtendAnimGroups: player animation group extension data
     SetExtendAnimGroups = 216,
+
+    // DirtySampObjects: bit-bool isAttachedObject, u8 dirtyLevel, u16 objectId, [u8 attachIndex], [u8 extra]
+    DirtySampObjectsMakeObjectDirty = 218,
 
     // core.asi ToggleHeadMove: bit-bool state - toggles head movement
     ToggleHeadMove = 221,
@@ -391,11 +456,24 @@ public enum EArizona : byte
     // browser control state reply in vorbisFile.dll: u32 browser_id, bool state
     BrowserControlStateReply = 24,
 
-    // string[64] hash (fixed 64 bytes)
-    SendHash = 38,
+    // vorbisFile.dll HWID digest:
+    // storage/device string + volume serial -> XOR(volume serial key) -> SHA-256 -> 64-char hex
+    SendHWID = 38,
 
     // u8 mode
     SendSwitchChatMode = 51,
+
+    // SRCursor outgoing sync in vorbisFile.dll: f32 x, f32 y
+    SendSrcursorPosition = 57,
+
+    // vorbisFile.dll InCarNanChecks: u8 reportKind(0), u16 vehicleId
+    SendInCarNanPosition = 58,
+
+    // vorbisFile.dll InCarNanChecks: u8 reportKind(2), u16 vehicleId
+    SendInCarNanQuaternion = 60,
+
+    // vorbisFile.dll InCarNanChecks: u8 reportKind(1), u16 vehicleId
+    SendInCarNanTrainSpeed = 61,
 
     // float value
     SendFloatValue = 113,
@@ -406,8 +484,8 @@ public enum EArizona : byte
     // vec3 position
     SendTargetPosition = 116,
 
-    // string16 text
-    SendClientJoin = 140,
+    // vorbisFile.dll: current process command line string from GetCommandLineA
+    SendCommandLine = 140,
 
     // float heading
     SendDroneHeading = 148,
@@ -417,6 +495,9 @@ public enum EArizona : byte
 
     // u8 direction (0=up, 1=down)
     SendWeaponScroll = 184,
+
+    // navigation_arrow outgoing ack: u8 selected target index
+    SendNavigationArrowSelection = 198,
 
     // u8 weapon_id (observed 54, 55, 56)
     SendDamageResponseWeapon = 195,
