@@ -100,14 +100,22 @@ public enum EArizona : byte
     // u16 server_id, u32 argb, float scale, u16 a, u16 b, u8 flags
     UiColorScale = 34,
 
-    // u8 chat_id, string8 command, i32 color, string8 chat_name
+    // u8 chat_id, string8 icon, i32 color, string8 chat_name, u8 flags
+    // _chat.asi extends this into UpsertDynamicRoom: flags bit 0 = visible
+    // color transform: argb = (color >> 8) | 0xFF000000
     SetChatGroup = 36,
+
+    // _chat.asi: u8 room_id — soft-hides a dynamic chat room by setting inactive flag
+    HideDynamicRoom = 37,
 
     // u8 state
     SetLocalInVehicle = 40,
 
     // u8 mode
     SetNicknameMode = 42,
+
+    // _chat.asi: u8 state — toggles internal chat rendering flag
+    SetChatFlag = 43,
 
     // unknown payload (arizona-events only, not in core.asi)
     Unknown47 = 47,
@@ -335,6 +343,12 @@ public enum EArizona : byte
 
     // core.asi VehicleStrobeLights: u16 vehicleId, u8 step, float speed, bit-bool beam
     SetVehicleStrobelights = 209,
+
+    // _chat.asi: u32 color_rgba, u8 chat_type, [rich message segments...]
+    // color transform: argb = (color_rgba >> 8) | 0xFF000000
+    // Builds a ScreenChatMessage and dispatches it to room handlers.
+    // If dword_10095554 is set, also relays as SAMP RPC 93 (ClientMessage).
+    ChatMessageRelay = 210,
 
     // u8 action (0=destroy, 1=create), u8 slot, endpoint data, u8 speed, bool loop, u32 color1, u32 color2
     SetGpsRoute = 212,

@@ -48,7 +48,17 @@ public readonly record struct ArzVehicleMaterialsNamedPair(string Name, uint Pac
 public readonly record struct ArzVehicleMaterialsPacket(ushort VehicleId, ArzVehicleMaterialsOp[] Operations);
 
 public readonly record struct ArzUiColorScale(ushort BrowserId, uint Argb, float Scale, ushort U16a, ushort U16b, byte Flags);
-public readonly record struct ArzSetChatGroup(byte ChatId, string Command, int Color, string ChatName);
+public readonly record struct ArzSetChatGroup(byte ChatId, string Icon, int Color, string ChatName, byte Flags)
+{
+    public bool IsVisible => (Flags & 1) != 0;
+    public uint ArgbColor => ((uint)Color >> 8) | 0xFF000000;
+}
+public readonly record struct ArzHideDynamicRoom(byte RoomId);
+public readonly record struct ArzSetChatFlag(byte State);
+public readonly record struct ArzChatMessageRelay(uint ColorRgba, byte ChatType, byte[] RawPayload)
+{
+    public uint ArgbColor => (ColorRgba >> 8) | 0xFF000000;
+}
 public readonly record struct ArzSetLocalInVehicle(byte State);
 public readonly record struct ArzSetNicknameMode(byte Mode);
 public readonly record struct ArzSwitchChatMode(byte Mode);

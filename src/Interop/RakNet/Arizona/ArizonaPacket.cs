@@ -99,10 +99,29 @@ public static partial class ArizonaPacket
     public static ArzSetChatGroup ParseSetChatGroup(ref BitStreamReader r)
     {
         byte chatId = r.ReadUInt8();
-        string command = r.ReadStringUInt8Length();
+        string icon = r.ReadStringUInt8Length();
         int color = r.ReadInt32();
         string chatName = r.ReadStringUInt8Length();
-        return new(chatId, command, color, chatName);
+        byte flags = r.RemainingBits >= 8 ? r.ReadUInt8() : (byte)0;
+        return new(chatId, icon, color, chatName, flags);
+    }
+
+    public static ArzHideDynamicRoom ParseHideDynamicRoom(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
+    public static ArzSetChatFlag ParseSetChatFlag(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
+    public static ArzChatMessageRelay ParseChatMessageRelay(ref BitStreamReader r)
+    {
+        uint colorRgba = r.ReadUInt32();
+        byte chatType = r.ReadUInt8();
+        byte[] rawPayload = r.ReadRemainingBytes();
+        return new(colorRgba, chatType, rawPayload);
     }
 
     public static ArzSetLocalInVehicle ParseSetLocalInVehicle(ref BitStreamReader r)

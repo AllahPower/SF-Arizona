@@ -15,8 +15,6 @@ public class ChatViolationMonitor : SFModuleBase
     {
         using IDisposable violationsCommand = Context.RegisterChatCommand("violations", OnCommand);
         using IDisposable shortCommand = Context.RegisterChatCommand("viollog", OnCommand);
-        using IDisposable joinDebug = Context.RegisterIncomingRpc<ServerJoinRpc>(
-            rpc => SF.Chat.Add($"[ChatViolationMonitor] ServerJoin: {rpc.Nickname}[{rpc.PlayerId}] npc={rpc.IsNpc}"));
 
         await foreach (ClientMessageRpc entry in SF.Events.StreamIncomingRpc<ClientMessageRpc>(cancellationToken))
         {

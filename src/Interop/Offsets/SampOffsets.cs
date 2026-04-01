@@ -366,6 +366,22 @@ public static class SampOffsets
         public const int AddEntry = 0x67460;
         public const int AddChatMessage = 0x678A0;
         public const int AddMessage = 0x679F0;
+
+        public const int Entries = 0x0132;
+        public const int Redraw = 0x63DA;
+        public const int Size = 25578;
+
+        public const int EntryCount = 100;
+        public const int EntrySize = 252;
+
+        public const int Entry_Timestamp = 0x00;
+        public const int Entry_Prefix = 0x04;
+        public const int Entry_PrefixSize = 28;
+        public const int Entry_Text = 0x20;
+        public const int Entry_TextSize = 144;
+        public const int Entry_Type = 0xF0;
+        public const int Entry_TextColor = 0xF4;
+        public const int Entry_PrefixColor = 0xF8;
     }
 
     public static class RakClientVTable

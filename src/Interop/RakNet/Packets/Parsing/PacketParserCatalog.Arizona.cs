@@ -56,8 +56,10 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.RemoveObject, ArizonaPacket.ParseRemoveObject, "RemoveObject");
         Register220Incoming(registry, EArizona.UiColorScale, ArizonaPacket.ParseUiColorScale);
         Register220Incoming(registry, EArizona.SetChatGroup, ArizonaPacket.ParseSetChatGroup);
+        Register220Incoming(registry, EArizona.HideDynamicRoom, ArizonaPacket.ParseHideDynamicRoom);
         Register220Incoming(registry, EArizona.SetLocalInVehicle, ArizonaPacket.ParseSetLocalInVehicle);
         Register220Incoming(registry, EArizona.SetNicknameMode, ArizonaPacket.ParseSetNicknameMode);
+        Register220Incoming(registry, EArizona.SetChatFlag, ArizonaPacket.ParseSetChatFlag);
         Register220Incoming(registry, EArizona.SwitchChatMode, ArizonaPacket.ParseSwitchChatMode);
         Register220Incoming(registry, EArizona.SetVisibleDistance3DMarker, ArizonaPacket.ParseSetVisibleDistance3DMarker);
         Register220Incoming(registry, EArizona.ShowPositionInDiscord, ArizonaPacket.ParseShowPositionInDiscord);
@@ -123,6 +125,7 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.UpdateWeaponSlots, ArizonaPacket.ParseUpdateWeaponSlots);
         Register220Incoming(registry, EArizona.Unknown200, ArizonaPacket.ParseUnknown200);
         Register220Incoming(registry, EArizona.SetVehicleStrobelights, ArizonaPacket.ParseSetVehicleStrobelights);
+        Register220Incoming(registry, EArizona.ChatMessageRelay, ArizonaPacket.ParseChatMessageRelay);
         Register220Incoming(registry, EArizona.SetGpsRoute, ArizonaPacket.ParseSetGpsRoute);
         Register220Incoming(registry, EArizona.SetFirstPersonCamera, ArizonaPacket.ParseSetFirstPersonCamera);
         Register220Incoming(registry, EArizona.SetExtendAnimGroups, ArizonaPacket.ParseSetExtendAnimGroups);
