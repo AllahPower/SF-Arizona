@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 
 namespace SFSharp;
@@ -15,12 +18,75 @@ using unsafe DispatchMessageToHandlersDelegate = delegate* unmanaged[Cdecl]<nint
 // thiscall(refcountObj) -> int
 using unsafe RefCountedReleaseDelegate = delegate* unmanaged[Thiscall]<nint, int>;
 
+public enum ArizonaChatRoomType
+{
+    Unknown = 0,
+    Chat = 1,
+    Find = 2,
+    Regex = 3,
+    Proxy = 4,
+    Udp = 5,
+    Server = 6
+}
+
+public readonly record struct ArizonaChatRoomSnapshot(
+    int RegistryIndex,
+    int RoomIndex,
+    ArizonaChatRoomType Type,
+    string Name,
+    uint ColorArgb,
+    bool IsActive,
+    bool IsHiddenByConfig,
+    bool IsInactive,
+    bool HasMuteOverride,
+    bool IsMuted,
+    bool IsDynamic,
+    byte? RoomId,
+    string? IconToken);
+
+public delegate void ArizonaChatRoomVisitor(in ArizonaChatRoomSnapshot room);
+
 // TODO: Add a high-level SFArizonaChat wrapper that tracks custom user rooms and exposes safe room management.
 // Full implementation will likely need stable hooks into _chat.asi lifecycle, but the current native interop is
 // already sufficient for a minimal recreate/write workflow.
 public static unsafe class CArizonaChat
 {
     private const string ModuleName = "_chat.asi";
+    private static readonly Encoding RoomStringEncoding = CreateRoomStringEncoding();
+    private static readonly UTF8Encoding Utf8Strict = new(false, true);
+    private const int MaxRoomStringBytes = 260;
+
+    private static class RoomRuntimeRva
+    {
+        public const uint ActiveRoomIndex = 0x955CC;
+        public const uint DynamicRoomSlotTableBuckets = 0x955F8;
+        public const uint DynamicRoomSlotTableMask = 0x955FC;
+        public const uint DynamicRoomBaseId = 0x95600;
+        public const uint DynamicRoomCount = 0x95604;
+        public const uint RoomRegistryBuckets = 0x956B8;
+        public const uint RoomRegistryMask = 0x956BC;
+        public const uint RoomRegistryBaseIndex = 0x956C0;
+        public const uint RoomRegistryCount = 0x956C4;
+    }
+
+    private static class RoomOffsets
+    {
+        public const int Type = 0x04;
+        public const int Name = 0x08;
+        public const int Color = 0x20;
+        public const int HasMuteOverride = 0x29;
+        public const int Mute = 0x2A;
+        public const int Flags = 0x2B;
+        public const int DynamicRoomId = 0x4C;
+        public const int DynamicIconToken = 0x50;
+    }
+
+    private static class SmallStringOffsets
+    {
+        public const int Data = 0x00;
+        public const int Capacity = 0x14;
+        public const int InlineCapacity = 15;
+    }
 
     // ChatHooks_OnSampAddEntry — stdcall thunk that forwards into ScreenChat_AddFormattedEntry
     private static readonly byte?[] AddEntryThunkPattern =
@@ -89,6 +155,7 @@ public static unsafe class CArizonaChat
     private static bool _resolved;
 
     public static bool IsAvailable => ResolveAll() && _addEntryThunk != 0;
+    public static bool AreRoomsAvailable => TryReadRoomRegistryHeader(out _);
 
     public static bool TryAddEntry(EntryType type, string? text, string? prefix, uint textColor, uint prefixColor)
     {
@@ -206,6 +273,71 @@ public static unsafe class CArizonaChat
         return true;
     }
 
+    /// <summary>
+    /// Reads a safe snapshot of all visible ScreenChat room objects from the general room registry.
+    /// Callers should treat the returned records as ephemeral snapshots and never cache native pointers.
+    /// For safety this method only succeeds on the game main thread.
+    /// </summary>
+    public static bool TryGetRooms(out ArizonaChatRoomSnapshot[] rooms)
+    {
+        rooms = [];
+        if (!TryReadRoomRegistryHeader(out ArizonaChatRoomRegistryHeader header))
+        {
+            return false;
+        }
+
+        List<ArizonaChatRoomSnapshot> list = new(header.Count);
+        if (!TryEnumerateRoomsInternal(header, static (in ArizonaChatRoomSnapshot room, List<ArizonaChatRoomSnapshot> state) =>
+            {
+                state.Add(room);
+            }, list))
+        {
+            return false;
+        }
+
+        rooms = [.. list];
+        return true;
+    }
+
+    public static ArizonaChatRoomSnapshot[] GetRooms()
+    {
+        return TryGetRooms(out ArizonaChatRoomSnapshot[] rooms) ? rooms : [];
+    }
+
+    public static bool TryGetActiveRoom(out ArizonaChatRoomSnapshot room)
+    {
+        room = default;
+        if (!TryReadRoomRegistryHeader(out ArizonaChatRoomRegistryHeader header))
+        {
+            return false;
+        }
+
+        bool found = false;
+        _ = TryEnumerateRoomsInternal(header, static (in ArizonaChatRoomSnapshot current, StrongBox<ArizonaChatRoomSnapshot> state) =>
+        {
+            if (current.IsActive)
+            {
+                state.Value = current;
+            }
+        }, new StrongBox<ArizonaChatRoomSnapshot>(), ref found, requireActiveMatch: true, out room);
+
+        return found;
+    }
+
+    public static bool TryEnumerateRooms(ArizonaChatRoomVisitor visitor)
+    {
+        ArgumentNullException.ThrowIfNull(visitor);
+        if (!TryReadRoomRegistryHeader(out ArizonaChatRoomRegistryHeader header))
+        {
+            return false;
+        }
+
+        return TryEnumerateRoomsInternal(header, static (in ArizonaChatRoomSnapshot room, ArizonaChatRoomVisitor callback) =>
+        {
+            callback(room);
+        }, visitor);
+    }
+
     private static bool ResolveAll()
     {
         if (_resolved)
@@ -272,4 +404,293 @@ public static unsafe class CArizonaChat
         while (str[len] != 0) len++;
         return len;
     }
+
+    private static bool TryReadRoomRegistryHeader(out ArizonaChatRoomRegistryHeader header)
+    {
+        header = default;
+        if (SynchronizationContext.Current is not SFSynchronizationContext)
+        {
+            return false;
+        }
+
+        if (!TryGetModuleBase(out nint moduleBase))
+        {
+            return false;
+        }
+
+        if (!TryReadInt32(moduleBase + (nint)RoomRuntimeRva.RoomRegistryCount, out int count)
+            || count <= 0
+            || count > 512
+            || !TryReadInt32(moduleBase + (nint)RoomRuntimeRva.RoomRegistryBaseIndex, out int baseIndex)
+            || !TryReadInt32(moduleBase + (nint)RoomRuntimeRva.RoomRegistryMask, out int bucketCount)
+            || bucketCount <= 0
+            || bucketCount > 0x10000
+            || !TryReadPointer(moduleBase + (nint)RoomRuntimeRva.RoomRegistryBuckets, out nint buckets)
+            || buckets == 0
+            || !TryReadInt32(moduleBase + (nint)RoomRuntimeRva.ActiveRoomIndex, out int activeRoomIndex))
+        {
+            return false;
+        }
+
+        header = new(moduleBase, buckets, bucketCount, baseIndex, count, activeRoomIndex);
+        return true;
+    }
+
+    private static bool TryEnumerateRoomsInternal<TState>(
+        ArizonaChatRoomRegistryHeader header,
+        RoomSnapshotAction<TState> action,
+        TState state)
+    {
+        bool ignoredFound = false;
+        return TryEnumerateRoomsInternal(header, action, state, ref ignoredFound, requireActiveMatch: false, out _);
+    }
+
+    private static bool TryEnumerateRoomsInternal<TState>(
+        ArizonaChatRoomRegistryHeader header,
+        RoomSnapshotAction<TState> action,
+        TState state,
+        ref bool found,
+        bool requireActiveMatch,
+        out ArizonaChatRoomSnapshot activeRoom)
+    {
+        activeRoom = default;
+
+        for (int roomIndex = 0; roomIndex < header.Count; roomIndex++)
+        {
+            int registryIndex = header.BaseIndex + roomIndex;
+            if (!TryReadRoomPointer(header, registryIndex, out nint roomPtr) || roomPtr == 0)
+            {
+                continue;
+            }
+
+            if (!TryReadRoomSnapshot(roomPtr, registryIndex, roomIndex, header.ActiveRoomIndex == roomIndex, out ArizonaChatRoomSnapshot room))
+            {
+                continue;
+            }
+
+            if (room.IsActive)
+            {
+                activeRoom = room;
+                found = true;
+            }
+
+            action(room, state);
+        }
+
+        return !requireActiveMatch || found;
+    }
+
+    private static bool TryReadRoomPointer(ArizonaChatRoomRegistryHeader header, int registryIndex, out nint roomPtr)
+    {
+        roomPtr = 0;
+        int bucketMask = header.BucketCount - 1;
+        int bucketIndex = (registryIndex >> 2) & bucketMask;
+        nint bucketSlotAddress = header.Buckets + bucketIndex * sizeof(nint);
+        if (!TryReadPointer(bucketSlotAddress, out nint bucketPtr) || bucketPtr == 0)
+        {
+            return false;
+        }
+
+        nint roomSlotAddress = bucketPtr + (registryIndex & 3) * sizeof(nint);
+        return TryReadPointer(roomSlotAddress, out roomPtr);
+    }
+
+    private static bool TryReadRoomSnapshot(nint roomPtr, int registryIndex, int roomIndex, bool isActive, out ArizonaChatRoomSnapshot room)
+    {
+        room = default;
+        if (!NativeMemoryValidator.IsReadable(roomPtr, 0x54))
+        {
+            return false;
+        }
+
+        if (!TryReadInt32(roomPtr + RoomOffsets.Type, out int roomTypeValue))
+        {
+            return false;
+        }
+
+        ArizonaChatRoomType type = Enum.IsDefined(typeof(ArizonaChatRoomType), roomTypeValue)
+            ? (ArizonaChatRoomType)roomTypeValue
+            : ArizonaChatRoomType.Unknown;
+
+        if (!TryReadAnsiSmallString(roomPtr + RoomOffsets.Name, out string name))
+        {
+            name = string.Empty;
+        }
+
+        _ = TryReadUInt32(roomPtr + RoomOffsets.Color, out uint colorArgb);
+        bool hasMuteOverride = TryReadByte(roomPtr + RoomOffsets.HasMuteOverride, out byte hasMuteOverrideByte) && hasMuteOverrideByte != 0;
+        bool isMuted = TryReadByte(roomPtr + RoomOffsets.Mute, out byte muteByte) && muteByte != 0;
+
+        byte flags = 0;
+        _ = TryReadByte(roomPtr + RoomOffsets.Flags, out flags);
+
+        byte? roomId = null;
+        string? iconToken = null;
+        bool isDynamic = type == ArizonaChatRoomType.Server;
+        if (isDynamic)
+        {
+            if (TryReadByte(roomPtr + RoomOffsets.DynamicRoomId, out byte dynamicRoomId))
+            {
+                roomId = dynamicRoomId;
+            }
+
+            if (TryReadAnsiSmallString(roomPtr + RoomOffsets.DynamicIconToken, out string dynamicIcon))
+            {
+                iconToken = dynamicIcon;
+            }
+        }
+
+        room = new(
+            registryIndex,
+            roomIndex,
+            type,
+            name,
+            colorArgb,
+            isActive,
+            (flags & 1) != 0,
+            (flags & 2) != 0,
+            hasMuteOverride,
+            isMuted,
+            isDynamic,
+            roomId,
+            iconToken);
+        return true;
+    }
+
+    private static bool TryReadAnsiSmallString(nint stringAddress, out string value)
+    {
+        value = string.Empty;
+        if (!NativeMemoryValidator.IsReadable(stringAddress, 0x18))
+        {
+            return false;
+        }
+
+        if (!TryReadInt32(stringAddress + SmallStringOffsets.Capacity, out int capacity))
+        {
+            return false;
+        }
+
+        nint sourceAddress = stringAddress + SmallStringOffsets.Data;
+        if (capacity > SmallStringOffsets.InlineCapacity)
+        {
+            if (!TryReadPointer(sourceAddress, out sourceAddress) || sourceAddress == 0)
+            {
+                return false;
+            }
+        }
+
+        return TryReadAnsiCString(sourceAddress, MaxRoomStringBytes, out value);
+    }
+
+    private static bool TryReadAnsiCString(nint address, int maxBytes, out string value)
+    {
+        value = string.Empty;
+        if (!NativeMemoryValidator.IsReadable(address, 1))
+        {
+            return false;
+        }
+
+        List<byte> bytes = [];
+        for (int i = 0; i < maxBytes; i++)
+        {
+            nint cursor = address + i;
+            if (!NativeMemoryValidator.IsReadable(cursor, 1))
+            {
+                break;
+            }
+
+            byte current = *(byte*)cursor;
+            if (current == 0)
+            {
+                break;
+            }
+
+            bytes.Add(current);
+        }
+
+        value = bytes.Count == 0 ? string.Empty : DecodeRoomString([.. bytes]);
+        return true;
+    }
+
+    private static bool TryReadPointer(nint address, out nint value)
+    {
+        value = 0;
+        if (!NativeMemoryValidator.IsReadable(address, (nuint)sizeof(nint)))
+        {
+            return false;
+        }
+
+        value = *(nint*)address;
+        return true;
+    }
+
+    private static bool TryReadInt32(nint address, out int value)
+    {
+        value = 0;
+        if (!NativeMemoryValidator.IsReadable(address, sizeof(int)))
+        {
+            return false;
+        }
+
+        value = *(int*)address;
+        return true;
+    }
+
+    private static bool TryReadUInt32(nint address, out uint value)
+    {
+        value = 0;
+        if (!NativeMemoryValidator.IsReadable(address, sizeof(uint)))
+        {
+            return false;
+        }
+
+        value = *(uint*)address;
+        return true;
+    }
+
+    private static bool TryReadByte(nint address, out byte value)
+    {
+        value = 0;
+        if (!NativeMemoryValidator.IsReadable(address, sizeof(byte)))
+        {
+            return false;
+        }
+
+        value = *(byte*)address;
+        return true;
+    }
+
+    private static bool TryGetModuleBase(out nint moduleBase)
+    {
+        moduleBase = (nint)Win32.GetModuleHandle(ModuleName);
+        return moduleBase != 0;
+    }
+
+    private static Encoding CreateRoomStringEncoding()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        return Encoding.GetEncoding(1251);
+    }
+
+    private static string DecodeRoomString(byte[] bytes)
+    {
+        try
+        {
+            return Utf8Strict.GetString(bytes);
+        }
+        catch (DecoderFallbackException)
+        {
+            return RoomStringEncoding.GetString(bytes);
+        }
+    }
+
+    private readonly record struct ArizonaChatRoomRegistryHeader(
+        nint ModuleBase,
+        nint Buckets,
+        int BucketCount,
+        int BaseIndex,
+        int Count,
+        int ActiveRoomIndex);
+
+    private delegate void RoomSnapshotAction<in TState>(in ArizonaChatRoomSnapshot room, TState state);
 }
