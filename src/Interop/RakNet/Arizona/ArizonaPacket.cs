@@ -532,6 +532,11 @@ public static partial class ArizonaPacket
         return new(id, type);
     }
 
+    public static ArzShowLoadScreenVcQueue ParseShowLoadScreenVcQueue(ref BitStreamReader r)
+    {
+        return new();
+    }
+
     public static ArzUnknown200 ParseUnknown200(ref BitStreamReader r)
     {
         byte mode = r.ReadUInt8();
@@ -949,6 +954,22 @@ public static partial class ArizonaPacket
     public static ArzResetFirstPersonState ParseResetFirstPersonState(ref BitStreamReader r)
     {
         return new();
+    }
+
+    public static ArzSetVehicleBrakeCalipersModel ParseSetVehicleBrakeCalipersModel(ref BitStreamReader r)
+    {
+        ushort vehicleId = r.ReadUInt16();
+        bool toggle = r.ReadBitBool();
+        bool? isSimpleModel = null;
+        ushort? modelId = null;
+
+        if (toggle)
+        {
+            isSimpleModel = r.ReadBitBool();
+            modelId = r.ReadUInt16();
+        }
+
+        return new(vehicleId, toggle, isSimpleModel, modelId);
     }
 
     public static ArzToggleHeadMove ParseToggleHeadMove(ref BitStreamReader r)

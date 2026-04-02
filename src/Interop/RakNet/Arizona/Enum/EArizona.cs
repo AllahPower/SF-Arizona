@@ -376,6 +376,9 @@ public enum EArizona : byte
     // navigation_arrow: bit-bool followVertical, bit-bool specialMode, u8 count, count * { u16 x, u16 y, u16 z, u16 radius }
     NavigationArrowTargets = 197,
 
+    // core.asi ViceCityServer: no payload - switches the Vice City load screen into the queue/full-server preset
+    ShowLoadScreenVcQueue = 199,
+
     // GoogleAnalytics / referral tracking bridge: u8 len, bytes[len] text, u32 flags
     GoogleAnalyticsMessage = 202,
 
@@ -424,6 +427,9 @@ public enum EArizona : byte
     // DirtySampObjects: bit-bool isAttachedObject, u8 dirtyLevel, u16 objectId, [u8 attachIndex], [u8 extra]
     DirtySampObjectsMakeObjectDirty = 218,
 
+    // core.asi VehicleBrakeCalipers: u16 vehicleId, bit-bool toggle, [bit-bool isSimpleModel, u16 modelId]
+    SetVehicleBrakeCalipersModel = 220,
+
     // core.asi ToggleHeadMove: bit-bool state - toggles head movement
     ToggleHeadMove = 221,
 
@@ -457,7 +463,7 @@ public enum EArizona : byte
     BrowserControlStateReply = 24,
 
     // vorbisFile.dll HWID digest:
-    // storage/device string + volume serial -> XOR(volume serial key) -> SHA-256 -> 64-char hex
+    // GetVolumeInformationA->VolumeSerialNumber + volume serial(DeviceIoControl(IOCTL_STORAGE_QUERY_PROPERTY)) -> XOR(volume serial key) -> SHA-256 -> 64-char hex
     SendHWID = 38,
 
     // u8 mode

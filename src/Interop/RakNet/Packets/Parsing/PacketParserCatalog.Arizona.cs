@@ -138,6 +138,7 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.RadarFixPlayerStyle, ArizonaPacket.ParseRadarFixPlayerStyle);
         Register220Incoming(registry, EArizona.SimpleAttachmentsSetMaterial, ArizonaPacket.ParseSimpleAttachmentsSetMaterial);
         Register220Incoming(registry, EArizona.NavigationArrowTargets, ArizonaPacket.ParseNavigationArrowTargets);
+        Register220Incoming(registry, EArizona.ShowLoadScreenVcQueue, ArizonaPacket.ParseShowLoadScreenVcQueue);
         Register220Incoming(registry, EArizona.SetLines, ArizonaPacket.ParseSetLines);
         Register220Incoming(registry, EArizona.SetVehicleLights, ArizonaPacket.ParseSetVehicleLights);
         Register220Incoming(registry, EArizona.UpdateWeaponSlots, ArizonaPacket.ParseUpdateWeaponSlots);
@@ -152,6 +153,7 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.SetExtendAnimGroups, ArizonaPacket.ParseSetExtendAnimGroups);
         Register220Incoming(registry, EArizona.DirtySampObjectsMakeObjectDirty, ArizonaPacket.ParseDirtySampObjectsMakeObjectDirty);
         Register220Incoming(registry, EArizona.ResetFirstPersonState, ArizonaPacket.ParseResetFirstPersonState);
+        Register220Incoming(registry, EArizona.SetVehicleBrakeCalipersModel, ArizonaPacket.ParseSetVehicleBrakeCalipersModel);
         Register220Incoming(registry, EArizona.ToggleHeadMove, ArizonaPacket.ParseToggleHeadMove);
         Register220Incoming(registry, EArizona.SetVehicleBrakeCalipers, ArizonaPacket.ParseSetVehicleBrakeCalipers);
         Register220Incoming(registry, EArizona.BlipIcon, ArizonaPacket.ParseBlipIconRaw, "BlipIcon");

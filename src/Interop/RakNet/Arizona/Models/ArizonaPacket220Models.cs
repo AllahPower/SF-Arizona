@@ -140,6 +140,7 @@ public readonly record struct ArzRadarFixPlayerStyle(ushort PlayerIndex, byte? S
 public readonly record struct ArzSimpleAttachmentsSetMaterial(ushort PlayerId, ushort AttachIndex, byte Selector, string MaterialName, string TextureName, byte Byte0, byte Byte1, byte Byte2, byte Byte3);
 public readonly record struct ArzNavigationArrowTarget(ushort X, ushort Y, ushort Z, ushort Radius);
 public readonly record struct ArzNavigationArrowTargets(bool FollowVertical, bool SpecialMode, ArzNavigationArrowTarget[] Targets);
+public readonly record struct ArzShowLoadScreenVcQueue;
 public readonly record struct ArzGoogleAnalyticsMessage(string Text, uint Flags);
 public readonly record struct ArzAttachVehicleToVehicleToggle(bool Enabled);
 public readonly record struct ArzVehicleDamageDoorPanelRule(ushort Key, float Value);
@@ -176,6 +177,7 @@ public readonly record struct ArzSetGreenZone(byte Mode);
 public readonly record struct ArzUpdateWeaponSlots(byte WeaponId, byte[] RawPayload);
 public readonly record struct ArzSetExtendAnimGroups(ushort PlayerId, string GroupName);
 public readonly record struct ArzResetFirstPersonState;
+public readonly record struct ArzSetVehicleBrakeCalipersModel(ushort VehicleId, bool Toggle, bool? IsSimpleModel, ushort? ModelId);
 public readonly record struct ArzToggleHeadMove(bool State);
 public readonly record struct ArzSetVehicleBrakeCalipers(ushort VehicleId, byte Count, ushort[] ModelIds, uint? ExtraParam);
 
