@@ -7,7 +7,19 @@ namespace SFSharp.Interop.RakNet.Arizona.Enum;
 // Only IDs confirmed in libcef.asi are named here.
 public enum EArizonaEx : ushort
 {
-    // -- incoming (server -> client) --
+    #region outgoing (client -> server)
+
+    // u16 ped_id, vec3 position, byte[4] raw, bit-bool pad, float heading, byte[3] raw
+    // current project parser matches observed client-origin packet shape
+    BotSendOnfootSync = 53,
+
+    // bit-bool give_or_take, u16 ped_id, float damage, u8 weapon_id, u8 bodypart, u16 unknown0, u16 unknown1
+    // current project parser reflects observed outgoing shape; semantic names of trailing fields are not fully confirmed
+    BotSendDamage = 73,
+
+    #endregion
+
+    #region incoming (server -> client)
 
     // u16 ped_id, i16 model_id, vec3 pos, float rot, bool pad,
     // float hp, float armour, byte[3] pad,
@@ -116,13 +128,5 @@ public enum EArizonaEx : ushort
     // u16 onfoot_sync_rate
     BotSetOnfootSyncRate = 113,
 
-    // -- outgoing (client -> server) --
-
-    // u16 ped_id, vec3 position, byte[4] raw, bit-bool pad, float heading, byte[3] raw
-    // current project parser matches observed client-origin packet shape
-    BotSendOnfootSync = 53,
-
-    // bit-bool give_or_take, u16 ped_id, float damage, u8 weapon_id, u8 bodypart, u16 unknown0, u16 unknown1
-    // current project parser reflects observed outgoing shape; semantic names of trailing fields are not fully confirmed
-    BotSendDamage = 73,
+    #endregion
 }

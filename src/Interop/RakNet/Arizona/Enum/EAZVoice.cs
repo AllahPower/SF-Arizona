@@ -7,6 +7,8 @@ namespace SFSharp;
 /// </summary>
 public enum EAZVoice : byte
 {
+    #region incoming (server -> client)
+
     PluginInit = 3,
     CreateStaticAudioStream = 6,
     DeleteStream = 7,
@@ -26,4 +28,6 @@ public enum EAZVoice : byte
     DestroyStreamObject = 21,
     Disconnect = 22,
     SetReadyFlag = 23,
+
+    #endregion
 }

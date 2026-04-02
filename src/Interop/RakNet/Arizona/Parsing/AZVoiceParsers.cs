@@ -4,8 +4,6 @@ namespace SFSharp;
 
 public static class AZVoiceParsers
 {
-    // ---- Helpers ----
-
     private const int MaxVoicePayloadRoundedBits = 0x1007;
 
     private static void AlignToByte(ref BitStreamReader r)
@@ -102,7 +100,7 @@ public static class AZVoiceParsers
         return new AzvCreateFullStreamAction(actionType, parameters);
     }
 
-    // ---- Incoming sub-packet parsers (server -> client) ----
+    #region incoming (server -> client)
 
     public static AzvPluginInit ParsePluginInit(ref BitStreamReader r)
     {
@@ -305,7 +303,9 @@ public static class AZVoiceParsers
         return new AzvSetReadyFlag();
     }
 
-    // ---- Voice data packet parsers (raw packet 252, no sub-ID dispatch) ----
+    #endregion
+
+    #region multiplexed / raw AZVoice data packets
 
     public static AzvVoiceData ParseVoiceData(ref BitStreamReader r)
     {
@@ -332,4 +332,6 @@ public static class AZVoiceParsers
         byte[] opusData = r.RemainingBits > 0 ? r.ReadRemainingBytes() : [];
         return new AzvOutgoingVoiceData(packetNumber, streamId, opusData);
     }
+
+    #endregion
 }

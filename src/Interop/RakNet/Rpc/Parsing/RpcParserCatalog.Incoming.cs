@@ -6,7 +6,7 @@ public static partial class RpcParserCatalog
 {
     private static void RegisterIncoming(RpcParserRegistry registry)
     {
-        // Incoming (server -> client)
+        #region incoming (server -> client)
         RegisterIncoming(registry, ERpcId.SetPlayerName, SampRpc.ParseSetPlayerName);
         RegisterIncoming(registry, ERpcId.SetPlayerPos, SampRpc.ParseSetPlayerPos);
         RegisterIncoming(registry, ERpcId.SetPlayerPosFindZ, SampRpc.ParseSetPlayerPosFindZ);
@@ -131,7 +131,9 @@ public static partial class RpcParserCatalog
         RegisterIncoming(registry, ERpcId.SetActorPos, SampRpc.ParseSetActorPos);
         RegisterIncoming(registry, ERpcId.SetActorHealth, SampRpc.ParseSetActorHealth);
 
-        // Bidirectional incoming (server -> client side)
+        #endregion
+
+        #region bidirectional incoming (server -> client side)
         RegisterIncoming(registry, ERpcId.Chat, SampRpc.ParseChatMessage);
         RegisterIncoming(registry, ERpcId.EnterVehicle, SampRpc.ParseEnterVehicleIncoming);
         RegisterIncoming(registry, ERpcId.ExitVehicle, SampRpc.ParseExitVehicleIncoming);
@@ -147,5 +149,6 @@ public static partial class RpcParserCatalog
         RegisterIncoming(registry, ERpcId.DestroyWeaponPickup, SampRpc.ParseDestroyWeaponPickup);
         RegisterIncoming(registry, ERpcId.SelectObject, SampRpc.ParseSelectObject);
         RegisterIncoming(registry, ERpcId.SrvNetStats, SampRpc.ParseServerNetStatsResponse, name: "ServerNetStatsResponse");
+        #endregion
     }
 }

@@ -40,7 +40,9 @@ public partial class DebugModule
 
     private static (string? Name, string? Detail, string? Parsed) DecodeIncomingAZVoiceControl(IncomingArizonaPacketArgs args)
     {
-        if (SF.PacketParsers.Registry.TryParseIncomingAZVoiceControl(args, out PacketParseResult result)
+        if (SF.PacketParsers.Registry.TryGetIncomingTransportParser(EPacketId.AZVoice, args.SubId, out IIncomingArizonaPacketParser? parser)
+            && parser is not null
+            && parser.TryParse(args, out PacketParseResult result)
             && result.Packet is IParsedIncomingPacket packet)
         {
             (string? name, string? detail) = FormatParsedPacket(packet, args.EPacketId);

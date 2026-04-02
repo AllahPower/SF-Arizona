@@ -2,9 +2,28 @@ using System.Numerics;
 
 namespace SFSharp;
 
-// --- Packet 221 incoming (server -> client) --- bot/NPC system ---
-
 public readonly record struct ArzBotNametag(int Color, string Text);
+
+#region outgoing (client -> server)
+
+// id=53 | client-side bot position sync
+public readonly record struct ArzSendBotOnfootSync(ushort BotId, Vector3 Position, float Heading);
+
+// id=73 | bot damage report
+// first flag is observed as a single-bit value; remaining fields are still being recovered from core.asi
+public readonly record struct ArzSendBotDamage(
+    bool GiveOrTake,
+    ushort BotId,
+    float Damage,
+    byte WeaponId,
+    byte BodyPart,
+    ushort Unknown0,
+    ushort Unknown1
+);
+
+#endregion
+
+#region incoming (server -> client)
 
 // id=50 | bot appears in streaming range
 public readonly record struct ArzBotStreamIn(
@@ -116,10 +135,15 @@ public readonly record struct ArzBotChatBubble(ushort BotId, string Text, int Co
 
 // id=86 | attach object to bot
 public readonly record struct ArzSetBotAttachedObject(
-    ushort BotId, ushort Slot,
-    int ModelId, short BoneId,
-    Vector3 Offset, Vector3 Rotation, Vector3 Scale,
-    int Color1, int Color2
+    ushort BotId,
+    ushort Slot,
+    int ModelId,
+    short BoneId,
+    Vector3 Offset,
+    Vector3 Rotation,
+    Vector3 Scale,
+    int Color1,
+    int Color2
 );
 
 // id=87 | detach object from bot
@@ -145,10 +169,15 @@ public readonly record struct ArzTogglePedCollision(ushort BotId, bool State);
 
 // id=103 | attach simple object to bot (same layout as id=86)
 public readonly record struct ArzSetBotAttachedSimpleObject(
-    ushort BotId, ushort Slot,
-    int ModelId, short BoneId,
-    Vector3 Offset, Vector3 Rotation, Vector3 Scale,
-    int Color1, int Color2,
+    ushort BotId,
+    ushort Slot,
+    int ModelId,
+    short BoneId,
+    Vector3 Offset,
+    Vector3 Rotation,
+    Vector3 Scale,
+    int Color1,
+    int Color2,
     bool Unknown0
 );
 
@@ -164,27 +193,4 @@ public readonly record struct ArzSetBotArmour(ushort BotId, ushort Unknown0, uin
 // id=113 | set libPED on-foot sync rate
 public readonly record struct ArzSetBotOnfootSyncRate(ushort Rate);
 
-// --- Packet 221 outgoing (client -> server) ---
-
-// id=53 | client-side bot position sync
-public readonly record struct ArzSendBotOnfootSync(ushort BotId, Vector3 Position, float Heading);
-
-// id=73 | bot damage report
-// first flag is observed as a single-bit value; remaining fields are still being recovered from core.asi
-public readonly record struct ArzSendBotDamage(
-    bool GiveOrTake,
-    ushort BotId,
-    float Damage,
-    byte WeaponId,
-    byte BodyPart,
-    ushort Unknown0,
-    ushort Unknown1
-);
-
-// ============================================================================
-// Parser methods.
-// Packet 220 parsers start after the sub-id byte.
-// Packet 221 parsers start after the u16 sub-id in the current transport layer.
-// ============================================================================
-
-
+#endregion

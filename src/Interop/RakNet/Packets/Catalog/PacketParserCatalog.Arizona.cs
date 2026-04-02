@@ -7,7 +7,7 @@ public static partial class PacketParserCatalog
 {
     private static void RegisterArizona220(PacketParserRegistry registry)
     {
-        // Outgoing (client -> server)
+        #region outgoing (client -> server)
         Register220Outgoing(registry, EArizona.SendKey, ArizonaPacket.ParseSendKey);
         Register220Outgoing(registry, EArizona.SendSwitchChatState, ArizonaPacket.ParseSendSwitchChatState);
         Register220Outgoing(registry, EArizona.SendTurnLights, ArizonaPacket.ParseSendTurnLights);
@@ -17,33 +17,34 @@ public static partial class PacketParserCatalog
         Register220Outgoing(registry, EArizona.ModuleReadResponse, ArizonaPacket.ParseModuleReadResponse, "ModuleReadResponse");
         Register220Outgoing(registry, EArizona.BrowserControlStateReply, ArizonaPacket.ParseBrowserControlStateReply, "BrowserControlStateReply");
         Register220Outgoing(registry, EArizona.SendHWID, ArizonaPacket.ParseSendHWID);
+        Register220Outgoing(registry, EArizona.SendVehicleSpeedLimiterState, ArizonaPacket.ParseSendVehicleSpeedLimiterState);
         Register220Outgoing(registry, EArizona.SendSwitchChatMode, ArizonaPacket.ParseSendSwitchChatMode);
         Register220Outgoing(registry, EArizona.SendSrcursorPosition, ArizonaPacket.ParseSendSrcursorPosition, "SendSrcursorPosition");
         Register220Outgoing(registry, EArizona.SendInCarNanPosition, ArizonaPacket.ParseInCarNanCheckReport, "SendInCarNanPosition");
         Register220Outgoing(registry, EArizona.SendInCarNanQuaternion, ArizonaPacket.ParseInCarNanCheckReport, "SendInCarNanQuaternion");
         Register220Outgoing(registry, EArizona.SendInCarNanTrainSpeed, ArizonaPacket.ParseInCarNanCheckReport, "SendInCarNanTrainSpeed");
+        Register220Outgoing(registry, EArizona.SendKeyboardLayoutCapsState, ArizonaPacket.ParseSendKeyboardLayoutCapsState);
         Register220Outgoing(registry, EArizona.SendFloatValue, ArizonaPacket.ParseSendFloatValue);
         Register220Outgoing(registry, EArizona.SendToggleActionState, ArizonaPacket.ParseSendToggleActionState);
         Register220Outgoing(registry, EArizona.SendTargetPosition, ArizonaPacket.ParseSendTargetPosition);
+        Register220Outgoing(registry, EArizona.SendSimpleTuningProgress, ArizonaPacket.ParseSendSimpleTuningProgress);
         Register220Outgoing(registry, EArizona.SendCommandLine, ArizonaPacket.ParseSendCommandLine);
         Register220Outgoing(registry, EArizona.SendDroneHeading, ArizonaPacket.ParseSendDroneHeading);
         Register220Outgoing(registry, EArizona.SendNavigationArrowSelection, ArizonaPacket.ParseSendNavigationArrowSelection);
         Register220Outgoing(registry, EArizona.SendPortalToggle, ArizonaPacket.ParseSendPortalToggle);
+        Register220Outgoing(registry, EArizona.SendPortalPlacementPreview, ArizonaPacket.ParseSendPortalPlacementPreview);
         Register220Outgoing(registry, EArizona.SendWeaponScroll, ArizonaPacket.ParseSendWeaponScroll);
         Register220Outgoing(registry, EArizona.SendDamageResponseWeapon, ArizonaPacket.ParseSendDamageResponseWeapon);
 
-        // Incoming (server -> client)
+        #endregion
+
+        #region incoming (server -> client)
         Register220Incoming(registry, EArizona.SetLocalDriver, ArizonaPacket.ParseSetLocalDriver);
         Register220Incoming(registry, EArizona.TurnLightUpdate, ArizonaPacket.ParseTurnLightUpdate);
         Register220Incoming(registry, EArizona.SetSatiety, ArizonaPacket.ParseSetSatiety);
         Register220Incoming(registry, EArizona.SetHudMode, ArizonaPacket.ParseSetHudMode);
         Register220Incoming(registry, EArizona.SetRadarMode, ArizonaPacket.ParseSetRadarMode);
-        Register220Incoming(registry, EArizona.LoadJs, ArizonaPacket.ParseLoadJs);
-        Register220Incoming(registry, EArizona.SimpleCreate, ArizonaPacket.ParseSimpleCreate, "SimpleCreate");
-        Register220Incoming(registry, EArizona.CreateScaled, ArizonaPacket.ParseCreateScaled, "CreateScaled");
         Register220Incoming(registry, EArizona.PlayMediaOnBillboard, ArizonaPacket.ParsePlayMediaOnBillboard);
-        Register220Incoming(registry, EArizona.ObjectCreate, ArizonaPacket.ParseObjectCreate, "ObjectCreate");
-        Register220Incoming(registry, EArizona.InsideObjectCreate, ArizonaPacket.ParseInsideObjectCreate, "InsideObjectCreate");
         Register220Incoming(registry, EArizona.Close, ArizonaPacket.ParseClose, "Close");
         Register220Incoming(registry, EArizona.Move, ArizonaPacket.ParseMove, "Move");
         Register220Incoming(registry, EArizona.ChangeUrl, ArizonaPacket.ParseChangeUrl, "ChangeUrl");
@@ -51,7 +52,6 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.SendMessage, ArizonaPacket.ParseSendMessage, "SendMessage");
         Register220Incoming(registry, EArizona.ToggleScreen, ArizonaPacket.ParseToggleScreen, "ToggleScreen");
         Register220Incoming(registry, EArizona.RequestClientViewport, ArizonaPacket.ParseRequestClientViewport, "RequestClientViewport");
-        Register220Incoming(registry, EArizona.ModuleReadRequest, ArizonaPacket.ParseModuleReadRequest, "ModuleReadRequest");
         Register220Incoming(registry, EArizona.ToggleShow, ArizonaPacket.ParseToggleShow, "ToggleShow");
         Register220Incoming(registry, EArizona.BrowserClick, ArizonaPacket.ParseBrowserClick, "BrowserClick");
         Register220Incoming(registry, EArizona.GetBrowserControlState, ArizonaPacket.ParseGetBrowserControlState, "GetBrowserControlState");
@@ -62,13 +62,12 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.UiColorScale, ArizonaPacket.ParseUiColorScale);
         Register220Incoming(registry, EArizona.SetChatGroup, ArizonaPacket.ParseSetChatGroup);
         Register220Incoming(registry, EArizona.HideDynamicRoom, ArizonaPacket.ParseHideDynamicRoom);
-        Register220Incoming(registry, EArizona.SrcursorSyncMode, ArizonaPacket.ParseSrcursorSyncMode);
-        Register220Incoming(registry, EArizona.TranslateObservedTextDrawPosition, ArizonaPacket.ParseTranslateObservedTextDrawPosition);
         Register220Incoming(registry, EArizona.SetLocalInVehicle, ArizonaPacket.ParseSetLocalInVehicle);
         Register220Incoming(registry, EArizona.SetNicknameMode, ArizonaPacket.ParseSetNicknameMode);
         Register220Incoming(registry, EArizona.SetChatFlag, ArizonaPacket.ParseSetChatFlag);
         Register220Incoming(registry, EArizona.SwitchChatMode, ArizonaPacket.ParseSwitchChatMode);
-        Register220Incoming(registry, EArizona.Waypoint3DSetRadius, ArizonaPacket.ParseSetVisibleDistance3DMarker);
+        Register220Incoming(registry, EArizona.SrcursorSyncMode, ArizonaPacket.ParseSrcursorSyncMode);
+        Register220Incoming(registry, EArizona.TranslateObservedTextDrawPosition, ArizonaPacket.ParseTranslateObservedTextDrawPosition);
         Register220Incoming(registry, EArizona.Waypoint3DSetPosition, ArizonaPacket.ParseWaypoint3DSetPosition);
         Register220Incoming(registry, EArizona.ShowPositionInDiscord, ArizonaPacket.ParseShowPositionInDiscord);
         Register220Incoming(registry, EArizona.ChatCommandHelperEnabled, ArizonaPacket.ParseChatCommandHelperEnabled);
@@ -88,7 +87,7 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.ToggleMapColors, ArizonaPacket.ParseToggleMapColors);
         Register220Incoming(registry, EArizona.ChangeServer, ArizonaPacket.ParseChangeServer);
         Register220Incoming(registry, EArizona.ShowLoadScreenVc, ArizonaPacket.ParseShowLoadScreenVc);
-        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<ArzSetChatIconState>>(EPacketId.ArizonaCef, (int)EArizona.SetChatIconState, args => ParseIncoming220(args, EArizona.SetChatIconState, EArizona.SetChatIconState.ToString(), ArizonaPacket.ParseSetChatIconState), name: $"Arizona220:{EArizona.SetChatIconState}", minimumPayloadBitLength: 33));
+        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<ArzSetChatIconState>>(EPacketId.ArizonaCef, (int)EArizona.SetChatIconState, args => ArizonaPacketTransportParsing.ParseIncoming220(args, EArizona.SetChatIconState, EArizona.SetChatIconState.ToString(), ArizonaPacket.ParseSetChatIconState), name: $"Arizona220:{EArizona.SetChatIconState}", minimumPayloadBitLength: 33));
         Register220Incoming(registry, EArizona.SetGreenZone, ArizonaPacket.ParseUiConfig);
         Register220Incoming(registry, EArizona.SetVehicleModelSpeedLimit, ArizonaPacket.ParseSetVehicleModelSpeedLimit);
         Register220Incoming(registry, EArizona.SetSpectatorPatches, ArizonaPacket.ParseSetSpectatorPatches);
@@ -121,7 +120,6 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.VehicleFeatureReset, ArizonaPacket.ParseVehicleFeatureReset);
         Register220Incoming(registry, EArizona.SetWeaponUpgrade, ArizonaPacket.ParseSetWeaponUpgrade);
         Register220Incoming(registry, EArizona.SetPlayerAnimGroups, ArizonaPacket.ParseSetPlayerAnimGroups);
-        Register220Incoming(registry, EArizona.WallHackToggle, ArizonaPacket.ParseWallHackToggle);
         Register220Incoming(registry, EArizona.LoadBinary, ArizonaPacket.ParseLoadBinary);
         Register220Incoming(registry, EArizona.TogglePortal, ArizonaPacket.ParseTogglePortal);
         Register220Incoming(registry, EArizona.CreatePortal, ArizonaPacket.ParseCreatePortal);
@@ -132,18 +130,19 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.SetInterior, ArizonaPacket.ParseSetInterior);
         Register220Incoming(registry, EArizona.UiToggle, ArizonaPacket.ParseUiToggle);
         Register220Incoming(registry, EArizona.SetWaterLevel, ArizonaPacket.ParseSetWaterLevel);
+        Register220Incoming(registry, EArizona.WallHackToggle, ArizonaPacket.ParseWallHackToggle);
         Register220Incoming(registry, EArizona.VehicleHeadlightsState, ArizonaPacket.ParseVehicleHeadlightsState);
         Register220Incoming(registry, EArizona.SetVirtualWorld, ArizonaPacket.ParseSetVirtualWorld);
         Register220Incoming(registry, EArizona.SetVehicleDriftMode, ArizonaPacket.ParseSetVehicleDriftMode);
         Register220Incoming(registry, EArizona.RadarFixPlayerStyle, ArizonaPacket.ParseRadarFixPlayerStyle);
         Register220Incoming(registry, EArizona.SimpleAttachmentsSetMaterial, ArizonaPacket.ParseSimpleAttachmentsSetMaterial);
-        Register220Incoming(registry, EArizona.NavigationArrowTargets, ArizonaPacket.ParseNavigationArrowTargets);
-        Register220Incoming(registry, EArizona.ShowLoadScreenVcQueue, ArizonaPacket.ParseShowLoadScreenVcQueue);
         Register220Incoming(registry, EArizona.SetLines, ArizonaPacket.ParseSetLines);
         Register220Incoming(registry, EArizona.SetVehicleLights, ArizonaPacket.ParseSetVehicleLights);
         Register220Incoming(registry, EArizona.UpdateWeaponSlots, ArizonaPacket.ParseUpdateWeaponSlots);
-        Register220Incoming(registry, EArizona.GoogleAnalyticsMessage, ArizonaPacket.ParseGoogleAnalyticsMessage);
+        Register220Incoming(registry, EArizona.NavigationArrowTargets, ArizonaPacket.ParseNavigationArrowTargets);
+        Register220Incoming(registry, EArizona.ShowLoadScreenVcQueue, ArizonaPacket.ParseShowLoadScreenVcQueue);
         Register220Incoming(registry, EArizona.Unknown200, ArizonaPacket.ParseUnknown200);
+        Register220Incoming(registry, EArizona.GoogleAnalyticsMessage, ArizonaPacket.ParseGoogleAnalyticsMessage);
         Register220Incoming(registry, EArizona.SetVehicleStrobelights, ArizonaPacket.ParseSetVehicleStrobelights);
         Register220Incoming(registry, EArizona.ChatMessageRelay, ArizonaPacket.ParseChatMessageRelay);
         Register220Incoming(registry, EArizona.AttachVehicleToVehicleToggle, ArizonaPacket.ParseAttachVehicleToVehicleToggle);
@@ -156,17 +155,33 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.SetVehicleBrakeCalipersModel, ArizonaPacket.ParseSetVehicleBrakeCalipersModel);
         Register220Incoming(registry, EArizona.ToggleHeadMove, ArizonaPacket.ParseToggleHeadMove);
         Register220Incoming(registry, EArizona.SetVehicleBrakeCalipers, ArizonaPacket.ParseSetVehicleBrakeCalipers);
+
+        #endregion
+
+        #region multiplexed / aliased IDs (payload shape depends on module/runtime path)
+        Register220Incoming(registry, EArizona.LoadJs, ArizonaPacket.ParseLoadJs);
+        Register220Incoming(registry, EArizona.SimpleCreate, ArizonaPacket.ParseSimpleCreate, "SimpleCreate");
+        Register220Incoming(registry, EArizona.CreateScaled, ArizonaPacket.ParseCreateScaled, "CreateScaled");
+        Register220Incoming(registry, EArizona.ObjectCreate, ArizonaPacket.ParseObjectCreate, "ObjectCreate");
+        Register220Incoming(registry, EArizona.InsideObjectCreate, ArizonaPacket.ParseInsideObjectCreate, "InsideObjectCreate");
+        Register220Incoming(registry, EArizona.ModuleReadRequest, ArizonaPacket.ParseModuleReadRequest, "ModuleReadRequest");
+        Register220Incoming(registry, EArizona.Waypoint3DSetRadius, ArizonaPacket.ParseSetVisibleDistance3DMarker);
+        Register220Incoming(registry, EArizona.SetVisibleDistance3DMarker, ArizonaPacket.ParseSetVisibleDistance3DMarker, "SetVisibleDistance3DMarker");
+        Register220Incoming(registry, EArizona.UiConfig, ArizonaPacket.ParseUiConfig, "UiConfig");
         Register220Incoming(registry, EArizona.BlipIcon, ArizonaPacket.ParseBlipIconRaw, "BlipIcon");
         Register220Incoming(registry, EArizona.MarkerIconBatch, ArizonaPacket.ParseMarkerIconBatchRaw, "MarkerIconBatch");
+        #endregion
     }
 
     private static void RegisterArizona221(PacketParserRegistry registry)
     {
-        // Outgoing (client -> server)
+        #region outgoing (client -> server)
         Register221Outgoing(registry, EArizonaEx.BotSendOnfootSync, ArizonaPacket.ParseSendBotOnfootSync);
         Register221Outgoing(registry, EArizonaEx.BotSendDamage, ArizonaPacket.ParseSendBotDamage);
 
-        // Incoming (server -> client)
+        #endregion
+
+        #region incoming (server -> client)
         Register221Incoming(registry, EArizonaEx.BotWorldPedAdd, ArizonaPacket.ParseBotStreamIn);
         Register221Incoming(registry, EArizonaEx.BotWorldPedRemove, ArizonaPacket.ParseBotStreamOut);
         Register221Incoming(registry, EArizonaEx.BotOnfootPedSync, ArizonaPacket.ParseBotOnfootSync);
@@ -201,8 +216,9 @@ public static partial class PacketParserCatalog
         Register221Incoming(registry, EArizonaEx.BotSetHealth, ArizonaPacket.ParseSetBotHealth);
         Register221Incoming(registry, EArizonaEx.BotSetArmour, ArizonaPacket.ParseSetBotArmour);
         Register221Incoming(registry, EArizonaEx.BotSetOnfootSyncRate, ArizonaPacket.ParseSetBotOnfootSyncRate);
-    }
 
+        #endregion
+    }
 
 }
 

@@ -7,7 +7,8 @@ namespace SFSharp.Interop.RakNet.Packets.Enum;
 /// </summary>
 public enum ERpcId : byte
 {
-    // Incoming (server -> client)
+    #region incoming (server -> client)
+
     SetPlayerName = 11,
     SetPlayerPos = 12,
     SetPlayerPosFindZ = 13,
@@ -132,7 +133,10 @@ public enum ERpcId : byte
     SetActorPos = 176,
     SetActorHealth = 178,
 
-    // Bidirectional (client <-> server)
+    #endregion
+
+    #region bidirectional (client <-> server)
+
     EnterVehicle = 26,      // client: notify server; server: broadcast to others
     ClickTextDraw = 83,     // client: click textdraw; server: toggle select mode
     ScmEvent = 96,          // vehicle tuning notification
@@ -146,7 +150,16 @@ public enum ERpcId : byte
     ExitVehicle = 154,      // client: notify server; server: broadcast to others
     UpdateScoresAndPings = 155,
 
-    // Outgoing (client -> server)
+    #endregion
+
+    #region bidirectional (used with different parsers for incoming/outgoing)
+
+    SelectObject = 27,
+
+    #endregion
+
+    #region outgoing (client -> server)
+
     ClickPlayer = 23,
     ClientJoin = 25,
     ScriptCash = 31,
@@ -168,7 +181,5 @@ public enum ERpcId : byte
     CameraTargetUpdate = 168,
     GiveActorDamage = 177,
 
-    // Bidirectional (used with different parsers for incoming/outgoing)
-    SelectObject = 27,
-
+    #endregion
 }

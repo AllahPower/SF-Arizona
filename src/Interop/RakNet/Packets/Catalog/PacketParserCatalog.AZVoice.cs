@@ -6,7 +6,7 @@ public static partial class PacketParserCatalog
 {
     private static void RegisterAZVoice(PacketParserRegistry registry)
     {
-        // Incoming (server -> client) — AZVoice control sub-packets (sub-ID 3-23)
+        #region incoming (server -> client)
         RegisterAZVoiceIncoming(registry, EAZVoice.PluginInit, AZVoiceParsers.ParsePluginInit);
         RegisterAZVoiceIncoming(registry, EAZVoice.CreateStaticAudioStream, AZVoiceParsers.ParseCreateStaticAudioStream);
         RegisterAZVoiceIncoming(registry, EAZVoice.DeleteStream, AZVoiceParsers.ParseDeleteStream);
@@ -27,16 +27,13 @@ public static partial class PacketParserCatalog
         RegisterAZVoiceIncoming(registry, EAZVoice.Disconnect, AZVoiceParsers.ParseDisconnect);
         RegisterAZVoiceIncoming(registry, EAZVoice.SetReadyFlag, AZVoiceParsers.ParseSetReadyFlag);
 
-        // Outgoing (client -> server) — raw voice data only (no sub-ID dispatch)
-        registry.Register(new DelegateOutgoingPacketParser<OutgoingAZVoiceDataPacket>(
-            EPacketId.AZVoice, ParseOutgoingAZVoiceData, name: "AZVoice:VoiceData", minimumBitLength: 32));
-    }
+        #endregion
 
-    private static OutgoingAZVoiceDataPacket ParseOutgoingAZVoiceData(OutgoingPacketArgs args)
-    {
-        BitStreamReader reader = args.CreateReader();
-        reader.SkipBytes(1); // skip packet ID (0xFC)
-        var data = AZVoiceParsers.ParseOutgoingVoiceData(ref reader);
-        return new OutgoingAZVoiceDataPacket(data);
+        #region outgoing (client -> server)
+
+        registry.Register(new DelegateOutgoingPacketParser<OutgoingAZVoiceDataPacket>(
+            EPacketId.AZVoice, AZVoicePacketParsing.ParseOutgoingVoiceDataPacket, name: "AZVoice:VoiceData", minimumBitLength: 32));
+
+        #endregion
     }
 }

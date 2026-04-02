@@ -1048,6 +1048,11 @@ public static partial class ArizonaPacket
         return new(hexDigestBytes);
     }
 
+    public static ArzSendVehicleSpeedLimiterState ParseSendVehicleSpeedLimiterState(ref BitStreamReader r)
+    {
+        return new(r.ReadUInt8());
+    }
+
     public static ArzSendSwitchChatMode ParseSendSwitchChatMode(ref BitStreamReader r)
     {
         return new(r.ReadUInt8());
@@ -1067,6 +1072,13 @@ public static partial class ArizonaPacket
         return new(reportKind, vehicleId);
     }
 
+    public static ArzSendKeyboardLayoutCapsState ParseSendKeyboardLayoutCapsState(ref BitStreamReader r)
+    {
+        byte keyboardLayoutLowByte = r.ReadUInt8();
+        bool capsLockOn = r.ReadBitBool();
+        return new(keyboardLayoutLowByte, capsLockOn);
+    }
+
     public static ArzSendFloatValue ParseSendFloatValue(ref BitStreamReader r)
     {
         return new(r.ReadFloat());
@@ -1080,6 +1092,13 @@ public static partial class ArizonaPacket
     public static ArzSendTargetPosition ParseSendTargetPosition(ref BitStreamReader r)
     {
         return new(ReadVec3(ref r));
+    }
+
+    public static ArzSendSimpleTuningProgress ParseSendSimpleTuningProgress(ref BitStreamReader r)
+    {
+        uint accumulatedValue = r.ReadUInt32();
+        byte tierStep = r.ReadUInt8();
+        return new(accumulatedValue, tierStep);
     }
 
     public static ArzSendCommandLine ParseSendCommandLine(ref BitStreamReader r)
@@ -1100,6 +1119,14 @@ public static partial class ArizonaPacket
     public static ArzSendPortalToggle ParseSendPortalToggle(ref BitStreamReader r)
     {
         return new(r.ReadUInt8());
+    }
+
+    public static ArzSendPortalPlacementPreview ParseSendPortalPlacementPreview(ref BitStreamReader r)
+    {
+        byte portalType = r.ReadUInt8();
+        Vector3 pointA = ReadVec3(ref r);
+        Vector3 pointB = ReadVec3(ref r);
+        return new(portalType, pointA, pointB);
     }
 
     public static ArzSendWeaponScroll ParseSendWeaponScroll(ref BitStreamReader r)
