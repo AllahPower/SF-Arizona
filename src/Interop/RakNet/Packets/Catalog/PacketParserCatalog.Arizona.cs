@@ -85,12 +85,15 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.SetAnimationProperty, ArizonaPacket.ParseSetAnimationProperty);
         Register220Incoming(registry, EArizona.ToggleCgps, ArizonaPacket.ParseToggleCgps);
         Register220Incoming(registry, EArizona.ToggleMapColors, ArizonaPacket.ParseToggleMapColors);
+        Register220Incoming(registry, EArizona.SetRenderRoutineEnabled, ArizonaPacket.ParseSetRenderRoutineEnabled);
         Register220Incoming(registry, EArizona.ChangeServer, ArizonaPacket.ParseChangeServer);
         Register220Incoming(registry, EArizona.ShowLoadScreenVc, ArizonaPacket.ParseShowLoadScreenVc);
+        Register220Incoming(registry, EArizona.SetVehicleFlightForwardAssist, ArizonaPacket.ParseSetVehicleFlightForwardAssist);
         registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<ArzSetChatIconState>>(EPacketId.ArizonaCef, (int)EArizona.SetChatIconState, args => ArizonaPacketTransportParsing.ParseIncoming220(args, EArizona.SetChatIconState, EArizona.SetChatIconState.ToString(), ArizonaPacket.ParseSetChatIconState), name: $"Arizona220:{EArizona.SetChatIconState}", minimumPayloadBitLength: 33));
         Register220Incoming(registry, EArizona.SetGreenZone, ArizonaPacket.ParseUiConfig, "SetGreenZone");
         Register220Incoming(registry, EArizona.SetVehicleModelSpeedLimit, ArizonaPacket.ParseSetVehicleModelSpeedLimit);
         Register220Incoming(registry, EArizona.SetSpectatorPatches, ArizonaPacket.ParseSetSpectatorPatches);
+        Register220Incoming(registry, EArizona.SetActionStateToggleEnabled, ArizonaPacket.ParseSetActionStateToggleEnabled);
         Register220Incoming(registry, EArizona.SetViceCityFlag, ArizonaPacket.ParseSetViceCityFlag);
         Register220Incoming(registry, EArizona.SetTuningConfig, ArizonaPacket.ParseSetTuningConfig);
         Register220Incoming(registry, EArizona.SetPlayerNametagFlags, ArizonaPacket.ParseSetPlayerNametagFlags);
@@ -121,6 +124,8 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.SetWeaponUpgrade, ArizonaPacket.ParseSetWeaponUpgrade);
         Register220Incoming(registry, EArizona.SetPlayerAnimGroups, ArizonaPacket.ParseSetPlayerAnimGroups);
         Register220Incoming(registry, EArizona.LoadBinary, ArizonaPacket.ParseLoadBinary);
+        Register220Incoming(registry, EArizona.SetSelectorHookEnabled, ArizonaPacket.ParseSetSelectorHookEnabled);
+        Register220Incoming(registry, EArizona.SetSelectorSlotBlocked, ArizonaPacket.ParseSetSelectorSlotBlocked);
         Register220Incoming(registry, EArizona.TogglePortal, ArizonaPacket.ParseTogglePortal);
         Register220Incoming(registry, EArizona.CreatePortal, ArizonaPacket.ParseCreatePortal);
         Register220Incoming(registry, EArizona.DestroyPortal, ArizonaPacket.ParseDestroyPortal);
@@ -140,7 +145,7 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.SetVehicleLights, ArizonaPacket.ParseSetVehicleLights);
         Register220Incoming(registry, EArizona.UpdateWeaponSlots, ArizonaPacket.ParseUpdateWeaponSlots);
         Register220Incoming(registry, EArizona.NavigationArrowTargets, ArizonaPacket.ParseNavigationArrowTargets);
-        Register220Incoming(registry, EArizona.ShowLoadScreenVcQueue, ArizonaPacket.ParseShowLoadScreenVcQueue);
+        Register220Incoming(registry, EArizona.UpdateQueuePosition, ArizonaPacket.ParseUpdateQueuePosition);
         Register220Incoming(registry, EArizona.Unknown200, ArizonaPacket.ParseUnknown200);
         Register220Incoming(registry, EArizona.GoogleAnalyticsMessage, ArizonaPacket.ParseGoogleAnalyticsMessage);
         Register220Incoming(registry, EArizona.SetVehicleStrobelights, ArizonaPacket.ParseSetVehicleStrobelights);

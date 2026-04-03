@@ -117,12 +117,15 @@ public readonly record struct ArzToggleCompass(bool State);
 public readonly record struct ArzSetAnimationProperty(uint Value);
 public readonly record struct ArzToggleCgps(bool State);
 public readonly record struct ArzToggleMapColors(bool State);
+public readonly record struct ArzSetRenderRoutineEnabled(bool Enabled);
 public readonly record struct ArzChangeServer(string Host, uint Port, string Nickname, string Password, bool ConnectMode);
 public readonly record struct ArzShowLoadScreenVc(byte BgType, uint? Timeout);
+public readonly record struct ArzSetVehicleFlightForwardAssist(bool Enabled);
 public readonly record struct ArzSetChatIconState(uint PlayerId, bool Active);
 public readonly record struct ArzSetGreenZone(byte Mode);
 public readonly record struct ArzSetVehicleModelSpeedLimit(float SpeedLimitOrMinusOne, ushort[] VehicleModels);
 public readonly record struct ArzSetSpectatorPatches(byte State, byte Unknown);
+public readonly record struct ArzSetActionStateToggleEnabled(bool Enabled);
 public readonly record struct ArzSetViceCityFlag(bool State);
 public readonly record struct ArzSetTuningConfig(byte Value);
 public readonly record struct SetPlayerNametagFlags(ushort Id, byte[] RawPayload, bool? TrailingBit);
@@ -157,6 +160,8 @@ public readonly record struct ArzVehicleFeatureReset(ushort VehicleId, bool Stat
 public readonly record struct ArzSetWeaponUpgrade(byte WeaponId, byte[] RawPayload);
 public readonly record struct ArzSetPlayerAnimGroups(ushort PlayerId, ArzPlayerAnimGroupBatch[] Batches);
 public readonly record struct ArzLoadBinary(string Text);
+public readonly record struct ArzSetSelectorHookEnabled(bool Enabled);
+public readonly record struct ArzSetSelectorSlotBlocked(bool Blocked);
 public readonly record struct ArzTogglePortal(bool State);
 public readonly record struct ArzCreatePortal(ushort Id, byte Type, Vector3 Position, Vector3 Rotation);
 public readonly record struct ArzDestroyPortal(ushort Id, byte Type);
@@ -177,7 +182,10 @@ public readonly record struct ArzSimpleAttachmentsSetMaterial(ushort PlayerId, u
 public readonly record struct ArzResetFirstPersonState;
 public readonly record struct ArzUpdateWeaponSlots(byte WeaponId, byte[] RawPayload);
 public readonly record struct ArzNavigationArrowTargets(bool FollowVertical, bool SpecialMode, ArzNavigationArrowTarget[] Targets);
-public readonly record struct ArzShowLoadScreenVcQueue;
+public readonly record struct ArzUpdateQueuePosition(byte Mode, ushort? QueuePosition, byte? Extra)
+{
+    public bool HasQueuePosition => Mode == 0 && QueuePosition.HasValue;
+}
 public readonly record struct ArzUnknown200(byte Mode);
 public readonly record struct ArzGoogleAnalyticsMessage(string Text, uint Flags);
 public readonly record struct ArzSetVehicleStrobelights(ushort VehicleId, byte Step, float Speed, bool Beam);

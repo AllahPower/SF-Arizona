@@ -211,6 +211,11 @@ public static partial class ArizonaPacket
         return new(r.ReadBitBool());
     }
 
+    public static ArzSetRenderRoutineEnabled ParseSetRenderRoutineEnabled(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
+    }
+
     public static ArzChangeServer ParseChangeServer(ref BitStreamReader r)
     {
         string host = r.ReadStringUInt32Length();
@@ -226,6 +231,11 @@ public static partial class ArizonaPacket
         byte bgType = r.ReadUInt8();
         uint? timeout = r.RemainingBits >= 32 ? r.ReadUInt32() : null;
         return new(bgType, timeout);
+    }
+
+    public static ArzSetVehicleFlightForwardAssist ParseSetVehicleFlightForwardAssist(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetChatIconState ParseSetChatIconState(ref BitStreamReader r)
@@ -260,6 +270,11 @@ public static partial class ArizonaPacket
         byte state = r.ReadUInt8();
         byte unknown = r.ReadUInt8();
         return new(state, unknown);
+    }
+
+    public static ArzSetActionStateToggleEnabled ParseSetActionStateToggleEnabled(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetViceCityFlag ParseSetViceCityFlag(ref BitStreamReader r)
@@ -532,9 +547,19 @@ public static partial class ArizonaPacket
         return new(id, type);
     }
 
-    public static ArzShowLoadScreenVcQueue ParseShowLoadScreenVcQueue(ref BitStreamReader r)
+    public static ArzUpdateQueuePosition ParseUpdateQueuePosition(ref BitStreamReader r)
     {
-        return new();
+        byte mode = r.ReadUInt8();
+        ushort? queuePosition = null;
+        byte? extra = null;
+
+        if (mode == 0 && r.RemainingBits >= 16)
+        {
+            queuePosition = r.ReadUInt16();
+            extra = r.RemainingBits >= 8 ? r.ReadUInt8() : null;
+        }
+
+        return new(mode, queuePosition, extra);
     }
 
     public static ArzUnknown200 ParseUnknown200(ref BitStreamReader r)
@@ -914,6 +939,16 @@ public static partial class ArizonaPacket
     public static ArzLoadBinary ParseLoadBinary(ref BitStreamReader r)
     {
         return new(r.ReadStringUInt8Length());
+    }
+
+    public static ArzSetSelectorHookEnabled ParseSetSelectorHookEnabled(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
+    }
+
+    public static ArzSetSelectorSlotBlocked ParseSetSelectorSlotBlocked(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
     }
 
     public static ArzSetWaterLevel ParseSetWaterLevel(ref BitStreamReader r)

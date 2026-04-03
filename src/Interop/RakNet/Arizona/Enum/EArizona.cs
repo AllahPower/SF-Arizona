@@ -252,8 +252,8 @@ public enum EArizona : byte
     // bit-bool state - patches three code locations in GameFunctions
     ToggleMapColors = 101,
 
-    // unknown payload
-    Unknown102 = 102,
+    // bit-bool enabled - toggles gta_sa render/effect routine call at 0x53E170
+    SetRenderRoutineEnabled = 102,
 
     // string32 host, u32 port, string32 nickname, optional string password, bool connect_mode
     ChangeServer = 103,
@@ -261,8 +261,9 @@ public enum EArizona : byte
     // u8 bg_type, optional u32 timeout - ViceCityServer load screen
     ShowLoadScreenVc = 104,
 
-    // unknown payload
-    Unknown105 = 105,
+    // core.asi GameFunctions: bit-bool enabled - enables per-tick vehicle-flight forward assist;
+    // while W is held, client pulses GTA control byte 0xB73478 for flight-style vehicle handling
+    SetVehicleFlightForwardAssist = 105,
 
     // core.asi ChatIcon: u32 playerId, bit-bool active - creates/removes rotating chat icon over a player
     SetChatIconState = 108,
@@ -276,8 +277,9 @@ public enum EArizona : byte
     // u8 state, u8 unknown - spectator/camera memory patches
     SetSpectatorPatches = 112,
 
-    // unknown payload
-    Unknown114 = 114,
+    // core.asi GameFunctions: bit-bool enabled - enables RMB-driven local action-state toggle;
+    // when disabled, immediately sends local action-state off
+    SetActionStateToggleEnabled = 114,
 
     // bit-bool state - ViceCityServer flag
     SetViceCityFlag = 117,
@@ -378,11 +380,12 @@ public enum EArizona : byte
     // core.asi PlayerAnimGroup: u16 playerId, u8 count, per-entry: (string group, u32 packed, string anim, u8 selector)
     SetPlayerAnimGroups = 161,
 
-    // unknown payload
-    Unknown163 = 163,
+    // core.asi GameFunctions: bit-bool enabled - installs selector-aware hook path;
+    // extends selector active checks through GameFunctions_IsSelectorActive
+    SetSelectorHookEnabled = 163,
 
-    // unknown payload
-    Unknown164 = 164,
+    // core.asi GameFunctions: bit-bool blocked - hard-disables selector-slot usability predicates
+    SetSelectorSlotBlocked = 164,
 
     // string8 text - loads map IPL from data\maps\ (RemoveBuilding module)
     LoadBinary = 165,
@@ -447,8 +450,12 @@ public enum EArizona : byte
     // navigation_arrow: bit-bool followVertical, bit-bool specialMode, u8 count, count * { u16 x, u16 y, u16 z, u16 radius }
     NavigationArrowTargets = 197,
 
-    // core.asi ViceCityServer: no payload - switches the Vice City load screen into the queue/full-server preset
-    ShowLoadScreenVcQueue = 199,
+    // core.asi Arizona220_MainDispatcher special-case:
+    // u8 mode, and when mode==0 then u16 queuePosition, u8 extra.
+    // Updates shared queue position, formats the Russian queue chat message
+    // "Сервер полон. {CCCCCC}Ваше место в очереди: N.", then normal packet 199
+    // handling consumes the stored queue value for UI rendering.
+    UpdateQueuePosition = 199,
 
     // core.asi HitInformer: u8 value - local-player feedback/UI path, exact meaning still unresolved
     Unknown200 = 200,
