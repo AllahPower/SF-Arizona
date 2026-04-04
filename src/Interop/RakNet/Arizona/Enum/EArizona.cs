@@ -534,6 +534,7 @@ public enum EArizona : byte
     BlipIcon = 0xBE,
 
     // raw payload, marker/icon batch path
+    // Tornado triggers parsing errors because the packet is going down an unknown path.
     MarkerIconBatch = 0xBF,
     #endregion
 }

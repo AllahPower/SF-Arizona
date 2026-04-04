@@ -86,8 +86,10 @@ public static class SFBootstrap
         uint baseAddress = await GetSampDllBaseAddress();
         SFLog.Info($"samp.dll loaded at 0x{baseAddress:X8}");
 
+        ValidateEnvironment();
+
         _ = HookManager.IncomingRpcPacket;
-        SFLog.Info("Incoming RPC hook prepared");
+        SFLog.Info("IncomingRpc hook installed (pre-CNetGame).");
 
         await WhenCNetGameLoads(baseAddress);
         SFLog.Info("CNetGame is ready");
@@ -96,37 +98,87 @@ public static class SFBootstrap
         SF.Chat.RegisterRpcBindings(_dispatcher.IncomingRpcHandlers);
         _dispatcher.IncomingRpcHandlers.StartAll();
 
+        InstallNetworkHooks();
+        InstallSubHooks();
+
+        SF.Keyboard.StartLoop();
+        SFLog.Info("Keyboard loop started");
+
+        PostToMainThread(main);
+    }
+
+    private static void ValidateEnvironment()
+    {
+        SampVersionInfo? env = SampEnvironment.Detect();
+        if (env is null)
+        {
+            SFLog.Warn("SampEnvironment.Detect returned null — samp.dll vanished?");
+            return;
+        }
+
+        SFLog.Info($"SA-MP detected: version={env.Version} EP=0x{env.EntryPointRva:X} SizeOfImage=0x{env.SizeOfImage:X} TimeDateStamp=0x{env.TimeDateStamp:X} SizeOfCode=0x{env.SizeOfCode:X}");
+        if (!env.IsSupported)
+            SFLog.Warn($"Unsupported SA-MP version (EP=0x{env.EntryPointRva:X}). SFSharp targets 0.3.7-R3. Hooks and offsets may be incorrect.");
+
+        // sampfuncs.asi
+        SampfuncsInfo sf = env.Sampfuncs;
+        if (!sf.IsLoaded)
+            SFLog.Warn("SAMPFUNCS not detected. sampfuncs.asi is not loaded — some features may be unavailable.");
+        else if (sf.IsSupported)
+            SFLog.Info($"SAMPFUNCS detected: {sf.VersionString} EP=0x{sf.EntryPointRva:X} SizeOfImage=0x{sf.SizeOfImage:X}");
+        else
+            SFLog.Warn($"Unsupported SAMPFUNCS version: {sf.VersionString ?? "unknown"} (EP=0x{sf.EntryPointRva:X}). SFSharp targets v5.5.0 rel.22.");
+
+        // _chat.asi
+        if (ModuleResolver.IsModuleLoaded("_chat.asi"))
+        {
+            if (CArizonaChat.IsAvailable)
+                SFLog.Info("_chat.asi detected, Arizona chat interop available.");
+            else
+                SFLog.Warn("_chat.asi loaded but chat functions could not be resolved — patterns may have changed.");
+        }
+        else
+        {
+            SFLog.Info("_chat.asi not loaded, Arizona chat features disabled.");
+        }
+
+        // AZVoice.asi
+        if (ModuleResolver.IsModuleLoaded("AZVoice.asi"))
+        {
+            if (IncomingAZVoicePacketHook.IsAvailable)
+                SFLog.Info("AZVoice.asi detected, hook target resolved.");
+            else
+                SFLog.Warn("AZVoice.asi loaded but hook pattern not found — voice packet capture will be unavailable.");
+        }
+        else
+        {
+            SFLog.Info("AZVoice.asi not loaded, voice features disabled.");
+        }
+    }
+
+    private static void InstallNetworkHooks()
+    {
         _ = HookManager.OutgoingRpcPacket;
-        SFLog.Info("Outgoing RPC hook prepared");
-
         _ = HookManager.OutgoingPacket;
-        SFLog.Info("Outgoing packet hook prepared");
-
         _ = HookManager.IncomingPacket;
-        SFLog.Info("Incoming packet hook prepared");
+        SFLog.Info("Network hooks installed: OutgoingRpc, OutgoingPacket, IncomingPacket.");
 
         if (HookManager.IncomingAZVoicePacket is not null)
-            SFLog.Info("AZVoice incoming packet hook prepared");
-        else
-            SFLog.Info("AZVoice.asi not loaded, skipping AZVoice hook");
+            SFLog.Info("AZVoice incoming packet hook installed.");
 
         if (HookManager.IncomingAZVoiceRpc is not null)
-            SFLog.Info("AZVoice incoming RPC hook prepared");
-        else
-            SFLog.Info("AZVoice.asi not loaded, skipping AZVoice RPC hook");
+            SFLog.Info("AZVoice incoming RPC hook installed.");
+    }
 
+    private static void InstallSubHooks()
+    {
         HookManager.CDialogShow.AddSubHook(SF.Dialog);
         HookManager.CDialogHide.AddSubHook(SF.Dialog);
         HookManager.CDialogClose.AddSubHook(SF.Dialog);
         HookManager.CChatAddEntry.AddSubHook(SF.Chat);
         HookManager.CInputCommandSend.AddSubHook(SF.Chat);
         HookManager.UpdateScoresPingsIps.AddSubHook(SF.Players);
-        SFLog.Info("All sub-hooks registered");
-
-        SF.Keyboard.StartLoop();
-        SFLog.Info("Keyboard loop started");
-
-        PostToMainThread(main);
+        SFLog.Info("Sub-hooks registered: Dialog, Chat, Input, Scoreboard.");
     }
 
     private static async Task<uint> GetSampDllBaseAddress()
