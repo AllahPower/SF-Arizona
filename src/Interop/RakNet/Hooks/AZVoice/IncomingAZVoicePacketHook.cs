@@ -9,21 +9,52 @@ namespace SFSharp;
 // AZVoice's RakNet plugin processes and swallows it.
 internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, IncomingAZVoicePacketHook.PluginOnReceiveNative>
 {
+    private const string ModuleName = "AZVoice.asi";
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     internal unsafe delegate int PluginOnReceiveNative(nint thisPtr, nint peerPtr, nint packetPtr);
 
-    // ARZ::OnReceivePacket offset from AZVoice.asi image base (0x10000000)
-    private const uint OnReceivePacketOffset = 0x41FB6;
+    // ARZ_OnReceivePacket252 / PluginInterface::OnReceive.
+    // Restored from IDA at 0x10041FB6:
+    // - function starts by building EH frame state
+    // - calls ARZ_GetPacketTypeAndOffset
+    // - checks for packet id 0xFC
+    // - for accepted voice-frame payloads calls ARZ_ParseVoiceDataPacket252
+    // Absolute addresses and rel32 calls are wildcarded so minor module relinks do not break resolution.
+    private static readonly byte?[] OnReceivePacketPattern =
+    [
+        0x55, 0x89, 0xE5, 0x53, 0x8D, 0x85, null, null, null, null, 0x81, 0xEC, 0x74, 0x01, 0x00, 0x00,
+        0x89, 0x8D, null, null, null, null, 0x89, 0x04, 0x24,
+        0xC7, 0x85, null, null, null, null, null, null, null, null,
+        0xC7, 0x85, null, null, null, null, null, null, null, null,
+        0x89, 0xAD, null, null, null, null,
+        0xC7, 0x85, null, null, null, null, null, null, null, null,
+        0x89, 0xA5, null, null, null, null,
+        0xE8, null, null, null, null,
+        0x8D, 0x85, null, null, null, null,
+        0xC7, 0x85, null, null, null, null, 0xFF, 0xFF, 0xFF, 0xFF,
+        0x89, 0x44, 0x24, 0x04, 0x8B, 0x45, 0x0C, 0x89, 0x04, 0x24,
+        0xE8, null, null, null, null,
+        0xC7, 0x85, null, null, null, null, 0x01, 0x00, 0x00, 0x00,
+        0x3C, 0xFC
+    ];
+
     private const byte PacketIdAZVoice = 252; // 0xFC
+    private static nint _onReceivePacketAddress;
+    private static bool _resolved;
 
     private static IncomingAZVoicePacketHook? _instance;
 
+    public static bool IsAvailable => ResolveTargetAddress() && _onReceivePacketAddress != 0;
+
     public IncomingAZVoicePacketHook()
     {
+        if (!ResolveTargetAddress() || _onReceivePacketAddress == 0)
+        {
+            throw new InvalidOperationException("AZVoice incoming packet hook target could not be resolved.");
+        }
+
         _instance = this;
-        nint azvoiceBase = (nint)Win32.GetModuleHandle("AZVoice.asi");
-        nint targetAddress = azvoiceBase + (nint)OnReceivePacketOffset;
-        InstallHook(targetAddress, new PluginOnReceiveNative(HookProc));
+        InstallHook(_onReceivePacketAddress, new PluginOnReceiveNative(HookProc));
     }
 
     private static unsafe int HookProc(nint thisPtr, nint peerPtr, nint packetPtr)
@@ -101,5 +132,31 @@ internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, Incoming
     {
         base.Dispose();
         _instance = null;
+    }
+
+    private static bool ResolveTargetAddress()
+    {
+        if (_resolved)
+        {
+            return true;
+        }
+
+        if (!ModuleResolver.IsModuleLoaded(ModuleName))
+        {
+            return false;
+        }
+
+        _onReceivePacketAddress = ModuleResolver.FindPattern(ModuleName, OnReceivePacketPattern);
+        if (_onReceivePacketAddress == 0)
+        {
+            SFLog.Warn("AZVoice incoming packet hook pattern not found.");
+        }
+        else
+        {
+            SFLog.Info($"Resolved AZVoice incoming packet hook target at 0x{_onReceivePacketAddress:X8}.");
+        }
+
+        _resolved = true;
+        return true;
     }
 }

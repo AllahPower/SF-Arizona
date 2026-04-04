@@ -29,7 +29,7 @@ public static class HookManager
             if (!_azVoiceHookChecked)
             {
                 _azVoiceHookChecked = true;
-                if (ModuleResolver.IsModuleLoaded("AZVoice.asi"))
+                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && IncomingAZVoicePacketHook.IsAvailable)
                     _incomingAZVoicePacket = new IncomingAZVoicePacketHook();
             }
             return _incomingAZVoicePacket;
