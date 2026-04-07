@@ -33,15 +33,24 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
             throw new UnreachableException();
         }
 
-        if (TryExtractSubscribedRpc(data, length, out int rpcId, out int payloadBitOffset, out int payloadBitLength))
+        if (TryExtractRpc(data, length, out int rpcId, out int payloadBitOffset, out int payloadBitLength))
         {
-            byte[] packet = new byte[length];
-            fixed (byte* dst = packet)
+            if (SFBootstrap.IncomingRpcFilters.HasFilters &&
+                SFBootstrap.IncomingRpcFilters.ShouldCancel(rpcId, data, length * 8))
             {
-                Buffer.MemoryCopy(data, dst, length, length);
+                return false;
             }
 
-            SFBootstrap.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
+            if (SFBootstrap.RpcHandlers.HasSubscribers(rpcId))
+            {
+                byte[] packet = new byte[length];
+                fixed (byte* dst = packet)
+                {
+                    Buffer.MemoryCopy(data, dst, length, length);
+                }
+
+                SFBootstrap.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
+            }
         }
 
         // Call original via MinHook trampoline - no SuppressHook needed
@@ -59,7 +68,7 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
         _instance = null;
     }
 
-    private static unsafe bool TryExtractSubscribedRpc(byte* data, int length, out int rpcId, out int payloadBitOffset, out int payloadBitLength)
+    private static unsafe bool TryExtractRpc(byte* data, int length, out int rpcId, out int payloadBitOffset, out int payloadBitLength)
     {
         rpcId = 0;
         payloadBitOffset = 0;
@@ -83,7 +92,8 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
         }
 
         rpcId = rpcByte;
-        if (!SFBootstrap.RpcHandlers.HasSubscribers(rpcId))
+        bool hasConsumers = SFBootstrap.RpcHandlers.HasSubscribers(rpcId) || SFBootstrap.IncomingRpcFilters.HasFilters;
+        if (!hasConsumers)
         {
             return false;
         }

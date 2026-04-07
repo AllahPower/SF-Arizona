@@ -16,6 +16,7 @@ public static class SF
     public static SFRpcParsers RpcParsers { get; } = new SFRpcParsers();
     public static SFCamera Camera { get; } = new SFCamera();
     public static SFEvents Events { get; } = new SFEvents();
+    public static SFNetwork Network { get; } = new SFNetwork();
 
     public static string UserFilesDirectory { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GTA San Andreas User Files");
 }

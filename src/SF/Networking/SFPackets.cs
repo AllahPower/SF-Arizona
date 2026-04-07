@@ -74,4 +74,31 @@ public sealed class SFPackets
             yield return payload.Parse(parser);
         }
     }
+
+    // - Packet filters (synchronous, run on hook thread) -
+
+    public IDisposable RegisterOutgoingFilter(EPacketId packetId, Func<nint, int, bool> filter)
+    {
+        return SFBootstrap.OutgoingPacketFilters.Add((int)packetId, filter);
+    }
+
+    public IDisposable RegisterOutgoingFilter(Func<int, nint, int, bool> filter)
+    {
+        return SFBootstrap.OutgoingPacketFilters.Add(filter);
+    }
+
+    /// <remarks>
+    /// Arizona Packet 220 traffic cannot be cancelled via incoming filters because vorbisFile.dll
+    /// replaces the entire RakClientInterface vtable — those packets are intercepted and processed
+    /// before reaching SAMP's RakClient Receive, so our hook never sees them.
+    /// </remarks>
+    public IDisposable RegisterIncomingFilter(EPacketId packetId, Func<nint, int, bool> filter)
+    {
+        return SFBootstrap.IncomingPacketFilters.Add((int)packetId, filter);
+    }
+
+    public IDisposable RegisterIncomingFilter(Func<int, nint, int, bool> filter)
+    {
+        return SFBootstrap.IncomingPacketFilters.Add(filter);
+    }
 }

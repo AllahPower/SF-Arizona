@@ -46,22 +46,32 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
         {
             int rpcId = *uniqueID;
 
-            if (rpcId >= 0 && SFBootstrap.OutgoingRpcHandlers.HasSubscribers(rpcId))
+            if (rpcId >= 0)
             {
                 int dataBitLength = *(int*)(bitStream + BitStreamNumberOfBitsUsed);
                 byte* data = *(byte**)(bitStream + BitStreamData);
-                int dataByteLength = (dataBitLength + 7) / 8;
 
-                byte[] packet = new byte[dataByteLength];
-                if (data != null && dataByteLength > 0)
+                if (SFBootstrap.OutgoingRpcFilters.HasFilters &&
+                    data != null &&
+                    SFBootstrap.OutgoingRpcFilters.ShouldCancel(rpcId, data, dataBitLength))
                 {
-                    fixed (byte* dst = packet)
-                    {
-                        Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
-                    }
+                    return true;
                 }
 
-                SFBootstrap.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
+                if (SFBootstrap.OutgoingRpcHandlers.HasSubscribers(rpcId))
+                {
+                    int dataByteLength = (dataBitLength + 7) / 8;
+                    byte[] packet = new byte[dataByteLength];
+                    if (data != null && dataByteLength > 0)
+                    {
+                        fixed (byte* dst = packet)
+                        {
+                            Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
+                        }
+                    }
+
+                    SFBootstrap.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
+                }
             }
         }
 

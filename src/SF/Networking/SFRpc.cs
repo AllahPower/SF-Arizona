@@ -84,4 +84,26 @@ public sealed class SFRpc
             yield return payload.Parse(parser);
         }
     }
+
+    // - RPC filters (synchronous, run on hook thread) -
+
+    public IDisposable RegisterOutgoingFilter(ERpcId rpcId, Func<nint, int, bool> filter)
+    {
+        return SFBootstrap.OutgoingRpcFilters.Add((int)rpcId, filter);
+    }
+
+    public IDisposable RegisterOutgoingFilter(Func<int, nint, int, bool> filter)
+    {
+        return SFBootstrap.OutgoingRpcFilters.Add(filter);
+    }
+
+    public IDisposable RegisterIncomingFilter(ERpcId rpcId, Func<nint, int, bool> filter)
+    {
+        return SFBootstrap.IncomingRpcFilters.Add((int)rpcId, filter);
+    }
+
+    public IDisposable RegisterIncomingFilter(Func<int, nint, int, bool> filter)
+    {
+        return SFBootstrap.IncomingRpcFilters.Add(filter);
+    }
 }

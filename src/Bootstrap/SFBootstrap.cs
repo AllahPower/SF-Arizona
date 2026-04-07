@@ -15,6 +15,11 @@ public static class SFBootstrap
     public static IncomingAZVoiceControlManager IncomingAZVoiceControlHandlers => _dispatcher.IncomingAZVoiceControlHandlers;
     public static IncomingAZVoiceDataManager IncomingAZVoiceDataHandlers => _dispatcher.IncomingAZVoiceDataHandlers;
 
+    public static NetworkFilterRegistry OutgoingPacketFilters { get; } = new();
+    public static NetworkFilterRegistry OutgoingRpcFilters { get; } = new();
+    public static NetworkFilterRegistry IncomingPacketFilters { get; } = new();
+    public static NetworkFilterRegistry IncomingRpcFilters { get; } = new();
+
     public static void PostToMainThread(Action action)
     {
         _sc?.Post(x => ((Action)x!)(), action);

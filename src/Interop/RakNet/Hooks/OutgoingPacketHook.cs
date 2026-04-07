@@ -47,6 +47,12 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
             {
                 int packetId = data[0];
 
+                if (SFBootstrap.OutgoingPacketFilters.HasFilters &&
+                    SFBootstrap.OutgoingPacketFilters.ShouldCancel(packetId, data, bitsUsed))
+                {
+                    return true;
+                }
+
                 if (SFBootstrap.OutgoingPacketHandlers.HasSubscribers(packetId))
                 {
                     int dataByteLength = (bitsUsed + 7) / 8;

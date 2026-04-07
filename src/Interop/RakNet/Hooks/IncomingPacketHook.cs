@@ -39,6 +39,13 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
             {
                 int packetId = data[0];
 
+                if (SFBootstrap.IncomingPacketFilters.HasFilters &&
+                    SFBootstrap.IncomingPacketFilters.ShouldCancel(packetId, data, bitSize))
+                {
+                    CNetGame.GetRakClient()->DeallocatePacket((CRakNetPacket*)packetPtr);
+                    return 0;
+                }
+
                 if (SFBootstrap.IncomingPacketHandlers.HasSubscribers(packetId))
                 {
                     int dataByteLength = (bitSize + 7) / 8;
