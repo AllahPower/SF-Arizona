@@ -7,6 +7,7 @@ using unsafe RpcBitStreamDelegate = delegate* unmanaged[Thiscall]<nint, int*, ni
 using unsafe RpcDataDelegate = delegate* unmanaged[Thiscall]<nint, int*, byte*, uint, int, int, byte, bool, bool>;
 using unsafe SendBitStreamDelegate = delegate* unmanaged[Thiscall]<nint, nint, int, int, byte, bool>;
 using unsafe SendDataDelegate = delegate* unmanaged[Thiscall]<nint, byte*, int, int, int, byte, bool>;
+using unsafe PushBackPacketDelegate = delegate* unmanaged[Thiscall]<nint, nint, bool, void>;
 
 namespace SFSharp;
 
@@ -96,6 +97,20 @@ public unsafe struct CRakClientInterface
         int id = rpcId;
         RpcBitStreamDelegate rpc = (RpcBitStreamDelegate)__vftable->RpcBitStream;
         return rpc == null ? false : rpc((nint)Unsafe.AsPointer(ref this), &id, (nint)bitStream, (int)priority, (int)reliability, orderingChannel, shiftTimestamp);
+    }
+
+    public void PushBackPacket(CRakNetPacket* packet, bool pushAtHead = false)
+    {
+        if (__vftable == null || packet == null)
+        {
+            return;
+        }
+
+        PushBackPacketDelegate pushBack = (PushBackPacketDelegate)__vftable->PushBackPacket;
+        if (pushBack != null)
+        {
+            pushBack((nint)Unsafe.AsPointer(ref this), (nint)packet, pushAtHead);
+        }
     }
 
     public bool Rpc(int rpcId, ReadOnlySpan<byte> payload, int payloadBitLength, RakNetPacketPriority priority = RakNetPacketPriority.High, RakNetPacketReliability reliability = RakNetPacketReliability.ReliableOrdered, byte orderingChannel = 0, bool shiftTimestamp = false)

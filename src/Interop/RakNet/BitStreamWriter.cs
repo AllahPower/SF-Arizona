@@ -51,6 +51,28 @@ public ref struct BitStreamWriter
         WriteBitsInternal(&value, 8, alignRight: true);
     }
 
+    // Mirrors RakNet::BitStream::WriteCompressed<unsigned int>: emits one "is-zero" bit per
+    // higher byte, then the remainder verbatim; the low byte is split as a 4-bit nibble when
+    // its high half is zero. Used in the ID_RPC wrapper for payload bit-length.
+    public unsafe void WriteCompressedUInt32(uint value)
+    {
+        byte* bytes = (byte*)&value;
+        for (int i = sizeof(uint) - 1; i > 0; i--)
+        {
+            bool isZero = bytes[i] == 0;
+            WriteBitBool(isZero);
+            if (!isZero)
+            {
+                WriteBitsInternal(bytes, (i + 1) * 8, alignRight: false);
+                return;
+            }
+        }
+
+        bool lowNibbleOnly = (bytes[0] & 0xF0) == 0;
+        WriteBitBool(lowNibbleOnly);
+        WriteBitsInternal(bytes, lowNibbleOnly ? 4 : 8, alignRight: true);
+    }
+
     public unsafe void WriteUInt16(ushort value)
     {
         WriteBitsInternal((byte*)&value, 16, alignRight: false);

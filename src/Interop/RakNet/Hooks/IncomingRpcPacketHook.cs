@@ -20,6 +20,21 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
     private const byte IdTimestamp = 40;
     private static IncomingRpcPacketHook? _instance;
 
+    /// <summary>
+    /// The RakPeer instance pointer, captured from HandleRpcPacket's thisPtr.
+    /// Used by SFNetwork.SimulateIncomingPacket to write to the internal packet queue.
+    /// </summary>
+    internal static nint RakPeerInstance { get; private set; }
+
+    /// <summary>
+    /// The server's RakNet PlayerID, captured from the first incoming RPC.
+    /// Required for SimulateIncomingPacket so the synthetic packet is dispatched
+    /// as server-originated rather than dropped by downstream filters.
+    /// </summary>
+    internal static RakNetPlayerId ServerPlayerId { get; private set; }
+
+    internal static bool HasServerPlayerId { get; private set; }
+
     public IncomingRpcPacketHook()
     {
         _instance = this;
@@ -32,6 +47,10 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
         {
             throw new UnreachableException();
         }
+
+        RakPeerInstance = thisPtr;
+        ServerPlayerId = playerId;
+        HasServerPlayerId = true;
 
         if (TryExtractRpc(data, length, out int rpcId, out int payloadBitOffset, out int payloadBitLength))
         {

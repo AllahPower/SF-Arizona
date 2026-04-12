@@ -28,7 +28,6 @@ public static class Program
         using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ =>
         {
             SFLog.Info("Debug command /sfd executed");
-            SF.Chat.Add("SF-Arizona debug snapshot:");
 
             if (!CArizonaChat.IsAvailable)
             {

@@ -392,6 +392,21 @@ public static class SampOffsets
         public const int Receive = 8;
     }
 
+    public static class RakPeer
+    {
+        // Packet* __cdecl AllocPacket(unsigned int dataSize)
+        public const int AllocPacket = 0x37B90;
+
+        // Offset within RakPeer struct to the packet SingleProducerConsumer queue.
+        public const int OffsetPackets = 0xDB6;
+
+        // Packet** __thiscall WriteLock(void* queue) — acquires write slot.
+        public const int WriteLock = 0x38EC0;
+
+        // void __thiscall WriteUnlock(void* queue) — commits the write.
+        public const int WriteUnlock = 0x38F00;
+    }
+
     public static class RpcRuntime
     {
         public const int HandleRpcPacket = 0x3A6A0;
