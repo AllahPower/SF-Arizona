@@ -1,304 +1,21 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Reflection;
-using Microsoft.Extensions.Logging;
 
 namespace SFSharp;
 
-public enum ModuleExecutionModel
-{
-    MainThread,
-    BackgroundWorker,
-    Hybrid
-}
-
-public enum ModuleRestartPolicy
-{
-    Manual,
-    OnFault
-}
-
-public enum ModuleLifecycleState
-{
-    Created,
-    Starting,
-    Running,
-    Stopping,
-    Stopped,
-    Faulted
-}
-
-public enum ModuleStopReason
-{
-    None,
-    Completed,
-    UserRequested,
-    RestartRequested,
-    ContainerShutdown,
-    Faulted
-}
-
-[AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public sealed class SFModuleAttribute(string id, string displayName) : Attribute
-{
-    public string Id { get; } = id;
-    public string DisplayName { get; } = displayName;
-    public string Category { get; init; } = "General";
-    public string Description { get; init; } = string.Empty;
-    public bool DefaultEnabled { get; init; } = true;
-    public ModuleExecutionModel ExecutionModel { get; init; } = ModuleExecutionModel.MainThread;
-    public ModuleRestartPolicy RestartPolicy { get; init; } = ModuleRestartPolicy.Manual;
-    public int Order { get; init; }
-}
-
-public interface ISFModule
-{
-    Task RunAsync(ModuleContext context);
-}
-
-public abstract class SFModuleBase : ISFModule
-{
-    protected ModuleContext Context { get; private set; } = null!;
-    protected ILogger Log { get; private set; } = null!;
-
-    public async Task RunAsync(ModuleContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        Context = context;
-        Log = CreateLogger(context);
-
-        await OnStartingAsync();
-        try
-        {
-            await ExecuteAsync(context.CancellationToken);
-            await OnCompletedAsync();
-        }
-        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            await OnFaultedAsync(ex);
-            throw;
-        }
-        finally
-        {
-            try
-            {
-                await OnStoppingAsync();
-            }
-            finally
-            {
-                await OnStoppedAsync();
-                Context = null!;
-                Log = null!;
-            }
-        }
-    }
-
-    protected virtual ILogger CreateLogger(ModuleContext context)
-    {
-        return SFLoggerProvider.Instance.CreateLogger(context.Descriptor.Id);
-    }
-
-    protected virtual Task OnStartingAsync() => Task.CompletedTask;
-    protected virtual Task OnCompletedAsync() => Task.CompletedTask;
-    protected virtual Task OnFaultedAsync(Exception exception) => Task.CompletedTask;
-    protected virtual Task OnStoppingAsync() => Task.CompletedTask;
-    protected virtual Task OnStoppedAsync() => Task.CompletedTask;
-
-    protected abstract Task ExecuteAsync(CancellationToken cancellationToken);
-}
-
-public sealed record ModuleDescriptor(
-    string Id,
-    string DisplayName,
-    string Category,
-    string Description,
-    bool DefaultEnabled,
-    ModuleExecutionModel ExecutionModel,
-    ModuleRestartPolicy RestartPolicy,
-    int Order,
-    Type ModuleType)
-{
-    public static ModuleDescriptor FromType(Type moduleType)
-    {
-        ArgumentNullException.ThrowIfNull(moduleType);
-        SFModuleAttribute? metadata = moduleType.GetCustomAttribute<SFModuleAttribute>();
-        if (metadata is null)
-        {
-            throw new InvalidOperationException($"Module type {moduleType.FullName} is missing [SFModule].");
-        }
-
-        if (string.IsNullOrWhiteSpace(metadata.Id))
-        {
-            throw new InvalidOperationException($"Module type {moduleType.FullName} has an empty module id.");
-        }
-
-        return new(
-            metadata.Id.Trim(),
-            string.IsNullOrWhiteSpace(metadata.DisplayName) ? moduleType.Name : metadata.DisplayName.Trim(),
-            string.IsNullOrWhiteSpace(metadata.Category) ? "General" : metadata.Category.Trim(),
-            metadata.Description?.Trim() ?? string.Empty,
-            metadata.DefaultEnabled,
-            metadata.ExecutionModel,
-            metadata.RestartPolicy,
-            metadata.Order,
-            moduleType);
-    }
-}
-
-public sealed record ModuleRuntimeSnapshot(
-    ModuleDescriptor Descriptor,
-    ModuleLifecycleState State,
-    ModuleStopReason LastStopReason,
-    bool AutoStartEnabled,
-    DateTimeOffset? CreatedAt,
-    DateTimeOffset? StartedAt,
-    DateTimeOffset? StoppedAt,
-    DateTimeOffset? LastHeartbeatAt,
-    DateTimeOffset? LastActivityAt,
-    string? LastActivity,
-    string? StatusText,
-    int? StartThreadId,
-    int? LastThreadId,
-    long StartCount,
-    long RestartCount,
-    long FaultCount,
-    long LoopCount,
-    double AverageLoopMilliseconds,
-    double MaxLoopMilliseconds,
-    double EstimatedLoadPercent,
-    long LastMemoryBytes,
-    string? LastExceptionType,
-    string? LastExceptionMessage,
-    IReadOnlyDictionary<string, long> Counters,
-    IReadOnlyDictionary<string, string> Details,
-    int OwnedDisposableCount)
-{
-    public TimeSpan? Uptime => StartedAt is null ? null : (StoppedAt ?? DateTimeOffset.UtcNow) - StartedAt.Value;
-}
-
-public sealed class ModuleContext : IDisposable
-{
-    private readonly ModuleRuntimeInfo _runtime;
-    private int _disposed;
-
-    internal ModuleContext(ModuleDescriptor descriptor, ModuleRuntimeInfo runtime, CancellationToken cancellationToken)
-    {
-        Descriptor = descriptor;
-        _runtime = runtime;
-        CancellationToken = cancellationToken;
-    }
-
-    public ModuleDescriptor Descriptor { get; }
-    public CancellationToken CancellationToken { get; }
-
-    public void Heartbeat(string? activity = null)
-    {
-        _runtime.RecordHeartbeat(activity);
-    }
-
-    public void ReportActivity(string activity)
-    {
-        _runtime.RecordActivity(activity);
-    }
-
-    public void SetStatusText(string? value)
-    {
-        _runtime.SetStatusText(value);
-    }
-
-    public void IncrementCounter(string counterName, long delta = 1)
-    {
-        _runtime.IncrementCounter(counterName, delta);
-    }
-
-    public void SetDetail(string key, string? value)
-    {
-        _runtime.SetDetail(key, value);
-    }
-
-    internal ModuleLoopScope TrackLoop(string? activity = null)
-    {
-        return new ModuleLoopScope(_runtime, Stopwatch.GetTimestamp(), activity);
-    }
-
-    public IDisposable RegisterDisposable(IDisposable disposable)
-    {
-        ArgumentNullException.ThrowIfNull(disposable);
-        _runtime.RegisterDisposable(disposable);
-        return disposable;
-    }
-
-    public IDisposable RegisterChatCommand(string command, Action<string?> callback)
-    {
-        IDisposable registration = SF.Chat.RegisterChatCommand(command, args =>
-        {
-            _runtime.IncrementCounter("commands.invoked", 1);
-            _runtime.RecordActivity($"command:{command}");
-            callback(args);
-        });
-        _runtime.RegisterDisposable(registration);
-        _runtime.IncrementCounter("commands.registered", 1);
-        return registration;
-    }
-
-    public Task SwitchToMainThreadAsync()
-    {
-        if (SynchronizationContext.Current is SFSynchronizationContext)
-        {
-            _runtime.RecordActivity("main-thread");
-            return Task.CompletedTask;
-        }
-
-        TaskCompletionSource tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        SFBootstrap.PostToMainThread(() =>
-        {
-            _runtime.RecordActivity("switch-main-thread");
-            tcs.SetResult();
-        });
-        return tcs.Task;
-    }
-
-    public Task RunBackground(Func<Task> work)
-    {
-        ArgumentNullException.ThrowIfNull(work);
-        return Task.Run(async () =>
-        {
-            _runtime.RecordActivity("background-work");
-            await work();
-        }, CancellationToken);
-    }
-
-    public ModuleRuntimeSnapshot GetSnapshot()
-    {
-        return _runtime.CreateSnapshot();
-    }
-
-    public void Dispose()
-    {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-        {
-            return;
-        }
-
-        _runtime.DisposeOwnedDisposables();
-    }
-}
-
-internal readonly struct ModuleLoopScope(ModuleRuntimeInfo runtime, long startTicks, string? activity) : IDisposable
-{
-    public void Dispose()
-    {
-        runtime.RecordLoop(startTicks, Stopwatch.GetTimestamp(), activity);
-    }
-}
-
-
-internal sealed class ModuleRuntimeInfo
+/// <summary>
+/// Mutable per-module state owned by <see cref="SFModuleContainer"/>. Holds lifecycle flags,
+/// telemetry counters and the disposables registered through <see cref="ModuleContext"/>.
+/// Public consumers should read state through <see cref="ModuleRuntimeSnapshot"/> (via
+/// <see cref="CreateSnapshot"/>) instead of touching this type directly.
+/// </summary>
+/// <remarks>
+/// All lifecycle methods are thread safe. Counters and details use a lock-free
+/// <see cref="ConcurrentDictionary{TKey, TValue}"/>, the rest is guarded by an internal
+/// <see cref="Lock"/>. The circuit breaker fires when <c>5</c> faults land inside a rolling
+/// <c>60</c> second window.
+/// </remarks>
+public sealed class ModuleRuntimeInfo
 {
     private readonly Lock _sync = new();
     private readonly List<IDisposable> _ownedDisposables = [];
@@ -335,17 +52,23 @@ internal sealed class ModuleRuntimeInfo
     private readonly Queue<long> _recentFaultTicks = new();
     private bool _circuitBroken;
 
-    public ModuleRuntimeInfo(ModuleDescriptor descriptor, bool autoStartEnabled)
+    /// <summary>
+    /// Called by the container during <see cref="SFModuleContainer.RegisterModule{T}(bool?)"/>.
+    /// </summary>
+    /// <param name="descriptor">Static metadata for the owning module.</param>
+    /// <param name="autoStartEnabled">Initial value for <see cref="ModuleRuntimeSnapshot.AutoStartEnabled"/>.</param>
+    internal ModuleRuntimeInfo(ModuleDescriptor descriptor, bool autoStartEnabled)
     {
         Descriptor = descriptor;
         _autoStartEnabled = autoStartEnabled;
     }
 
+    /// <summary>Static metadata for the module this runtime belongs to.</summary>
     public ModuleDescriptor Descriptor { get; }
 
-    private static readonly long MemoryPollIntervalTicks = Stopwatch.Frequency * 2; // 2 seconds
+    private static readonly long MemoryPollIntervalTicks = Stopwatch.Frequency * 2;
     private const int CircuitBreakerFaultLimit = 5;
-    private static readonly long CircuitBreakerWindowTicks = Stopwatch.Frequency * 60; // 60 seconds
+    private static readonly long CircuitBreakerWindowTicks = Stopwatch.Frequency * 60;
 
     private void PollMemoryIfDue()
     {
@@ -357,7 +80,11 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void RecordFaultForCircuitBreaker()
+    /// <summary>
+    /// Pushes a fault timestamp into the rolling window used by the circuit breaker.
+    /// Trips <see cref="IsCircuitBroken"/> when enough faults land inside the window.
+    /// </summary>
+    internal void RecordFaultForCircuitBreaker()
     {
         lock (_sync)
         {
@@ -376,6 +103,10 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
+    /// <summary>
+    /// <see langword="true"/> after the container has observed too many faults in the recent
+    /// window and decided to stop auto-restarting the module.
+    /// </summary>
     public bool IsCircuitBroken
     {
         get
@@ -387,7 +118,12 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void PrepareForStart(bool autoStartEnabled)
+    /// <summary>
+    /// Resets per-run counters and timestamps. Called by the container right before it invokes
+    /// the module factory. Not part of the public contract.
+    /// </summary>
+    /// <param name="autoStartEnabled">Current auto-start flag, mirrored into the snapshot.</param>
+    internal void PrepareForStart(bool autoStartEnabled)
     {
         lock (_sync)
         {
@@ -422,7 +158,8 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void MarkRunning()
+    /// <summary>Transitions the state to <see cref="ModuleLifecycleState.Running"/> and captures the start thread id.</summary>
+    internal void MarkRunning()
     {
         lock (_sync)
         {
@@ -435,7 +172,9 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void RequestStop(ModuleStopReason reason)
+    /// <summary>Records a stop request without cancelling the running task, only flips the state and stop reason.</summary>
+    /// <param name="reason">Why the stop was requested.</param>
+    internal void RequestStop(ModuleStopReason reason)
     {
         lock (_sync)
         {
@@ -450,7 +189,8 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void MarkCompleted()
+    /// <summary>Transitions to <see cref="ModuleLifecycleState.Stopped"/>. Resolves the final stop reason.</summary>
+    internal void MarkCompleted()
     {
         lock (_sync)
         {
@@ -462,7 +202,9 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void MarkFault(Exception ex)
+    /// <summary>Transitions to <see cref="ModuleLifecycleState.Faulted"/> and captures exception metadata.</summary>
+    /// <param name="ex">The unhandled exception observed by the container.</param>
+    internal void MarkFault(Exception ex)
     {
         lock (_sync)
         {
@@ -477,12 +219,18 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void IncrementRestartCount()
+    /// <summary>Atomically increments <see cref="ModuleRuntimeSnapshot.RestartCount"/>.</summary>
+    internal void IncrementRestartCount()
     {
         Interlocked.Increment(ref _restartCount);
     }
 
-    public void RecordHeartbeat(string? activity)
+    /// <summary>
+    /// Public telemetry hook called by <see cref="ModuleContext.Heartbeat(string?)"/>. Updates
+    /// <see cref="ModuleRuntimeSnapshot.LastHeartbeatAt"/> and polls memory if due.
+    /// </summary>
+    /// <param name="activity">Optional free-form label that becomes <see cref="ModuleRuntimeSnapshot.LastActivity"/>.</param>
+    internal void RecordHeartbeat(string? activity)
     {
         lock (_sync)
         {
@@ -499,7 +247,9 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void RecordActivity(string activity)
+    /// <summary>Updates <see cref="ModuleRuntimeSnapshot.LastActivity"/> without touching the heartbeat timestamp.</summary>
+    /// <param name="activity">Short label describing the activity.</param>
+    internal void RecordActivity(string activity)
     {
         lock (_sync)
         {
@@ -509,7 +259,14 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void RecordLoop(long startTicks, long endTicks, string? activity)
+    /// <summary>
+    /// Records a loop sample produced by a <see cref="ModuleLoopScope"/>. Maintains the running
+    /// average, the max, and the duty cycle estimate.
+    /// </summary>
+    /// <param name="startTicks"><see cref="Stopwatch.GetTimestamp"/> at scope creation.</param>
+    /// <param name="endTicks"><see cref="Stopwatch.GetTimestamp"/> at scope dispose.</param>
+    /// <param name="activity">Optional label, overwrites <see cref="ModuleRuntimeSnapshot.LastActivity"/>.</param>
+    internal void RecordLoop(long startTicks, long endTicks, string? activity)
     {
         lock (_sync)
         {
@@ -542,12 +299,18 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void IncrementCounter(string counterName, long delta)
+    /// <summary>Adds <paramref name="delta"/> to the named counter.</summary>
+    /// <param name="counterName">Case-insensitive counter key.</param>
+    /// <param name="delta">Signed delta. Negative values are allowed.</param>
+    internal void IncrementCounter(string counterName, long delta)
     {
         _counters.AddOrUpdate(counterName, delta, (_, current) => current + delta);
     }
 
-    public void SetDetail(string key, string? value)
+    /// <summary>Sets a key value pair shown in the dashboard. Passing a blank <paramref name="value"/> removes the entry.</summary>
+    /// <param name="key">Case-insensitive detail key. Blank keys are ignored.</param>
+    /// <param name="value">Detail value, or <see langword="null"/>/whitespace to remove the key.</param>
+    internal void SetDetail(string key, string? value)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -563,7 +326,9 @@ internal sealed class ModuleRuntimeInfo
         _details[key] = value;
     }
 
-    public void SetStatusText(string? value)
+    /// <summary>Updates <see cref="ModuleRuntimeSnapshot.StatusText"/>.</summary>
+    /// <param name="value">Arbitrary status string, or <see langword="null"/> to clear.</param>
+    internal void SetStatusText(string? value)
     {
         lock (_sync)
         {
@@ -571,7 +336,9 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void SetAutoStartEnabled(bool value)
+    /// <summary>Toggles the auto-start flag surfaced through <see cref="ModuleRuntimeSnapshot.AutoStartEnabled"/>.</summary>
+    /// <param name="value">New flag value.</param>
+    internal void SetAutoStartEnabled(bool value)
     {
         lock (_sync)
         {
@@ -579,7 +346,12 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void RegisterDisposable(IDisposable disposable)
+    /// <summary>
+    /// Adds a disposable to the context-owned list so it is released on module teardown.
+    /// Called by <see cref="ModuleContext.RegisterDisposable(IDisposable)"/>.
+    /// </summary>
+    /// <param name="disposable">Resource that lives as long as the current module run.</param>
+    internal void RegisterDisposable(IDisposable disposable)
     {
         lock (_sync)
         {
@@ -587,7 +359,11 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void DisposeOwnedDisposables()
+    /// <summary>
+    /// Disposes every owned <see cref="IDisposable"/> and clears the list. Exceptions from
+    /// individual disposables are logged and swallowed so teardown always finishes.
+    /// </summary>
+    internal void DisposeOwnedDisposables()
     {
         List<IDisposable> owned;
         lock (_sync)
@@ -609,7 +385,8 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
-    public void ClearTelemetry()
+    /// <summary>Clears every counter, detail and loop statistic. Exposed through the dashboard's <c>[Telemetry]</c> action.</summary>
+    internal void ClearTelemetry()
     {
         lock (_sync)
         {
@@ -629,6 +406,10 @@ internal sealed class ModuleRuntimeInfo
         }
     }
 
+    /// <summary>
+    /// Produces an immutable snapshot of the current state. The dictionaries are copied so the
+    /// caller is free to keep the returned object across thread boundaries.
+    /// </summary>
     public ModuleRuntimeSnapshot CreateSnapshot()
     {
         lock (_sync)

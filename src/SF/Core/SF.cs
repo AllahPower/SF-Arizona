@@ -18,5 +18,24 @@ public static class SF
     public static SFEvents Events { get; } = new SFEvents();
     public static SFNetwork Network { get; } = new SFNetwork();
 
+    public static SFModules Modules { get; } = new SFModules();
+
     public static string UserFilesDirectory { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GTA San Andreas User Files");
+}
+
+public sealed class SFModules
+{
+    private IModuleStorageProvider _storage = new DefaultModuleStorageProvider();
+
+    public IModuleStorageProvider Storage
+    {
+        get => _storage;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            _storage = value;
+        }
+    }
+
+    public DefaultModuleStorageProvider? DefaultStorage => _storage as DefaultModuleStorageProvider;
 }
