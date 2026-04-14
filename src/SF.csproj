@@ -52,6 +52,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Remove="SF.Abstractions\**\*.cs" />
+		<None Remove="SF.Abstractions\**\*" />
+		<ProjectReference Include="SF.Abstractions\SF.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="DllMain" Version="1.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
 		<PackageReference Include="MinHook.NET" Version="1.1.2" />

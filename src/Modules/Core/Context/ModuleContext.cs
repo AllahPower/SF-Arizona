@@ -13,7 +13,7 @@ namespace SFSharp;
 /// <see cref="RegisterDisposable(IDisposable)"/> and the subscription extensions in
 /// <see cref="ModuleContextEventExtensions"/>.
 /// </remarks>
-public sealed class ModuleContext : IDisposable
+public sealed class ModuleContext : IModuleContext
 {
     private readonly ModuleRuntimeInfo _runtime;
     private int _disposed;
@@ -119,6 +119,8 @@ public sealed class ModuleContext : IDisposable
     {
         return new ModuleLoopScope(_runtime, Stopwatch.GetTimestamp(), activity);
     }
+
+    IDisposable IModuleContext.TrackLoop(string? activity) => TrackLoop(activity);
 
     /// <summary>
     /// Takes ownership of <paramref name="disposable"/>. The object is disposed when the module

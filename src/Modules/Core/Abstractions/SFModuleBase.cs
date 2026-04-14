@@ -33,11 +33,11 @@ public abstract class SFModuleBase : ISFModule
     /// Sealed for base-class consumers. Override <see cref="ExecuteAsync(CancellationToken)"/>
     /// and the <c>On*Async</c> hooks instead.
     /// </remarks>
-    public async Task RunAsync(ModuleContext context)
+    public async Task RunAsync(IModuleContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        Context = context;
+        Context = (ModuleContext)context;
         Log = CreateLogger(context);
 
         await OnStartingAsync();
@@ -75,7 +75,7 @@ public abstract class SFModuleBase : ISFModule
     /// category name or a custom <see cref="ILogger"/> implementation.
     /// </summary>
     /// <param name="context">Current module context, giving access to <see cref="ModuleDescriptor.Id"/>.</param>
-    protected virtual ILogger CreateLogger(ModuleContext context)
+    protected virtual ILogger CreateLogger(IModuleContext context)
     {
         return SFLoggerProvider.Instance.CreateLogger(context.Descriptor.Id);
     }
