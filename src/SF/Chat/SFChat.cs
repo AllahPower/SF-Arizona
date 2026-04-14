@@ -6,7 +6,7 @@ using System.Threading.Channels;
 
 namespace SFSharp;
 
-public partial class SFChat
+public partial class SFChat : ISFChat
 {
     public void Send(string message)
     {

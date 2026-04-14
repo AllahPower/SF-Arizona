@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SF.Abstractions/SF.Abstractions.csproj" />
+    <Project Path="src/SF.csproj" />
+  </Folder>
+</Solution>

@@ -35,6 +35,9 @@ public sealed class ModuleContext : IModuleContext
     /// <summary>Static metadata for this module run, see <see cref="ModuleDescriptor"/>.</summary>
     public ModuleDescriptor Descriptor { get; }
 
+    /// <inheritdoc />
+    public ISF SF => SFSharp.SF.Instance;
+
     /// <summary>
     /// Cancelled when the container shuts down or the user issues <c>/sfs stop</c>. Also the token
     /// forwarded to <see cref="SFModuleBase.ExecuteAsync(CancellationToken)"/>.
@@ -47,20 +50,20 @@ public sealed class ModuleContext : IModuleContext
     /// <see cref="SF.Modules"/>, which allows another module to override the backing store before
     /// the first access.
     /// </summary>
-    public IModuleStorage Assets => _assets ??= SF.Modules.Storage.GetAssets(Descriptor);
+    public IModuleStorage Assets => _assets ??= global::SFSharp.SF.Modules.Storage.GetAssets(Descriptor);
 
     /// <summary>
     /// Read/write access to the module's user data folder under <c>My Documents</c>. Rooted at
     /// <see cref="SFPaths.GetModuleUserDataDirectory(string)"/>.
     /// </summary>
-    public IModuleStorage UserData => _userData ??= SF.Modules.Storage.GetUserData(Descriptor);
+    public IModuleStorage UserData => _userData ??= global::SFSharp.SF.Modules.Storage.GetUserData(Descriptor);
 
     /// <summary>
     /// Typed configuration backed by a JSON file inside <see cref="UserData"/>. Source-generated
     /// <see cref="System.Text.Json.Serialization.Metadata.JsonTypeInfo{T}"/> is required for AOT
     /// compatibility, see <see cref="IModuleConfig"/>.
     /// </summary>
-    public IModuleConfig Config => _config ??= SF.Modules.Storage.GetConfig(Descriptor);
+    public IModuleConfig Config => _config ??= global::SFSharp.SF.Modules.Storage.GetConfig(Descriptor);
 
     /// <summary>
     /// Records a heartbeat tick. Intended to be called every loop iteration or whenever the module

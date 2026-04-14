@@ -2,6 +2,7 @@ namespace SFSharp;
 
 public static class SF
 {
+    public static ISF Instance { get; } = new SFHost();
     public static SFDialog Dialog { get; } = new SFDialog();
     public static SFKeyboard Keyboard { get; } = new SFKeyboard();
     public static SFChat Chat { get; } = new SFChat();

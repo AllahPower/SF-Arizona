@@ -10,6 +10,9 @@ public interface IModuleContext : IDisposable
     /// <summary>Static metadata for this module run.</summary>
     ModuleDescriptor Descriptor { get; }
 
+    /// <summary>Root SF facade for this host. Same instance every module sees.</summary>
+    ISF SF { get; }
+
     /// <summary>Cancelled when the container shuts down or the user stops the module.</summary>
     CancellationToken CancellationToken { get; }
 
