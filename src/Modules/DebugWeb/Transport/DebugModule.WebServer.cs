@@ -9,7 +9,8 @@ public partial class DebugModule
 {
     private void MapEndpoints(WebApplication app)
     {
-        Directory.CreateDirectory(WebDebuggerWwwRootPath);
+        string wwwRootPath = WebDebuggerWwwRootPath;
+        string indexPath = WebDebuggerIndexPath;
 
         app.Use(async (ctx, next) =>
         {
@@ -21,7 +22,7 @@ public partial class DebugModule
             await next(ctx);
         });
 
-        var webRootProvider = new PhysicalFileProvider(WebDebuggerWwwRootPath);
+        var webRootProvider = new PhysicalFileProvider(wwwRootPath);
         app.UseDefaultFiles(new DefaultFilesOptions
         {
             FileProvider = webRootProvider,
@@ -34,16 +35,16 @@ public partial class DebugModule
 
         app.MapGet("/", async (HttpContext ctx) =>
         {
-            if (!File.Exists(WebDebuggerIndexPath))
+            if (!File.Exists(indexPath))
             {
                 ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 ctx.Response.ContentType = "text/plain; charset=utf-8";
-                await ctx.Response.WriteAsync($"Debug web root is missing: {WebDebuggerIndexPath}");
+                await ctx.Response.WriteAsync($"Debug web root is missing: {indexPath}");
                 return;
             }
 
             ctx.Response.ContentType = "text/html; charset=utf-8";
-            await ctx.Response.SendFileAsync(WebDebuggerIndexPath);
+            await ctx.Response.SendFileAsync(indexPath);
         });
 
         app.MapGet("/api/config", () =>

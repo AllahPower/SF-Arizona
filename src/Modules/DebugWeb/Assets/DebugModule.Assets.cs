@@ -1,8 +1,10 @@
-using System.IO;
-
 public partial class DebugModule
 {
-    private static readonly string WebDebuggerRootPath = Path.Combine(AppContext.BaseDirectory, "SF", "WebDebugger");
-    private static readonly string WebDebuggerWwwRootPath = Path.Combine(WebDebuggerRootPath, "wwwroot");
-    private static readonly string WebDebuggerIndexPath = Path.Combine(WebDebuggerWwwRootPath, "index.html");
+    private const string WwwRootRelativePath = "wwwroot";
+    private const string IndexRelativePath = "wwwroot/index.html";
+
+    private string WebDebuggerWwwRootPath => Context.Assets.GetFullPath(WwwRootRelativePath);
+    private string WebDebuggerIndexPath => Context.Assets.GetFullPath(IndexRelativePath);
+
+    private bool WebDebuggerAssetsExist => Context.Assets.Exists(IndexRelativePath);
 }

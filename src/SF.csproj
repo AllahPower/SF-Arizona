@@ -47,7 +47,7 @@
 		<Content Include="Modules\DebugWeb\wwwroot\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-			<TargetPath>SF\WebDebugger\wwwroot\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+			<TargetPath>SF\debug-web\wwwroot\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
 		</Content>
 	</ItemGroup>
 

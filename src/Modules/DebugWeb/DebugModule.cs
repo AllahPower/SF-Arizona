@@ -63,9 +63,9 @@ public partial class DebugModule : SFModuleBase
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(WebDebuggerWwwRootPath) || !File.Exists(WebDebuggerIndexPath))
+        if (!WebDebuggerAssetsExist)
         {
-            string missingTarget = !Directory.Exists(WebDebuggerWwwRootPath) ? WebDebuggerWwwRootPath : WebDebuggerIndexPath;
+            string missingTarget = WebDebuggerIndexPath;
             Context.SetDetail("status", "missing web assets");
             Context.SetDetail("path", missingTarget);
             Log.LogWarning("DebugWeb assets are missing: {Path}", missingTarget);
