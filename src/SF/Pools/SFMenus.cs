@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public sealed unsafe class SFMenus
+public sealed unsafe class SFMenus : ISFMenus
 {
     public ushort CurrentMenu => CMenuPool.Instance.CurrentMenu;
     public bool Cancelled => CMenuPool.Instance.Cancelled;

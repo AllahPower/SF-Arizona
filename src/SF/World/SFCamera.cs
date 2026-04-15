@@ -4,6 +4,7 @@ using SFSharp.Interop.RakNet.Packets.Enum;
 namespace SFSharp;
 
 public sealed class SFCamera
+    : ISFCamera
 {
     public bool IsAvailable => CCamera.IsAvailable;
 
@@ -18,8 +19,6 @@ public sealed class SFCamera
     public byte FadeAlpha => CCamera.FadeAlpha;
     public byte FadeState => CCamera.FadeState;
     public bool IsFading => CCamera.FadeState != 0;
-    public CMatrix Matrix => CCamera.GetMatrix();
-
     public Vector3 GetLookAtPoint(float distance = 100f) => CCamera.GetLookAtPoint(distance);
 
     public float GetDistanceTo(Vector3 point) => CCamera.GetDistanceTo(point);

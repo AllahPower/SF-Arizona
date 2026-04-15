@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public sealed unsafe class SFGamePools
+public sealed unsafe class SFGamePools : ISFGamePools
 {
     public SFPlayers Players => SF.Players;
     public SFVehicles Vehicles => SF.Vehicles;
@@ -16,8 +16,17 @@ public sealed unsafe class SFGamePools
     public bool IsInitialized => CNetGame.TryGetPools(out _);
     public int State => CNetGame.TryGetInstance(out CNetGame* netGame) ? netGame->GetState() : 0;
     public bool IsLanMode => CNetGame.TryGetInstance(out CNetGame* netGame) && netGame->IsLanMode();
-    public nint RakClientPointer => CNetGame.TryGetRakClient(out CRakClientInterface* rakClient) ? (nint)rakClient : 0;
     public int InitializedPoolCount => CNetGame.TryGetPools(out CNetGamePools* pools) ? pools->GetInitializedCount() : 0;
+
+    ISFPlayers ISFGamePools.Players => Players;
+    ISFVehicles ISFGamePools.Vehicles => Vehicles;
+    ISFActors ISFGamePools.Actors => Actors;
+    ISFObjects ISFGamePools.Objects => Objects;
+    ISFPickups ISFGamePools.Pickups => Pickups;
+    ISFMenus ISFGamePools.Menus => Menus;
+    ISFGangZones ISFGamePools.GangZones => GangZones;
+    ISFLabels ISFGamePools.Labels => Labels;
+    ISFTextDraws ISFGamePools.TextDraws => TextDraws;
 
     public void InitializePools()
     {

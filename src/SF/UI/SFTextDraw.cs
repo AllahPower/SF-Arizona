@@ -74,12 +74,41 @@ public sealed unsafe class SFTextDraw
         snapshot = new SFTextDrawSnapshot(
             textDraw->GetText(),
             textDraw->GetString(),
-            textDraw->Data);
+            new SFTextDrawDataSnapshot(
+                textDraw->Data.LetterWidth,
+                textDraw->Data.LetterHeight,
+                textDraw->Data.LetterColor,
+                textDraw->Data.Center != 0,
+                textDraw->Data.Box != 0,
+                textDraw->Data.BoxSizeX,
+                textDraw->Data.BoxSizeY,
+                textDraw->Data.BoxColor,
+                textDraw->Data.Proportional != 0,
+                textDraw->Data.BackgroundColor,
+                textDraw->Data.Shadow,
+                textDraw->Data.Outline,
+                textDraw->Data.Left != 0,
+                textDraw->Data.Right != 0,
+                textDraw->Data.Style,
+                textDraw->Data.X,
+                textDraw->Data.Y,
+                textDraw->Data.Field99B,
+                textDraw->Data.Field99F,
+                textDraw->Data.Index,
+                textDraw->Data.Selectable != 0,
+                textDraw->Data.Model,
+                textDraw->Data.Rotation,
+                textDraw->Data.Zoom,
+                textDraw->Data.Color0,
+                textDraw->Data.Color1,
+                textDraw->Data.TextContainsKeys != 0,
+                textDraw->Data.DrawnThisFrame != 0,
+                textDraw->Data.IsSelected != 0,
+                textDraw->Data.ComputedLeft,
+                textDraw->Data.ComputedRight,
+                textDraw->Data.ComputedTop,
+                textDraw->Data.ComputedBottom,
+                textDraw->Data.ColorIfSelected));
         return true;
     }
 }
-
-public readonly record struct SFTextDrawSnapshot(
-    string? Text,
-    string? String,
-    CTextDrawData Data);

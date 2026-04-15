@@ -4,12 +4,6 @@ namespace SFSharp;
 
 public readonly record struct SFPlayerHeadState(Vector3 Direction, uint LastUpdate, uint LastLook);
 
-public readonly record struct SFLocalPlayerCameraTarget(
-    ushort ObjectId,
-    ushort VehicleId,
-    ushort PlayerId,
-    ushort ActorId);
-
 public readonly record struct SFLocalPlayerSurfingState(
     ushort EntityId,
     uint LastUpdate,

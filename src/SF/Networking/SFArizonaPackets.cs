@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public sealed class SFArizonaPackets
+public sealed class SFArizonaPackets : ISFArizonaPackets
 {
     private const int Packet220PayloadBitOffset = 16;
     private const int Packet221PayloadBitOffset = 24;
@@ -22,6 +22,16 @@ public sealed class SFArizonaPackets
         });
     }
 
+    public IDisposable SubscribeIncoming(int subId, Action<IncomingArizonaPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeIncoming((EArizona)subId, args =>
+        {
+            IncomingArizonaPacketPayload payload = IncomingArizonaPacketPayload.From(args);
+            handler(new IncomingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+        });
+    }
+
     public NetworkSubscription SubscribeIncomingEx(EArizonaEx subId, Action<IncomingArizonaPacketArgs> handler)
     {
         return SF.Packets.SubscribeIncoming(EPacketId.ArizonaCefEx, args =>
@@ -32,6 +42,16 @@ public sealed class SFArizonaPackets
             }
 
             handler(packetArgs);
+        });
+    }
+
+    public IDisposable SubscribeIncomingEx(int subId, Action<IncomingArizonaPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeIncomingEx((EArizonaEx)subId, args =>
+        {
+            IncomingArizonaPacketPayload payload = IncomingArizonaPacketPayload.From(args);
+            handler(new IncomingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
         });
     }
 
@@ -48,6 +68,16 @@ public sealed class SFArizonaPackets
         });
     }
 
+    public IDisposable SubscribeOutgoing(int subId, Action<OutgoingArizonaPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeOutgoing((EArizona)subId, args =>
+        {
+            OutgoingArizonaPacketPayload payload = OutgoingArizonaPacketPayload.From(args);
+            handler(new OutgoingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+        });
+    }
+
     public NetworkSubscription SubscribeOutgoingEx(EArizonaEx subId, Action<OutgoingArizonaPacketArgs> handler)
     {
         return SF.Packets.SubscribeOutgoing(EPacketId.ArizonaCefEx, args =>
@@ -61,9 +91,29 @@ public sealed class SFArizonaPackets
         });
     }
 
+    public IDisposable SubscribeOutgoingEx(int subId, Action<OutgoingArizonaPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeOutgoingEx((EArizonaEx)subId, args =>
+        {
+            OutgoingArizonaPacketPayload payload = OutgoingArizonaPacketPayload.From(args);
+            handler(new OutgoingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+        });
+    }
+
     public NetworkSubscription SubscribeIncomingAZVoice(EAZVoice subId, Action<IncomingArizonaPacketArgs> handler)
     {
         return SFBootstrap.IncomingAZVoiceControlHandlers.Subscribe((int)subId, handler);
+    }
+
+    public IDisposable SubscribeIncomingAZVoice(int subId, Action<IncomingArizonaPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeIncomingAZVoice((EAZVoice)subId, args =>
+        {
+            IncomingArizonaPacketPayload payload = IncomingArizonaPacketPayload.From(args);
+            handler(new IncomingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+        });
     }
 
     public NetworkSubscription SubscribeIncomingAZVoiceData(Action<IncomingPacketArgs> handler)
@@ -71,9 +121,21 @@ public sealed class SFArizonaPackets
         return SFBootstrap.IncomingAZVoiceDataHandlers.Subscribe(handler);
     }
 
+    public IDisposable SubscribeIncomingAZVoiceData(Action<IncomingPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeIncomingAZVoiceData(args => handler(new IncomingPacketFrame(args.EPacketId, IncomingPacketPayload.From(args).Data, args.DataBitLength)));
+    }
+
     public NetworkSubscription SubscribeOutgoingAZVoiceData(Action<OutgoingPacketArgs> handler)
     {
         return SF.Packets.SubscribeOutgoing(EPacketId.AZVoice, handler);
+    }
+
+    public IDisposable SubscribeOutgoingAZVoiceData(Action<OutgoingPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeOutgoingAZVoiceData(args => handler(new OutgoingPacketFrame(args.EPacketId, OutgoingPacketPayload.From(args).Data, args.DataBitLength)));
     }
 
     public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncoming(EArizona subId, [EnumeratorCancellation] CancellationToken token = default)
@@ -256,6 +318,62 @@ public sealed class SFArizonaPackets
         await foreach (OutgoingPacketPayload payload in StreamOutgoingAZVoiceData(token))
         {
             yield return payload.Parse(parser);
+        }
+    }
+
+    public async IAsyncEnumerable<IncomingArizonaPacketFrame> StreamIncoming(int subId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (IncomingArizonaPacketPayload payload in StreamIncoming((EArizona)subId, token))
+        {
+            yield return new IncomingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+        }
+    }
+
+    public async IAsyncEnumerable<IncomingArizonaPacketFrame> StreamIncomingEx(int subId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (IncomingArizonaPacketPayload payload in StreamIncomingEx((EArizonaEx)subId, token))
+        {
+            yield return new IncomingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+        }
+    }
+
+    public async IAsyncEnumerable<OutgoingArizonaPacketFrame> StreamOutgoing(int subId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoing((EArizona)subId, token))
+        {
+            yield return new OutgoingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+        }
+    }
+
+    public async IAsyncEnumerable<OutgoingArizonaPacketFrame> StreamOutgoingEx(int subId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoingEx((EArizonaEx)subId, token))
+        {
+            yield return new OutgoingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+        }
+    }
+
+    public async IAsyncEnumerable<IncomingArizonaPacketFrame> StreamIncomingAZVoice(int subId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (IncomingArizonaPacketPayload payload in StreamIncomingAZVoice((EAZVoice)subId, token))
+        {
+            yield return new IncomingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+        }
+    }
+
+    async IAsyncEnumerable<IncomingPacketFrame> ISFArizonaPackets.StreamIncomingAZVoiceData([EnumeratorCancellation] CancellationToken token)
+    {
+        await foreach (IncomingPacketPayload payload in StreamIncomingAZVoiceData(token))
+        {
+            yield return new IncomingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
+        }
+    }
+
+    async IAsyncEnumerable<OutgoingPacketFrame> ISFArizonaPackets.StreamOutgoingAZVoiceData([EnumeratorCancellation] CancellationToken token)
+    {
+        await foreach (OutgoingPacketPayload payload in StreamOutgoingAZVoiceData(token))
+        {
+            yield return new OutgoingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
         }
     }
 

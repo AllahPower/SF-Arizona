@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public sealed class SFPacketParsers
+public sealed class SFPacketParsers : ISFPacketParsers
 {
     private static readonly Lazy<PacketParserRegistry> _registry = new(PacketParserCatalog.CreateDefaultRegistry);
 

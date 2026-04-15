@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace SFSharp;
 
-public sealed unsafe class SFObjects
+public sealed unsafe class SFObjects : ISFObjects
 {
     public int Count => CObjectPool.Instance.GetCount();
     public int LargestId => CObjectPool.Instance.LargestId;

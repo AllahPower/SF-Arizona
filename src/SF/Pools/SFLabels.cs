@@ -3,6 +3,7 @@ using System.Numerics;
 namespace SFSharp;
 
 public sealed unsafe class SFLabels
+    : ISFLabels
 {
     public bool Exists(ushort labelId) => CLabelPool.Instance.DoesExist(labelId);
 

@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public sealed unsafe class SFTextDraws
+public sealed unsafe class SFTextDraws : ISFTextDraws
 {
     public bool Exists(ushort textDrawId) => CTextDrawPool.Instance.DoesExist(textDrawId);
 

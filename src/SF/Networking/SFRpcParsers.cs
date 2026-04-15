@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public sealed class SFRpcParsers
+public sealed class SFRpcParsers : ISFRpcParsers
 {
     private static readonly Lazy<RpcParserRegistry> _registry = new(RpcParserCatalog.CreateDefaultRegistry);
 

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public sealed class SFRpc
+public sealed class SFRpc : ISFRpc
 {
     public RpcHandlerManager Handlers => SFBootstrap.RpcHandlers;
     public OutgoingRpcManager OutgoingHandlers => SFBootstrap.OutgoingRpcHandlers;
@@ -13,6 +13,12 @@ public sealed class SFRpc
     public RpcSubscription Subscribe(ERpcId rpcId, Action<IncomingRpcArgs> handler)
     {
         return Handlers.Subscribe(rpcId, handler);
+    }
+
+    public IDisposable SubscribeIncoming(int rpcId, Action<IncomingRpcFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return Subscribe((ERpcId)rpcId, args => handler(new IncomingRpcFrame(args.ERpcId, IncomingRpcPayload.From(args).Data, args.DataBitOffset, args.DataBitLength)));
     }
 
     public IDisposable Bind(IRpcHandler handler, CancellationToken token = default, bool attachNow = true)
@@ -58,6 +64,12 @@ public sealed class SFRpc
         return OutgoingHandlers.Subscribe(rpcId, handler);
     }
 
+    public IDisposable SubscribeOutgoing(int rpcId, Action<OutgoingRpcFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeOutgoing((ERpcId)rpcId, args => handler(new OutgoingRpcFrame(args.ERpcId, OutgoingRpcPayload.From(args).Data, args.DataBitLength)));
+    }
+
     public async IAsyncEnumerable<OutgoingRpcPayload> StreamOutgoing(ERpcId rpcId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<OutgoingRpcPayload>();
@@ -82,6 +94,22 @@ public sealed class SFRpc
         await foreach (OutgoingRpcPayload payload in StreamOutgoing(rpcId, token))
         {
             yield return payload.Parse(parser);
+        }
+    }
+
+    public async IAsyncEnumerable<IncomingRpcFrame> StreamIncoming(int rpcId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (IncomingRpcPayload payload in Stream((ERpcId)rpcId, token))
+        {
+            yield return new IncomingRpcFrame((int)payload.ERpcId, payload.Data, payload.DataBitOffset, payload.DataBitLength);
+        }
+    }
+
+    public async IAsyncEnumerable<OutgoingRpcFrame> StreamOutgoing(int rpcId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (OutgoingRpcPayload payload in StreamOutgoing((ERpcId)rpcId, token))
+        {
+            yield return new OutgoingRpcFrame((int)payload.ERpcId, payload.Data, payload.DataBitLength);
         }
     }
 

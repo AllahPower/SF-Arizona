@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public sealed class SFGangZones
+public sealed class SFGangZones : ISFGangZones
 {
     public bool Exists(ushort zoneId) => CGangZonePool.Instance.DoesExist(zoneId);
 

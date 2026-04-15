@@ -1,18 +1,6 @@
 namespace SFSharp;
 
-public readonly record struct SFVehicleSnapshot(
-    ushort Id,
-    bool Exists,
-    int Handle,
-    bool IsInvulnerable,
-    bool IsLightsOn,
-    bool IsLocked,
-    bool EngineState,
-    byte PrimaryColor,
-    byte SecondaryColor
-);
-
-public sealed unsafe class SFVehicles
+public sealed unsafe class SFVehicles : ISFVehicles
 {
     public int Count => CVehiclePool.Instance.Count;
 

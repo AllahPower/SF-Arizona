@@ -2,14 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp;
 
-public readonly record struct SFArizonaChatRoomDef(
-    byte RoomId,
-    string Name,
-    uint ColorArgb,
-    string Icon,
-    bool Visible);
-
-public sealed class SFArizonaChat
+public sealed class SFArizonaChat : ISFArizonaChat
 {
     private readonly Lock _sync = new();
     private readonly Dictionary<byte, SFArizonaChatRoomDef> _userRooms = new();
@@ -25,6 +18,8 @@ public sealed class SFArizonaChat
     private ResetDynamicRoomsNative? _resetDetour;
     private ResetDynamicRoomsNative? _resetOriginal;
     private bool _hooksInstalled;
+
+    public bool IsAvailable => CArizonaChat.IsAvailable;
 
     /// <summary>
     /// Registers a user-owned dynamic room. The room is created immediately via _chat.asi and

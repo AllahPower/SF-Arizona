@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public sealed class SFPackets
+public sealed class SFPackets : ISFPackets
 {
     public IncomingPacketManager IncomingHandlers => SFBootstrap.IncomingPacketHandlers;
     public OutgoingPacketManager OutgoingHandlers => SFBootstrap.OutgoingPacketHandlers;
@@ -13,6 +13,12 @@ public sealed class SFPackets
     public NetworkSubscription SubscribeIncoming(EPacketId packetId, Action<IncomingPacketArgs> handler)
     {
         return IncomingHandlers.Subscribe(packetId, handler);
+    }
+
+    public IDisposable SubscribeIncoming(int packetId, Action<IncomingPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeIncoming((EPacketId)packetId, args => handler(new IncomingPacketFrame(args.EPacketId, IncomingPacketPayload.From(args).Data, args.DataBitLength)));
     }
 
     public async IAsyncEnumerable<IncomingPacketPayload> StreamIncoming(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
@@ -48,6 +54,12 @@ public sealed class SFPackets
         return OutgoingHandlers.Subscribe(packetId, handler);
     }
 
+    public IDisposable SubscribeOutgoing(int packetId, Action<OutgoingPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeOutgoing((EPacketId)packetId, args => handler(new OutgoingPacketFrame(args.EPacketId, OutgoingPacketPayload.From(args).Data, args.DataBitLength)));
+    }
+
     public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoing(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<OutgoingPacketPayload>();
@@ -72,6 +84,22 @@ public sealed class SFPackets
         await foreach (OutgoingPacketPayload payload in StreamOutgoing(packetId, token))
         {
             yield return payload.Parse(parser);
+        }
+    }
+
+    public async IAsyncEnumerable<IncomingPacketFrame> StreamIncoming(int packetId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (IncomingPacketPayload payload in StreamIncoming((EPacketId)packetId, token))
+        {
+            yield return new IncomingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
+        }
+    }
+
+    public async IAsyncEnumerable<OutgoingPacketFrame> StreamOutgoing(int packetId, [EnumeratorCancellation] CancellationToken token = default)
+    {
+        await foreach (OutgoingPacketPayload payload in StreamOutgoing((EPacketId)packetId, token))
+        {
+            yield return new OutgoingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
         }
     }
 

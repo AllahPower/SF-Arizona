@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public sealed unsafe class SFActors
+public sealed unsafe class SFActors : ISFActors
 {
     public int LargestId => CActorPool.Instance.LargestId;
 

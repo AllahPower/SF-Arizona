@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace SFSharp;
 
-public sealed class SFPickups
+public sealed class SFPickups : ISFPickups
 {
     public int Count => CPickupPool.Instance.Count;
 

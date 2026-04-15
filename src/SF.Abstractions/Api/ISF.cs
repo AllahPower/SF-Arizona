@@ -19,6 +19,36 @@ public interface ISF
     /// <summary>Read-only player helpers, see <see cref="ISFPlayers"/>.</summary>
     ISFPlayers Players { get; }
 
+    /// <summary>Read-only vehicle helpers, see <see cref="ISFVehicles"/>.</summary>
+    ISFVehicles Vehicles { get; }
+
+    /// <summary>Read-only game pool helpers, see <see cref="ISFGamePools"/>.</summary>
+    ISFGamePools Pools { get; }
+
     /// <summary>Typed parsed event subscriptions and streams, see <see cref="ISFEvents"/>.</summary>
     ISFEvents Events { get; }
+
+    /// <summary>Raw RPC transport facade backed by copied payload frames.</summary>
+    ISFRpc Rpc { get; }
+
+    /// <summary>Raw packet transport facade backed by copied payload frames.</summary>
+    ISFPackets Packets { get; }
+
+    /// <summary>Arizona packet transport facade backed by copied payload frames.</summary>
+    ISFArizonaPackets Arizona { get; }
+
+    /// <summary>Arizona chat room facade for user-owned dynamic rooms.</summary>
+    ISFArizonaChat ArizonaChat { get; }
+
+    /// <summary>Typed parsed packet facade, including Arizona packet routes.</summary>
+    ISFPacketParsers PacketParsers { get; }
+
+    /// <summary>Typed parsed RPC facade.</summary>
+    ISFRpcParsers RpcParsers { get; }
+
+    /// <summary>Read-only camera facade.</summary>
+    ISFCamera Camera { get; }
+
+    /// <summary>Resolved GTA San Andreas user files directory.</summary>
+    string UserFilesDirectory { get; }
 }

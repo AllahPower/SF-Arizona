@@ -1,14 +1,8 @@
 namespace SFSharp;
 
-/// <summary>
-/// AZVoice plugin sub-RPC IDs dispatched within RPC 252.
-/// The first byte of the RPC payload is the sub-RPC ID,
-/// followed by a sub-RPC-specific bitstream payload.
-/// </summary>
+/// <summary>AZVoice plugin sub-RPC IDs dispatched within RPC 252.</summary>
 public enum EAZVoice : byte
 {
-    #region incoming (server -> client)
-
     PluginInit = 3,
     CreateStaticAudioStream = 6,
     DeleteStream = 7,
@@ -28,6 +22,4 @@ public enum EAZVoice : byte
     DestroyStreamObject = 21,
     Disconnect = 22,
     SetReadyFlag = 23,
-
-    #endregion
 }
