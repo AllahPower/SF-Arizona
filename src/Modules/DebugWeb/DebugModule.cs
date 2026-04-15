@@ -79,8 +79,15 @@ public partial class DebugModule : SFModuleBase
             SubscribeAll(subs);
             Context.SetDetail("subscriptions", subs.Count.ToString());
             Context.SetDetail("url", $"http://localhost:{WebPort}/");
+            Context.SetDetail("assetsRoot", Context.Assets.Root);
+            Context.SetDetail("webRoot", WebDebuggerWwwRootPath);
 
-            var builder = WebApplication.CreateSlimBuilder();
+            var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
+            {
+                ContentRootPath = Context.Assets.Root,
+                WebRootPath = WebDebuggerWwwRootPath,
+                ApplicationName = typeof(DebugModule).Assembly.GetName().Name
+            });
             builder.Logging.ClearProviders();
             builder.WebHost.UseUrls($"http://localhost:{WebPort}");
 
