@@ -74,6 +74,11 @@ public sealed class PluginLoader
     /// <returns>Number of successfully loaded plugins.</returns>
     public int DiscoverAndLoadAll()
     {
+        return ExecuteOnContainerThread(DiscoverAndLoadAllCore);
+    }
+
+    private int DiscoverAndLoadAllCore()
+    {
         if (!RuntimeFeature.IsDynamicCodeSupported)
         {
             SFLog.Warn($"PluginLoader: dynamic code is not supported (NativeAOT build). Plugin directory '{_pluginsRoot}' will not be scanned.");
@@ -99,7 +104,7 @@ public sealed class PluginLoader
 
             try
             {
-                if (LoadFromManifest(manifestPath).Success)
+                if (LoadFromManifestCore(manifestPath).Success)
                 {
                     loaded++;
                 }
@@ -114,7 +119,10 @@ public sealed class PluginLoader
         return loaded;
     }
 
-    /// <summary>Loads a single plugin from its <c>module.json</c>. Thread-safe.</summary>
+    /// <summary>
+    /// Loads a single plugin from its <c>module.json</c>. Safe to call from any thread; the
+    /// actual mutation is serialized onto the container/main thread.
+    /// </summary>
     public bool TryLoadFromManifest(string manifestPath, out string pluginId, out int registeredModuleCount)
     {
         PluginLoadResult result = LoadFromManifest(manifestPath);
@@ -126,6 +134,11 @@ public sealed class PluginLoader
     public bool TryLoadFromManifest(string manifestPath) => LoadFromManifest(manifestPath).Success;
 
     public PluginLoadResult LoadFromManifest(string manifestPath)
+    {
+        return ExecuteOnContainerThread(() => LoadFromManifestCore(manifestPath));
+    }
+
+    private PluginLoadResult LoadFromManifestCore(string manifestPath)
     {
         if (!RuntimeFeature.IsDynamicCodeSupported)
         {
@@ -262,14 +275,19 @@ public sealed class PluginLoader
         {
             Manifest = manifest,
             LoadContext = context,
-            Assembly = assembly,
-            RegisteredModules = registered,
+            RegisteredModuleIds = [.. registered.Select(static descriptor => descriptor.Id)],
             LoadContextRef = new WeakReference(context),
         };
 
         lock (_sync)
         {
             _plugins.Add(manifest.PluginId, record);
+        }
+
+        if (_container.IsRunLoopActive)
+        {
+            int started = _container.ActivatePendingAutoStartModules();
+            SFLog.Debug($"PluginLoader[{manifest.PluginId}]: activated {started} pending auto-start module(s) after load");
         }
 
         SFLog.Info($"PluginLoader[{manifest.PluginId}]: loaded {registered.Count} module(s)");
@@ -284,9 +302,15 @@ public sealed class PluginLoader
 
     public PluginUnloadResult Unload(string pluginId)
     {
+        return ExecuteOnContainerThread(() => UnloadCore(pluginId));
+    }
+
+    private PluginUnloadResult UnloadCore(string pluginId)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginId);
 
         LoadedPlugin? plugin;
+        bool finalizeDetachedUnload = false;
         lock (_sync)
         {
             if (!_plugins.TryGetValue(pluginId, out plugin))
@@ -296,20 +320,40 @@ public sealed class PluginLoader
                 return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.PluginNotLoaded, message, pluginId);
             }
 
-            if (plugin.State != PluginState.Loaded)
+            if (plugin.State == PluginState.UnloadFailed)
+            {
+                finalizeDetachedUnload = true;
+            }
+            else if (plugin.State != PluginState.Loaded)
             {
                 string message = $"Plugin '{pluginId}' is in state {plugin.State} and cannot be unloaded.";
                 SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
                 return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.PluginBusy, message, pluginId);
             }
-
-            plugin.State = PluginState.Unloading;
-            plugin.LastUnloadFailureReason = PluginUnloadFailureReason.None;
-            plugin.LastUnloadFailureMessage = null;
+            else
+            {
+                plugin.State = PluginState.Unloading;
+                plugin.LastUnloadFailureReason = PluginUnloadFailureReason.None;
+                plugin.LastUnloadFailureMessage = null;
+            }
         }
 
         LoadedPlugin activePlugin = plugin!;
-        string[] moduleIds = [.. activePlugin.RegisteredModules.Select(static descriptor => descriptor.Id)];
+        if (finalizeDetachedUnload)
+        {
+            return FinalizeDetachedUnload(activePlugin);
+        }
+
+        string[] moduleIds = [.. activePlugin.RegisteredModuleIds];
+        string[] blockingDependents = _container.GetRunningDependentModuleIds(moduleIds, excludedModuleIds: moduleIds);
+        if (blockingDependents.Length != 0)
+        {
+            return RecordUnloadFailure(
+                activePlugin,
+                PluginUnloadFailureReason.ModuleStillRunning,
+                $"Plugin '{pluginId}' cannot be unloaded while dependent modules are running: {string.Join(", ", blockingDependents)}");
+        }
+
         SFLog.Info($"PluginLoader[{pluginId}]: unloading {moduleIds.Length} module(s)");
         foreach (string moduleId in moduleIds)
         {
@@ -332,7 +376,7 @@ public sealed class PluginLoader
                 $"Plugin '{pluginId}' failed to unregister module ids: {string.Join(", ", failedIds)}");
         }
 
-        if (!TryUnloadContext(activePlugin.LoadContext, pluginId))
+        if (!TryDetachAndUnloadContext(activePlugin, pluginId))
         {
             return RecordUnloadFailure(
                 activePlugin,
@@ -340,28 +384,7 @@ public sealed class PluginLoader
                 $"Plugin '{pluginId}' failed to invoke AssemblyLoadContext.Unload().");
         }
 
-        for (int attempt = 0; attempt < UnloadGcAttempts && activePlugin.LoadContextRef.IsAlive; attempt++)
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-        }
-
-        if (activePlugin.LoadContextRef.IsAlive)
-        {
-            return RecordUnloadFailure(
-                activePlugin,
-                PluginUnloadFailureReason.AssemblyLoadContextStillAlive,
-                $"Plugin '{pluginId}' could not be fully unloaded. The plugin AssemblyLoadContext is still alive after {UnloadGcAttempts} GC cycles.");
-        }
-
-        lock (_sync)
-        {
-            _plugins.Remove(pluginId);
-        }
-
-        SFLog.Info($"PluginLoader[{pluginId}]: ALC fully collected");
-        return PluginUnloadResult.FromSuccess(pluginId);
+        return FinalizeDetachedUnload(activePlugin);
     }
 
     /// <summary>Unload + re-scan the manifest. Convenience wrapper for <c>/sfs reload</c>.</summary>
@@ -371,6 +394,11 @@ public sealed class PluginLoader
     }
 
     public PluginReloadResult Reload(string pluginId)
+    {
+        return ExecuteOnContainerThread(() => ReloadCore(pluginId));
+    }
+
+    private PluginReloadResult ReloadCore(string pluginId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginId);
 
@@ -395,13 +423,13 @@ public sealed class PluginLoader
         }
 
         SFLog.Info($"PluginLoader[{pluginId}]: reload starting");
-        PluginUnloadResult unloadResult = Unload(pluginId);
+        PluginUnloadResult unloadResult = UnloadCore(pluginId);
         if (!unloadResult.Success)
         {
             return PluginReloadResult.FromFailure(pluginId, unloadResult.Message, unloadResult);
         }
 
-        PluginLoadResult loadResult = LoadFromManifest(manifestPath);
+        PluginLoadResult loadResult = LoadFromManifestCore(manifestPath);
         if (!loadResult.Success)
         {
             return PluginReloadResult.FromFailure(pluginId, loadResult.Message, unloadResult, loadResult);
@@ -425,6 +453,18 @@ public sealed class PluginLoader
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool TryDetachAndUnloadContext(LoadedPlugin plugin, string pluginId)
+    {
+        PluginLoadContext? context = plugin.DetachLoadContext();
+        if (context is null)
+        {
+            return true;
+        }
+
+        return TryUnloadContext(context, pluginId);
+    }
+
     private static Version ResolveHostVersion()
     {
         string? informational = typeof(PluginLoader).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
@@ -441,6 +481,31 @@ public sealed class PluginLoader
         return typeof(PluginLoader).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
     }
 
+    private static T ExecuteOnContainerThread<T>(Func<T> action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        if (SynchronizationContext.Current is SFSynchronizationContext || !SFBootstrap.HasMainThreadDispatcher)
+        {
+            return action();
+        }
+
+        TaskCompletionSource<T> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        SFBootstrap.PostToMainThread(() =>
+        {
+            try
+            {
+                tcs.SetResult(action());
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        return tcs.Task.GetAwaiter().GetResult();
+    }
+
     private PluginUnloadResult RecordUnloadFailure(LoadedPlugin plugin, PluginUnloadFailureReason reason, string message)
     {
         lock (_sync)
@@ -455,6 +520,32 @@ public sealed class PluginLoader
 
         SFLog.Error($"PluginLoader[{plugin.PluginId}]: {message}");
         return PluginUnloadResult.FromFailure(reason, message, plugin.PluginId);
+    }
+
+    private PluginUnloadResult FinalizeDetachedUnload(LoadedPlugin plugin)
+    {
+        for (int attempt = 0; attempt < UnloadGcAttempts && plugin.LoadContextRef.IsAlive; attempt++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
+        if (plugin.LoadContextRef.IsAlive)
+        {
+            return RecordUnloadFailure(
+                plugin,
+                PluginUnloadFailureReason.AssemblyLoadContextStillAlive,
+                $"Plugin '{plugin.PluginId}' could not be fully unloaded. The plugin AssemblyLoadContext is still alive after {UnloadGcAttempts} GC cycles.");
+        }
+
+        lock (_sync)
+        {
+            _plugins.Remove(plugin.PluginId);
+        }
+
+        SFLog.Info($"PluginLoader[{plugin.PluginId}]: ALC fully collected");
+        return PluginUnloadResult.FromSuccess(plugin.PluginId);
     }
 
     private static PluginLoadResult CreateAssemblyLoadFailure(ResolvedPluginManifest manifest, PluginLoadContext context, Exception ex)

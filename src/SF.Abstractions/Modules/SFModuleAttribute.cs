@@ -46,14 +46,15 @@ public sealed class SFModuleAttribute(string id, string displayName) : Attribute
     public ModuleRestartPolicy RestartPolicy { get; init; } = ModuleRestartPolicy.Manual;
 
     /// <summary>
-    /// Start order inside the container. Lower values start first. Ties are broken by
-    /// <see cref="DisplayName"/>. There is no hard dependency graph yet, use this for soft ordering only.
+    /// Start order inside the container. Lower values start first once hard dependency constraints
+    /// are satisfied. Ties are broken by <see cref="DisplayName"/>.
     /// </summary>
     public int Order { get; init; }
 
     /// <summary>
-    /// Optional read-only dependency metadata listing module ids this module expects to exist.
-    /// This does not currently drive container startup order or hard dependency enforcement.
+    /// Optional hard dependency list of module ids this module requires to be registered and
+    /// running before it can start. The container also blocks user/plugin stop, restart and
+    /// unload operations that would remove a provider while dependent modules are still running.
     /// </summary>
     public string[] Dependencies { get; init; } = [];
 }

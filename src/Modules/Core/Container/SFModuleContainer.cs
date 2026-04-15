@@ -43,6 +43,7 @@ public sealed partial class SFModuleContainer
     private readonly Dictionary<string, ModuleRegistration> _registrationsById = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<ModuleRegistration, RunningModule> _runningModules = [];
     private PluginLoader? _pluginLoader;
+    private bool _isRunLoopActive;
 
     /// <summary>
     /// Attached plugin loader, if any. Set by <c>Program.Main</c> after the loader is constructed.
@@ -56,6 +57,8 @@ public sealed partial class SFModuleContainer
     private TaskCompletionSource _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Task[]? _cachedWhenAnyTasks;
     private bool _isShuttingDown;
+
+    internal bool IsRunLoopActive => _isRunLoopActive && !_isShuttingDown;
 
     public SFModuleContainer()
     {
@@ -124,6 +127,7 @@ public sealed partial class SFModuleContainer
         });
         _registrationsById.Add(descriptor.Id, registration);
         SFLog.Info($"RegisterModule id={descriptor.Id} type={descriptor.ModuleType.Name} enabledOnStart={autoStartEnabled} execution={descriptor.ExecutionModel}");
+        UpdateDependencyStatus(registration);
         PublishModuleCatalogSnapshot();
     }
 
@@ -147,9 +151,17 @@ public sealed partial class SFModuleContainer
             return false;
         }
 
+        string[] blockingDependents = GetRunningDependentModuleIds([moduleId], excludedModuleIds: [moduleId]);
+        if (blockingDependents.Length != 0)
+        {
+            SFLog.Warn($"TryUnregisterModule id={moduleId}: dependent modules still running=[{string.Join(',', blockingDependents)}]");
+            return false;
+        }
+
         _registrationsById.Remove(moduleId);
         _registrations.Remove(registration);
         SFLog.Info($"UnregisterModule id={moduleId}");
+        UpdateDependencyStatuses();
         PublishModuleCatalogSnapshot();
         return true;
     }
@@ -160,6 +172,13 @@ public sealed partial class SFModuleContainer
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
         if (!_registrationsById.TryGetValue(moduleId, out ModuleRegistration? registration))
         {
+            return;
+        }
+
+        if (reason is ModuleStopReason.UserRequested or ModuleStopReason.RestartRequested &&
+            TryResolveStopBlockers(registration, out string[] blockingDependents))
+        {
+            SFLog.Warn($"RequestStopModule id={moduleId}: blocked by dependents=[{string.Join(',', blockingDependents)}]");
             return;
         }
 
@@ -234,6 +253,14 @@ public sealed partial class SFModuleContainer
             return false;
         }
 
+        string[] blockingDependents = GetRunningDependentModuleIds(ids, excludedModuleIds: ids);
+        if (blockingDependents.Length != 0)
+        {
+            SFLog.Warn($"TryUnregisterModules ids=[{string.Join(',', ids)}]: dependent modules still running=[{string.Join(',', blockingDependents)}]");
+            failedIds = ids;
+            return false;
+        }
+
         foreach ((string id, ModuleRegistration registration) in registrations)
         {
             _registrationsById.Remove(id);
@@ -241,6 +268,7 @@ public sealed partial class SFModuleContainer
             SFLog.Info($"UnregisterModule id={id}");
         }
 
+        UpdateDependencyStatuses();
         PublishModuleCatalogSnapshot();
         failedIds = [];
         return true;
@@ -262,15 +290,8 @@ public sealed partial class SFModuleContainer
     public async Task Run(CancellationToken token = default)
     {
         SFLog.Info("SFModuleContainer.Run started");
-        foreach (ModuleRegistration registration in _registrations)
-        {
-            if (!registration.AutoStartEnabled)
-            {
-                continue;
-            }
-
-            StartModule(registration);
-        }
+        _isRunLoopActive = true;
+        ActivatePendingAutoStartModules();
 
         using IDisposable commandRegistration = SF.Chat.RegisterChatCommand("sfs", OnCommand);
 
@@ -298,6 +319,7 @@ public sealed partial class SFModuleContainer
         finally
         {
             _isShuttingDown = true;
+            _isRunLoopActive = false;
             foreach ((ModuleRegistration registration, RunningModule running) in _runningModules.ToArray())
             {
                 StopModule(registration, ModuleStopReason.ContainerShutdown);
@@ -316,11 +338,26 @@ public sealed partial class SFModuleContainer
     /// </summary>
     private void StartModule(ModuleRegistration registration)
     {
+        _ = TryStartModule(registration, out _);
+    }
+
+    private bool TryStartModule(ModuleRegistration registration, out string? failureReason)
+    {
         if (_runningModules.ContainsKey(registration))
         {
-            return;
+            failureReason = null;
+            return false;
         }
 
+        if (!TryResolveStartBlockers(registration, out string[] missingDependencies, out string[] waitingDependencies))
+        {
+            failureReason = BuildDependencyFailureMessage(missingDependencies, waitingDependencies);
+            UpdateDependencyStatus(registration, missingDependencies, waitingDependencies);
+            PublishModuleCatalogSnapshot();
+            return false;
+        }
+
+        ClearDependencyStatus(registration);
         registration.Runtime.SetAutoStartEnabled(registration.AutoStartEnabled);
         registration.Runtime.PrepareForStart(registration.AutoStartEnabled);
         ISFModule module = registration.Factory();
@@ -339,6 +376,8 @@ public sealed partial class SFModuleContainer
         _moduleStartTaskSource.TrySetResult();
         _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
         PublishModuleCatalogSnapshot();
+        failureReason = null;
+        return true;
     }
 
     /// <summary>
@@ -388,6 +427,32 @@ public sealed partial class SFModuleContainer
         PublishModuleCatalogSnapshot();
     }
 
+    private bool TryStopModule(ModuleRegistration registration, ModuleStopReason reason, out string? failureReason)
+    {
+        if (TryResolveStopBlockers(registration, out string[] blockingDependents))
+        {
+            failureReason = BuildDependentFailureMessage(blockingDependents);
+            return false;
+        }
+
+        StopModule(registration, reason);
+        failureReason = null;
+        return true;
+    }
+
+    private bool TryRestartModule(ModuleRegistration registration, out string? failureReason)
+    {
+        if (TryResolveStopBlockers(registration, out string[] blockingDependents))
+        {
+            failureReason = BuildDependentFailureMessage(blockingDependents);
+            return false;
+        }
+
+        RestartModule(registration);
+        failureReason = null;
+        return true;
+    }
+
     /// <summary>
     /// Awaits the completed module task, emits a chat notification and applies the restart
     /// policy including the circuit breaker logic.
@@ -424,7 +489,10 @@ public sealed partial class SFModuleContainer
         if (!_isShuttingDown && finalSnapshot.LastStopReason == ModuleStopReason.RestartRequested)
         {
             registration.Runtime.IncrementRestartCount();
-            StartModule(registration);
+            if (TryStartModule(registration, out _))
+            {
+                ActivatePendingAutoStartModules();
+            }
             return;
         }
 
@@ -442,8 +510,14 @@ public sealed partial class SFModuleContainer
             }
 
             registration.Runtime.IncrementRestartCount();
-            StartModule(registration);
+            if (TryStartModule(registration, out _))
+            {
+                ActivatePendingAutoStartModules();
+            }
         }
+
+        UpdateDependencyStatuses();
+        PublishModuleCatalogSnapshot();
     }
 
     /// <summary>Restart: stop a running module so the completion handler relaunches it, or start it directly if it is already stopped.</summary>
@@ -490,6 +564,153 @@ public sealed partial class SFModuleContainer
         }
 
         return [.. running];
+    }
+
+    internal int ActivatePendingAutoStartModules()
+    {
+        int started = 0;
+        bool progress;
+        do
+        {
+            progress = false;
+            foreach (ModuleRegistration registration in _registrations)
+            {
+                ModuleRuntimeSnapshot snapshot = registration.Runtime.CreateSnapshot();
+                if (!registration.AutoStartEnabled ||
+                    snapshot.State != ModuleLifecycleState.Created ||
+                    _runningModules.ContainsKey(registration))
+                {
+                    continue;
+                }
+
+                if (TryStartModule(registration, out _))
+                {
+                    started++;
+                    progress = true;
+                }
+            }
+        } while (progress);
+
+        UpdateDependencyStatuses();
+        PublishModuleCatalogSnapshot();
+        return started;
+    }
+
+    internal string[] GetRunningDependentModuleIds(IEnumerable<string> moduleIds, IEnumerable<string>? excludedModuleIds = null)
+    {
+        ArgumentNullException.ThrowIfNull(moduleIds);
+        HashSet<string> targets = moduleIds
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (targets.Count == 0)
+        {
+            return [];
+        }
+
+        HashSet<string> excluded = excludedModuleIds is null
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : excludedModuleIds.Where(static id => !string.IsNullOrWhiteSpace(id)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return [.. _registrations
+            .Where(registration =>
+                !excluded.Contains(registration.Descriptor.Id) &&
+                _runningModules.ContainsKey(registration) &&
+                registration.Descriptor.Dependencies.Any(targets.Contains))
+            .Select(static registration => registration.Descriptor.Id)
+            .Distinct(StringComparer.OrdinalIgnoreCase)];
+    }
+
+    private bool TryResolveStopBlockers(ModuleRegistration registration, out string[] blockingDependents)
+    {
+        blockingDependents = GetRunningDependentModuleIds([registration.Descriptor.Id], excludedModuleIds: [registration.Descriptor.Id]);
+        return blockingDependents.Length != 0;
+    }
+
+    private bool TryResolveStartBlockers(ModuleRegistration registration, out string[] missingDependencies, out string[] waitingDependencies)
+    {
+        List<string> missing = [];
+        List<string> waiting = [];
+        foreach (string dependencyId in registration.Descriptor.Dependencies)
+        {
+            if (!_registrationsById.TryGetValue(dependencyId, out ModuleRegistration? dependency))
+            {
+                missing.Add(dependencyId);
+                continue;
+            }
+
+            if (!_runningModules.ContainsKey(dependency))
+            {
+                waiting.Add(dependencyId);
+            }
+        }
+
+        missingDependencies = [.. missing];
+        waitingDependencies = [.. waiting];
+        return missingDependencies.Length == 0 && waitingDependencies.Length == 0;
+    }
+
+    private void UpdateDependencyStatuses()
+    {
+        foreach (ModuleRegistration registration in _registrations)
+        {
+            UpdateDependencyStatus(registration);
+        }
+    }
+
+    private void UpdateDependencyStatus(ModuleRegistration registration)
+    {
+        _ = TryResolveStartBlockers(registration, out string[] missingDependencies, out string[] waitingDependencies);
+        UpdateDependencyStatus(registration, missingDependencies, waitingDependencies);
+    }
+
+    private void UpdateDependencyStatus(ModuleRegistration registration, string[] missingDependencies, string[] waitingDependencies)
+    {
+        if (_runningModules.ContainsKey(registration))
+        {
+            ClearDependencyStatus(registration);
+            return;
+        }
+
+        if (missingDependencies.Length == 0 && waitingDependencies.Length == 0)
+        {
+            ClearDependencyStatus(registration);
+            return;
+        }
+
+        string message = BuildDependencyFailureMessage(missingDependencies, waitingDependencies);
+        registration.Runtime.SetStatusText(message);
+        registration.Runtime.SetDetail("dependencies.missing", missingDependencies.Length == 0 ? null : string.Join(", ", missingDependencies));
+        registration.Runtime.SetDetail("dependencies.waiting", waitingDependencies.Length == 0 ? null : string.Join(", ", waitingDependencies));
+    }
+
+    private static void ClearDependencyStatus(ModuleRegistration registration)
+    {
+        registration.Runtime.SetDetail("dependencies.missing", null);
+        registration.Runtime.SetDetail("dependencies.waiting", null);
+        if (registration.Runtime.CreateSnapshot().State == ModuleLifecycleState.Created)
+        {
+            registration.Runtime.SetStatusText(null);
+        }
+    }
+
+    private static string BuildDependencyFailureMessage(string[] missingDependencies, string[] waitingDependencies)
+    {
+        if (missingDependencies.Length != 0 && waitingDependencies.Length != 0)
+        {
+            return $"waiting deps: {string.Join(", ", waitingDependencies)}; missing deps: {string.Join(", ", missingDependencies)}";
+        }
+
+        if (missingDependencies.Length != 0)
+        {
+            return $"missing deps: {string.Join(", ", missingDependencies)}";
+        }
+
+        return $"waiting deps: {string.Join(", ", waitingDependencies)}";
+    }
+
+    private static string BuildDependentFailureMessage(string[] dependentModuleIds)
+    {
+        return $"blocked by dependents: {string.Join(", ", dependentModuleIds)}";
     }
 
     internal void PublishModuleCatalogSnapshot()

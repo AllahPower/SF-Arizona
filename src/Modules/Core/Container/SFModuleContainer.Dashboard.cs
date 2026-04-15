@@ -65,16 +65,35 @@ public partial class SFModuleContainer
                     await ShowModuleDetail(registration);
                     break;
                 case "start":
-                    StartModule(registration);
-                    SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, "requested", SFColors.Green));
+                    if (TryStartModule(registration, out string? startFailure))
+                    {
+                        ActivatePendingAutoStartModules();
+                        SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, "requested", SFColors.Green));
+                    }
+                    else if (!string.IsNullOrWhiteSpace(startFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, startFailure, SFColors.Red));
+                    }
                     break;
                 case "stop":
-                    StopModule(registration, ModuleStopReason.UserRequested);
-                    SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, "requested", SFColors.Orange));
+                    if (TryStopModule(registration, ModuleStopReason.UserRequested, out string? stopFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, "requested", SFColors.Orange));
+                    }
+                    else if (!string.IsNullOrWhiteSpace(stopFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, stopFailure, SFColors.Red));
+                    }
                     break;
                 case "restart":
-                    RestartModule(registration);
-                    SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, "requested", SFColors.Yellow));
+                    if (TryRestartModule(registration, out string? restartFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, "requested", SFColors.Yellow));
+                    }
+                    else if (!string.IsNullOrWhiteSpace(restartFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, restartFailure, SFColors.Red));
+                    }
                     break;
                 default:
                     SF.Chat.Add(FormatUsage());
@@ -222,13 +241,28 @@ public partial class SFModuleContainer
             switch (result.SelectedIndex)
             {
                 case int index when index == startIndex:
-                    StartModule(registration);
+                    if (TryStartModule(registration, out string? startFailure))
+                    {
+                        ActivatePendingAutoStartModules();
+                    }
+                    else if (!string.IsNullOrWhiteSpace(startFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, startFailure, SFColors.Red));
+                    }
                     break;
                 case int index when index == stopIndex:
-                    StopModule(registration, ModuleStopReason.UserRequested);
+                    if (!TryStopModule(registration, ModuleStopReason.UserRequested, out string? stopFailure) &&
+                        !string.IsNullOrWhiteSpace(stopFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, stopFailure, SFColors.Red));
+                    }
                     break;
                 case int index when index == restartIndex:
-                    RestartModule(registration);
+                    if (!TryRestartModule(registration, out string? restartFailure) &&
+                        !string.IsNullOrWhiteSpace(restartFailure))
+                    {
+                        SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, restartFailure, SFColors.Red));
+                    }
                     break;
                 case int index when index == autoStartIndex:
                     registration.AutoStartEnabled = !registration.AutoStartEnabled;

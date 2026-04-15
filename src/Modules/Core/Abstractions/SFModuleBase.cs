@@ -4,9 +4,8 @@ namespace SFSharp;
 
 /// <summary>
 /// Recommended base class for SF modules. Handles <see cref="ISFModule.RunAsync(IModuleContext)"/>
-/// boilerplate: wires <see cref="Context"/> and <see cref="Log"/>, calls the lifecycle hooks in the
-/// right order, swallows the cooperative <see cref="OperationCanceledException"/>, and propagates
-/// other exceptions to the container so they reach telemetry and the restart policy.
+/// boilerplate through the default interface implementation and exposes protected hook methods for
+/// derived modules.
 /// </summary>
 /// <remarks>
 /// Do not override <see cref="ISFModule.RunAsync(IModuleContext)"/> directly. Implement
@@ -18,57 +17,23 @@ public abstract class SFModuleBase : ISFModule
     /// <summary>
     /// Per-run context provided by the container. Never null while
     /// <see cref="ExecuteAsync(CancellationToken)"/> or any <c>On*Async</c> hook is executing,
-    /// cleared back to <see langword="null"/> once the module tears down.
+    /// unavailable outside of an active module run.
     /// </summary>
-    protected IModuleContext Context { get; private set; } = null!;
+    protected IModuleContext Context => ((ISFModule)this).Context;
 
     /// <summary>
     /// Logger scoped to this module's <see cref="ModuleDescriptor.Id"/>. Emitted through the
-    /// standard SF logger provider, so messages hit both the in-game chat sink and <c>sf_arz.log</c>.
+    /// standard host logging pipeline, so messages hit the configured SF log sinks.
     /// </summary>
-    protected ILogger Log { get; private set; } = null!;
+    protected ILogger Log => ((ISFModule)this).Log;
 
-    /// <inheritdoc/>
-    /// <remarks>
-    /// Sealed for base-class consumers. Override <see cref="ExecuteAsync(CancellationToken)"/>
-    /// and the <c>On*Async</c> hooks instead.
-    /// </remarks>
-    public async Task RunAsync(IModuleContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        Context = context;
-        Log = CreateLogger(context);
-
-        await OnStartingAsync();
-        try
-        {
-            await ExecuteAsync(context.CancellationToken);
-            await OnCompletedAsync();
-        }
-        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            await OnFaultedAsync(ex);
-            throw;
-        }
-        finally
-        {
-            try
-            {
-                await OnStoppingAsync();
-            }
-            finally
-            {
-                await OnStoppedAsync();
-                Context = null!;
-                Log = null!;
-            }
-        }
-    }
+    ILogger ISFModule.CreateLogger(IModuleContext context) => CreateLogger(context);
+    Task ISFModule.OnStartingAsync() => OnStartingAsync();
+    Task ISFModule.OnCompletedAsync() => OnCompletedAsync();
+    Task ISFModule.OnFaultedAsync(Exception exception) => OnFaultedAsync(exception);
+    Task ISFModule.OnStoppingAsync() => OnStoppingAsync();
+    Task ISFModule.OnStoppedAsync() => OnStoppedAsync();
+    Task ISFModule.ExecuteAsync(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken);
 
     /// <summary>
     /// Builds the logger assigned to <see cref="Log"/>. Override when you want a different
@@ -77,7 +42,7 @@ public abstract class SFModuleBase : ISFModule
     /// <param name="context">Current module context, giving access to <see cref="ModuleDescriptor.Id"/>.</param>
     protected virtual ILogger CreateLogger(IModuleContext context)
     {
-        return SFLoggerProvider.Instance.CreateLogger(context.Descriptor.Id);
+        return context.Log;
     }
 
     /// <summary>Runs after <see cref="Context"/> and <see cref="Log"/> are set, before <see cref="ExecuteAsync(CancellationToken)"/>.</summary>

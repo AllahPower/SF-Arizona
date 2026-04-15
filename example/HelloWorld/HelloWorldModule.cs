@@ -13,18 +13,18 @@ namespace SFSharp.Examples.HelloWorld;
     RestartPolicy = ModuleRestartPolicy.Manual)]
 public sealed class HelloWorldModule : ISFModule
 {
-    public Task RunAsync(IModuleContext context)
-    {
-        const string message = "Hello world!";
+    private IModuleContext Context => ((ISFModule)this).Context;
+    private ILogger Log => ((ISFModule)this).Log;
 
-        context.Heartbeat("hello-world");
-        context.SetStatusText("printed hello world");
-        context.Log.LogInformation(
+    public Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        Context.Heartbeat("hello-world");
+        Context.SetStatusText("printed hello world");
+        Context.Log.LogInformation(
             "Hello world from external example module pluginId={PluginId} moduleId={ModuleId}",
             "example.hello-world",
-            context.Descriptor.Id);
-        context.SF.Chat.Add(message, prefix: "[HelloWorld]", prefixColor: 0xFF55CC55);
-
+            Context.Descriptor.Id);
+        Context.SF.Chat.Add("Hello world!", prefix: "[HelloWorld]", prefixColor: 0xFF55CC55);
         return Task.CompletedTask;
     }
 }

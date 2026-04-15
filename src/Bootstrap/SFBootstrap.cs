@@ -20,6 +20,8 @@ public static class SFBootstrap
     /// </summary>
     public static string HostDirectory => _hostDirectory ?? AppContext.BaseDirectory;
 
+    public static bool HasMainThreadDispatcher => _sc is not null;
+
     private static void InstallHostAssemblyResolver()
     {
         if (Interlocked.Exchange(ref _resolverInstalled, 1) != 0)
