@@ -1,16 +1,6 @@
 namespace SFSharp;
 
-public readonly record struct SFPlayerSnapshot(
-    ushort Id,
-    string? Name,
-    int Score,
-    int Ping,
-    bool IsConnected,
-    bool IsNpc,
-    bool IsLocal
-);
-
-public partial class SFPlayers
+public partial class SFPlayers : ISFPlayers
 {
     public SFLocalPlayer Local { get; } = new();
 

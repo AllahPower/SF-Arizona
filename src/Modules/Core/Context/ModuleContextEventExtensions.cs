@@ -22,7 +22,7 @@ public static class ModuleContextEventExtensions
     /// <param name="subscribe">Factory that produces the underlying subscription.</param>
     /// <returns>The subscription, already tracked by <paramref name="context"/>.</returns>
     public static IDisposable RegisterEvent<TEvent>(
-        this ModuleContext context,
+        this IModuleContext context,
         Action<TEvent> handler,
         Func<Action<TEvent>, IDisposable> subscribe)
     {
@@ -41,7 +41,7 @@ public static class ModuleContextEventExtensions
     /// <param name="context">Module context that owns the subscription.</param>
     /// <param name="handler">Synchronous handler invoked on the main thread.</param>
     public static IDisposable RegisterIncomingRpc<TRpc>(
-        this ModuleContext context,
+        this IModuleContext context,
         Action<TRpc> handler)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -58,7 +58,7 @@ public static class ModuleContextEventExtensions
     /// <param name="context">Module context that owns the subscription.</param>
     /// <param name="handler">Synchronous handler invoked on the main thread.</param>
     public static IDisposable RegisterOutgoingRpc<TRpc>(
-        this ModuleContext context,
+        this IModuleContext context,
         Action<TRpc> handler)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -75,7 +75,7 @@ public static class ModuleContextEventExtensions
     /// <param name="context">Module context that owns the subscription.</param>
     /// <param name="handler">Synchronous handler invoked on the main thread.</param>
     public static IDisposable RegisterIncomingPacket<TPacket>(
-        this ModuleContext context,
+        this IModuleContext context,
         Action<TPacket> handler)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -92,7 +92,7 @@ public static class ModuleContextEventExtensions
     /// <param name="context">Module context that owns the subscription.</param>
     /// <param name="handler">Synchronous handler invoked on the main thread.</param>
     public static IDisposable RegisterOutgoingPacket<TPacket>(
-        this ModuleContext context,
+        this IModuleContext context,
         Action<TPacket> handler)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -110,7 +110,7 @@ public static class ModuleContextEventExtensions
     /// <param name="packetId">Packet id to match.</param>
     /// <param name="filter">Predicate receiving the raw pointer and length of the packet payload.</param>
     public static IDisposable RegisterOutgoingPacketFilter(
-        this ModuleContext context,
+        this IModuleContext context,
         EPacketId packetId,
         Func<nint, int, bool> filter)
     {
@@ -130,7 +130,7 @@ public static class ModuleContextEventExtensions
     /// processed before reaching SAMP's <c>RakClient::Receive</c>, so our hook never sees them.
     /// </remarks>
     public static IDisposable RegisterIncomingPacketFilter(
-        this ModuleContext context,
+        this IModuleContext context,
         EPacketId packetId,
         Func<nint, int, bool> filter)
     {
@@ -145,7 +145,7 @@ public static class ModuleContextEventExtensions
     /// <param name="rpcId">RPC id to match.</param>
     /// <param name="filter">Predicate receiving the raw pointer and length of the RPC payload.</param>
     public static IDisposable RegisterOutgoingRpcFilter(
-        this ModuleContext context,
+        this IModuleContext context,
         ERpcId rpcId,
         Func<nint, int, bool> filter)
     {
@@ -160,7 +160,7 @@ public static class ModuleContextEventExtensions
     /// <param name="rpcId">RPC id to match.</param>
     /// <param name="filter">Predicate receiving the raw pointer and length of the RPC payload.</param>
     public static IDisposable RegisterIncomingRpcFilter(
-        this ModuleContext context,
+        this IModuleContext context,
         ERpcId rpcId,
         Func<nint, int, bool> filter)
     {

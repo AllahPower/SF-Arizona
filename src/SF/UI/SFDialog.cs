@@ -2,14 +2,8 @@ namespace SFSharp;
 
 using DialogResultArgs = (SFDialogButton Button, int SelectedItemIndex, string? InputText);
 
-public enum SFDialogButton
-{
-    Cancel,
-    OK,
-    None
-};
-
 public class SFDialog :
+    ISFDialog,
     ISubHook<CDialogCloseArgs, NoRetValue>,
     ISubHook<CDialogHideArgs, NoRetValue>,
     ISubHook<CDialogShowHookArgs, NoRetValue>
@@ -40,16 +34,16 @@ public class SFDialog :
         return result.Button;
     }
 
-    public async Task<(SFDialogButton Button, string? Text)> ShowInput(string title, string text)
+    public async Task<SFDialogInputResult> ShowInput(string title, string text)
     {
         var result = await Show(DialogStyle.Input, title, text, OkCaption, CancelCaption);
-        return (result.Button, result.InputText);
+        return new(result.Button, result.InputText);
     }
 
-    public async Task<(SFDialogButton Button, int SelectedIndex)> ShowList(string title, IEnumerable<string> items, string header = "")
+    public async Task<SFDialogListResult> ShowList(string title, IEnumerable<string> items, string header = "")
     {
         var result = await Show(DialogStyle.TabListHeaders, title, $"{header}\r\n{string.Join("\r\n", items)}", OkCaption, CancelCaption);
-        return (result.Button, result.SelectedItemIndex);
+        return new(result.Button, result.SelectedItemIndex);
     }
 
     private static int AllocateDialogId()

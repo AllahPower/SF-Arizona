@@ -5,11 +5,12 @@ public class DialogScraper : SFModuleBase
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        ISF sf = Context.SF;
         while (!cancellationToken.IsCancellationRequested)
         {
-            using (ModuleLoopScope _ = Context.TrackLoop("dialog-poll"))
+            using (IDisposable _ = Context.TrackLoop("dialog-poll"))
             {
-                if (SF.Keyboard.IsKeyPressed(VK.NUMPAD0))
+                if (sf.Keyboard.IsKeyPressed((byte)VK.NUMPAD0))
                 {
                     RunCore();
                 }

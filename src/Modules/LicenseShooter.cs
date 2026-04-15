@@ -27,20 +27,20 @@ public record LicenseSale(string Name, LicenseType LicenseType, int Price, DateT
 [SFModule("license-shooter", "LicenseShooter", Category = "Tracking", Description = "Tracks license offers and persists successful sales.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 40)]
 public class LicenseShooter : SFModuleBase
 {
+    private const string SalesFileName = "licenses.json";
+
     private List<LicenseSale> LoadSales()
     {
-        var path = Path.Combine(SF.UserFilesDirectory, "licenses.json");
-        if (!File.Exists(path)) return [];
-        var text = File.ReadAllText(path);
+        if (!Context.UserData.Exists(SalesFileName)) return [];
+        var text = Context.UserData.ReadAllText(SalesFileName);
         if (string.IsNullOrWhiteSpace(text)) return [];
-        return JsonSerializer.Deserialize(File.ReadAllText(path), SourceGenerationContext.Default.ListLicenseSale)!;
+        return JsonSerializer.Deserialize(text, SourceGenerationContext.Default.ListLicenseSale)!;
     }
 
     private void SaveSales(List<LicenseSale> sales)
     {
-        var path = Path.Combine(SF.UserFilesDirectory, "licenses.json");
         var text = JsonSerializer.Serialize(sales, SourceGenerationContext.Default.ListLicenseSale);
-        File.WriteAllText(path, text);
+        Context.UserData.WriteAllText(SalesFileName, text);
     }
 
     private LicenseType? GetLicenseType(string licenseName)
@@ -115,6 +115,7 @@ public class LicenseShooter : SFModuleBase
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        ISF sf = Context.SF;
         using IDisposable commandRegistration = Context.RegisterChatCommand("licenselog", OnCommand);
 
         var offers = new Dictionary<string, LicenseSale>();
@@ -137,7 +138,7 @@ public class LicenseShooter : SFModuleBase
             {
                 if(!offers.TryGetValue(name, out var previousOffer))
                 {
-                    SF.Chat.Add($"Detected sale {name}, but could not find an offer.");
+                    sf.Chat.Add($"Detected sale {name}, but could not find an offer.");
                     Context.IncrementCounter("sales.missed");
                     continue;
                 }
@@ -151,7 +152,7 @@ public class LicenseShooter : SFModuleBase
                 Context.SetDetail("pending.offers", offers.Count.ToString());
                 Context.SetDetail("last.sale", name);
                 Context.Heartbeat("sale-recorded");
-                SF.Chat.Add($"Recorded sale to {name}");
+                sf.Chat.Add($"Recorded sale to {name}");
                 continue;
             }
         }
@@ -159,6 +160,7 @@ public class LicenseShooter : SFModuleBase
 
     private async void OnCommand(string? args)
     {
+        ISF sf = Context.SF;
         while (true)
         {
             var dateListResult = await ShowDateList();
@@ -170,7 +172,7 @@ public class LicenseShooter : SFModuleBase
                 if (saleListResult.Button == SFDialogButton.None) return;
                 if (saleListResult.Button == SFDialogButton.Cancel) break;
 
-                var confirmationResult = await SF.Dialog.ShowMessage("Подтверждение", "Удалить выбранную запись?");
+                var confirmationResult = await sf.Dialog.ShowMessage("Подтверждение", "Удалить выбранную запись?");
                 if (confirmationResult == SFDialogButton.None) return;
                 if (confirmationResult == SFDialogButton.Cancel) continue;
 
@@ -186,6 +188,7 @@ public class LicenseShooter : SFModuleBase
 
     private async Task<DateOnly?> ShowDateList()
     {
+        ISFDialog dialog = Context.SF.Dialog;
         var groupedSales = LoadSales()
             .GroupBy(x => DateOnly.FromDateTime(x.DateTime))
             .OrderByDescending(x => x.Key)
@@ -196,13 +199,14 @@ public class LicenseShooter : SFModuleBase
         var items = groupedSales
             .Select(x => $"{x.Date.ToShortDateString()}\t{x.Sales.Length}\t{x.Sales.Sum(x => x.Price)}")
             .ToArray();
-        var result = await SF.Dialog.ShowList("Проданные лицензии", items, header);
+        var result = await dialog.ShowList("Проданные лицензии", items, header);
         if (result.Button != SFDialogButton.OK) return null;
         return groupedSales[result.SelectedIndex].Date;
     }
 
     private async Task<(SFDialogButton Button, LicenseSale? Sale)> ShowSaleList(DateOnly date)
     {
+        ISFDialog dialog = Context.SF.Dialog;
         var sales = LoadSales()
             .Where(x => DateOnly.FromDateTime(x.DateTime) == date)
             .OrderByDescending(x => x.DateTime)
@@ -212,7 +216,7 @@ public class LicenseShooter : SFModuleBase
         var items = sales
             .Select(x => $"{GetLicenseDisplayText(x.LicenseType)}\t{x.Name}\t{x.DateTime.ToShortTimeString()}\t{x.Price}")
             .ToArray();
-        var result = await SF.Dialog.ShowList($"Проданные лицензии за {date.ToShortDateString()}", items, header);
+        var result = await dialog.ShowList($"Проданные лицензии за {date.ToShortDateString()}", items, header);
         if(result.Button != SFDialogButton.OK)
         {
             return (result.Button, null);

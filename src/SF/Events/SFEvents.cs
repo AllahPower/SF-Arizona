@@ -1,6 +1,6 @@
 namespace SFSharp;
 
-public sealed partial class SFEvents
+public sealed partial class SFEvents : ISFEvents
 {
     private readonly Lock _initSync = new();
     private readonly Dictionary<Type, object> _incomingRpcChannels = new();

@@ -9,4 +9,16 @@ public interface ISF
 {
     /// <summary>Chat helpers, see <see cref="ISFChat"/>.</summary>
     ISFChat Chat { get; }
+
+    /// <summary>Dialog helpers, see <see cref="ISFDialog"/>.</summary>
+    ISFDialog Dialog { get; }
+
+    /// <summary>Keyboard state helpers, see <see cref="ISFKeyboard"/>.</summary>
+    ISFKeyboard Keyboard { get; }
+
+    /// <summary>Read-only player helpers, see <see cref="ISFPlayers"/>.</summary>
+    ISFPlayers Players { get; }
+
+    /// <summary>Typed parsed event subscriptions and streams, see <see cref="ISFEvents"/>.</summary>
+    ISFEvents Events { get; }
 }

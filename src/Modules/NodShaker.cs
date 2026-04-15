@@ -5,19 +5,20 @@ public class NodShaker : SFModuleBase
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        ISF sf = Context.SF;
         while (!cancellationToken.IsCancellationRequested)
         {
-            using (ModuleLoopScope _ = Context.TrackLoop("keyboard-poll"))
+            using (IDisposable _ = Context.TrackLoop("keyboard-poll"))
             {
-                if (SF.Keyboard.IsKeyPressed(VK.ADD))
+                if (sf.Keyboard.IsKeyPressed((byte)VK.ADD))
                 {
-                    SF.Chat.Send("+");
+                    sf.Chat.Send("+");
                     Context.IncrementCounter("plus.sent");
                 }
 
-                if (SF.Keyboard.IsKeyPressed(VK.SUBTRACT))
+                if (sf.Keyboard.IsKeyPressed((byte)VK.SUBTRACT))
                 {
-                    SF.Chat.Send("-");
+                    sf.Chat.Send("-");
                     Context.IncrementCounter("minus.sent");
                 }
 

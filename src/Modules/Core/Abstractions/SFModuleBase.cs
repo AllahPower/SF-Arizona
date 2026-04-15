@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 namespace SFSharp;
 
 /// <summary>
-/// Recommended base class for SF modules. Handles <see cref="ISFModule.RunAsync(ModuleContext)"/>
+/// Recommended base class for SF modules. Handles <see cref="ISFModule.RunAsync(IModuleContext)"/>
 /// boilerplate: wires <see cref="Context"/> and <see cref="Log"/>, calls the lifecycle hooks in the
 /// right order, swallows the cooperative <see cref="OperationCanceledException"/>, and propagates
 /// other exceptions to the container so they reach telemetry and the restart policy.
 /// </summary>
 /// <remarks>
-/// Do not override <see cref="ISFModule.RunAsync(ModuleContext)"/> directly. Implement
+/// Do not override <see cref="ISFModule.RunAsync(IModuleContext)"/> directly. Implement
 /// <see cref="ExecuteAsync(CancellationToken)"/> for the main loop and override the <c>On*Async</c>
 /// hooks if you need to react to lifecycle transitions.
 /// </remarks>
@@ -20,7 +20,7 @@ public abstract class SFModuleBase : ISFModule
     /// <see cref="ExecuteAsync(CancellationToken)"/> or any <c>On*Async</c> hook is executing,
     /// cleared back to <see langword="null"/> once the module tears down.
     /// </summary>
-    protected ModuleContext Context { get; private set; } = null!;
+    protected IModuleContext Context { get; private set; } = null!;
 
     /// <summary>
     /// Logger scoped to this module's <see cref="ModuleDescriptor.Id"/>. Emitted through the
@@ -37,7 +37,7 @@ public abstract class SFModuleBase : ISFModule
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        Context = (ModuleContext)context;
+        Context = context;
         Log = CreateLogger(context);
 
         await OnStartingAsync();
@@ -104,9 +104,6 @@ public abstract class SFModuleBase : ISFModule
     /// <paramref name="cancellationToken"/> and let it throw <see cref="OperationCanceledException"/>
     /// to stop cleanly.
     /// </summary>
-    /// <param name="cancellationToken">
-    /// Cancelled when the container is shutting down or when the user issued <c>/sfs stop</c>.
-    /// Aliased by <see cref="ModuleContext.CancellationToken"/>.
-    /// </param>
+    /// <param name="cancellationToken">Cancelled when the container shuts down or when the user stops the module.</param>
     protected abstract Task ExecuteAsync(CancellationToken cancellationToken);
 }

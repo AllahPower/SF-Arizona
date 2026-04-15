@@ -1,6 +1,6 @@
 ﻿namespace SFSharp;
 
-public class SFKeyboard
+public class SFKeyboard : ISFKeyboard
 {
     private static byte[] _currentState = new byte[256];
     private static byte[] _lastState = new byte[256];
@@ -26,8 +26,18 @@ public class SFKeyboard
         return IsKeyDownCore(key, _currentState);
     }
 
+    public bool IsKeyDown(byte virtualKeyCode)
+    {
+        return IsKeyDown((VK)virtualKeyCode);
+    }
+
     public bool IsKeyPressed(VK key)
     {
         return IsKeyDownCore(key, _currentState) && !IsKeyDownCore(key, _lastState);
+    }
+
+    public bool IsKeyPressed(byte virtualKeyCode)
+    {
+        return IsKeyPressed((VK)virtualKeyCode);
     }
 }

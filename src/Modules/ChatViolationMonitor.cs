@@ -15,13 +15,14 @@ public class ChatViolationMonitor : SFModuleBase
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        ISF sf = Context.SF;
         using IDisposable violationsCommand = Context.RegisterChatCommand("violations", OnCommand);
         using IDisposable shortCommand = Context.RegisterChatCommand("viollog", OnCommand);
 
         SF.ArizonaChat.CreateRoom(ViolationRoomId, "Violations", 0xFFFF4444, "viollog", true);
         SF.ArizonaChat.WriteToRoom(ViolationRoomId, "Chat violation monitor started.", 0xFFAAAAAAu);
 
-        await foreach (ClientMessageRpc entry in SF.Events.StreamIncomingRpc<ClientMessageRpc>(cancellationToken))
+        await foreach (ClientMessageRpc entry in sf.Events.StreamIncomingRpc<ClientMessageRpc>(cancellationToken))
         {
             Context.IncrementCounter("chat.entries");
 
@@ -110,12 +111,13 @@ public class ChatViolationMonitor : SFModuleBase
 
     private async void OnCommand(string? args)
     {
+        ISF sf = Context.SF;
         while (true)
         {
             ChatViolationRecord[] snapshot = GetSnapshot();
             if (snapshot.Length == 0)
             {
-                SF.Chat.Add("Лог нарушений пуст.");
+                sf.Chat.Add("Лог нарушений пуст.");
                 return;
             }
 
@@ -124,7 +126,7 @@ public class ChatViolationMonitor : SFModuleBase
                 .Select(x => $"{x.Timestamp:HH:mm:ss}\t{x.PlayerName}\t{x.ViolationType}\t{TrimForList(x.MatchedFragment)}")
                 .ToArray();
 
-            var result = await SF.Dialog.ShowList("Лог нарушений чата", items, header);
+            var result = await sf.Dialog.ShowList("Лог нарушений чата", items, header);
             if (result.Button != SFDialogButton.OK)
             {
                 return;
@@ -144,7 +146,7 @@ public class ChatViolationMonitor : SFModuleBase
                 "Нажмите OK, чтобы скопировать ник нарушителя."
             });
 
-            SFDialogButton detailResult = await SF.Dialog.ShowMessage("Информация о нарушении", detailText);
+            SFDialogButton detailResult = await sf.Dialog.ShowMessage("Информация о нарушении", detailText);
             if (detailResult == SFDialogButton.None)
             {
                 return;
@@ -154,11 +156,11 @@ public class ChatViolationMonitor : SFModuleBase
             {
                 if (Win32.TrySetClipboardText(record.PlayerName))
                 {
-                    SF.Chat.Add($"Ник {record.PlayerName} скопирован в буфер обмена.");
+                    sf.Chat.Add($"Ник {record.PlayerName} скопирован в буфер обмена.");
                 }
                 else
                 {
-                    SF.Chat.Add("Не удалось скопировать ник в буфер обмена.");
+                    sf.Chat.Add("Не удалось скопировать ник в буфер обмена.");
                 }
             }
         }

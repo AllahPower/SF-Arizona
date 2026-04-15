@@ -11,27 +11,28 @@ public class BrightBinder : SFModuleBase
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         Context.SetDetail("quickbind", "enabled");
+        ISF sf = Context.SF;
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            using (ModuleLoopScope _ = Context.TrackLoop("keyboard-poll"))
+            using (IDisposable _ = Context.TrackLoop("keyboard-poll"))
             {
-                if (bbEnabled && SF.Players.GetAimedPlayerId() is ushort aimedPlayerId)
+                if (bbEnabled && sf.Players.GetAimedPlayerId() is ushort aimedPlayerId)
                 {
                     Context.IncrementCounter("dialogs.auto");
                     await ShowDialog("default", aimedPlayerId);
                 }
-                if (SF.Keyboard.IsKeyPressed(VK.XBUTTON1))
+                if (sf.Keyboard.IsKeyPressed((byte)VK.XBUTTON1))
                 {
                     Context.IncrementCounter("dialogs.manual");
                     await ShowDialog("default", null);
                 }
-                if (SF.Keyboard.IsKeyPressed(VK.XBUTTON2))
+                if (sf.Keyboard.IsKeyPressed((byte)VK.XBUTTON2))
                 {
                     bbEnabled = !bbEnabled;
                     Context.SetDetail("quickbind", bbEnabled ? "enabled" : "disabled");
                     Context.ReportActivity(bbEnabled ? "quickbind-enabled" : "quickbind-disabled");
-                    SF.Chat.Add(bbEnabled ? "Quick bind enabled." : "Quick bind disabled.");
+                    sf.Chat.Add(bbEnabled ? "Quick bind enabled." : "Quick bind disabled.");
                 }
 
                 Context.Heartbeat(bbEnabled ? "watching target" : "paused");
@@ -45,18 +46,19 @@ public class BrightBinder : SFModuleBase
     {
         Context.IncrementCounter("dialogs.opened");
         Context.SetDetail("last.dialog", fileName);
-        var currentDialog = BBDialog.FromFile(fileName);
+        ISF sf = Context.SF;
+        var currentDialog = BBDialog.FromStorage(Context.UserData, fileName);
 
-        if (targetIdOrNull is not null && SF.Players.GetScore(targetIdOrNull.Value) == 0)
+        if (targetIdOrNull is not null && sf.Players.GetScore(targetIdOrNull.Value) == 0)
         {
-            _ = SF.Dialog.ShowMessage("BrightBinder", "Loading player score...");
-            await SF.Players.UpdateScoreboard();
+            _ = sf.Dialog.ShowMessage("BrightBinder", "Loading player score...");
+            await sf.Players.UpdateScoreboard();
             Context.IncrementCounter("scoreboard.refreshes");
         }
-        var result = await SF.Dialog.ShowList(
+        var result = await sf.Dialog.ShowList(
             $"BrightBinder: {fileName}.txt",
             currentDialog.Items.Select(entry => entry.GetDisplayText()).ToArray(),
-            targetIdOrNull is ushort targetId ? $"Target: {SF.Players.GetName(targetId)}[{targetId}] <{SF.Players.GetScore(targetId)}>" : "No target selected."
+            targetIdOrNull is ushort targetId ? $"Target: {sf.Players.GetName(targetId)}[{targetId}] <{sf.Players.GetScore(targetId)}>" : "No target selected."
         );
 
         if (result.Button != SFDialogButton.OK) return;
@@ -66,6 +68,7 @@ public class BrightBinder : SFModuleBase
 
     private async Task ProcessEntry(BBDialogEntry entry, ushort? targetId)
     {
+        ISF sf = Context.SF;
         const string playerIdToken = "@playerId";
         const string playerNameToken = "@playerName";
         const string targetIdToken = "@targetId";
@@ -75,7 +78,7 @@ public class BrightBinder : SFModuleBase
         var requiresTargetId = entry.Commands.Any(cmd => cmd.Contains(targetIdToken) || cmd.Contains(targetNameToken));
         if (requiresTargetId && targetId is null)
         {
-            var dialogResult = await SF.Dialog.ShowInput(
+            var dialogResult = await sf.Dialog.ShowInput(
                 "BrightBinder: Input required",
                 "Enter target ID:"
             );
@@ -87,13 +90,13 @@ public class BrightBinder : SFModuleBase
         var nextDialog = entry.TargetFile is null ? Task.CompletedTask : ShowDialog(entry.TargetFile, targetId);
 
         ushort? playerId = null;
-        ushort getPlayerId() => playerId ??= SF.Players.LocalPlayerId;
+        ushort getPlayerId() => playerId ??= sf.Players.LocalPlayerId;
 
         string? playerName = null;
-        string getPlayerName() => playerName ??= SF.Players.GetName(getPlayerId())!;
+        string getPlayerName() => playerName ??= sf.Players.GetName(getPlayerId())!;
 
         string? targetName = null;
-        string getTargetName() => targetName ??= SF.Players.GetName(targetId ?? getPlayerId())!;
+        string getTargetName() => targetName ??= sf.Players.GetName(targetId ?? getPlayerId())!;
 
         foreach (var rawCommand in entry.Commands)
         {
@@ -103,7 +106,7 @@ public class BrightBinder : SFModuleBase
             if (command.Contains(targetIdToken)) command = command.Replace(targetIdToken, targetId!.Value.ToString());
             if (command.Contains(targetNameToken)) command = command.Replace(targetNameToken, getTargetName());
 
-            SF.Chat.Send(command);
+            sf.Chat.Send(command);
             Context.IncrementCounter("commands.sent");
             await Task.Delay(delay);
         }
@@ -130,16 +133,15 @@ public record BBDialogEntry(string[] Commands, string? DisplayText, string? Targ
 
 public record BBDialog(string Name, BBDialogEntry[] Items)
 {
-    public static BBDialog FromFile(string fileName)
+    public static BBDialog FromStorage(IModuleStorage storage, string fileName)
     {
-        var baseDirectory = Path.Combine(SF.UserFilesDirectory, "SF", "brightbinder");
-        var filePath = Path.Combine(baseDirectory, fileName + ".txt");
-        if (!File.Exists(filePath)) throw new FileNotFoundException(null, filePath);
+        string relativePath = fileName + ".txt";
+        string filePath = storage.GetFullPath(relativePath);
+        if (!storage.Exists(relativePath)) throw new FileNotFoundException(null, filePath);
         return new(
             Name: fileName,
-            Items: File.ReadAllLines(filePath)
+            Items: storage.ReadAllLines(relativePath)
                 .Select(line => line.Trim())
-                //.Where(line => !string.IsNullOrWhiteSpace(line))
                 .Select(line => BBDialogEntry.FromLine(fileName, line))
                 .ToArray()
         );
