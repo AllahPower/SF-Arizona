@@ -2,5 +2,6 @@
   <Folder Name="/src/">
     <Project Path="src/SF.Abstractions/SF.Abstractions.csproj" />
     <Project Path="src/SF.csproj" />
+    <Project Path="src/SF.Native/SF.Native.vcxproj" />
   </Folder>
 </Solution>

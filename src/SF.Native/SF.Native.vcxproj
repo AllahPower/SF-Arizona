@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{B7C9E0A1-4F3D-4A90-BBA0-1C9E9F54B001}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SFNative</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <!--
+    nethost SDK lookup. Override DotNetHostPackRoot from the command line if your SDK lives
+    elsewhere, e.g. /p:DotNetHostPackRoot=C:\dotnet\packs\Microsoft.NETCore.App.Host.win-x86\10.0.0
+  -->
+  <PropertyGroup>
+    <DotNetHostPackRoot Condition="'$(DotNetHostPackRoot)'==''">$(MSBuildProgramFiles32)\dotnet\packs\Microsoft.NETCore.App.Host.win-x86</DotNetHostPackRoot>
+    <OutDir>$(SolutionDir)src\bin\$(Configuration)\win-x86\</OutDir>
+    <IntDir>$(SolutionDir)src\obj\SF.Native\$(Configuration)\win-x86\</IntDir>
+    <TargetName>SF</TargetName>
+    <TargetExt>.asi</TargetExt>
+  </PropertyGroup>
+
+  <Target Name="ResolveNetHostNativeDir" BeforeTargets="ClCompile;Link">
+    <ItemGroup>
+      <_HostPackCandidate Include="$([System.IO.Directory]::GetDirectories('$(DotNetHostPackRoot)'))" Condition="Exists('$(DotNetHostPackRoot)')">
+        <Leaf>$([System.IO.Path]::GetFileName('%(Identity)'))</Leaf>
+      </_HostPackCandidate>
+    </ItemGroup>
+    <PropertyGroup>
+      <_BestHostPack>@(_HostPackCandidate->'%(Leaf)')</_BestHostPack>
+      <_BestHostPackVersion>$([MSBuild]::ValueOrDefault('$([System.String]::Copy(`$(_BestHostPack)`).Split(`;`)[-1])', ''))</_BestHostPackVersion>
+      <NetHostNativeDir Condition="'$(NetHostNativeDir)'=='' and '$(_BestHostPackVersion)'!=''">$(DotNetHostPackRoot)\$(_BestHostPackVersion)\runtimes\win-x86\native</NetHostNativeDir>
+    </PropertyGroup>
+    <Error Condition="'$(NetHostNativeDir)'=='' or !Exists('$(NetHostNativeDir)\nethost.h')" Text="nethost SDK not found under '$(DotNetHostPackRoot)'. Install .NET 10 SDK (x86 host pack) or set /p:NetHostNativeDir=&lt;path with nethost.h&gt;." />
+    <Message Importance="high" Text="SF.Native using nethost from: $(NetHostNativeDir)" />
+  </Target>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(NetHostNativeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)'=='Release'">MaxSpeed</Optimization>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking Condition="'$(Configuration)'=='Release'">true</FunctionLevelLinking>
+      <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(NetHostNativeDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>nethost.lib;kernel32.lib;user32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>nethost.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <EnableCOMDATFolding Condition="'$(Configuration)'=='Release'">true</EnableCOMDATFolding>
+      <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClCompile Include="dllmain.c" />
+  </ItemGroup>
+
+  <Target Name="CopyNetHostDll" AfterTargets="Build">
+    <Copy SourceFiles="$(NetHostNativeDir)\nethost.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('$(NetHostNativeDir)\nethost.dll')" />
+  </Target>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -4,12 +4,14 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<PublishAot>true</PublishAot>
-		<RuntimeIdentifier>win-x86</RuntimeIdentifier>
-		<SelfContained>true</SelfContained>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>preview</LangVersion>
-		<DllMainSourceFile>dllmain.c</DllMainSourceFile>
+		<AssemblyName>SF.Runtime</AssemblyName>
+		<RootNamespace>SFSharp</RootNamespace>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<PlatformTarget>x86</PlatformTarget>
 		<Version>3.2.6</Version>
 		<AssemblyVersion>3.2.6.0</AssemblyVersion>
 		<FileVersion>3.2.6.0</FileVersion>
@@ -21,23 +23,9 @@
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <IsAotCompatible>True</IsAotCompatible>
-	  <IsTrimmable>False</IsTrimmable>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <IsAotCompatible>True</IsAotCompatible>
-	  <IsTrimmable>False</IsTrimmable>
-	</PropertyGroup>
-
 	<PropertyGroup>
-	  <NoWarn>$(NoWarn);NU1510;IL3053;IL2026;IL2067;IL2070;IL3050</NoWarn>
+	  <NoWarn>$(NoWarn);NU1510</NoWarn>
 	</PropertyGroup>
-
-	<Target Name="RenameOutput" AfterTargets="CopyNativeBinary">
-		<Move SourceFiles="$(PublishDir)$(TargetName)$(NativeBinaryExt)" DestinationFiles="$(PublishDir)$(TargetName).asi" />
-	</Target>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -58,7 +46,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DllMain" Version="1.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
 		<PackageReference Include="MinHook.NET" Version="1.1.2" />
 	</ItemGroup>
