@@ -10,7 +10,6 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <ProjectGuid>{B7C9E0A1-4F3D-4A90-BBA0-1C9E9F54B001}</ProjectGuid>
@@ -18,9 +17,7 @@
     <RootNamespace>SFNative</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
@@ -29,43 +26,42 @@
     <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
     <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-
   <!--
-    nethost SDK lookup. Override DotNetHostPackRoot from the command line if your SDK lives
-    elsewhere, e.g. /p:DotNetHostPackRoot=C:\dotnet\packs\Microsoft.NETCore.App.Host.win-x86\10.0.0
+    nethost SDK lookup. We resolve NetHostNativeDir at evaluation time so IntelliSense
+    can see hostfxr.h / coreclr_delegates.h without running a Target first.
+    Override DotNetHostPackRoot or NetHostNativeDir from the command line if your SDK
+    lives elsewhere, e.g. /p:DotNetHostPackRoot=C:\dotnet\packs\Microsoft.NETCore.App.Host.win-x86
   -->
   <PropertyGroup>
+    <_DotNetRoot64 Condition="'$(ProgramW6432)'!=''">$(ProgramW6432)\dotnet</_DotNetRoot64>
+    <_DotNetRoot64 Condition="'$(_DotNetRoot64)'==''">$(ProgramFiles)\dotnet</_DotNetRoot64>
+    <DotNetHostPackRoot Condition="'$(DotNetHostPackRoot)'=='' and Exists('$(_DotNetRoot64)\packs\Microsoft.NETCore.App.Host.win-x86')">$(_DotNetRoot64)\packs\Microsoft.NETCore.App.Host.win-x86</DotNetHostPackRoot>
     <DotNetHostPackRoot Condition="'$(DotNetHostPackRoot)'==''">$(MSBuildProgramFiles32)\dotnet\packs\Microsoft.NETCore.App.Host.win-x86</DotNetHostPackRoot>
-    <OutDir>$(SolutionDir)src\bin\$(Configuration)\win-x86\</OutDir>
-    <IntDir>$(SolutionDir)src\obj\SF.Native\$(Configuration)\win-x86\</IntDir>
+    <_ProjectSrcRoot>$(MSBuildProjectDirectory)\..\</_ProjectSrcRoot>
+    <OutDir>$(_ProjectSrcRoot)bin\$(Configuration)\win-x86\</OutDir>
+    <IntDir>$(_ProjectSrcRoot)obj\SF.Native\$(Configuration)\win-x86\</IntDir>
     <TargetName>SF</TargetName>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>
-
-  <Target Name="ResolveNetHostNativeDir" BeforeTargets="ClCompile;Link">
-    <ItemGroup>
-      <_HostPackCandidate Include="$([System.IO.Directory]::GetDirectories('$(DotNetHostPackRoot)'))" Condition="Exists('$(DotNetHostPackRoot)')">
-        <Leaf>$([System.IO.Path]::GetFileName('%(Identity)'))</Leaf>
-      </_HostPackCandidate>
-    </ItemGroup>
-    <PropertyGroup>
-      <_BestHostPack>@(_HostPackCandidate->'%(Leaf)')</_BestHostPack>
-      <_BestHostPackVersion>$([MSBuild]::ValueOrDefault('$([System.String]::Copy(`$(_BestHostPack)`).Split(`;`)[-1])', ''))</_BestHostPackVersion>
-      <NetHostNativeDir Condition="'$(NetHostNativeDir)'=='' and '$(_BestHostPackVersion)'!=''">$(DotNetHostPackRoot)\$(_BestHostPackVersion)\runtimes\win-x86\native</NetHostNativeDir>
-    </PropertyGroup>
-    <Error Condition="'$(NetHostNativeDir)'=='' or !Exists('$(NetHostNativeDir)\nethost.h')" Text="nethost SDK not found under '$(DotNetHostPackRoot)'. Install .NET 10 SDK (x86 host pack) or set /p:NetHostNativeDir=&lt;path with nethost.h&gt;." />
+  <PropertyGroup Condition="'$(NetHostNativeDir)'=='' and Exists('$(DotNetHostPackRoot)')">
+    <_HostPack10Dirs>$([System.IO.Directory]::GetDirectories('$(DotNetHostPackRoot)', '10.*'))</_HostPack10Dirs>
+    <_HostPackAnyDirs Condition="'$(_HostPack10Dirs)'==''">$([System.IO.Directory]::GetDirectories('$(DotNetHostPackRoot)'))</_HostPackAnyDirs>
+    <_HostPackPick Condition="'$(_HostPack10Dirs)'!=''">$(_HostPack10Dirs.Split(';')[0])</_HostPackPick>
+    <_HostPackPick Condition="'$(_HostPackPick)'=='' and '$(_HostPackAnyDirs)'!=''">$(_HostPackAnyDirs.Split(';')[0])</_HostPackPick>
+    <NetHostNativeDir Condition="'$(_HostPackPick)'!=''">$(_HostPackPick)\runtimes\win-x86\native</NetHostNativeDir>
+  </PropertyGroup>
+  <Target Name="ValidateNetHost" BeforeTargets="ClCompile;Link">
+    <Error Condition="'$(NetHostNativeDir)'=='' or !Exists('$(NetHostNativeDir)\nethost.h') or !Exists('$(NetHostNativeDir)\hostfxr.h')" Text="nethost SDK not found under '$(DotNetHostPackRoot)'. Install .NET 10 SDK (x86 host pack) or set /p:NetHostNativeDir=&lt;path with nethost.h and hostfxr.h&gt;." />
     <Message Importance="high" Text="SF.Native using nethost from: $(NetHostNativeDir)" />
   </Target>
-
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(NetHostNativeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NetHostNativeDir);$(MSBuildProjectDirectory)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <Optimization Condition="'$(Configuration)'=='Debug'">Disabled</Optimization>
@@ -79,20 +75,25 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(NetHostNativeDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>nethost.lib;kernel32.lib;user32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>nethost.lib;kernel32.lib;user32.lib;advapi32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>nethost.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <EnableCOMDATFolding Condition="'$(Configuration)'=='Release'">true</EnableCOMDATFolding>
       <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
-    <ClCompile Include="dllmain.c" />
+    <ClInclude Include="include\sf_native\hostfxr_bootstrap.hpp" />
+    <ClInclude Include="include\sf_native\log.hpp" />
+    <ClInclude Include="include\sf_native\peek_message_hook.hpp" />
   </ItemGroup>
-
+  <ItemGroup>
+    <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\hooks\peek_message_hook.cpp" />
+    <ClCompile Include="src\logging\log.cpp" />
+    <ClCompile Include="src\runtime\hostfxr_bootstrap.cpp" />
+  </ItemGroup>
   <Target Name="CopyNetHostDll" AfterTargets="Build">
     <Copy SourceFiles="$(NetHostNativeDir)\nethost.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('$(NetHostNativeDir)\nethost.dll')" />
   </Target>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
