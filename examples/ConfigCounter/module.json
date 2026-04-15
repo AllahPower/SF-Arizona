@@ -1,0 +1,9 @@
+{
+  "id": "example.config-counter",
+  "displayName": "Config Counter Example",
+  "version": "1.0.0",
+  "description": "Sample external plugin that persists state through module config and user data.",
+  "author": "SF-Arizona",
+  "assembly": "SF.Example.ConfigCounter.dll",
+  "enabledOnStart": true
+}

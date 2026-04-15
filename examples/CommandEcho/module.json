@@ -1,0 +1,9 @@
+{
+  "id": "example.command-echo",
+  "displayName": "Command Echo Example",
+  "version": "1.0.0",
+  "description": "Sample external plugin that registers a chat command and echoes text to chat and to the log.",
+  "author": "SF-Arizona",
+  "assembly": "SF.Example.CommandEcho.dll",
+  "enabledOnStart": true
+}

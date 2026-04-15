@@ -1,0 +1,9 @@
+{
+  "id": "example.hello-world",
+  "displayName": "Hello World Example",
+  "version": "1.0.0",
+  "description": "Minimal external plugin that writes Hello world! to chat and to the SF log.",
+  "author": "SF-Arizona",
+  "assembly": "SF.Example.HelloWorld.dll",
+  "enabledOnStart": true
+}
