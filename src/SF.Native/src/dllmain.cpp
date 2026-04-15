@@ -10,6 +10,7 @@
 namespace
 {
 	wchar_t g_baseDir[MAX_PATH] = {};
+	constexpr const wchar_t* kManagedRootDirectoryName = L"SF";
 
 	bool ResolveBaseDirectory(HINSTANCE instance, wchar_t* outDir, size_t outCount)
 	{
@@ -30,23 +31,27 @@ namespace
 		return wcscpy_s(outDir, outCount, path) == 0;
 	}
 
-	bool ComposePath(const wchar_t* baseDir, const wchar_t* fileName, wchar_t* outPath, size_t outCount)
+	bool ComposePath(const wchar_t* baseDir, const wchar_t* relativePath, wchar_t* outPath, size_t outCount)
 	{
-		return swprintf(outPath, outCount, L"%s\\%s", baseDir, fileName) >= 0;
+		return swprintf(outPath, outCount, L"%s\\%s", baseDir, relativePath) >= 0;
 	}
 
 	DWORD WINAPI BootstrapThreadProc(LPVOID)
 	{
 		sf::log::Info("bootstrap worker thread started");
 
+		wchar_t managedRootPath[MAX_PATH];
 		wchar_t runtimeConfigPath[MAX_PATH];
 		wchar_t assemblyPath[MAX_PATH];
-		if (!ComposePath(g_baseDir, L"SF.Runtime.runtimeconfig.json", runtimeConfigPath, MAX_PATH) ||
-			!ComposePath(g_baseDir, L"SF.Runtime.dll", assemblyPath, MAX_PATH))
+		if (!ComposePath(g_baseDir, kManagedRootDirectoryName, managedRootPath, MAX_PATH) ||
+			!ComposePath(managedRootPath, L"SF.Runtime.runtimeconfig.json", runtimeConfigPath, MAX_PATH) ||
+			!ComposePath(managedRootPath, L"SF.Runtime.dll", assemblyPath, MAX_PATH))
 		{
 			sf::log::Error("failed to compose managed paths");
 			return 1;
 		}
+
+		sf::log::InfoW("managed root:", managedRootPath);
 
 		if (GetFileAttributesW(runtimeConfigPath) == INVALID_FILE_ATTRIBUTES)
 		{

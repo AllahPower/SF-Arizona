@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{531DBB13-0B9F-4A3F-9E7F-362B56B6E0A1}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\sf_native">
+      <UniqueIdentifier>{8F4A2C17-CC8A-4C5B-A9A8-29CB8A2F40B4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{A7A67D80-8D43-445A-B38D-94012271E1B3}</UniqueIdentifier>
+      <Extensions>c;cc;cpp;cxx;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\hooks">
+      <UniqueIdentifier>{37EB054C-D17F-4D56-A2C4-D495F960E311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\logging">
+      <UniqueIdentifier>{F987D509-EE80-4AA0-9E5C-99FB0A630CE2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\runtime">
+      <UniqueIdentifier>{7C4BE74A-4A59-4FA6-BE9F-0970D2968B4A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\sf_native\hostfxr_bootstrap.hpp">
+      <Filter>Header Files\sf_native</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_native\log.hpp">
+      <Filter>Header Files\sf_native</Filter>
+    </ClInclude>
+    <ClInclude Include="include\sf_native\peek_message_hook.hpp">
+      <Filter>Header Files\sf_native</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hooks\peek_message_hook.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logging\log.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\runtime\hostfxr_bootstrap.cpp">
+      <Filter>Source Files\runtime</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

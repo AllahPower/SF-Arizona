@@ -21,6 +21,10 @@
 		<Company>AllahPower</Company>
 		<RepositoryUrl>https://github.com/AllahPower/SF-Arizona</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<OutputPath>bin\$(Configuration)\win-x86\SF\</OutputPath>
+		<PublishDir>bin\$(Configuration)\win-x86\SF\</PublishDir>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -35,7 +39,7 @@
 		<Content Include="Modules\DebugWeb\wwwroot\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-			<TargetPath>SF\debug-web\wwwroot\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+			<TargetPath>debug-web\wwwroot\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
 		</Content>
 	</ItemGroup>
 
