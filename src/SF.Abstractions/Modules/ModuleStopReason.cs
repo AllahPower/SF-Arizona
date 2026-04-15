@@ -24,5 +24,8 @@ public enum ModuleStopReason
 
     /// <summary>Module threw an unhandled exception. If <see cref="SFModuleAttribute.RestartPolicy"/> is
     /// <see cref="ModuleRestartPolicy.OnFault"/> and the circuit breaker has not tripped, a restart follows.</summary>
-    Faulted
+    Faulted,
+
+    /// <summary>Host is unloading the plugin that owns this module. No restart attempted.</summary>
+    PluginUnload
 }

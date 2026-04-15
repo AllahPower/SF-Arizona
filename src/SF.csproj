@@ -32,7 +32,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-	  <NoWarn>$(NoWarn);NU1510;IL3053</NoWarn>
+	  <NoWarn>$(NoWarn);NU1510;IL3053;IL2026;IL2067;IL2070;IL3050</NoWarn>
 	</PropertyGroup>
 
 	<Target Name="RenameOutput" AfterTargets="CopyNativeBinary">

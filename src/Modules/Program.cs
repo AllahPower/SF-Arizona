@@ -25,6 +25,13 @@ public static class Program
         container.RegisterModule<RpcDebugger>();
         container.RegisterModule<DebugModule>();
 
+#pragma warning disable IL3050
+        PluginLoader pluginLoader = new(container);
+        container.PluginLoader = pluginLoader;
+        int loadedPluginCount = pluginLoader.DiscoverAndLoadAll();
+        SFLog.Info($"Program.Main plugin discovery complete, loaded {loadedPluginCount} plugin(s)");
+#pragma warning restore IL3050
+
         using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ =>
         {
             SFLog.Info("Debug command /sfd executed");

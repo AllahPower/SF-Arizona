@@ -7,7 +7,7 @@ internal static class ModuleChatFormatter
     public static string Paint(SFColor color, string value) => color.Apply(value);
 
     public static string FormatUsage() =>
-        $"{Paint(SFColors.Yellow, "Usage")}: {Paint(SFColors.White | SFColors.Ice, "/sfs status | /sfs info|start|stop|restart <moduleId>")}";
+        $"{Paint(SFColors.Yellow, "Usage")}: {Paint(SFColors.White | SFColors.Ice, "/sfs status | info|start|stop|restart <moduleId> | plugins | plugin-load|plugin-unload|plugin-reload <id>")}";
 
     public static string FormatChatAction(string action, string moduleName, string tail, SFColor accent)
     {

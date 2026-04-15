@@ -41,6 +41,17 @@ public sealed partial class SFModuleContainer
     private readonly List<ModuleRegistration> _registrations = [];
     private readonly Dictionary<string, ModuleRegistration> _registrationsById = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<ModuleRegistration, RunningModule> _runningModules = [];
+    private PluginLoader? _pluginLoader;
+
+    /// <summary>
+    /// Attached plugin loader, if any. Set by <c>Program.Main</c> after the loader is constructed.
+    /// Used by the <c>/sfs</c> dashboard to expose <c>plugin-load</c>/<c>plugin-unload</c>/<c>plugin-reload</c>.
+    /// </summary>
+    public PluginLoader? PluginLoader
+    {
+        get => _pluginLoader;
+        set => _pluginLoader = value;
+    }
     private TaskCompletionSource _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Task[]? _cachedWhenAnyTasks;
     private bool _isShuttingDown;
@@ -58,14 +69,41 @@ public sealed partial class SFModuleContainer
     /// <exception cref="InvalidOperationException">A module with the same <see cref="ModuleDescriptor.Id"/> is already registered.</exception>
     public void RegisterModule<T>(bool? enabledOnStart = null) where T : ISFModule, new()
     {
-        ModuleDescriptor descriptor = ModuleDescriptor.FromType(typeof(T));
+        RegisterCore(ModuleDescriptor.FromType(typeof(T)), static () => new T(), enabledOnStart);
+    }
+
+    /// <summary>
+    /// Reflection-based overload used by <see cref="PluginLoader"/> for types discovered at runtime.
+    /// The type must implement <see cref="ISFModule"/>, carry <see cref="SFModuleAttribute"/> and
+    /// expose a public parameterless constructor.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Activator.CreateInstance relies on reflection and is unavailable under NativeAOT.")]
+    public void RegisterModule(Type moduleType, bool? enabledOnStart = null)
+    {
+        ArgumentNullException.ThrowIfNull(moduleType);
+        if (!typeof(ISFModule).IsAssignableFrom(moduleType))
+        {
+            throw new ArgumentException($"Type {moduleType.FullName} does not implement ISFModule.", nameof(moduleType));
+        }
+
+        if (moduleType.GetConstructor(Type.EmptyTypes) is null)
+        {
+            throw new ArgumentException($"Type {moduleType.FullName} has no public parameterless constructor.", nameof(moduleType));
+        }
+
+        ModuleDescriptor descriptor = ModuleDescriptor.FromType(moduleType);
+        RegisterCore(descriptor, () => (ISFModule)Activator.CreateInstance(moduleType)!, enabledOnStart);
+    }
+
+    private void RegisterCore(ModuleDescriptor descriptor, Func<ISFModule> factory, bool? enabledOnStart)
+    {
         if (_registrationsById.ContainsKey(descriptor.Id))
         {
             throw new InvalidOperationException($"Module id '{descriptor.Id}' is already registered.");
         }
 
         bool autoStartEnabled = enabledOnStart ?? descriptor.DefaultEnabled;
-        ModuleRegistration registration = new(descriptor, static () => new T(), autoStartEnabled);
+        ModuleRegistration registration = new(descriptor, factory, autoStartEnabled);
         _registrations.Add(registration);
         _registrations.Sort((left, right) =>
         {
@@ -74,6 +112,84 @@ public sealed partial class SFModuleContainer
         });
         _registrationsById.Add(descriptor.Id, registration);
         SFLog.Info($"RegisterModule id={descriptor.Id} type={descriptor.ModuleType.Name} enabledOnStart={autoStartEnabled} execution={descriptor.ExecutionModel}");
+    }
+
+    /// <summary>
+    /// Removes a registration after its run has ended. If the module is still running the call
+    /// returns <see langword="false"/> — call <see cref="RequestStopModule(string, ModuleStopReason)"/>
+    /// and <see cref="WaitForModulesStopped(IEnumerable{string}, TimeSpan)"/> first.
+    /// </summary>
+    public bool TryUnregisterModule(string moduleId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
+        if (!_registrationsById.TryGetValue(moduleId, out ModuleRegistration? registration))
+        {
+            SFLog.Warn($"TryUnregisterModule id={moduleId}: not registered");
+            return false;
+        }
+
+        if (_runningModules.ContainsKey(registration))
+        {
+            SFLog.Warn($"TryUnregisterModule id={moduleId}: still running, refuse to remove");
+            return false;
+        }
+
+        _registrationsById.Remove(moduleId);
+        _registrations.Remove(registration);
+        SFLog.Info($"UnregisterModule id={moduleId}");
+        return true;
+    }
+
+    /// <summary>Requests cooperative stop of a module by id. No-op if unknown or already stopped.</summary>
+    public void RequestStopModule(string moduleId, ModuleStopReason reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
+        if (!_registrationsById.TryGetValue(moduleId, out ModuleRegistration? registration))
+        {
+            return;
+        }
+
+        registration.AutoStartEnabled = false;
+        registration.Runtime.SetAutoStartEnabled(false);
+        StopModule(registration, reason);
+    }
+
+    /// <summary>
+    /// Blocks the calling thread until every listed module is no longer running or until
+    /// <paramref name="timeout"/> elapses. Used by <see cref="PluginLoader"/> to drain tasks
+    /// before tearing down the ALC.
+    /// </summary>
+    public void WaitForModulesStopped(IEnumerable<string> moduleIds, TimeSpan timeout)
+    {
+        ArgumentNullException.ThrowIfNull(moduleIds);
+        string[] ids = moduleIds.ToArray();
+        if (ids.Length == 0)
+        {
+            return;
+        }
+
+        DateTime deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            bool anyRunning = false;
+            foreach (string id in ids)
+            {
+                if (_registrationsById.TryGetValue(id, out ModuleRegistration? registration) && _runningModules.ContainsKey(registration))
+                {
+                    anyRunning = true;
+                    break;
+                }
+            }
+
+            if (!anyRunning)
+            {
+                return;
+            }
+
+            Thread.Sleep(50);
+        }
+
+        SFLog.Warn($"WaitForModulesStopped: timeout after {timeout.TotalMilliseconds:F0}ms, ids=[{string.Join(',', ids)}]");
     }
 
     private void InvalidateTaskCache() => _cachedWhenAnyTasks = null;

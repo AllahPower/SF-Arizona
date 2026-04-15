@@ -33,6 +33,18 @@ public partial class SFModuleContainer
                 return;
             }
 
+            if (verb == "plugins")
+            {
+                ShowPluginsInChat();
+                return;
+            }
+
+            if (verb is "plugin-load" or "plugin-unload" or "plugin-reload")
+            {
+                HandlePluginCommand(verb, segments);
+                return;
+            }
+
             if (segments.Length < 2)
             {
                 SF.Chat.Add(FormatUsage());
@@ -225,6 +237,100 @@ public partial class SFModuleContainer
                 case int index when index == clearIndex:
                     registration.Runtime.ClearTelemetry();
                     break;
+            }
+        }
+    }
+
+    private void ShowPluginsInChat()
+    {
+        if (_pluginLoader is null)
+        {
+            SF.Chat.Add(Paint(SFColors.Slate, "Plugin loader is not attached."));
+            return;
+        }
+
+        IReadOnlyCollection<string> ids = _pluginLoader.LoadedPluginIds;
+        if (ids.Count == 0)
+        {
+            SF.Chat.Add(Paint(SFColors.Slate, "No plugins loaded."));
+            return;
+        }
+
+        SF.Chat.Add(Paint(SFColors.Cyan | SFColors.Blue, $"Loaded plugins ({ids.Count}):"));
+        foreach (string id in ids)
+        {
+            SF.Chat.Add("  " + Paint(SFColors.White | SFColors.Ice, id));
+        }
+    }
+
+    private void HandlePluginCommand(string verb, string[] segments)
+    {
+        if (_pluginLoader is null)
+        {
+            SF.Chat.Add(Paint(SFColors.Rose, "Plugin loader is not attached."));
+            return;
+        }
+
+        if (segments.Length < 2)
+        {
+            SF.Chat.Add(Paint(SFColors.Rose, "Usage: /sfs ") + Paint(SFColors.White, $"{verb} <id|manifest-path>"));
+            return;
+        }
+
+        string target = string.Join(' ', segments.Skip(1)).Trim();
+
+        switch (verb)
+        {
+            case "plugin-load":
+            {
+                string manifestPath = target;
+                if (!File.Exists(manifestPath))
+                {
+                    string candidate = Path.Combine(SFPaths.AssetsRoot, "modules", target, "module.json");
+                    if (File.Exists(candidate))
+                    {
+                        manifestPath = candidate;
+                    }
+                }
+
+                if (_pluginLoader.TryLoadFromManifest(manifestPath, out string loadedId, out int moduleCount))
+                {
+                    SF.Chat.Add(FormatChatAction("plugin-load", loadedId, $"{moduleCount} module(s)", SFColors.Green));
+                }
+                else
+                {
+                    SF.Chat.Add(FormatChatAction("plugin-load", target, "failed, see sf_arz.log", SFColors.Red));
+                }
+
+                break;
+            }
+
+            case "plugin-unload":
+            {
+                if (_pluginLoader.TryUnload(target))
+                {
+                    SF.Chat.Add(FormatChatAction("plugin-unload", target, "done", SFColors.Orange));
+                }
+                else
+                {
+                    SF.Chat.Add(FormatChatAction("plugin-unload", target, "not loaded or failed", SFColors.Red));
+                }
+
+                break;
+            }
+
+            case "plugin-reload":
+            {
+                if (_pluginLoader.TryReload(target))
+                {
+                    SF.Chat.Add(FormatChatAction("plugin-reload", target, "done", SFColors.Yellow));
+                }
+                else
+                {
+                    SF.Chat.Add(FormatChatAction("plugin-reload", target, "failed, see sf_arz.log", SFColors.Red));
+                }
+
+                break;
             }
         }
     }
