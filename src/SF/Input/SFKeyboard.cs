@@ -7,12 +7,19 @@ public class SFKeyboard : ISFKeyboard
 
     internal async void StartLoop()
     {
-        while (true)
+        try
         {
-            (_currentState, _lastState) = (_lastState, _currentState);
-            _currentState.AsSpan().Clear();
-            Win32.GetKeyboardState(ref _currentState[0]);
-            await Task.Yield();
+            while (true)
+            {
+                (_currentState, _lastState) = (_lastState, _currentState);
+                _currentState.AsSpan().Clear();
+                Win32.GetKeyboardState(ref _currentState[0]);
+                await Task.Yield();
+            }
+        }
+        catch (Exception ex)
+        {
+            SFBootstrap.ProcessException(ex);
         }
     }
 

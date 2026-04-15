@@ -10,78 +10,85 @@ public static class Program
 {
     public static async void Main()
     {
-        SFLog.Info("Program.Main started");
+        try
+        {
+            SFLog.Info("Program.Main started");
 
-        string version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
-        SF.Chat.Add($"{{00FF00}}SF-Arizona {{FFFFFF}}v{version}");
-        SF.Chat.Add("{95FF4F}github.com/AllahPower/SF-Arizona | by AllahPower");
+            string version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+            SF.Chat.Add($"{{00FF00}}SF-Arizona {{FFFFFF}}v{version}");
+            SF.Chat.Add("{95FF4F}github.com/AllahPower/SF-Arizona | by AllahPower");
 
-        var container = new SFModuleContainer();
-        container.RegisterModule<DialogScraper>();
-        container.RegisterModule<BrightBinder>();
-        container.RegisterModule<LicenseShooter>();
-        container.RegisterModule<NodShaker>();
-        container.RegisterModule<ChatViolationMonitor>();
-        container.RegisterModule<RpcDebugger>();
-        container.RegisterModule<DebugModule>();
+            var container = new SFModuleContainer();
+            container.RegisterModule<DialogScraper>();
+            container.RegisterModule<BrightBinder>();
+            container.RegisterModule<LicenseShooter>();
+            container.RegisterModule<NodShaker>();
+            container.RegisterModule<ChatViolationMonitor>();
+            container.RegisterModule<RpcDebugger>();
+            container.RegisterModule<DebugModule>();
 
 #pragma warning disable IL3050
-        PluginLoader pluginLoader = new(container);
-        container.PluginLoader = pluginLoader;
-        int loadedPluginCount = pluginLoader.DiscoverAndLoadAll();
-        SFLog.Info($"Program.Main plugin discovery complete, loaded {loadedPluginCount} plugin(s)");
+            PluginLoader pluginLoader = new(container);
+            container.PluginLoader = pluginLoader;
+            int loadedPluginCount = pluginLoader.DiscoverAndLoadAll();
+            SFLog.Info($"Program.Main plugin discovery complete, loaded {loadedPluginCount} plugin(s)");
 #pragma warning restore IL3050
 
-        using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ =>
+            using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ =>
+            {
+                SFLog.Debug("Debug command /sfd executed");
+                SF.Chat.Add("SF-Arizona debug snapshot:");
+
+                if (!CArizonaChat.IsAvailable)
+                {
+                    SF.Chat.Add("Arizona chat runtime is not available.");
+                    return;
+                }
+
+                if (!CArizonaChat.TryGetRooms(out ArizonaChatRoomSnapshot[] rooms))
+                {
+                    SF.Chat.Add("Arizona chat runtime is available, but room snapshot could not be read.");
+                    return;
+                }
+
+                if (CArizonaChat.TryGetActiveRoom(out ArizonaChatRoomSnapshot activeRoom))
+                {
+                    SF.Chat.Add($"Active room: idx={activeRoom.RoomIndex} type={activeRoom.Type} name={activeRoom.Name}");
+                }
+                else
+                {
+                    SF.Chat.Add("Active room: <unresolved>");
+                }
+
+                if (rooms.Length == 0)
+                {
+                    SF.Chat.Add("Arizona rooms: none");
+                    return;
+                }
+
+                ArizonaChatRoomSnapshot[] visibleRooms = rooms
+                    .Where(static room => !room.IsHiddenByConfig && !room.IsInactive)
+                    .OrderBy(static room => room.RoomIndex)
+                    .ToArray();
+
+                SF.Chat.Add($"Arizona visible rooms: {visibleRooms.Length} / total={rooms.Length}");
+                foreach (ArizonaChatRoomSnapshot room in visibleRooms)
+                {
+                    string flags = $"active={room.IsActive} hidden={room.IsHiddenByConfig} inactive={room.IsInactive} muteOverride={room.HasMuteOverride} muted={room.IsMuted}";
+                    string dynamicInfo = room.IsDynamic
+                        ? $" dynamic roomId={room.RoomId?.ToString() ?? "?"} icon={room.IconToken ?? "<none>"}"
+                        : string.Empty;
+
+                    SF.Chat.Add($"room[{room.RoomIndex}] type={room.Type} name={room.Name} color=0x{room.ColorArgb:X8}{dynamicInfo} {flags}");
+                }
+            });
+
+            SFLog.Info("Program.Main entering module container run loop");
+            await container.Run();
+        }
+        catch (Exception ex)
         {
-            SFLog.Info("Debug command /sfd executed");
-            SF.Chat.Add("SF-Arizona debug snapshot:");
-
-            if (!CArizonaChat.IsAvailable)
-            {
-                SF.Chat.Add("Arizona chat runtime is not available.");
-                return;
-            }
-
-            if (!CArizonaChat.TryGetRooms(out ArizonaChatRoomSnapshot[] rooms))
-            {
-                SF.Chat.Add("Arizona chat runtime is available, but room snapshot could not be read.");
-                return;
-            }
-
-            if (CArizonaChat.TryGetActiveRoom(out ArizonaChatRoomSnapshot activeRoom))
-            {
-                SF.Chat.Add($"Active room: idx={activeRoom.RoomIndex} type={activeRoom.Type} name={activeRoom.Name}");
-            }
-            else
-            {
-                SF.Chat.Add("Active room: <unresolved>");
-            }
-
-            if (rooms.Length == 0)
-            {
-                SF.Chat.Add("Arizona rooms: none");
-                return;
-            }
-
-            ArizonaChatRoomSnapshot[] visibleRooms = rooms
-                .Where(static room => !room.IsHiddenByConfig && !room.IsInactive)
-                .OrderBy(static room => room.RoomIndex)
-                .ToArray();
-
-            SF.Chat.Add($"Arizona visible rooms: {visibleRooms.Length} / total={rooms.Length}");
-            foreach (ArizonaChatRoomSnapshot room in visibleRooms)
-            {
-                string flags = $"active={room.IsActive} hidden={room.IsHiddenByConfig} inactive={room.IsInactive} muteOverride={room.HasMuteOverride} muted={room.IsMuted}";
-                string dynamicInfo = room.IsDynamic
-                    ? $" dynamic roomId={room.RoomId?.ToString() ?? "?"} icon={room.IconToken ?? "<none>"}"
-                    : string.Empty;
-
-                SF.Chat.Add($"room[{room.RoomIndex}] type={room.Type} name={room.Name} color=0x{room.ColorArgb:X8}{dynamicInfo} {flags}");
-            }
-        });
-
-        SFLog.Info("Program.Main entering module container run loop");
-        await container.Run();
+            SFBootstrap.ProcessException(ex);
+        }
     }
 }

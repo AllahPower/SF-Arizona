@@ -25,6 +25,9 @@ public interface ISF
     /// <summary>Read-only game pool helpers, see <see cref="ISFGamePools"/>.</summary>
     ISFGamePools Pools { get; }
 
+    /// <summary>Read-only catalog of modules currently registered in the host.</summary>
+    ISFModules Modules { get; }
+
     /// <summary>Typed parsed event subscriptions and streams, see <see cref="ISFEvents"/>.</summary>
     ISFEvents Events { get; }
 

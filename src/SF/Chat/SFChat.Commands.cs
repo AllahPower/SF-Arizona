@@ -10,7 +10,7 @@ public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
 
         public void Dispose()
         {
-            SFLog.Info($"UnregisterChatCommand name={Name}");
+            SFLog.Debug($"UnregisterChatCommand name={Name}");
             _taskSourcesByCommand.Remove(Name);
         }
     }
@@ -20,7 +20,7 @@ public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
 
     public IDisposable RegisterChatCommand(string command, Action<string?> commandCallback)
     {
-        SFLog.Info($"RegisterChatCommand name={command}");
+        SFLog.Debug($"RegisterChatCommand name={command}");
         var registration = new CommandRegistration(command, commandCallback);
         _taskSourcesByCommand.Add(command, registration);
         return registration;

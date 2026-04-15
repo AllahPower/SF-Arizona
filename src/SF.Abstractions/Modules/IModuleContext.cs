@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace SFSharp;
 
 /// <summary>
@@ -15,6 +17,12 @@ public interface IModuleContext : IDisposable
 
     /// <summary>Cancelled when the container shuts down or the user stops the module.</summary>
     CancellationToken CancellationToken { get; }
+
+    /// <summary>
+    /// Logger scoped to <see cref="ModuleDescriptor.Id"/>. Messages go through the host logging
+    /// pipeline and end up in the standard SF log sinks.
+    /// </summary>
+    ILogger Log { get; }
 
     /// <summary>Read/write access to the module's asset folder next to the game executable.</summary>
     IModuleStorage Assets { get; }
@@ -58,7 +66,10 @@ public interface IModuleContext : IDisposable
     /// <summary>Awaitable that resumes on the SAMP main thread. No-op when already there.</summary>
     Task SwitchToMainThreadAsync();
 
-    /// <summary>Runs <paramref name="work"/> on a thread-pool thread.</summary>
+    /// <summary>
+    /// Runs <paramref name="work"/> on a thread-pool thread and tracks the returned task as an
+    /// owned background task for this module run.
+    /// </summary>
     Task RunBackground(Func<Task> work);
 
     /// <summary>Captures a current runtime snapshot. Safe to call from any thread.</summary>

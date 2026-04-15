@@ -1,5 +1,7 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 
 namespace SFSharp;
 
@@ -7,6 +9,59 @@ public static class SFBootstrap
 {
     private static SFSynchronizationContext? _sc;
     private static readonly NetworkDispatcher _dispatcher = new();
+    private static string? _hostDirectory;
+    private static int _resolverInstalled;
+
+    /// <summary>
+    /// Directory of SF.Runtime.dll. Populated by <see cref="InstallHostAssemblyResolver"/>.
+    /// Under hostfxr_initialize_for_runtime_config + load_assembly_and_get_function_pointer the
+    /// TPA does not include the host's own dependencies, and AppContext.BaseDirectory points at
+    /// the parent process (gta_sa.exe), not the SF\ subdirectory. We have to probe manually.
+    /// </summary>
+    public static string HostDirectory => _hostDirectory ?? AppContext.BaseDirectory;
+
+    private static void InstallHostAssemblyResolver()
+    {
+        if (Interlocked.Exchange(ref _resolverInstalled, 1) != 0)
+        {
+            return;
+        }
+
+        string? location = typeof(SFBootstrap).Assembly.Location;
+        string? dir = string.IsNullOrEmpty(location) ? null : Path.GetDirectoryName(location);
+        _hostDirectory = dir;
+
+        if (string.IsNullOrEmpty(dir))
+        {
+            SFLog.Warn("InstallHostAssemblyResolver: host directory unknown, plugin resolution may fail");
+            return;
+        }
+
+        SFLog.Debug($"Host directory resolved: {dir}");
+
+        AssemblyLoadContext.Default.Resolving += (ctx, name) =>
+        {
+            if (string.IsNullOrEmpty(name.Name))
+            {
+                return null;
+            }
+
+            if (PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name.Name, out Assembly sharedAssembly))
+            {
+                SFLog.Debug($"Default ALC resolve '{name.Name}' -> existing {PluginSharedAssemblyPolicy.Describe(sharedAssembly)}");
+                return sharedAssembly;
+            }
+
+            string candidate = Path.Combine(dir, name.Name + ".dll");
+            if (!File.Exists(candidate))
+            {
+                return null;
+            }
+
+            SFLog.Debug($"Default ALC resolve '{name.Name}' -> {candidate}");
+            return ctx.LoadFromAssemblyPath(candidate);
+        };
+    }
 
     public static RpcHandlerManager RpcHandlers => _dispatcher.IncomingRpcHandlers;
     public static OutgoingRpcManager OutgoingRpcHandlers => _dispatcher.OutgoingRpcHandlers;
@@ -37,6 +92,22 @@ public static class SFBootstrap
         {
             SFLog.Warn($"ProcessException fallback skipped chat output: {chatEx.GetType().Name}: {chatEx.Message}");
         }
+    }
+
+    public static void ObserveTask(Task task, string source)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentException.ThrowIfNullOrWhiteSpace(source);
+
+        task.ContinueWith(static (completed, state) =>
+        {
+            string taskSource = (string)state!;
+            if (completed.IsFaulted && completed.Exception is not null)
+            {
+                SFLog.Error(completed.Exception.GetBaseException(), $"Unhandled task exception from {taskSource}");
+                ProcessException(completed.Exception.GetBaseException());
+            }
+        }, source, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
     }
 
     public static void EnqueueIncomingRpc(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)
@@ -76,7 +147,8 @@ public static class SFBootstrap
     {
         if (_sc is null)
         {
-            SFLog.Info("WinMainLoopCore first entry");
+            SFLog.Debug("WinMainLoopCore first entry");
+            InstallHostAssemblyResolver();
             _sc = new SFSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(_sc);
             SFMain(main);
@@ -87,29 +159,36 @@ public static class SFBootstrap
 
     private static async void SFMain(Action main)
     {
-        SFLog.Info("SFMain started");
-        uint baseAddress = await GetSampDllBaseAddress();
-        SFLog.Info($"samp.dll loaded at 0x{baseAddress:X8}");
+        try
+        {
+            SFLog.Debug("SFMain started");
+            uint baseAddress = await GetSampDllBaseAddress();
+            SFLog.Debug($"samp.dll loaded at 0x{baseAddress:X8}");
 
-        ValidateEnvironment();
+            ValidateEnvironment();
 
-        _ = HookManager.IncomingRpcPacket;
-        SFLog.Info("IncomingRpc hook installed (pre-CNetGame).");
+            _ = HookManager.IncomingRpcPacket;
+            SFLog.Debug("IncomingRpc hook installed (pre-CNetGame).");
 
-        await WhenCNetGameLoads(baseAddress);
-        SFLog.Info("CNetGame is ready");
+            await WhenCNetGameLoads(baseAddress);
+            SFLog.Debug("CNetGame is ready");
 
-        _dispatcher.Reset();
-        SF.Chat.RegisterRpcBindings(_dispatcher.IncomingRpcHandlers);
-        _dispatcher.IncomingRpcHandlers.StartAll();
+            _dispatcher.Reset();
+            SF.Chat.RegisterRpcBindings(_dispatcher.IncomingRpcHandlers);
+            _dispatcher.IncomingRpcHandlers.StartAll();
 
-        InstallNetworkHooks();
-        InstallSubHooks();
+            InstallNetworkHooks();
+            InstallSubHooks();
 
-        SF.Keyboard.StartLoop();
-        SFLog.Info("Keyboard loop started");
+            SF.Keyboard.StartLoop();
+            SFLog.Debug("Keyboard loop started");
 
-        PostToMainThread(main);
+            PostToMainThread(main);
+        }
+        catch (Exception ex)
+        {
+            ProcessException(ex);
+        }
     }
 
     private static void ValidateEnvironment()
@@ -166,13 +245,13 @@ public static class SFBootstrap
         _ = HookManager.OutgoingRpcPacket;
         _ = HookManager.OutgoingPacket;
         _ = HookManager.IncomingPacket;
-        SFLog.Info("Network hooks installed: OutgoingRpc, OutgoingPacket, IncomingPacket.");
+        SFLog.Debug("Network hooks installed: OutgoingRpc, OutgoingPacket, IncomingPacket.");
 
         if (HookManager.IncomingAZVoicePacket is not null)
-            SFLog.Info("AZVoice incoming packet hook installed.");
+            SFLog.Debug("AZVoice incoming packet hook installed.");
 
         if (HookManager.IncomingAZVoiceRpc is not null)
-            SFLog.Info("AZVoice incoming RPC hook installed.");
+            SFLog.Debug("AZVoice incoming RPC hook installed.");
     }
 
     private static void InstallSubHooks()
@@ -183,7 +262,7 @@ public static class SFBootstrap
         HookManager.CChatAddEntry.AddSubHook(SF.Chat);
         HookManager.CInputCommandSend.AddSubHook(SF.Chat);
         HookManager.UpdateScoresPingsIps.AddSubHook(SF.Players);
-        SFLog.Info("Sub-hooks registered: Dialog, Chat, Input, Scoreboard.");
+        SFLog.Debug("Sub-hooks registered: Dialog, Chat, Input, Scoreboard.");
     }
 
     private static async Task<uint> GetSampDllBaseAddress()
@@ -202,7 +281,7 @@ public static class SFBootstrap
 
     private static async Task WhenCNetGameLoads(uint baseAddress)
     {
-        SFLog.Info($"Waiting for CNetGame pointer at samp.dll+0x{SampOffsets.CNetGame.Instance:X8} from base 0x{baseAddress:X8}");
+        SFLog.Debug($"Waiting for CNetGame pointer at samp.dll+0x{SampOffsets.CNetGame.Instance:X8} from base 0x{baseAddress:X8}");
         while (!ModuleResolver.IsClassReady("samp.dll", SampOffsets.CNetGame.Instance))
         {
             await Task.Yield();

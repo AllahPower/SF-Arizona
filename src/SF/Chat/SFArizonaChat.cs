@@ -114,7 +114,7 @@ public sealed class SFArizonaChat : ISFArizonaChat
                 _hideDetour = new HideDynamicRoomNative(OnHideDynamicRoom);
                 _hideOriginal = HookRuntime.Engine.CreateHook((IntPtr)hideAddr, _hideDetour);
                 HookRuntime.Engine.EnableHook(_hideOriginal);
-                SFLog.Info($"SFArizonaChat: HideDynamicRoom hook installed at 0x{hideAddr:X8}.");
+                SFLog.Debug($"SFArizonaChat: HideDynamicRoom hook installed at 0x{hideAddr:X8}.");
             }
 
             if (resetAddr != 0)
@@ -122,7 +122,7 @@ public sealed class SFArizonaChat : ISFArizonaChat
                 _resetDetour = new ResetDynamicRoomsNative(OnResetDynamicRooms);
                 _resetOriginal = HookRuntime.Engine.CreateHook((IntPtr)resetAddr, _resetDetour);
                 HookRuntime.Engine.EnableHook(_resetOriginal);
-                SFLog.Info($"SFArizonaChat: ResetDynamicRooms hook installed at 0x{resetAddr:X8}.");
+                SFLog.Debug($"SFArizonaChat: ResetDynamicRooms hook installed at 0x{resetAddr:X8}.");
             }
 
             _hooksInstalled = true;
@@ -133,7 +133,7 @@ public sealed class SFArizonaChat : ISFArizonaChat
     {
         if (IsUserRoom(roomId))
         {
-            SFLog.Info($"SFArizonaChat: Blocked HideDynamicRoom for user room {roomId}.");
+            SFLog.Debug($"SFArizonaChat: Blocked HideDynamicRoom for user room {roomId}.");
             return;
         }
 
@@ -161,6 +161,6 @@ public sealed class SFArizonaChat : ISFArizonaChat
         }
 
         if (rooms.Length > 0)
-            SFLog.Info($"SFArizonaChat: Restored {rooms.Length} user room(s) after reset.");
+            SFLog.Debug($"SFArizonaChat: Restored {rooms.Length} user room(s) after reset.");
     }
 }

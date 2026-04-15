@@ -233,6 +233,7 @@ public partial class SFModuleContainer
                 case int index when index == autoStartIndex:
                     registration.AutoStartEnabled = !registration.AutoStartEnabled;
                     registration.Runtime.SetAutoStartEnabled(registration.AutoStartEnabled);
+                    PublishModuleCatalogSnapshot();
                     break;
                 case int index when index == clearIndex:
                     registration.Runtime.ClearTelemetry();
@@ -249,17 +250,29 @@ public partial class SFModuleContainer
             return;
         }
 
-        IReadOnlyCollection<string> ids = _pluginLoader.LoadedPluginIds;
-        if (ids.Count == 0)
+        IReadOnlyCollection<PluginRuntimeSnapshot> plugins = _pluginLoader.LoadedPlugins;
+        if (plugins.Count == 0)
         {
             SF.Chat.Add(Paint(SFColors.Slate, "No plugins loaded."));
             return;
         }
 
-        SF.Chat.Add(Paint(SFColors.Cyan | SFColors.Blue, $"Loaded plugins ({ids.Count}):"));
-        foreach (string id in ids)
+        SF.Chat.Add(Paint(SFColors.Cyan | SFColors.Blue, $"Loaded plugins ({plugins.Count}):"));
+        foreach (PluginRuntimeSnapshot plugin in plugins.OrderBy(static plugin => plugin.PluginId, StringComparer.OrdinalIgnoreCase))
         {
-            SF.Chat.Add("  " + Paint(SFColors.White | SFColors.Ice, id));
+            string line = "  " +
+                Paint(SFColors.White | SFColors.Ice, plugin.PluginId) +
+                Paint(SFColors.Slate, " · ") +
+                Paint(SFColors.Sand, plugin.DisplayName) +
+                Paint(SFColors.Slate, " · ") +
+                Paint(plugin.State == PluginState.Loaded ? SFColors.Green : SFColors.Red, plugin.State.ToString());
+
+            if (plugin.LastUnloadFailureReason != PluginUnloadFailureReason.None && !string.IsNullOrWhiteSpace(plugin.LastUnloadFailureMessage))
+            {
+                line += Paint(SFColors.Slate, " · ") + Paint(SFColors.Rose, plugin.LastUnloadFailureReason.ToString());
+            }
+
+            SF.Chat.Add(line);
         }
     }
 
@@ -293,13 +306,14 @@ public partial class SFModuleContainer
                     }
                 }
 
-                if (_pluginLoader.TryLoadFromManifest(manifestPath, out string loadedId, out int moduleCount))
+                PluginLoadResult result = _pluginLoader.LoadFromManifest(manifestPath);
+                if (result.Success)
                 {
-                    SF.Chat.Add(FormatChatAction("plugin-load", loadedId, $"{moduleCount} module(s)", SFColors.Green));
+                    SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId!, $"{result.RegisteredModuleCount} module(s)", SFColors.Green));
                 }
                 else
                 {
-                    SF.Chat.Add(FormatChatAction("plugin-load", target, "failed, see sf_arz.log", SFColors.Red));
+                    SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId ?? target, result.Message, SFColors.Red));
                 }
 
                 break;
@@ -307,13 +321,14 @@ public partial class SFModuleContainer
 
             case "plugin-unload":
             {
-                if (_pluginLoader.TryUnload(target))
+                PluginUnloadResult result = _pluginLoader.Unload(target);
+                if (result.Success)
                 {
                     SF.Chat.Add(FormatChatAction("plugin-unload", target, "done", SFColors.Orange));
                 }
                 else
                 {
-                    SF.Chat.Add(FormatChatAction("plugin-unload", target, "not loaded or failed", SFColors.Red));
+                    SF.Chat.Add(FormatChatAction("plugin-unload", target, result.Message, SFColors.Red));
                 }
 
                 break;
@@ -321,13 +336,14 @@ public partial class SFModuleContainer
 
             case "plugin-reload":
             {
-                if (_pluginLoader.TryReload(target))
+                PluginReloadResult result = _pluginLoader.Reload(target);
+                if (result.Success)
                 {
                     SF.Chat.Add(FormatChatAction("plugin-reload", target, "done", SFColors.Yellow));
                 }
                 else
                 {
-                    SF.Chat.Add(FormatChatAction("plugin-reload", target, "failed, see sf_arz.log", SFColors.Red));
+                    SF.Chat.Add(FormatChatAction("plugin-reload", target, result.Message, SFColors.Red));
                 }
 
                 break;

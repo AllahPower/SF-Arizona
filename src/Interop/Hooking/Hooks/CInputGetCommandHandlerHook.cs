@@ -43,7 +43,7 @@ internal unsafe class CInputCommandSendHook : NativeHook<CInputCommandSendArgs, 
         bool handled = _instance.Process(new((uint)thisPtr, decodedText));
         if (handled)
         {
-            SFLog.Info($"CInput::Send command intercepted text={decodedText}");
+            SFLog.Debug($"CInput::Send command intercepted text={decodedText}");
         }
     }
 

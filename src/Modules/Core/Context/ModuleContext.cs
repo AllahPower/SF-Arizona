@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace SFSharp;
 
@@ -20,6 +21,7 @@ public sealed class ModuleContext : IModuleContext
     private IModuleStorage? _assets;
     private IModuleStorage? _userData;
     private IModuleConfig? _config;
+    private ILogger? _log;
 
     /// <summary>
     /// Constructed by the container only. External code obtains contexts through
@@ -43,6 +45,9 @@ public sealed class ModuleContext : IModuleContext
     /// forwarded to <see cref="SFModuleBase.ExecuteAsync(CancellationToken)"/>.
     /// </summary>
     public CancellationToken CancellationToken { get; }
+
+    /// <inheritdoc />
+    public ILogger Log => _log ??= SFLoggerProvider.Instance.CreateLogger(Descriptor.Id);
 
     /// <summary>
     /// Read/write access to the module's asset folder next to <c>gta_sa.exe</c>. Rooted at
@@ -193,11 +198,38 @@ public sealed class ModuleContext : IModuleContext
     public Task RunBackground(Func<Task> work)
     {
         ArgumentNullException.ThrowIfNull(work);
-        return Task.Run(async () =>
+        Task task = Task.Run(async () =>
         {
             _runtime.RecordActivity("background-work");
             await work();
         }, CancellationToken);
+        _runtime.RegisterBackgroundTask(task);
+        return task;
+    }
+
+    internal async Task DrainBackgroundTasksAsync()
+    {
+        while (true)
+        {
+            Task[] tasks = _runtime.SnapshotOwnedBackgroundTasks();
+            if (tasks.Length == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                await Task.WhenAll(tasks);
+                return;
+            }
+            catch (OperationCanceledException) when (CancellationToken.IsCancellationRequested)
+            {
+                if (tasks.All(static task => task.IsCanceled))
+                {
+                    return;
+                }
+            }
+        }
     }
 
     /// <summary>Captures a current <see cref="ModuleRuntimeSnapshot"/>. Safe to call from any thread.</summary>

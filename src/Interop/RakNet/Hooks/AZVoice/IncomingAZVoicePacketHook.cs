@@ -153,7 +153,7 @@ internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, Incoming
         }
         else
         {
-            SFLog.Info($"Resolved AZVoice incoming packet hook target at 0x{_onReceivePacketAddress:X8}.");
+            SFLog.Debug($"Resolved AZVoice incoming packet hook target at 0x{_onReceivePacketAddress:X8}.");
         }
 
         _resolved = true;

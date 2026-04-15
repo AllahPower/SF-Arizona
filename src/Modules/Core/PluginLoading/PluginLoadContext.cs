@@ -13,15 +13,11 @@ namespace SFSharp;
 [RequiresDynamicCode("Plugin loading is unavailable under NativeAOT.")]
 internal sealed class PluginLoadContext : AssemblyLoadContext
 {
-    private static readonly HashSet<string> SharedAssemblies = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "SF.Abstractions",
-        "Microsoft.Extensions.Logging.Abstractions",
-        "System.Text.Json",
-    };
-
     private readonly AssemblyDependencyResolver _resolver;
     private readonly string _pluginId;
+    private readonly Lock _sync = new();
+    private readonly HashSet<string> _unresolvedManagedDependencies = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _unresolvedNativeDependencies = new(StringComparer.OrdinalIgnoreCase);
 
     public PluginLoadContext(string pluginId, string pluginAssemblyPath)
         : base(name: $"SFPlugin:{pluginId}", isCollectible: true)
@@ -30,21 +26,53 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
         _resolver = new AssemblyDependencyResolver(pluginAssemblyPath);
     }
 
+    public string[] SnapshotUnresolvedManagedDependencies()
+    {
+        lock (_sync)
+        {
+            return [.. _unresolvedManagedDependencies];
+        }
+    }
+
+    public string[] SnapshotUnresolvedNativeDependencies()
+    {
+        lock (_sync)
+        {
+            return [.. _unresolvedNativeDependencies];
+        }
+    }
+
     protected override Assembly? Load(AssemblyName assemblyName)
     {
-        if (assemblyName.Name is string name && SharedAssemblies.Contains(name))
+        if (assemblyName.Name is string name && PluginSharedAssemblyPolicy.IsShared(name))
         {
-            SFLog.Info($"PluginLoadContext[{_pluginId}] share '{name}' via Default ALC");
+            if (PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name, out Assembly hostAsm))
+            {
+                SFLog.Debug($"PluginLoadContext[{_pluginId}] share '{name}' via host assembly {PluginSharedAssemblyPolicy.Describe(hostAsm)}");
+                return hostAsm;
+            }
+
+            SFLog.Warn($"PluginLoadContext[{_pluginId}] shared '{name}' not found among loaded host assemblies — plugin may fail");
             return null;
         }
 
         string? path = _resolver.ResolveAssemblyToPath(assemblyName);
         if (path is null)
         {
+            if (!string.IsNullOrWhiteSpace(assemblyName.Name) && !assemblyName.Name.EndsWith(".resources", StringComparison.OrdinalIgnoreCase))
+            {
+                lock (_sync)
+                {
+                    _unresolvedManagedDependencies.Add(assemblyName.Name);
+                }
+
+                SFLog.Debug($"PluginLoadContext[{_pluginId}] unresolved managed '{assemblyName.Name}'");
+            }
+
             return null;
         }
 
-        SFLog.Info($"PluginLoadContext[{_pluginId}] load '{assemblyName.Name}' from {path}");
+        SFLog.Debug($"PluginLoadContext[{_pluginId}] load '{assemblyName.Name}' from {path}");
         return LoadFromAssemblyPath(path);
     }
 
@@ -53,10 +81,16 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
         string? path = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
         if (path is null)
         {
+            lock (_sync)
+            {
+                _unresolvedNativeDependencies.Add(unmanagedDllName);
+            }
+
+            SFLog.Debug($"PluginLoadContext[{_pluginId}] unresolved native '{unmanagedDllName}'");
             return nint.Zero;
         }
 
-        SFLog.Info($"PluginLoadContext[{_pluginId}] load native '{unmanagedDllName}' from {path}");
+        SFLog.Debug($"PluginLoadContext[{_pluginId}] load native '{unmanagedDllName}' from {path}");
         return LoadUnmanagedDllFromPath(path);
     }
 }

@@ -27,12 +27,13 @@ public sealed partial class SFModuleContainer
     /// Internal registration record. Holds the descriptor, the factory, the per-module runtime
     /// telemetry object and the current auto-start flag.
     /// </summary>
-    private sealed class ModuleRegistration(ModuleDescriptor descriptor, Func<ISFModule> factory, bool autoStartEnabled)
+    private sealed class ModuleRegistration(ModuleDescriptor descriptor, Func<ISFModule> factory, bool autoStartEnabled, string? ownerPluginId)
     {
         public ModuleDescriptor Descriptor { get; } = descriptor;
         public Func<ISFModule> Factory { get; } = factory;
         public ModuleRuntimeInfo Runtime { get; } = new(descriptor, autoStartEnabled);
         public bool AutoStartEnabled { get; set; } = autoStartEnabled;
+        public string? OwnerPluginId { get; } = ownerPluginId;
     }
 
     /// <summary>Tracks a currently running module instance and the resources tied to its run.</summary>
@@ -56,6 +57,11 @@ public sealed partial class SFModuleContainer
     private Task[]? _cachedWhenAnyTasks;
     private bool _isShuttingDown;
 
+    public SFModuleContainer()
+    {
+        PublishModuleCatalogSnapshot();
+    }
+
     /// <summary>
     /// Registers a module type with the container. Must be called before
     /// <see cref="Run(CancellationToken)"/>. The type needs a parameterless constructor and a
@@ -69,7 +75,7 @@ public sealed partial class SFModuleContainer
     /// <exception cref="InvalidOperationException">A module with the same <see cref="ModuleDescriptor.Id"/> is already registered.</exception>
     public void RegisterModule<T>(bool? enabledOnStart = null) where T : ISFModule, new()
     {
-        RegisterCore(ModuleDescriptor.FromType(typeof(T)), static () => new T(), enabledOnStart);
+        RegisterCore(ModuleDescriptor.FromType(typeof(T)), static () => new T(), enabledOnStart, ownerPluginId: null);
     }
 
     /// <summary>
@@ -79,6 +85,11 @@ public sealed partial class SFModuleContainer
     /// </summary>
     [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Activator.CreateInstance relies on reflection and is unavailable under NativeAOT.")]
     public void RegisterModule(Type moduleType, bool? enabledOnStart = null)
+    {
+        _ = RegisterOwnedModule(moduleType, ownerPluginId: null, enabledOnStart);
+    }
+
+    internal ModuleDescriptor RegisterOwnedModule(Type moduleType, string? ownerPluginId, bool? enabledOnStart = null)
     {
         ArgumentNullException.ThrowIfNull(moduleType);
         if (!typeof(ISFModule).IsAssignableFrom(moduleType))
@@ -92,10 +103,11 @@ public sealed partial class SFModuleContainer
         }
 
         ModuleDescriptor descriptor = ModuleDescriptor.FromType(moduleType);
-        RegisterCore(descriptor, () => (ISFModule)Activator.CreateInstance(moduleType)!, enabledOnStart);
+        RegisterCore(descriptor, () => (ISFModule)Activator.CreateInstance(moduleType)!, enabledOnStart, ownerPluginId);
+        return descriptor;
     }
 
-    private void RegisterCore(ModuleDescriptor descriptor, Func<ISFModule> factory, bool? enabledOnStart)
+    private void RegisterCore(ModuleDescriptor descriptor, Func<ISFModule> factory, bool? enabledOnStart, string? ownerPluginId)
     {
         if (_registrationsById.ContainsKey(descriptor.Id))
         {
@@ -103,7 +115,7 @@ public sealed partial class SFModuleContainer
         }
 
         bool autoStartEnabled = enabledOnStart ?? descriptor.DefaultEnabled;
-        ModuleRegistration registration = new(descriptor, factory, autoStartEnabled);
+        ModuleRegistration registration = new(descriptor, factory, autoStartEnabled, ownerPluginId);
         _registrations.Add(registration);
         _registrations.Sort((left, right) =>
         {
@@ -112,6 +124,7 @@ public sealed partial class SFModuleContainer
         });
         _registrationsById.Add(descriptor.Id, registration);
         SFLog.Info($"RegisterModule id={descriptor.Id} type={descriptor.ModuleType.Name} enabledOnStart={autoStartEnabled} execution={descriptor.ExecutionModel}");
+        PublishModuleCatalogSnapshot();
     }
 
     /// <summary>
@@ -137,6 +150,7 @@ public sealed partial class SFModuleContainer
         _registrationsById.Remove(moduleId);
         _registrations.Remove(registration);
         SFLog.Info($"UnregisterModule id={moduleId}");
+        PublishModuleCatalogSnapshot();
         return true;
     }
 
@@ -159,37 +173,77 @@ public sealed partial class SFModuleContainer
     /// <paramref name="timeout"/> elapses. Used by <see cref="PluginLoader"/> to drain tasks
     /// before tearing down the ALC.
     /// </summary>
-    public void WaitForModulesStopped(IEnumerable<string> moduleIds, TimeSpan timeout)
+    public bool TryWaitForModulesStopped(IEnumerable<string> moduleIds, TimeSpan timeout, out string[] stillRunningIds)
     {
         ArgumentNullException.ThrowIfNull(moduleIds);
-        string[] ids = moduleIds.ToArray();
+        string[] ids = moduleIds.Where(static id => !string.IsNullOrWhiteSpace(id)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         if (ids.Length == 0)
         {
-            return;
+            stillRunningIds = [];
+            return true;
         }
 
         DateTime deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
         {
-            bool anyRunning = false;
-            foreach (string id in ids)
+            stillRunningIds = GetRunningModuleIds(ids);
+            if (stillRunningIds.Length == 0)
             {
-                if (_registrationsById.TryGetValue(id, out ModuleRegistration? registration) && _runningModules.ContainsKey(registration))
-                {
-                    anyRunning = true;
-                    break;
-                }
-            }
-
-            if (!anyRunning)
-            {
-                return;
+                return true;
             }
 
             Thread.Sleep(50);
         }
 
-        SFLog.Warn($"WaitForModulesStopped: timeout after {timeout.TotalMilliseconds:F0}ms, ids=[{string.Join(',', ids)}]");
+        stillRunningIds = GetRunningModuleIds(ids);
+        SFLog.Warn($"WaitForModulesStopped: timeout after {timeout.TotalMilliseconds:F0}ms, ids=[{string.Join(',', ids)}] stillRunning=[{string.Join(',', stillRunningIds)}]");
+        return stillRunningIds.Length == 0;
+    }
+
+    public void WaitForModulesStopped(IEnumerable<string> moduleIds, TimeSpan timeout)
+    {
+        _ = TryWaitForModulesStopped(moduleIds, timeout, out _);
+    }
+
+    public bool TryUnregisterModules(IEnumerable<string> moduleIds, out string[] failedIds)
+    {
+        ArgumentNullException.ThrowIfNull(moduleIds);
+        string[] ids = moduleIds.Where(static id => !string.IsNullOrWhiteSpace(id)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (ids.Length == 0)
+        {
+            failedIds = [];
+            return true;
+        }
+
+        List<(string Id, ModuleRegistration Registration)> registrations = new(ids.Length);
+        List<string> failures = [];
+        foreach (string id in ids)
+        {
+            if (!_registrationsById.TryGetValue(id, out ModuleRegistration? registration) || _runningModules.ContainsKey(registration))
+            {
+                failures.Add(id);
+                continue;
+            }
+
+            registrations.Add((id, registration));
+        }
+
+        if (failures.Count != 0)
+        {
+            failedIds = [.. failures];
+            return false;
+        }
+
+        foreach ((string id, ModuleRegistration registration) in registrations)
+        {
+            _registrationsById.Remove(id);
+            _registrations.Remove(registration);
+            SFLog.Info($"UnregisterModule id={id}");
+        }
+
+        PublishModuleCatalogSnapshot();
+        failedIds = [];
+        return true;
     }
 
     private void InvalidateTaskCache() => _cachedWhenAnyTasks = null;
@@ -284,6 +338,7 @@ public sealed partial class SFModuleContainer
         InvalidateTaskCache();
         _moduleStartTaskSource.TrySetResult();
         _moduleStartTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        PublishModuleCatalogSnapshot();
     }
 
     /// <summary>
@@ -293,18 +348,24 @@ public sealed partial class SFModuleContainer
     private async Task RunModuleCore(ModuleRegistration registration, ISFModule module, ModuleContext context)
     {
         registration.Runtime.MarkRunning();
+        PublishModuleCatalogSnapshot();
         try
         {
             await module.RunAsync(context);
+            await context.DrainBackgroundTasksAsync();
             registration.Runtime.MarkCompleted();
+            PublishModuleCatalogSnapshot();
         }
         catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
         {
+            await context.DrainBackgroundTasksAsync();
             registration.Runtime.MarkCompleted();
+            PublishModuleCatalogSnapshot();
         }
         catch (Exception ex)
         {
             registration.Runtime.MarkFault(ex);
+            PublishModuleCatalogSnapshot();
             throw;
         }
         finally
@@ -324,6 +385,7 @@ public sealed partial class SFModuleContainer
         SFLog.Info($"StopModule id={registration.Descriptor.Id} reason={reason}");
         registration.Runtime.RequestStop(reason);
         running.CancellationTokenSource.Cancel();
+        PublishModuleCatalogSnapshot();
     }
 
     /// <summary>
@@ -375,6 +437,7 @@ public sealed partial class SFModuleContainer
                 registration.Runtime.SetAutoStartEnabled(false);
                 SFLog.Error($"Circuit breaker tripped for module id={registration.Descriptor.Id}: too many faults in 60s, auto-restart disabled");
                 SF.Chat.Add(ModuleChatFormatter.FormatChatAction("disabled", registration.Descriptor.DisplayName, "too many faults, auto-restart off", SFColors.Red));
+                PublishModuleCatalogSnapshot();
                 return;
             }
 
@@ -413,5 +476,49 @@ public sealed partial class SFModuleContainer
             string.Equals(x.Descriptor.ModuleType.Name, normalized, StringComparison.OrdinalIgnoreCase) ||
             x.Descriptor.Id.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
             x.Descriptor.DisplayName.Contains(normalized, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string[] GetRunningModuleIds(IEnumerable<string> moduleIds)
+    {
+        List<string> running = [];
+        foreach (string id in moduleIds)
+        {
+            if (_registrationsById.TryGetValue(id, out ModuleRegistration? registration) && _runningModules.ContainsKey(registration))
+            {
+                running.Add(id);
+            }
+        }
+
+        return [.. running];
+    }
+
+    internal void PublishModuleCatalogSnapshot()
+    {
+        SFPublicModules.Instance.Publish(_registrations
+            .Select(CreatePublicModuleInfo)
+            .OrderBy(static module => module.Order)
+            .ThenBy(static module => module.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray());
+    }
+
+    private static SFModuleInfo CreatePublicModuleInfo(ModuleRegistration registration)
+    {
+        ModuleRuntimeSnapshot runtime = registration.Runtime.CreateSnapshot();
+        return new(
+            registration.Descriptor.Id,
+            registration.Descriptor.DisplayName,
+            registration.Descriptor.Category,
+            registration.Descriptor.Description,
+            registration.Descriptor.DefaultEnabled,
+            registration.AutoStartEnabled,
+            registration.Descriptor.ExecutionModel,
+            registration.Descriptor.RestartPolicy,
+            registration.Descriptor.Order,
+            Array.AsReadOnly(registration.Descriptor.Dependencies.ToArray()),
+            registration.OwnerPluginId,
+            runtime.State,
+            runtime.LastStopReason,
+            runtime.RestartCount,
+            runtime.FaultCount);
     }
 }

@@ -90,7 +90,7 @@ public sealed class RpcHandlerManager : IDisposable
             _handlers.Add(handler);
         }
 
-        SFLog.Info($"RpcHandlerManager registered name={handler.Name} rpcId={(int)handler.ERpcId}");
+        SFLog.Debug($"RpcHandlerManager registered name={handler.Name} rpcId={(int)handler.ERpcId}");
 
         if (_started && attachNow)
         {
@@ -127,7 +127,7 @@ public sealed class RpcHandlerManager : IDisposable
         }
 
         handler.Detach();
-        SFLog.Info($"RpcHandlerManager unregistered name={handler.Name} rpcId={(int)handler.ERpcId}");
+        SFLog.Debug($"RpcHandlerManager unregistered name={handler.Name} rpcId={(int)handler.ERpcId}");
         return true;
     }
 
@@ -148,7 +148,7 @@ public sealed class RpcHandlerManager : IDisposable
             }
         }
 
-        SFLog.Info($"RpcHandlerManager started count={snapshot.Length}");
+        SFLog.Debug($"RpcHandlerManager started count={snapshot.Length}");
     }
 
     public void StopAll()
@@ -165,7 +165,7 @@ public sealed class RpcHandlerManager : IDisposable
             handler.Detach();
         }
 
-        SFLog.Info($"RpcHandlerManager stopped count={snapshot.Length}");
+        SFLog.Debug($"RpcHandlerManager stopped count={snapshot.Length}");
     }
 
     internal void DispatchIncoming(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)

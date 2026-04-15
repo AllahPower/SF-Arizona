@@ -387,31 +387,31 @@ public static unsafe class CArizonaChat
                 _createFromRawEntryArgs = callSite + 5 + relOffset;
             }
 
-            SFLog.Info($"Resolved Arizona chat AddFormattedEntry at 0x{addFormattedEntry:X8}.");
+            SFLog.Debug($"Resolved Arizona chat AddFormattedEntry at 0x{addFormattedEntry:X8}.");
         }
 
         if (_addEntryThunk == 0)
             SFLog.Warn("Arizona _chat.asi: AddEntry thunk pattern not found. Falling back to samp.dll CChat.");
         else
-            SFLog.Info($"Resolved Arizona chat AddEntry thunk at 0x{_addEntryThunk:X8}.");
+            SFLog.Debug($"Resolved Arizona chat AddEntry thunk at 0x{_addEntryThunk:X8}.");
 
         if (_upsertDynamicRoom != 0)
-            SFLog.Info($"Resolved Arizona chat UpsertDynamicRoom at 0x{_upsertDynamicRoom:X8}.");
+            SFLog.Debug($"Resolved Arizona chat UpsertDynamicRoom at 0x{_upsertDynamicRoom:X8}.");
 
         if (_hideDynamicRoom != 0)
-            SFLog.Info($"Resolved Arizona chat HideDynamicRoom at 0x{_hideDynamicRoom:X8}.");
+            SFLog.Debug($"Resolved Arizona chat HideDynamicRoom at 0x{_hideDynamicRoom:X8}.");
 
         if (_resetDynamicRooms != 0)
-            SFLog.Info($"Resolved Arizona chat ResetDynamicRooms at 0x{_resetDynamicRooms:X8}.");
+            SFLog.Debug($"Resolved Arizona chat ResetDynamicRooms at 0x{_resetDynamicRooms:X8}.");
 
         if (_createFromRawEntryArgs != 0)
-            SFLog.Info($"Resolved Arizona chat CreateFromRawEntryArgs at 0x{_createFromRawEntryArgs:X8}.");
+            SFLog.Debug($"Resolved Arizona chat CreateFromRawEntryArgs at 0x{_createFromRawEntryArgs:X8}.");
 
         if (_dispatchMessageToHandlers != 0)
-            SFLog.Info($"Resolved Arizona chat DispatchMessageToHandlers at 0x{_dispatchMessageToHandlers:X8}.");
+            SFLog.Debug($"Resolved Arizona chat DispatchMessageToHandlers at 0x{_dispatchMessageToHandlers:X8}.");
 
         if (_refCountedRelease != 0)
-            SFLog.Info($"Resolved Arizona chat RefCounted_Release at 0x{_refCountedRelease:X8}.");
+            SFLog.Debug($"Resolved Arizona chat RefCounted_Release at 0x{_refCountedRelease:X8}.");
 
         _resolved = true;
         return true;

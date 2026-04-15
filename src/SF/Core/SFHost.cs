@@ -8,6 +8,7 @@ internal sealed class SFHost : ISF
     public ISFPlayers Players => SF.Players;
     public ISFVehicles Vehicles => SF.Vehicles;
     public ISFGamePools Pools => SF.Pools;
+    public ISFModules Modules => SFPublicModules.Instance;
     public ISFEvents Events => SF.Events;
     public ISFRpc Rpc => SF.Rpc;
     public ISFPackets Packets => SF.Packets;

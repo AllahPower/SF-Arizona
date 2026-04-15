@@ -84,7 +84,7 @@ public static unsafe class ModuleResolver
         nint objectPtr = *(nint*)(instancePtr + objectFieldOffset);
         nint vtable = *(nint*)objectPtr;
         nint funcAddr = *(nint*)(vtable + vtableIndex * 4);
-        SFLog.Info($"ResolveVTableFunction module={moduleName} instance=0x{instanceOffset:X} field=0x{objectFieldOffset:X} vtableIdx={vtableIndex} -> 0x{funcAddr:X8}");
+        SFLog.Debug($"ResolveVTableFunction module={moduleName} instance=0x{instanceOffset:X} field=0x{objectFieldOffset:X} vtableIdx={vtableIndex} -> 0x{funcAddr:X8}");
         return funcAddr;
     }
 

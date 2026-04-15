@@ -32,7 +32,7 @@ public abstract class RpcHandlerBase : IRpcHandler
         Manager = manager;
         _subscription = manager.Subscribe(ERpcId, DispatchIncoming);
         OnAttached();
-        SFLog.Info($"RpcHandler attached name={Name} rpcId={(int)ERpcId}");
+        SFLog.Debug($"RpcHandler attached name={Name} rpcId={(int)ERpcId}");
     }
 
     public void Detach()
@@ -46,7 +46,7 @@ public abstract class RpcHandlerBase : IRpcHandler
         _subscription = null;
         OnDetached();
         Manager = null;
-        SFLog.Info($"RpcHandler detached name={Name} rpcId={(int)ERpcId}");
+        SFLog.Debug($"RpcHandler detached name={Name} rpcId={(int)ERpcId}");
     }
 
     public void Dispose()

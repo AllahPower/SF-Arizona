@@ -23,7 +23,7 @@ public class SFDialog :
         _activeDialogId = dialogId;
         _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        SFLog.Info($"Dialog.Show id={dialogId} style={style} title={title} ok={okButton} cancel={cancelButton}");
+        SFLog.Debug($"Dialog.Show id={dialogId} style={style} title={title} ok={okButton} cancel={cancelButton}");
         CDialog.Instance.Show(dialogId, style, title, text, okButton, cancelButton, false);
         return _tcs.Task;
     }
@@ -65,7 +65,7 @@ public class SFDialog :
         }
 
         var result = (button, CDialog.Instance.ListBox->SelectedIndex, AnsiString.Decode(CDialog.Instance.Text));
-        SFLog.Info($"Dialog result button={button} selected={result.Item2} input={result.Item3 ?? "<null>"}");
+        SFLog.Debug($"Dialog result button={button} selected={result.Item2} input={result.Item3 ?? "<null>"}");
         _tcs.SetResult(result);
         _tcs = null;
         _activeDialogId = null;
@@ -73,7 +73,7 @@ public class SFDialog :
 
     NoRetValue ISubHook<CDialogCloseArgs, NoRetValue>.Process(CDialogCloseArgs args, Func<CDialogCloseArgs, NoRetValue> next)
     {
-        SFLog.Info($"Dialog close button={args.DialogButton} activeId={_activeDialogId?.ToString() ?? "<null>"} currentId={CDialog.Instance.Id}");
+        SFLog.Debug($"Dialog close button={args.DialogButton} activeId={_activeDialogId?.ToString() ?? "<null>"} currentId={CDialog.Instance.Id}");
         if (_tcs is not null && _activeDialogId == (int)CDialog.Instance.Id)
         {
             SetResult((SFDialogButton)args.DialogButton);
@@ -84,10 +84,10 @@ public class SFDialog :
 
     NoRetValue ISubHook<CDialogShowHookArgs, NoRetValue>.Process(CDialogShowHookArgs args, Func<CDialogShowHookArgs, NoRetValue> next)
     {
-        SFLog.Info($"Dialog show observed id={args.Id} style={args.Style} title={args.Caption ?? "<null>"}");
+        SFLog.Debug($"Dialog show observed id={args.Id} style={args.Style} title={args.Caption ?? "<null>"}");
         if (_tcs is not null && _activeDialogId == args.Id)
         {
-            SFLog.Info($"Dialog show matched active dialog id={args.Id}");
+            SFLog.Debug($"Dialog show matched active dialog id={args.Id}");
         }
 
         return next(args);
@@ -95,7 +95,7 @@ public class SFDialog :
 
     NoRetValue ISubHook<CDialogHideArgs, NoRetValue>.Process(CDialogHideArgs args, Func<CDialogHideArgs, NoRetValue> next)
     {
-        SFLog.Info($"Dialog hide observed activeId={_activeDialogId?.ToString() ?? "<null>"} currentId={CDialog.Instance.Id}");
+        SFLog.Debug($"Dialog hide observed activeId={_activeDialogId?.ToString() ?? "<null>"} currentId={CDialog.Instance.Id}");
         if (_tcs is not null && _activeDialogId == (int)CDialog.Instance.Id)
         {
             SetResult(SFDialogButton.None);

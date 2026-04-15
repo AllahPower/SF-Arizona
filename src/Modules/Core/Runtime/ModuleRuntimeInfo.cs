@@ -19,6 +19,7 @@ public sealed class ModuleRuntimeInfo
 {
     private readonly Lock _sync = new();
     private readonly List<IDisposable> _ownedDisposables = [];
+    private readonly HashSet<Task> _ownedBackgroundTasks = [];
     private readonly ConcurrentDictionary<string, long> _counters = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, string> _details = new(StringComparer.OrdinalIgnoreCase);
     private long _lastMemoryPollTicks;
@@ -155,6 +156,7 @@ public sealed class ModuleRuntimeInfo
             _counters.Clear();
             _details.Clear();
             _ownedDisposables.Clear();
+            _ownedBackgroundTasks.Clear();
         }
     }
 
@@ -359,6 +361,29 @@ public sealed class ModuleRuntimeInfo
         }
     }
 
+    internal void RegisterBackgroundTask(Task task)
+    {
+        lock (_sync)
+        {
+            _ownedBackgroundTasks.Add(task);
+        }
+
+        _details["background.tasks"] = GetOwnedBackgroundTaskCountUnsafe().ToString();
+        task.ContinueWith(static (completed, state) =>
+        {
+            ModuleRuntimeInfo runtime = (ModuleRuntimeInfo)state!;
+            runtime.OnOwnedBackgroundTaskCompleted(completed);
+        }, this, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+    }
+
+    internal Task[] SnapshotOwnedBackgroundTasks()
+    {
+        lock (_sync)
+        {
+            return _ownedBackgroundTasks.ToArray();
+        }
+    }
+
     /// <summary>
     /// Disposes every owned <see cref="IDisposable"/> and clears the list. Exceptions from
     /// individual disposables are logged and swallowed so teardown always finishes.
@@ -403,6 +428,10 @@ public sealed class ModuleRuntimeInfo
             _lastExceptionMessage = null;
             _lastMemoryPollTicks = 0;
             _lastMemoryBytes = GC.GetTotalMemory(false);
+            if (_ownedBackgroundTasks.Count != 0)
+            {
+                _details["background.tasks"] = _ownedBackgroundTasks.Count.ToString();
+            }
         }
     }
 
@@ -447,6 +476,30 @@ public sealed class ModuleRuntimeInfo
                 new Dictionary<string, long>(_counters, StringComparer.OrdinalIgnoreCase),
                 new Dictionary<string, string>(_details, StringComparer.OrdinalIgnoreCase),
                 _ownedDisposables.Count);
+        }
+    }
+
+    private void OnOwnedBackgroundTaskCompleted(Task completed)
+    {
+        lock (_sync)
+        {
+            _ownedBackgroundTasks.Remove(completed);
+            if (_ownedBackgroundTasks.Count == 0)
+            {
+                _details.TryRemove("background.tasks", out _);
+            }
+            else
+            {
+                _details["background.tasks"] = _ownedBackgroundTasks.Count.ToString();
+            }
+        }
+    }
+
+    private int GetOwnedBackgroundTaskCountUnsafe()
+    {
+        lock (_sync)
+        {
+            return _ownedBackgroundTasks.Count;
         }
     }
 }

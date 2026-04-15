@@ -100,8 +100,8 @@ public partial class DebugModule : SFModuleBase
 
             await app.StartAsync(cancellationToken);
 
-            _ = Task.Run(() => BroadcastLoopAsync(cancellationToken), cancellationToken);
-            _ = Task.Run(() => BroadcastWorldUpdatesLoopAsync(cancellationToken), cancellationToken);
+            _ = Context.RunBackground(() => BroadcastLoopAsync(cancellationToken));
+            _ = Context.RunBackground(() => BroadcastWorldUpdatesLoopAsync(cancellationToken));
 
             try { await Task.Delay(Timeout.Infinite, cancellationToken); }
             catch (OperationCanceledException) { }
@@ -264,7 +264,7 @@ public partial class DebugModule : SFModuleBase
     private void BroadcastJson<T>(T value, JsonTypeInfo<T> typeInfo)
     {
         var json = JsonSerializer.SerializeToUtf8Bytes(value, typeInfo);
-        _ = BroadcastRawAsync(json);
+        SFBootstrap.ObserveTask(BroadcastRawAsync(json), "DebugWeb.BroadcastRawAsync");
     }
 
     private void UpdateDetails()

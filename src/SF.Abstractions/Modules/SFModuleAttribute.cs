@@ -50,4 +50,10 @@ public sealed class SFModuleAttribute(string id, string displayName) : Attribute
     /// <see cref="DisplayName"/>. There is no hard dependency graph yet, use this for soft ordering only.
     /// </summary>
     public int Order { get; init; }
+
+    /// <summary>
+    /// Optional read-only dependency metadata listing module ids this module expects to exist.
+    /// This does not currently drive container startup order or hard dependency enforcement.
+    /// </summary>
+    public string[] Dependencies { get; init; } = [];
 }

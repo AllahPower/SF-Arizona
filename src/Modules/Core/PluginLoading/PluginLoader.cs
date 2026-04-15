@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace SFSharp;
 
@@ -22,10 +21,12 @@ public sealed class PluginLoader
 {
     private const string ManifestFileName = "module.json";
     private const int UnloadGcAttempts = 10;
+    private static readonly TimeSpan UnloadStopTimeout = TimeSpan.FromSeconds(5);
 
     private readonly SFModuleContainer _container;
     private readonly string _pluginsRoot;
     private readonly Version _hostVersion;
+    private readonly PluginManifestResolver _manifestResolver = new();
     private readonly Dictionary<string, LoadedPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _sync = new();
 
@@ -51,6 +52,17 @@ public sealed class PluginLoader
             lock (_sync)
             {
                 return _plugins.Keys.ToArray();
+            }
+        }
+    }
+
+    public IReadOnlyCollection<PluginRuntimeSnapshot> LoadedPlugins
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _plugins.Values.Select(static plugin => plugin.CreateSnapshot()).ToArray();
             }
         }
     }
@@ -87,7 +99,7 @@ public sealed class PluginLoader
 
             try
             {
-                if (TryLoadFromManifest(manifestPath))
+                if (LoadFromManifest(manifestPath).Success)
                 {
                     loaded++;
                 }
@@ -105,178 +117,172 @@ public sealed class PluginLoader
     /// <summary>Loads a single plugin from its <c>module.json</c>. Thread-safe.</summary>
     public bool TryLoadFromManifest(string manifestPath, out string pluginId, out int registeredModuleCount)
     {
-        pluginId = string.Empty;
-        registeredModuleCount = 0;
-        return TryLoadFromManifestCore(manifestPath, out pluginId, out registeredModuleCount);
+        PluginLoadResult result = LoadFromManifest(manifestPath);
+        pluginId = result.PluginId ?? string.Empty;
+        registeredModuleCount = result.RegisteredModuleCount;
+        return result.Success;
     }
 
-    public bool TryLoadFromManifest(string manifestPath) => TryLoadFromManifestCore(manifestPath, out _, out _);
+    public bool TryLoadFromManifest(string manifestPath) => LoadFromManifest(manifestPath).Success;
 
-    private bool TryLoadFromManifestCore(string manifestPath, out string resolvedPluginId, out int registeredCount)
+    public PluginLoadResult LoadFromManifest(string manifestPath)
     {
-        resolvedPluginId = string.Empty;
-        registeredCount = 0;
-
         if (!RuntimeFeature.IsDynamicCodeSupported)
         {
             SFLog.Warn("PluginLoader: dynamic code is not supported, load request ignored.");
-            return false;
+            return PluginLoadResult.FromFailure(PluginLoadFailureReason.DynamicCodeUnsupported,
+                "Dynamic code is not supported by the current runtime.");
         }
 
-        if (!File.Exists(manifestPath))
+        PluginManifestResolutionResult manifestResolution = _manifestResolver.Resolve(manifestPath);
+        if (!manifestResolution.Success)
         {
-            SFLog.Error($"PluginLoader: manifest not found at '{manifestPath}'");
-            return false;
+            SFLog.Error($"PluginLoader: {manifestResolution.Message}");
+            return PluginLoadResult.FromFailure(PluginLoadFailureReason.ManifestResolutionFailed, manifestResolution.Message);
         }
 
-        PluginManifest? manifest;
-        try
+        ResolvedPluginManifest manifest = manifestResolution.Manifest!;
+        if (manifest.MinHostVersion is Version required && required > _hostVersion)
         {
-            using FileStream stream = File.OpenRead(manifestPath);
-            manifest = JsonSerializer.Deserialize(stream, PluginManifestJsonContext.Default.PluginManifest);
-        }
-        catch (JsonException ex)
-        {
-            SFLog.Error(ex, $"PluginLoader: malformed manifest '{manifestPath}'");
-            return false;
-        }
-        catch (IOException ex)
-        {
-            SFLog.Error(ex, $"PluginLoader: cannot read manifest '{manifestPath}'");
-            return false;
-        }
-
-        if (manifest is null || string.IsNullOrWhiteSpace(manifest.Id) || string.IsNullOrWhiteSpace(manifest.Assembly))
-        {
-            SFLog.Error($"PluginLoader: manifest '{manifestPath}' is missing 'id' or 'assembly'");
-            return false;
-        }
-
-        string pluginId = manifest.Id.Trim();
-
-        if (!string.IsNullOrWhiteSpace(manifest.MinHostVersion))
-        {
-            if (!Version.TryParse(manifest.MinHostVersion, out Version? required))
-            {
-                SFLog.Warn($"PluginLoader[{pluginId}]: minHostVersion '{manifest.MinHostVersion}' is not a valid version, ignoring");
-            }
-            else if (required > _hostVersion)
-            {
-                SFLog.Error($"PluginLoader[{pluginId}]: requires host >= {required}, current is {_hostVersion}. Skipping.");
-                return false;
-            }
+            string message = $"Plugin '{manifest.PluginId}' requires host >= {required}, current is {_hostVersion}. Skipping.";
+            SFLog.Error($"PluginLoader[{manifest.PluginId}]: {message}");
+            return PluginLoadResult.FromFailure(PluginLoadFailureReason.ManifestResolutionFailed, message, manifest.PluginId, manifest);
         }
 
         lock (_sync)
         {
-            if (_plugins.ContainsKey(pluginId))
+            if (_plugins.TryGetValue(manifest.PluginId, out LoadedPlugin? existing))
             {
-                SFLog.Error($"PluginLoader[{pluginId}]: already loaded, refuse to re-register");
-                return false;
+                string message = existing.State == PluginState.Loaded
+                    ? $"Plugin '{manifest.PluginId}' is already loaded."
+                    : $"Plugin '{manifest.PluginId}' is in state {existing.State} and cannot be loaded again.";
+                PluginLoadFailureReason reason = existing.State == PluginState.Loaded ? PluginLoadFailureReason.AlreadyLoaded : PluginLoadFailureReason.Busy;
+                SFLog.Error($"PluginLoader[{manifest.PluginId}]: {message}");
+                return PluginLoadResult.FromFailure(reason, message, manifest.PluginId, manifest);
             }
         }
 
-        string pluginDir = Path.GetDirectoryName(manifestPath)!;
-        string assemblyPath = Path.IsPathRooted(manifest.Assembly)
-            ? manifest.Assembly
-            : Path.GetFullPath(Path.Combine(pluginDir, manifest.Assembly));
-
-        if (!File.Exists(assemblyPath))
-        {
-            SFLog.Error($"PluginLoader[{pluginId}]: assembly file not found at '{assemblyPath}'");
-            return false;
-        }
-
-        PluginLoadContext context = new(pluginId, assemblyPath);
+        PluginLoadContext context = new(manifest.PluginId, manifest.AssemblyPath);
         Assembly assembly;
         try
         {
-            assembly = context.LoadFromAssemblyPath(assemblyPath);
-            SFLog.Info($"PluginLoader[{pluginId}]: loaded assembly {assembly.FullName}");
+            assembly = context.LoadFromAssemblyPath(manifest.AssemblyPath);
+            SFLog.Debug($"PluginLoader[{manifest.PluginId}]: loaded assembly {assembly.FullName}");
         }
         catch (Exception ex)
         {
-            SFLog.Error(ex, $"PluginLoader[{pluginId}]: failed to load assembly '{assemblyPath}'");
-            TryUnloadContext(context, pluginId);
-            return false;
+            PluginLoadResult failure = CreateAssemblyLoadFailure(manifest, context, ex);
+            SFLog.Error(ex, $"PluginLoader[{manifest.PluginId}]: {failure.Message}");
+            TryUnloadContext(context, manifest.PluginId);
+            return failure;
         }
 
         Type[] moduleTypes;
         try
         {
-            moduleTypes = assembly.GetTypes()
+            Type[] allTypes = assembly.GetTypes();
+            SFLog.Debug($"PluginLoader[{manifest.PluginId}]: assembly exposes {allTypes.Length} type(s)");
+            SFLog.Debug($"PluginLoader[{manifest.PluginId}]: host ISFModule => {PluginSharedAssemblyPolicy.Describe(typeof(ISFModule).Assembly)}");
+            SFLog.Debug($"PluginLoader[{manifest.PluginId}]: host SFModuleAttribute => {PluginSharedAssemblyPolicy.Describe(typeof(SFModuleAttribute).Assembly)}");
+            foreach (Type t in allTypes)
+            {
+                bool isClass = !t.IsAbstract && !t.IsInterface;
+                bool implISF = typeof(ISFModule).IsAssignableFrom(t);
+                bool hasAttr = t.GetCustomAttribute<SFModuleAttribute>() is not null;
+                SFLog.Debug($"PluginLoader[{manifest.PluginId}]: type='{t.FullName}' class={isClass} ISFModule={implISF} [SFModule]={hasAttr}");
+                foreach (Type iface in t.GetInterfaces())
+                {
+                    bool sameHostInterface = iface == typeof(ISFModule);
+                    SFLog.Debug($"PluginLoader[{manifest.PluginId}]:   iface {iface.FullName} sameHost={sameHostInterface} => {PluginSharedAssemblyPolicy.Describe(iface.Assembly)}");
+                }
+                foreach (Attribute a in t.GetCustomAttributes(inherit: false))
+                {
+                    Type at = a.GetType();
+                    bool sameHostAttribute = at == typeof(SFModuleAttribute);
+                    SFLog.Debug($"PluginLoader[{manifest.PluginId}]:   attr {at.FullName} sameHost={sameHostAttribute} => {PluginSharedAssemblyPolicy.Describe(at.Assembly)}");
+                }
+            }
+
+            moduleTypes = allTypes
                 .Where(static type => !type.IsAbstract && !type.IsInterface && typeof(ISFModule).IsAssignableFrom(type) && type.GetCustomAttribute<SFModuleAttribute>() is not null)
                 .ToArray();
         }
         catch (ReflectionTypeLoadException ex)
         {
-            SFLog.Error(ex, $"PluginLoader[{pluginId}]: type enumeration failed");
+            PluginLoadResult failure = CreateTypeEnumerationFailure(manifest, context, ex);
+            SFLog.Error(ex, $"PluginLoader[{manifest.PluginId}]: {failure.Message}");
             foreach (Exception? loader in ex.LoaderExceptions)
             {
                 if (loader is not null)
                 {
-                    SFLog.Error(loader, $"PluginLoader[{pluginId}]: loader exception");
+                    SFLog.Error(loader, $"PluginLoader[{manifest.PluginId}]: loader exception");
                 }
             }
 
-            TryUnloadContext(context, pluginId);
-            return false;
+            TryUnloadContext(context, manifest.PluginId);
+            return failure;
         }
 
         if (moduleTypes.Length == 0)
         {
-            SFLog.Warn($"PluginLoader[{pluginId}]: assembly has no types decorated with [SFModule], unloading.");
-            TryUnloadContext(context, pluginId);
-            return false;
+            string message = $"Plugin '{manifest.PluginId}' assembly has no types decorated with [SFModule].";
+            SFLog.Warn($"PluginLoader[{manifest.PluginId}]: {message}");
+            TryUnloadContext(context, manifest.PluginId);
+            return PluginLoadResult.FromFailure(PluginLoadFailureReason.NoModulesFound, message, manifest.PluginId, manifest);
         }
 
-        List<string> registered = new(moduleTypes.Length);
+        List<ModuleDescriptor> registered = new(moduleTypes.Length);
         try
         {
             foreach (Type type in moduleTypes)
             {
-                _container.RegisterModule(type, manifest.EnabledOnStart);
-                ModuleDescriptor descriptor = ModuleDescriptor.FromType(type);
-                registered.Add(descriptor.Id);
-                SFLog.Info($"PluginLoader[{pluginId}]: registered module id={descriptor.Id} type={type.FullName}");
+                ModuleDescriptor descriptor = _container.RegisterOwnedModule(type, manifest.PluginId, manifest.EnabledOnStartOverride);
+                registered.Add(descriptor);
+                SFLog.Debug($"PluginLoader[{manifest.PluginId}]: registered module id={descriptor.Id} type={type.FullName}");
             }
         }
         catch (Exception ex)
         {
-            SFLog.Error(ex, $"PluginLoader[{pluginId}]: registration failed, rolling back");
-            foreach (string id in registered)
+            SFLog.Error(ex, $"PluginLoader[{manifest.PluginId}]: registration failed, rolling back");
+            string[] registeredIds = [.. registered.Select(static descriptor => descriptor.Id)];
+            if (!_container.TryUnregisterModules(registeredIds, out string[] rollbackFailures) && rollbackFailures.Length != 0)
             {
-                _container.TryUnregisterModule(id);
+                SFLog.Error($"PluginLoader[{manifest.PluginId}]: rollback failed for ids=[{string.Join(',', rollbackFailures)}]");
             }
 
-            TryUnloadContext(context, pluginId);
-            return false;
+            TryUnloadContext(context, manifest.PluginId);
+            return PluginLoadResult.FromFailure(
+                PluginLoadFailureReason.ModuleRegistrationFailed,
+                $"Plugin '{manifest.PluginId}' failed to register its modules: {ex.GetBaseException().Message}",
+                manifest.PluginId,
+                manifest);
         }
 
         LoadedPlugin record = new()
         {
-            PluginId = pluginId,
-            ManifestPath = manifestPath,
-            AssemblyPath = assemblyPath,
+            Manifest = manifest,
             LoadContext = context,
             Assembly = assembly,
-            RegisteredModuleIds = registered,
+            RegisteredModules = registered,
             LoadContextRef = new WeakReference(context),
         };
 
         lock (_sync)
         {
-            _plugins.Add(pluginId, record);
+            _plugins.Add(manifest.PluginId, record);
         }
 
-        resolvedPluginId = pluginId;
-        registeredCount = registered.Count;
-        SFLog.Info($"PluginLoader[{pluginId}]: loaded {registered.Count} module(s)");
-        return true;
+        SFLog.Info($"PluginLoader[{manifest.PluginId}]: loaded {registered.Count} module(s)");
+        return PluginLoadResult.FromSuccess(manifest, registered.Count);
     }
 
     /// <summary>Stops every module from the plugin, unregisters them, then unloads the ALC.</summary>
     public bool TryUnload(string pluginId)
+    {
+        return Unload(pluginId).Success;
+    }
+
+    public PluginUnloadResult Unload(string pluginId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginId);
 
@@ -285,49 +291,86 @@ public sealed class PluginLoader
         {
             if (!_plugins.TryGetValue(pluginId, out plugin))
             {
-                SFLog.Warn($"PluginLoader[{pluginId}]: unload requested but plugin is not loaded");
-                return false;
+                string message = $"Plugin '{pluginId}' is not loaded.";
+                SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
+                return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.PluginNotLoaded, message, pluginId);
             }
 
-            _plugins.Remove(pluginId);
+            if (plugin.State != PluginState.Loaded)
+            {
+                string message = $"Plugin '{pluginId}' is in state {plugin.State} and cannot be unloaded.";
+                SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
+                return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.PluginBusy, message, pluginId);
+            }
+
+            plugin.State = PluginState.Unloading;
+            plugin.LastUnloadFailureReason = PluginUnloadFailureReason.None;
+            plugin.LastUnloadFailureMessage = null;
         }
 
-        SFLog.Info($"PluginLoader[{pluginId}]: unloading {plugin.RegisteredModuleIds.Count} module(s)");
-        foreach (string moduleId in plugin.RegisteredModuleIds)
+        LoadedPlugin activePlugin = plugin!;
+        string[] moduleIds = [.. activePlugin.RegisteredModules.Select(static descriptor => descriptor.Id)];
+        SFLog.Info($"PluginLoader[{pluginId}]: unloading {moduleIds.Length} module(s)");
+        foreach (string moduleId in moduleIds)
         {
             _container.RequestStopModule(moduleId, ModuleStopReason.PluginUnload);
         }
 
-        _container.WaitForModulesStopped(plugin.RegisteredModuleIds, TimeSpan.FromSeconds(5));
-
-        foreach (string moduleId in plugin.RegisteredModuleIds)
+        if (!_container.TryWaitForModulesStopped(moduleIds, UnloadStopTimeout, out string[] stillRunning))
         {
-            _container.TryUnregisterModule(moduleId);
+            return RecordUnloadFailure(
+                activePlugin,
+                PluginUnloadFailureReason.ModuleStopTimeout,
+                $"Plugin '{pluginId}' failed to stop all modules within {UnloadStopTimeout.TotalSeconds:0}s. Still running: {string.Join(", ", stillRunning)}");
         }
 
-        TryUnloadContext(plugin.LoadContext, pluginId);
+        if (!_container.TryUnregisterModules(moduleIds, out string[] failedIds))
+        {
+            return RecordUnloadFailure(
+                activePlugin,
+                PluginUnloadFailureReason.ModuleUnregisterFailed,
+                $"Plugin '{pluginId}' failed to unregister module ids: {string.Join(", ", failedIds)}");
+        }
 
-        for (int attempt = 0; attempt < UnloadGcAttempts && plugin.LoadContextRef.IsAlive; attempt++)
+        if (!TryUnloadContext(activePlugin.LoadContext, pluginId))
+        {
+            return RecordUnloadFailure(
+                activePlugin,
+                PluginUnloadFailureReason.AssemblyLoadContextUnloadFailed,
+                $"Plugin '{pluginId}' failed to invoke AssemblyLoadContext.Unload().");
+        }
+
+        for (int attempt = 0; attempt < UnloadGcAttempts && activePlugin.LoadContextRef.IsAlive; attempt++)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
         }
 
-        if (plugin.LoadContextRef.IsAlive)
+        if (activePlugin.LoadContextRef.IsAlive)
         {
-            SFLog.Warn($"PluginLoader[{pluginId}]: ALC still alive after {UnloadGcAttempts} GC cycles. Something holds a reference to plugin types.");
-        }
-        else
-        {
-            SFLog.Info($"PluginLoader[{pluginId}]: ALC fully collected");
+            return RecordUnloadFailure(
+                activePlugin,
+                PluginUnloadFailureReason.AssemblyLoadContextStillAlive,
+                $"Plugin '{pluginId}' could not be fully unloaded. The plugin AssemblyLoadContext is still alive after {UnloadGcAttempts} GC cycles.");
         }
 
-        return true;
+        lock (_sync)
+        {
+            _plugins.Remove(pluginId);
+        }
+
+        SFLog.Info($"PluginLoader[{pluginId}]: ALC fully collected");
+        return PluginUnloadResult.FromSuccess(pluginId);
     }
 
     /// <summary>Unload + re-scan the manifest. Convenience wrapper for <c>/sfs reload</c>.</summary>
     public bool TryReload(string pluginId)
+    {
+        return Reload(pluginId).Success;
+    }
+
+    public PluginReloadResult Reload(string pluginId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginId);
 
@@ -336,32 +379,49 @@ public sealed class PluginLoader
         {
             if (!_plugins.TryGetValue(pluginId, out LoadedPlugin? existing))
             {
-                SFLog.Warn($"PluginLoader[{pluginId}]: reload requested but plugin is not loaded");
-                return false;
+                string message = $"Plugin '{pluginId}' is not loaded.";
+                SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
+                return PluginReloadResult.FromFailure(pluginId, message);
+            }
+
+            if (existing.State != PluginState.Loaded)
+            {
+                string message = $"Plugin '{pluginId}' is in state {existing.State} and cannot be reloaded.";
+                SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
+                return PluginReloadResult.FromFailure(pluginId, message);
             }
 
             manifestPath = existing.ManifestPath;
         }
 
         SFLog.Info($"PluginLoader[{pluginId}]: reload starting");
-        if (!TryUnload(pluginId))
+        PluginUnloadResult unloadResult = Unload(pluginId);
+        if (!unloadResult.Success)
         {
-            return false;
+            return PluginReloadResult.FromFailure(pluginId, unloadResult.Message, unloadResult);
         }
 
-        return TryLoadFromManifest(manifestPath);
+        PluginLoadResult loadResult = LoadFromManifest(manifestPath);
+        if (!loadResult.Success)
+        {
+            return PluginReloadResult.FromFailure(pluginId, loadResult.Message, unloadResult, loadResult);
+        }
+
+        return PluginReloadResult.FromSuccess(pluginId, unloadResult, loadResult);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void TryUnloadContext(PluginLoadContext context, string pluginId)
+    private static bool TryUnloadContext(PluginLoadContext context, string pluginId)
     {
         try
         {
             context.Unload();
+            return true;
         }
         catch (InvalidOperationException ex)
         {
             SFLog.Error(ex, $"PluginLoader[{pluginId}]: ALC.Unload threw");
+            return false;
         }
     }
 
@@ -379,5 +439,84 @@ public sealed class PluginLoader
         }
 
         return typeof(PluginLoader).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
+    }
+
+    private PluginUnloadResult RecordUnloadFailure(LoadedPlugin plugin, PluginUnloadFailureReason reason, string message)
+    {
+        lock (_sync)
+        {
+            if (_plugins.TryGetValue(plugin.PluginId, out LoadedPlugin? current) && ReferenceEquals(current, plugin))
+            {
+                current.State = PluginState.UnloadFailed;
+                current.LastUnloadFailureReason = reason;
+                current.LastUnloadFailureMessage = message;
+            }
+        }
+
+        SFLog.Error($"PluginLoader[{plugin.PluginId}]: {message}");
+        return PluginUnloadResult.FromFailure(reason, message, plugin.PluginId);
+    }
+
+    private static PluginLoadResult CreateAssemblyLoadFailure(ResolvedPluginManifest manifest, PluginLoadContext context, Exception ex)
+    {
+        string[] missingNative = context.SnapshotUnresolvedNativeDependencies();
+        if (ex is DllNotFoundException || missingNative.Length != 0)
+        {
+            string suffix = missingNative.Length == 0 ? ex.Message : $"Missing native dependency: {string.Join(", ", missingNative)}.";
+            return PluginLoadResult.FromFailure(
+                PluginLoadFailureReason.MissingNativeDependency,
+                $"Plugin '{manifest.PluginId}' failed to load because a native dependency could not be resolved. {suffix}",
+                manifest.PluginId,
+                manifest);
+        }
+
+        string[] missingManaged = context.SnapshotUnresolvedManagedDependencies();
+        if (ex is FileNotFoundException or FileLoadException || missingManaged.Length != 0)
+        {
+            string suffix = missingManaged.Length == 0 ? ex.Message : $"Missing managed dependency: {string.Join(", ", missingManaged)}.";
+            return PluginLoadResult.FromFailure(
+                PluginLoadFailureReason.MissingManagedDependency,
+                $"Plugin '{manifest.PluginId}' failed to load because a managed dependency could not be resolved. {suffix}",
+                manifest.PluginId,
+                manifest);
+        }
+
+        return PluginLoadResult.FromFailure(
+            PluginLoadFailureReason.AssemblyLoadFailed,
+            $"Plugin '{manifest.PluginId}' failed to load assembly '{manifest.AssemblyPath}': {ex.GetBaseException().Message}",
+            manifest.PluginId,
+            manifest);
+    }
+
+    private static PluginLoadResult CreateTypeEnumerationFailure(ResolvedPluginManifest manifest, PluginLoadContext context, ReflectionTypeLoadException ex)
+    {
+        Exception? firstLoaderError = ex.LoaderExceptions.FirstOrDefault(static error => error is not null);
+        if (firstLoaderError is DllNotFoundException || context.SnapshotUnresolvedNativeDependencies().Length != 0)
+        {
+            string[] unresolved = context.SnapshotUnresolvedNativeDependencies();
+            string suffix = unresolved.Length == 0 ? firstLoaderError?.Message ?? ex.Message : $"Missing native dependency: {string.Join(", ", unresolved)}.";
+            return PluginLoadResult.FromFailure(
+                PluginLoadFailureReason.MissingNativeDependency,
+                $"Plugin '{manifest.PluginId}' failed during type enumeration because a native dependency could not be resolved. {suffix}",
+                manifest.PluginId,
+                manifest);
+        }
+
+        if (firstLoaderError is FileNotFoundException or FileLoadException || context.SnapshotUnresolvedManagedDependencies().Length != 0)
+        {
+            string[] unresolved = context.SnapshotUnresolvedManagedDependencies();
+            string suffix = unresolved.Length == 0 ? firstLoaderError?.Message ?? ex.Message : $"Missing managed dependency: {string.Join(", ", unresolved)}.";
+            return PluginLoadResult.FromFailure(
+                PluginLoadFailureReason.MissingManagedDependency,
+                $"Plugin '{manifest.PluginId}' failed during type enumeration because a managed dependency could not be resolved. {suffix}",
+                manifest.PluginId,
+                manifest);
+        }
+
+        return PluginLoadResult.FromFailure(
+            PluginLoadFailureReason.TypeEnumerationFailed,
+            $"Plugin '{manifest.PluginId}' failed to enumerate module types: {ex.GetBaseException().Message}",
+            manifest.PluginId,
+            manifest);
     }
 }

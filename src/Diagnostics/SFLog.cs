@@ -29,6 +29,7 @@ public static class SFLog
 
     public static string Path => _path;
 
+    public static void Debug(string message) => Write("DBUG", message);
     public static void Info(string message) => Write("INFO", message);
     public static void Warn(string message) => Write("WARN", message);
     public static void Error(string message) => Write("ERROR", message);

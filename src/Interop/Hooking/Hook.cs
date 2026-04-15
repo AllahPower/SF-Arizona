@@ -31,7 +31,7 @@ public abstract class HookBase<TArgs, TResult>
         }
 
         _subHooks.Add(subHook);
-        SFLog.Info($"AddSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
+        SFLog.Debug($"AddSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
         BuildHookChain();
     }
 
@@ -43,7 +43,7 @@ public abstract class HookBase<TArgs, TResult>
         }
 
         _subHooks.Remove(subHook);
-        SFLog.Info($"RemoveSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
+        SFLog.Debug($"RemoveSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
         BuildHookChain();
     }
 
@@ -124,11 +124,11 @@ public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TR
 
         TargetAddress = targetAddress;
         _detour = detour;
-        SFLog.Info($"InstallHook type={GetType().Name} target=0x{targetAddress:X8} detour={detour.Method.Name}");
+        SFLog.Debug($"InstallHook type={GetType().Name} target=0x{targetAddress:X8} detour={detour.Method.Name}");
         OriginalFunction = HookRuntime.Engine.CreateHook((IntPtr)targetAddress, detour);
         HookRuntime.Engine.EnableHook(OriginalFunction);
         _isInstalled = true;
-        SFLog.Info($"InstallHook completed type={GetType().Name} target=0x{targetAddress:X8}");
+        SFLog.Debug($"InstallHook completed type={GetType().Name} target=0x{targetAddress:X8}");
     }
 
     protected IDisposable SuppressHook()
@@ -149,7 +149,7 @@ public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TR
         }
 
         HookRuntime.Engine.DisableHook(OriginalFunction);
-        SFLog.Info($"Dispose hook type={GetType().Name} target=0x{TargetAddress:X8}");
+        SFLog.Debug($"Dispose hook type={GetType().Name} target=0x{TargetAddress:X8}");
         _isInstalled = false;
         _detour = null;
     }
