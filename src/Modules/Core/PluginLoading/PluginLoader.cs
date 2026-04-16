@@ -217,7 +217,7 @@ public sealed class PluginLoader
             }
 
             moduleTypes = allTypes
-                .Where(static type => !type.IsAbstract && !type.IsInterface && typeof(ISFModule).IsAssignableFrom(type) && type.GetCustomAttribute<SFModuleAttribute>() is not null)
+                .Where(type => !type.IsAbstract && !type.IsInterface && type.Assembly == assembly && typeof(ISFModule).IsAssignableFrom(type) && type.GetCustomAttribute<SFModuleAttribute>() is not null)
                 .ToArray();
         }
         catch (ReflectionTypeLoadException ex)
@@ -524,11 +524,17 @@ public sealed class PluginLoader
 
     private PluginUnloadResult FinalizeDetachedUnload(LoadedPlugin plugin)
     {
+        bool onMainThread = SynchronizationContext.Current is SFSynchronizationContext;
         for (int attempt = 0; attempt < UnloadGcAttempts && plugin.LoadContextRef.IsAlive; attempt++)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
+
+            if (onMainThread)
+            {
+                SFBootstrap.PumpMainThreadQueue();
+            }
         }
 
         if (plugin.LoadContextRef.IsAlive)

@@ -18,6 +18,7 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
     private readonly Lock _sync = new();
     private readonly HashSet<string> _unresolvedManagedDependencies = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _unresolvedNativeDependencies = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Assembly> _sharedResolutionCache = new(StringComparer.OrdinalIgnoreCase);
 
     public PluginLoadContext(string pluginId, string pluginAssemblyPath)
         : base(name: $"SFPlugin:{pluginId}", isCollectible: true)
@@ -46,8 +47,21 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
     {
         if (assemblyName.Name is string name && PluginSharedAssemblyPolicy.IsShared(name))
         {
-            if (PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name, out Assembly hostAsm))
+            lock (_sync)
             {
+                if (_sharedResolutionCache.TryGetValue(name, out Assembly? cached))
+                {
+                    return cached;
+                }
+            }
+
+            if (PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name, out Assembly? hostAsm) && hostAsm is not null)
+            {
+                lock (_sync)
+                {
+                    _sharedResolutionCache[name] = hostAsm;
+                }
+
                 SFLog.Debug($"PluginLoadContext[{_pluginId}] share '{name}' via host assembly {PluginSharedAssemblyPolicy.Describe(hostAsm)}");
                 return hostAsm;
             }
@@ -59,7 +73,9 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
         string? path = _resolver.ResolveAssemblyToPath(assemblyName);
         if (path is null)
         {
-            if (!string.IsNullOrWhiteSpace(assemblyName.Name) && !assemblyName.Name.EndsWith(".resources", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(assemblyName.Name) &&
+                !assemblyName.Name.EndsWith(".resources", StringComparison.OrdinalIgnoreCase) &&
+                !IsBclAssembly(assemblyName.Name))
             {
                 lock (_sync)
                 {
@@ -92,5 +108,15 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
 
         SFLog.Debug($"PluginLoadContext[{_pluginId}] load native '{unmanagedDllName}' from {path}");
         return LoadUnmanagedDllFromPath(path);
+    }
+
+    private static bool IsBclAssembly(string name)
+    {
+        return name.StartsWith("System.", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("System", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("netstandard", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("WindowsBase", StringComparison.OrdinalIgnoreCase);
     }
 }

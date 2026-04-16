@@ -7,24 +7,28 @@ namespace SFSharp;
 
 internal static class PluginSharedAssemblyPolicy
 {
-    private static readonly HashSet<string> SharedAssemblies = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, Assembly> Shared = new(StringComparer.OrdinalIgnoreCase)
     {
-        "SF.Abstractions",
-        "Microsoft.Extensions.Logging.Abstractions",
-        "System.Text.Json",
+        ["SF.Abstractions"] = typeof(ISFModule).Assembly,
+        ["Microsoft.Extensions.Logging.Abstractions"] = typeof(ILogger).Assembly,
+        ["System.Text.Json"] = typeof(JsonSerializer).Assembly,
     };
 
-    public static bool IsShared(string assemblyName) => SharedAssemblies.Contains(assemblyName);
+    public static bool IsShared(string assemblyName) => Shared.ContainsKey(assemblyName);
 
-    public static IReadOnlyCollection<string> Names => SharedAssemblies;
+    public static IReadOnlyCollection<string> Names => Shared.Keys;
 
-    public static bool TryResolveLoadedAssembly(string assemblyName, out Assembly assembly)
+    public static bool TryResolveLoadedAssembly(string assemblyName, out Assembly? assembly)
     {
-        assembly = GetKnownSharedAssembly(assemblyName)
-            ?? AppDomain.CurrentDomain.GetAssemblies()
-                .FirstOrDefault(candidate =>
-                    !candidate.IsDynamic &&
-                    string.Equals(candidate.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))!;
+        if (Shared.TryGetValue(assemblyName, out assembly))
+        {
+            return true;
+        }
+
+        assembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(candidate =>
+                !candidate.IsDynamic &&
+                string.Equals(candidate.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase));
 
         return assembly is not null;
     }
@@ -38,16 +42,5 @@ internal static class PluginSharedAssemblyPolicy
         string location = string.IsNullOrEmpty(assembly.Location) ? "<dynamic>" : assembly.Location;
         Guid mvid = assembly.ManifestModule.ModuleVersionId;
         return $"{assembly.FullName} | alc={alcName} collectible={alc?.IsCollectible ?? false} | mvid={mvid} | loc={location}";
-    }
-
-    private static Assembly? GetKnownSharedAssembly(string assemblyName)
-    {
-        return assemblyName switch
-        {
-            "SF.Abstractions" => typeof(ISFModule).Assembly,
-            "Microsoft.Extensions.Logging.Abstractions" => typeof(ILogger).Assembly,
-            "System.Text.Json" => typeof(JsonSerializer).Assembly,
-            _ => null,
-        };
     }
 }

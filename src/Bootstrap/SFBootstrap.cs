@@ -48,7 +48,7 @@ public static class SFBootstrap
                 return null;
             }
 
-            if (PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name.Name, out Assembly sharedAssembly))
+            if (PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name.Name, out Assembly? sharedAssembly) && sharedAssembly is not null)
             {
                 SFLog.Debug($"Default ALC resolve '{name.Name}' -> existing {PluginSharedAssemblyPolicy.Describe(sharedAssembly)}");
                 return sharedAssembly;
@@ -80,6 +80,18 @@ public static class SFBootstrap
     public static void PostToMainThread(Action action)
     {
         _sc?.Post(x => ((Action)x!)(), action);
+    }
+
+    /// <summary>
+    /// Drains queued <see cref="SFSynchronizationContext"/> continuations once. Intended for
+    /// main-thread code that has to wait for async work whose continuations are routed back to
+    /// the main thread (e.g. plugin unload waiting on cancelled modules to finish).
+    /// Must only be called from the main thread — callers typically guard with
+    /// <c>SynchronizationContext.Current is SFSynchronizationContext</c>.
+    /// </summary>
+    public static void PumpMainThreadQueue()
+    {
+        _sc?.ProcLoop();
     }
 
     public static void ProcessException(Exception ex)

@@ -133,7 +133,7 @@ public sealed partial class SFModuleContainer
 
     /// <summary>
     /// Removes a registration after its run has ended. If the module is still running the call
-    /// returns <see langword="false"/> — call <see cref="RequestStopModule(string, ModuleStopReason)"/>
+    /// returns <see langword="false"/> - call <see cref="RequestStopModule(string, ModuleStopReason)"/>
     /// and <see cref="WaitForModulesStopped(IEnumerable{string}, TimeSpan)"/> first.
     /// </summary>
     public bool TryUnregisterModule(string moduleId)
@@ -202,6 +202,7 @@ public sealed partial class SFModuleContainer
             return true;
         }
 
+        bool onMainThread = SynchronizationContext.Current is SFSynchronizationContext;
         DateTime deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
         {
@@ -211,7 +212,15 @@ public sealed partial class SFModuleContainer
                 return true;
             }
 
-            Thread.Sleep(50);
+            if (onMainThread)
+            {
+                SFBootstrap.PumpMainThreadQueue();
+                Thread.Sleep(10);
+            }
+            else
+            {
+                Thread.Sleep(50);
+            }
         }
 
         stillRunningIds = GetRunningModuleIds(ids);
