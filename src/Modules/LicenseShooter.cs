@@ -1,9 +1,10 @@
-﻿using SFSharp;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
+namespace SFSharp.Runtime.Modules;
 
 public enum LicenseType
 {

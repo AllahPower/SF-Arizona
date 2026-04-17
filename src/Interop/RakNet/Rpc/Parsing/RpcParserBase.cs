@@ -1,6 +1,6 @@
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public delegate TRpc IncomingRpcParseDelegate<TRpc>(IncomingRpcArgs args) where TRpc : IParsedIncomingRpc;
 public delegate TRpc OutgoingRpcParseDelegate<TRpc>(OutgoingRpcArgs args) where TRpc : IParsedOutgoingRpc;

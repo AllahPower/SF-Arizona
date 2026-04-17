@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 internal readonly unsafe ref struct AnsiString
 {

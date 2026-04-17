@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 /// <summary>
 /// Managed bitstream writer, mirrors BitStreamReader.

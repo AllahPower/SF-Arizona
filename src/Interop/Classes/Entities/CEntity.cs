@@ -1,28 +1,29 @@
-using SFSharp;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe ApplyTurnSpeedDelegate = delegate* unmanaged[Thiscall]<CEntity*, void>;
-using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<CEntity*, int>;
-using unsafe GetCollisionFlagDelegate = delegate* unmanaged[Thiscall]<CEntity*, int>;
-using unsafe GetDistanceToCameraDelegate = delegate* unmanaged[Thiscall]<CEntity*, float>;
-using unsafe GetDistanceToLocalPlayerDelegate = delegate* unmanaged[Thiscall]<CEntity*, float>;
-using unsafe GetDistanceToLocalPlayerNoHeightDelegate = delegate* unmanaged[Thiscall]<CEntity*, float>;
-using unsafe GetDistanceToPointDelegate = delegate* unmanaged[Thiscall]<CEntity*, System.Numerics.Vector3, float>;
-using unsafe GetEulerInvertedDelegate = delegate* unmanaged[Thiscall]<CEntity*, float*, float*, float*, void>;
-using unsafe GetMatrixDelegate = delegate* unmanaged[Thiscall]<CEntity*, CMatrix*, void>;
-using unsafe GetModelIndexDelegate = delegate* unmanaged[Thiscall]<CEntity*, int>;
-using unsafe GetSpeedDelegate = delegate* unmanaged[Thiscall]<CEntity*, System.Numerics.Vector3*, void>;
-using unsafe GetTurnSpeedDelegate = delegate* unmanaged[Thiscall]<CEntity*, System.Numerics.Vector3*, void>;
-using unsafe SetCollisionFlagDelegate = delegate* unmanaged[Thiscall]<CEntity*, int, void>;
-using unsafe SetCollisionProcessedDelegate = delegate* unmanaged[Thiscall]<CEntity*, int, void>;
-using unsafe SetMatrixDelegate = delegate* unmanaged[Thiscall]<CEntity*, CMatrix, void>;
-using unsafe SetModelIndexDelegate = delegate* unmanaged[Thiscall]<CEntity*, int, void>;
-using unsafe SetSpeedDelegate = delegate* unmanaged[Thiscall]<CEntity*, System.Numerics.Vector3, void>;
-using unsafe SetTurnSpeedDelegate = delegate* unmanaged[Thiscall]<CEntity*, System.Numerics.Vector3, void>;
-using unsafe TeleportDelegate = delegate* unmanaged[Thiscall]<CEntity*, System.Numerics.Vector3, void>;
-using unsafe UpdateRwFrameDelegate = delegate* unmanaged[Thiscall]<CEntity*, void>;
+using unsafe ApplyTurnSpeedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, void>;
+using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, int>;
+using unsafe GetCollisionFlagDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, int>;
+using unsafe GetDistanceToCameraDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, float>;
+using unsafe GetDistanceToLocalPlayerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, float>;
+using unsafe GetDistanceToLocalPlayerNoHeightDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, float>;
+using unsafe GetDistanceToPointDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, System.Numerics.Vector3, float>;
+using unsafe GetEulerInvertedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, float*, float*, float*, void>;
+using unsafe GetMatrixDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, SFSharp.Runtime.Interop.CMatrix*, void>;
+using unsafe GetModelIndexDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, int>;
+using unsafe GetSpeedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, System.Numerics.Vector3*, void>;
+using unsafe GetTurnSpeedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, System.Numerics.Vector3*, void>;
+using unsafe SetCollisionFlagDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, int, void>;
+using unsafe SetCollisionProcessedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, int, void>;
+using unsafe SetMatrixDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, SFSharp.Runtime.Interop.CMatrix, void>;
+using unsafe SetModelIndexDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, int, void>;
+using unsafe SetSpeedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, System.Numerics.Vector3, void>;
+using unsafe SetTurnSpeedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, System.Numerics.Vector3, void>;
+using unsafe TeleportDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, System.Numerics.Vector3, void>;
+using unsafe UpdateRwFrameDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CEntity*, void>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x48, Pack = 1)]
 public unsafe struct CEntity

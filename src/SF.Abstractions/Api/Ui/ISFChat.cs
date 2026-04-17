@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Ui;
 
 /// <summary>
 /// Plugin-facing contract for in-game chat. Concrete implementation lives in the host and is

@@ -1,5 +1,5 @@
-﻿
-namespace SFSharp;
+
+namespace SFSharp.Runtime.Game;
 
 public partial class SFPlayers : ISubHook<UpdateScoresPingsIpsArgs, NoRetValue>
 {

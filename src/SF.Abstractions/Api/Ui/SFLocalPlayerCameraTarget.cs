@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Ui;
 
 public readonly record struct SFLocalPlayerCameraTarget(
     ushort ObjectId,

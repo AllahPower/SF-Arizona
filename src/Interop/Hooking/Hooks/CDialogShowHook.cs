@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 using unsafe CDialogShowDirect = delegate* unmanaged[Thiscall]<void*, int, int, byte*, byte*, byte*, byte*, int, void>;
 

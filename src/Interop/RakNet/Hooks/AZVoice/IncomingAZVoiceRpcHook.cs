@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 // Hook on AZVoice.asi control dispatcher for packet 252 sub-RPC payloads.
 // Unlike ARZ::OnReceivePacket, this path handles control RPC 3..23, not voice frames.

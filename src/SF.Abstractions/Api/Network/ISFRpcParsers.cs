@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Network;
 
 /// <summary>Typed parsed RPC facade.</summary>
 /// <remarks>Bind/Stream registration is thread-safe; handlers fire on the main game thread.</remarks>

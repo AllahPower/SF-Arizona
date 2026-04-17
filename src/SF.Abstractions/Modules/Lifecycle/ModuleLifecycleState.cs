@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 /// <summary>
 /// Current state of a module instance as tracked by <see cref="SFModuleContainer"/>.

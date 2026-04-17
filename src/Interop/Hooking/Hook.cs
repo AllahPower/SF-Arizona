@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MinHook;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 public struct NoRetValue;
 

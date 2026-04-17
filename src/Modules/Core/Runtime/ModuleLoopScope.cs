@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 /// <summary>
 /// Scoped timer returned by <see cref="ModuleContext.TrackLoop(string?)"/>. Starts timing when

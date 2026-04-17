@@ -1,4 +1,4 @@
-namespace SFSharp.Interop.RakNet.Packets.Enum;
+namespace SFSharp.Abstractions.Interop.RakNet;
 
 /// <summary>
 /// Known SAMP 0.3.7 RPC identifiers.

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules;
 
 /// <summary>
 /// Declares a class as an SF module and carries the metadata that <see cref="SFModuleContainer"/>

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacketHook.ReceiveNative>
 {

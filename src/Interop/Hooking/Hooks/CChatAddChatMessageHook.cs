@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 using unsafe CChatAddChatMessageDirect = delegate* unmanaged[Thiscall]<void*, byte*, uint, byte*, void>;
 

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime;
 
 /// <summary>
 /// Thin static proxy over <see cref="SFHost.Shared"/> for host-internal callers. Every property

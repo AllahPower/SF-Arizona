@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 /// <summary>
 /// Controls whether a faulted module is automatically restarted by <see cref="SFModuleContainer"/>.

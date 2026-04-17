@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public static class SampRpc
 {

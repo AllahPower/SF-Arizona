@@ -8,7 +8,7 @@
 		<LangVersion>preview</LangVersion>
 		<IsAotCompatible>true</IsAotCompatible>
 		<IsTrimmable>false</IsTrimmable>
-		<RootNamespace>SFSharp</RootNamespace>
+		<RootNamespace>SFSharp.Abstractions</RootNamespace>
 		<AssemblyName>SF.Abstractions</AssemblyName>
 		<Version>3.2.6</Version>
 	</PropertyGroup>

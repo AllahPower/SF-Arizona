@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Ui;
 
 public sealed unsafe class SFMenu
 {

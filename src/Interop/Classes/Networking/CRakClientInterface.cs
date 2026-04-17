@@ -9,7 +9,7 @@ using unsafe SendBitStreamDelegate = delegate* unmanaged[Thiscall]<nint, nint, i
 using unsafe SendDataDelegate = delegate* unmanaged[Thiscall]<nint, byte*, int, int, int, byte, bool>;
 using unsafe PushBackPacketDelegate = delegate* unmanaged[Thiscall]<nint, nint, bool, void>;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public unsafe struct CRakClientInterface

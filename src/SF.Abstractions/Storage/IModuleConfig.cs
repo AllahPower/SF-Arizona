@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization.Metadata;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Storage;
 
 public interface IModuleConfig
 {

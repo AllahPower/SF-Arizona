@@ -1,7 +1,8 @@
 using System.Numerics;
 using System.Net.WebSockets;
 using System.Text.Json;
-using SFSharp;
+
+namespace SFSharp.Runtime.Modules;
 
 public partial class DebugModule
 {

@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 /// <summary>
 /// Discovers, loads, unloads and hot-reloads third-party plugins from

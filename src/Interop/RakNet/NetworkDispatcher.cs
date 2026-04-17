@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 // Manages thread-safe network dispatch pipeline: hook thread -> ConcurrentQueue -> main thread batched dispatch
 // Uses a single unified queue to preserve global capture order across all event types.

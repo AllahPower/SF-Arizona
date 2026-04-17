@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Storage;
 
 public interface IModuleStorageProvider
 {

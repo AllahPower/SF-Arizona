@@ -2,6 +2,8 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+namespace SFSharp.Runtime.Interop;
+
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct CPedAccessory
 {

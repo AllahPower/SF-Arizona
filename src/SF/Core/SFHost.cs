@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime;
 
 /// <summary>
 /// Single source of truth for every runtime SF service singleton. Static <see cref="SF"/> and the

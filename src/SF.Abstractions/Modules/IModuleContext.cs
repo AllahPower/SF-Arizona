@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules;
 
 /// <summary>
 /// Per-run facade passed to <see cref="ISFModule.RunAsync(IModuleContext)"/>. Exposes the cancellation

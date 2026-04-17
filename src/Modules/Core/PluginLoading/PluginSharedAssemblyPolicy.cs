@@ -3,7 +3,7 @@ using System.Runtime.Loader;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 internal static class PluginSharedAssemblyPolicy
 {

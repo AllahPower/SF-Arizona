@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 public readonly record struct SFVehicleSnapshot(
     ushort Id,

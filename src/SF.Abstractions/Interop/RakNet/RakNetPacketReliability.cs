@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Interop.RakNet;
 
 public enum RakNetPacketReliability
 {

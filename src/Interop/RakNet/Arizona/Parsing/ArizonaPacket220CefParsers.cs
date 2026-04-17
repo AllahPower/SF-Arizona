@@ -1,7 +1,7 @@
 using System.Numerics;
 using System.Text;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public static partial class ArizonaPacket
 {

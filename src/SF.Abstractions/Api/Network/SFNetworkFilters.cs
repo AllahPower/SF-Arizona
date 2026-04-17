@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Network;
 
 /// <summary>
 /// Synchronous incoming/outgoing packet filter. Receives the raw wire bytes copied into a managed

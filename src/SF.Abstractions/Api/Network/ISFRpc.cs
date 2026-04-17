@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Network;
 
 /// <summary>
 /// Plugin-facing raw RPC transport facade. Every frame is detached from the game memory and copied

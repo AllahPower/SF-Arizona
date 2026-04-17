@@ -1,6 +1,6 @@
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public static partial class PacketParserCatalog
 {

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime;
 
 public sealed partial class SFEvents
 {

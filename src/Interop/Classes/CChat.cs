@@ -1,10 +1,12 @@
-using SFSharp;
 using System;
 using System.Runtime.InteropServices;
 
-using unsafe AddChatMessageDelegate = delegate* unmanaged[Thiscall]<CChat*, byte*, uint, byte*, void>;
-using unsafe AddEntryDelegate = delegate* unmanaged[Thiscall]<CChat*, int, byte*, byte*, uint, uint, void>;
-using unsafe AddMessageDelegate = delegate* unmanaged[Thiscall]<CChat*, uint, byte*, void>;
+namespace SFSharp.Runtime.Interop;
+
+using unsafe AddChatMessageDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CChat*, byte*, uint, byte*, void>;
+using unsafe AddEntryDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CChat*, int, byte*, byte*, uint, uint, void>;
+using unsafe AddMessageDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CChat*, uint, byte*, void>;
+
 
 [StructLayout(LayoutKind.Explicit, Size = 25622, Pack = 1)]
 public unsafe ref struct CChat
@@ -178,4 +180,3 @@ public readonly record struct NativeChatEntry(
 {
     public bool IsEmpty => Type == EntryType.None && Text is null;
 }
-

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 /// <summary>
 /// Per-run facade passed to <see cref="ISFModule.RunAsync(ModuleContext)"/>. Bundles the
@@ -43,7 +43,7 @@ public sealed class ModuleContext : IModuleContext
     public ModuleDescriptor Descriptor { get; }
 
     /// <inheritdoc />
-    public ISF SF => SFSharp.SF.Instance;
+    public ISF SF => SFSharp.Runtime.SF.Instance;
 
     /// <summary>
     /// Cancelled when the container shuts down or the user issues <c>/sfs stop</c>. Also the token
@@ -58,13 +58,13 @@ public sealed class ModuleContext : IModuleContext
     /// Read/write access to the module's asset folder next to <c>gta_sa.exe</c>. Resolved lazily
     /// through <see cref="SF.Modules"/>'s <see cref="IModuleStorageProvider"/>.
     /// </summary>
-    public IModuleStorage Assets => _assets ??= global::SFSharp.SF.Modules.Storage.GetAssets(Descriptor);
+    public IModuleStorage Assets => _assets ??= global::SFSharp.Runtime.SF.Modules.Storage.GetAssets(Descriptor);
 
     /// <summary>Read/write access to the module's user data folder under <c>My Documents</c>.</summary>
-    public IModuleStorage UserData => _userData ??= global::SFSharp.SF.Modules.Storage.GetUserData(Descriptor);
+    public IModuleStorage UserData => _userData ??= global::SFSharp.Runtime.SF.Modules.Storage.GetUserData(Descriptor);
 
     /// <summary>Typed configuration backed by a JSON file inside <see cref="UserData"/>.</summary>
-    public IModuleConfig Config => _config ??= global::SFSharp.SF.Modules.Storage.GetConfig(Descriptor);
+    public IModuleConfig Config => _config ??= global::SFSharp.Runtime.SF.Modules.Storage.GetConfig(Descriptor);
 
     /// <summary>
     /// Records a heartbeat tick. Intended to be called every loop iteration or whenever the module

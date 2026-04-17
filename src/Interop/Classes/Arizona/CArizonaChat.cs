@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 using unsafe ArizonaChatAddEntryDelegate = delegate* unmanaged[Stdcall]<int, byte*, byte*, uint, uint, int>;
 using unsafe UpsertDynamicRoomDelegate = delegate* unmanaged[Cdecl]<byte, byte*, nuint, int, byte*, nuint, int, byte>;

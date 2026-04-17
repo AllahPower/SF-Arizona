@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules;
 
 /// <summary>
 /// Public read-only snapshot of a module registration plus its safe runtime state.

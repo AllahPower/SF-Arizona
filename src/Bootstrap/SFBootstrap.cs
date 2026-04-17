@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Bootstrap;
 
 public static class SFBootstrap
 {

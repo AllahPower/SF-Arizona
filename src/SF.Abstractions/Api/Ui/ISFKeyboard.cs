@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Ui;
 
 /// <summary>
 /// Plugin-facing contract for keyboard state queries. The host owns the polling loop and exposes

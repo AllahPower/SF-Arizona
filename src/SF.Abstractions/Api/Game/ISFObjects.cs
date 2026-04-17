@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 /// <summary>Read-only object pool facade.</summary>
 /// <remarks>NOT thread-safe. Reads native SA-MP object pool memory - main-thread only.</remarks>

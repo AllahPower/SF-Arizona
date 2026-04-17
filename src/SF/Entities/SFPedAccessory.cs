@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Game;
 
 public readonly record struct SFPedAccessory(
     int Slot,

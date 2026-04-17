@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public readonly record struct IncomingArizonaPacketArgs(int EPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
 {

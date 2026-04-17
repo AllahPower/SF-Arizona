@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Arizona;
 
 /// <summary>
 /// Plugin-facing Arizona ScreenChat facade for user-owned dynamic rooms. The host owns the native

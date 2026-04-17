@@ -1,13 +1,14 @@
-using SFSharp;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<CActorPool*, ActorInfo*, int>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<CActorPool*, ushort, int>;
-using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<CActorPool*, ushort, int>;
-using unsafe FindDelegate = delegate* unmanaged[Thiscall]<CActorPool*, CPed*, ushort>;
-using unsafe GetDelegate = delegate* unmanaged[Thiscall]<CActorPool*, ushort, nint>;
+using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CActorPool*, SFSharp.Runtime.Interop.ActorInfo*, int>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CActorPool*, ushort, int>;
+using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CActorPool*, ushort, int>;
+using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CActorPool*, SFSharp.Runtime.Interop.CPed*, ushort>;
+using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CActorPool*, ushort, nint>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 20004, Pack = 1)]
 public unsafe ref struct CActorPool

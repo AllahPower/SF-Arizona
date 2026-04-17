@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Network;
 
 /// <summary>
 /// Plugin-facing raw packet transport facade. Frames are copied out of the RakNet buffers before

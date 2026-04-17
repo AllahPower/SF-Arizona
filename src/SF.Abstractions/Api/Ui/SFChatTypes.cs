@@ -1,6 +1,6 @@
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Ui;
 
 /// <summary>Native SA-MP chat entry kind. Values mirror the in-game engine.</summary>
 public enum EntryType : int

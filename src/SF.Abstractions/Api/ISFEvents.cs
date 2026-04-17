@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions;
 
 /// <summary>
 /// Plugin-facing typed parsed event surface. Event payload models are supplied by host-shared

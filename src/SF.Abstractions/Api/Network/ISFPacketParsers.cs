@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Network;
 
 /// <summary>Typed parsed packet facade covering plain and Arizona packet transports.</summary>
 /// <remarks>Bind/Stream registration is thread-safe; handlers fire on the main game thread.</remarks>

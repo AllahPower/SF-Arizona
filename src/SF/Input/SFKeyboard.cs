@@ -1,4 +1,4 @@
-﻿namespace SFSharp;
+namespace SFSharp.Runtime.Ui;
 
 public class SFKeyboard : ISFKeyboard
 {

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Arizona;
 
 /// <summary>
 /// Plugin-facing Arizona packet transport facade. Surface includes only copied payload frames and

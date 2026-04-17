@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 using unsafe UpdateScoresPingsIpsDirect = delegate* unmanaged[Cdecl]<void*, void>;
 

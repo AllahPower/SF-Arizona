@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 public sealed class PluginManifest
 {

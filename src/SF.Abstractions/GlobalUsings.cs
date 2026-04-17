@@ -1,0 +1,10 @@
+global using SFSharp.Abstractions;
+global using SFSharp.Abstractions.Arizona;
+global using SFSharp.Abstractions.Game;
+global using SFSharp.Abstractions.Interop.RakNet;
+global using SFSharp.Abstractions.Modules;
+global using SFSharp.Abstractions.Modules.Lifecycle;
+global using SFSharp.Abstractions.Network;
+global using SFSharp.Abstractions.Parsing;
+global using SFSharp.Abstractions.Storage;
+global using SFSharp.Abstractions.Ui;

@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 public readonly record struct SFLabelSnapshot(
     string? Text,

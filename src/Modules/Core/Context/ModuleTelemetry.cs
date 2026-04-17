@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 /// <summary>
 /// Concrete <see cref="IModuleTelemetry"/> facade. Thread-safe - delegates to

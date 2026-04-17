@@ -3,7 +3,8 @@ using Microsoft.Extensions.FileProviders;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using SFSharp;
+
+namespace SFSharp.Runtime.Modules;
 
 public partial class DebugModule
 {

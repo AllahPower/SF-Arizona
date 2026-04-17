@@ -1,34 +1,35 @@
-using SFSharp;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe AddAccessoryDelegate = delegate* unmanaged[Thiscall]<CPed*, int, CPedAccessory*, void>;
-using unsafe ClearWeaponsDelegate = delegate* unmanaged[Thiscall]<CPed*, void>;
-using unsafe DeleteAccessoryDelegate = delegate* unmanaged[Thiscall]<CPed*, int, void>;
-using unsafe DeleteAllAccessoriesDelegate = delegate* unmanaged[Thiscall]<CPed*, void>;
-using unsafe DisableJetpackDelegate = delegate* unmanaged[Thiscall]<CPed*, void>;
-using unsafe EnableJetpackDelegate = delegate* unmanaged[Thiscall]<CPed*, void>;
-using unsafe GetAccessoryDelegate = delegate* unmanaged[Thiscall]<CPed*, int, nint>;
-using unsafe GetAccessoryStateDelegate = delegate* unmanaged[Thiscall]<CPed*, int, int>;
-using unsafe GetAimZDelegate = delegate* unmanaged[Thiscall]<CPed*, float>;
-using unsafe GetArmourDelegate = delegate* unmanaged[Thiscall]<CPed*, float>;
-using unsafe GetBonePositionDelegate = delegate* unmanaged[Thiscall]<CPed*, uint, System.Numerics.Vector3*, void>;
-using unsafe GetCurrentWeaponAmmoDelegate = delegate* unmanaged[Thiscall]<CPed*, ushort>;
-using unsafe GetCurrentWeaponDelegate = delegate* unmanaged[Thiscall]<CPed*, byte>;
-using unsafe GetHealthDelegate = delegate* unmanaged[Thiscall]<CPed*, float>;
-using unsafe GetRotationDelegate = delegate* unmanaged[Thiscall]<CPed*, float>;
-using unsafe GetStateDelegate = delegate* unmanaged[Thiscall]<CPed*, byte>;
-using unsafe GetVehicleDelegate = delegate* unmanaged[Thiscall]<CPed*, CVehicle*>;
-using unsafe GetVehicleSeatIndexDelegate = delegate* unmanaged[Thiscall]<CPed*, int>;
-using unsafe HasAccessoryDelegate = delegate* unmanaged[Thiscall]<CPed*, int>;
-using unsafe HasJetpackDelegate = delegate* unmanaged[Thiscall]<CPed*, int>;
-using unsafe IsPassengerDelegate = delegate* unmanaged[Thiscall]<CPed*, int>;
-using unsafe SetAimZDelegate = delegate* unmanaged[Thiscall]<CPed*, float, void>;
-using unsafe SetArmourDelegate = delegate* unmanaged[Thiscall]<CPed*, float, void>;
-using unsafe SetHealthDelegate = delegate* unmanaged[Thiscall]<CPed*, float, void>;
-using unsafe SetRotationDelegate = delegate* unmanaged[Thiscall]<CPed*, float, void>;
-using unsafe SetStateDelegate = delegate* unmanaged[Thiscall]<CPed*, byte, void>;
+using unsafe AddAccessoryDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int, SFSharp.Runtime.Interop.CPedAccessory*, void>;
+using unsafe ClearWeaponsDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, void>;
+using unsafe DeleteAccessoryDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int, void>;
+using unsafe DeleteAllAccessoriesDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, void>;
+using unsafe DisableJetpackDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, void>;
+using unsafe EnableJetpackDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, void>;
+using unsafe GetAccessoryDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int, nint>;
+using unsafe GetAccessoryStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int, int>;
+using unsafe GetAimZDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float>;
+using unsafe GetArmourDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float>;
+using unsafe GetBonePositionDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, uint, System.Numerics.Vector3*, void>;
+using unsafe GetCurrentWeaponAmmoDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, ushort>;
+using unsafe GetCurrentWeaponDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, byte>;
+using unsafe GetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float>;
+using unsafe GetRotationDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float>;
+using unsafe GetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, byte>;
+using unsafe GetVehicleDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, SFSharp.Runtime.Interop.CVehicle*>;
+using unsafe GetVehicleSeatIndexDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int>;
+using unsafe HasAccessoryDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int>;
+using unsafe HasJetpackDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int>;
+using unsafe IsPassengerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, int>;
+using unsafe SetAimZDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float, void>;
+using unsafe SetArmourDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float, void>;
+using unsafe SetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float, void>;
+using unsafe SetRotationDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, float, void>;
+using unsafe SetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPed*, byte, void>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x2B4, Pack = 1)]
 public unsafe struct CPed

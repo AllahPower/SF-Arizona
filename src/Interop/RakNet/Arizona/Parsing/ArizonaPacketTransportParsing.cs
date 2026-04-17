@@ -1,7 +1,7 @@
-using SFSharp.Interop.RakNet.Arizona.Enum;
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
+using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 internal delegate TPayload ArizonaReaderParser<TPayload>(ref BitStreamReader reader);
 

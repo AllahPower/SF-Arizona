@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 /// <summary>
 /// Recommended base class for SF modules. Handles <see cref="ISFModule.RunAsync(IModuleContext)"/>

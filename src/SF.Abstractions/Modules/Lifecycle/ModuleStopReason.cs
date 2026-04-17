@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 /// <summary>
 /// Records why a module left the <see cref="ModuleLifecycleState.Running"/> state.

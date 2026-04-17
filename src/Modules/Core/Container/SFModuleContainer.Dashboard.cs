@@ -1,6 +1,6 @@
-using static SFSharp.ModuleChatFormatter;
+using static SFSharp.Runtime.Modules.ModuleChatFormatter;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 public partial class SFModuleContainer
 {

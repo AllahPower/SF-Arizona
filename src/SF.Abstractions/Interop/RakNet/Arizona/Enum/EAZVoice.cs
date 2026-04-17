@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Interop.RakNet;
 
 /// <summary>AZVoice plugin sub-RPC IDs dispatched within RPC 252.</summary>
 public enum EAZVoice : byte

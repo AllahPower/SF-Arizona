@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 /// <summary>
 /// Point-in-time copy of a module's runtime state and telemetry. Produced by

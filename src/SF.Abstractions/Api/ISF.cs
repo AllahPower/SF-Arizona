@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions;
 
 /// <summary>
 /// Root plugin-facing facade. The concrete implementation is owned by the host and exposed to

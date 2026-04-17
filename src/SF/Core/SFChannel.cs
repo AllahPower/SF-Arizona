@@ -1,6 +1,6 @@
 using System.Threading.Channels;
 
-namespace SFSharp;
+namespace SFSharp.Runtime;
 
 internal static class SFChannel
 {

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Game;
 
 public enum SFPedBone : int
 {

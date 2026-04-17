@@ -1,16 +1,17 @@
-using SFSharp;
 using System;
 using System.Runtime.InteropServices;
 
-using unsafe GetCountDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, int, int>;
-using unsafe GetLocalPlayerDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, CLocalPlayer*>;
-using unsafe GetLocalPlayerNameDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, byte*>;
-using unsafe GetLocalPlayerPingDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, int>;
-using unsafe GetNameDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, ushort, byte*>;
-using unsafe GetPingDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, ushort, int>;
-using unsafe GetPlayerDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, ushort, CRemotePlayer*>;
-using unsafe GetScoreDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, ushort, int>;
-using unsafe IsConnectedDelegate = delegate* unmanaged[Thiscall]<CPlayerPool*, ushort, int>;
+using unsafe GetCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, int, int>;
+using unsafe GetLocalPlayerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, SFSharp.Runtime.Interop.CLocalPlayer*>;
+using unsafe GetLocalPlayerNameDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, byte*>;
+using unsafe GetLocalPlayerPingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, int>;
+using unsafe GetNameDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, ushort, byte*>;
+using unsafe GetPingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, ushort, int>;
+using unsafe GetPlayerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, ushort, SFSharp.Runtime.Interop.CRemotePlayer*>;
+using unsafe GetScoreDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, ushort, int>;
+using unsafe IsConnectedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPlayerPool*, ushort, int>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 12094, Pack = 1)]
 public unsafe ref struct CPlayerPool

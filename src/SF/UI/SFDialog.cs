@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Ui;
 
 using DialogResultArgs = (SFDialogButton Button, int SelectedItemIndex, string? InputText);
 

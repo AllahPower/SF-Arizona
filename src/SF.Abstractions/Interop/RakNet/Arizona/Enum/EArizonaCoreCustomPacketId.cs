@@ -1,4 +1,4 @@
-namespace SFSharp.Interop.RakNet.Arizona.Enum;
+namespace SFSharp.Abstractions.Interop.RakNet;
 
 public enum EArizonaCoreCustomPacketId : ushort
 {

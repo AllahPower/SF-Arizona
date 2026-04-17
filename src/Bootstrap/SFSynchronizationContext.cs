@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Bootstrap;
 
 public class SFSynchronizationContext : SynchronizationContext
 {

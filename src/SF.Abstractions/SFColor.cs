@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions;
 
 public readonly record struct SFColor(uint Argb)
 {

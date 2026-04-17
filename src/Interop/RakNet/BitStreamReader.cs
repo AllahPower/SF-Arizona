@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 /// <summary>
 /// Managed reader over raw RPC bitstream data.

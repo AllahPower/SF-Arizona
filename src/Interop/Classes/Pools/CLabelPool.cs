@@ -1,11 +1,12 @@
-using SFSharp;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<CLabelPool*, ushort, byte*, uint, System.Numerics.Vector3, float, int, ushort, ushort, void>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<CLabelPool*, ushort, int>;
-using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<CLabelPool*, void>;
+using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLabelPool*, ushort, byte*, uint, System.Numerics.Vector3, float, int, ushort, ushort, void>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLabelPool*, ushort, int>;
+using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLabelPool*, void>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 67584, Pack = 1)]
 public unsafe ref struct CLabelPool

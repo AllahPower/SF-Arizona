@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SFSharp;
-using SFSharp.Interop.RakNet.Arizona.Enum;
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
+using SFSharp.Abstractions.Interop.RakNet;
+
+namespace SFSharp.Runtime.Modules;
 
 [SFModule("debug-web", "DebugWeb",
     Category = "Debug",

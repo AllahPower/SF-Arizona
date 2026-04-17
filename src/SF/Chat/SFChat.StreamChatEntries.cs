@@ -1,8 +1,8 @@
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Ui;
 
 public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 {

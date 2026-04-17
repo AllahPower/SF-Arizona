@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 /// <summary>
 /// Controls which thread a module runs on when the container starts it.

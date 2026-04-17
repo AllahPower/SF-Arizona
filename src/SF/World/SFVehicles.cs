@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Game;
 
 public sealed unsafe class SFVehicles : ISFVehicles
 {

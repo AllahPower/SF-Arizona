@@ -1,22 +1,23 @@
-using SFSharp;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<CVehicle*, int>;
-using unsafe EnableEngineDelegate = delegate* unmanaged[Thiscall]<CVehicle*, int, void>;
-using unsafe EnableSirenDelegate = delegate* unmanaged[Thiscall]<CVehicle*, byte, void>;
-using unsafe GetHealthDelegate = delegate* unmanaged[Thiscall]<CVehicle*, float>;
-using unsafe GetTrailerDelegate = delegate* unmanaged[Thiscall]<CVehicle*, CVehicle*>;
-using unsafe HasDriverDelegate = delegate* unmanaged[Thiscall]<CVehicle*, int>;
-using unsafe IsOccupiedDelegate = delegate* unmanaged[Thiscall]<CVehicle*, int>;
-using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<CVehicle*, byte, byte, void>;
-using unsafe SetHealthDelegate = delegate* unmanaged[Thiscall]<CVehicle*, float, void>;
-using unsafe SetInvulnerableDelegate = delegate* unmanaged[Thiscall]<CVehicle*, int, void>;
-using unsafe SetLicensePlateTextDelegate = delegate* unmanaged[Thiscall]<CVehicle*, byte*, void>;
-using unsafe SetLockedDelegate = delegate* unmanaged[Thiscall]<CVehicle*, int, void>;
-using unsafe SetRotationDelegate = delegate* unmanaged[Thiscall]<CVehicle*, float, void>;
-using unsafe SirenEnabledDelegate = delegate* unmanaged[Thiscall]<CVehicle*, int>;
-using unsafe UpdateColorDelegate = delegate* unmanaged[Thiscall]<CVehicle*, void>;
+using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, int>;
+using unsafe EnableEngineDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, int, void>;
+using unsafe EnableSirenDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, byte, void>;
+using unsafe GetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, float>;
+using unsafe GetTrailerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, SFSharp.Runtime.Interop.CVehicle*>;
+using unsafe HasDriverDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, int>;
+using unsafe IsOccupiedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, int>;
+using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, byte, byte, void>;
+using unsafe SetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, float, void>;
+using unsafe SetInvulnerableDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, int, void>;
+using unsafe SetLicensePlateTextDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, byte*, void>;
+using unsafe SetLockedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, int, void>;
+using unsafe SetRotationDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, float, void>;
+using unsafe SirenEnabledDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, int>;
+using unsafe UpdateColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehicle*, void>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x80, Pack = 1)]
 public unsafe struct CVehicle

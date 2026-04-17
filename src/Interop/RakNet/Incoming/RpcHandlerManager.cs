@@ -1,8 +1,8 @@
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public sealed class RpcHandlerManager : IDisposable
 {

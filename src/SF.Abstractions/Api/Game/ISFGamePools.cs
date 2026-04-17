@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 /// <summary>Read-only game pool facade.</summary>
 /// <remarks>

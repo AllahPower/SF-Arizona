@@ -64,10 +64,10 @@ The project is a fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), re
 
 ```bash
 # Debug build
-dotnet build src/SF.csproj -c Debug
+dotnet build src/SF.Runtime.csproj -c Debug
 
 # Release build with NativeAOT publish
-dotnet publish src/SF.csproj -c Release
+dotnet publish src/SF.Runtime.csproj -c Release
 ```
 
 Output: `src/bin/Release/net10.0/win-x86/publish/SF.asi`
@@ -216,7 +216,7 @@ For detailed guides, API reference, and examples, visit the **[SF-Arizona Wiki](
 ```
 SF-Arizona/
 ├── src/
-│   ├── SF.csproj                          # Project file (NativeAOT, win-x86)
+│   ├── SF.Runtime.csproj                  # Project file (NativeAOT, win-x86)
 │   ├── Bootstrap/                         # Application init and context setup
 │   ├── Diagnostics/                       # Logging provider and file logger
 │   ├── Interop/

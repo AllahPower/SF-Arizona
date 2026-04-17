@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Ui;
 
 public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
 {

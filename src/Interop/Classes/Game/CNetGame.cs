@@ -1,20 +1,22 @@
-using SFSharp;
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-using unsafe GetActorPoolDelegate = delegate* unmanaged[Thiscall]<CNetGame*, CActorPool*>;
-using unsafe GetMenuPoolDelegate = delegate* unmanaged[Thiscall]<CNetGame*, CMenuPool*>;
-using unsafe GetObjectPoolDelegate = delegate* unmanaged[Thiscall]<CNetGame*, CObjectPool*>;
-using unsafe GetPickupPoolDelegate = delegate* unmanaged[Thiscall]<CNetGame*, CPickupPool*>;
-using unsafe GetPlayerPoolDelegate = delegate* unmanaged[Thiscall]<CNetGame*, CPlayerPool*>;
-using unsafe GetStateDelegate = delegate* unmanaged[Thiscall]<CNetGame*, int>;
-using unsafe GetCounterDelegate = delegate* unmanaged[Thiscall]<CNetGame*, long>;
-using unsafe GetVehiclePoolDelegate = delegate* unmanaged[Thiscall]<CNetGame*, CVehiclePool*>;
-using unsafe InitializeDelegate = delegate* unmanaged[Thiscall]<CNetGame*, void>;
-using unsafe LanModeDelegate = delegate* unmanaged[Thiscall]<CNetGame*, int>;
-using unsafe SetStateDelegate = delegate* unmanaged[Thiscall]<CNetGame*, int, void>;
-using unsafe UpdatePlayersDelegate = delegate* unmanaged[Thiscall]<CNetGame*, void>;
+namespace SFSharp.Runtime.Interop;
+
+using unsafe GetActorPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CActorPool*>;
+using unsafe GetMenuPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CMenuPool*>;
+using unsafe GetObjectPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CObjectPool*>;
+using unsafe GetPickupPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CPickupPool*>;
+using unsafe GetPlayerPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CPlayerPool*>;
+using unsafe GetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, int>;
+using unsafe GetCounterDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, long>;
+using unsafe GetVehiclePoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CVehiclePool*>;
+using unsafe InitializeDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, void>;
+using unsafe LanModeDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, int>;
+using unsafe SetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, int, void>;
+using unsafe UpdatePlayersDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, void>;
+
 
 [StructLayout(LayoutKind.Explicit, Size = 994, Pack = 1)]
 public unsafe ref struct CNetGame
@@ -45,8 +47,8 @@ public unsafe ref struct CNetGame
     private static readonly GetMenuPoolDelegate _getMenuPool = (GetMenuPoolDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetMenuPool);
     private static readonly GetStateDelegate _getState = (GetStateDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetState);
     private static readonly LanModeDelegate _lanMode = (LanModeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.LanMode);
-    private static readonly delegate* unmanaged[Thiscall]<CNetGame*, SFSharp.CRakClientInterface*> _getRakClient =
-        (delegate* unmanaged[Thiscall]<CNetGame*, SFSharp.CRakClientInterface*>)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetRakClient);
+    private static readonly delegate* unmanaged[Thiscall]<CNetGame*, CRakClientInterface*> _getRakClient =
+        (delegate* unmanaged[Thiscall]<CNetGame*, CRakClientInterface*>)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetRakClient);
     private static readonly GetCounterDelegate _getCounter = (GetCounterDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetCounter);
     private static readonly SetStateDelegate _setState = (SetStateDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.SetState);
     private static readonly InitializeDelegate _initializePools = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.InitializePools);

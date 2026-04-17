@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 public static class GtaOffsets
 {

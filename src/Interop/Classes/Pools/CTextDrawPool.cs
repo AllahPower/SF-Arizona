@@ -1,11 +1,12 @@
-using SFSharp;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<CTextDrawPool*, int, CTextDrawTransmit*, byte*, nint>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<CTextDrawPool*, ushort, void>;
-using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<CTextDrawPool*, void>;
+using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CTextDrawPool*, int, SFSharp.Runtime.Interop.CTextDrawTransmit*, byte*, nint>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CTextDrawPool*, ushort, void>;
+using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CTextDrawPool*, void>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 18432, Pack = 1)]
 public unsafe ref struct CTextDrawPool

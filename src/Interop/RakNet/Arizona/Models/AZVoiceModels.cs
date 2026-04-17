@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public enum EAzvStreamType : byte
 {

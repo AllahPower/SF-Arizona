@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
-using SFSharp;
+using SFSharp.Abstractions.Modules;
+using SFSharp.Abstractions.Modules.Lifecycle;
 
 namespace SFSharp.Examples.ConfigCounter;
 

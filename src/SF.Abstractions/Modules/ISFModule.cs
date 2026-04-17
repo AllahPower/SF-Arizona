@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules;
 
 /// <summary>
 /// Minimal contract implemented by every SF module. User modules typically derive from

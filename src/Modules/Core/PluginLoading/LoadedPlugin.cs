@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 /// <summary>
 /// Runtime record of a plugin loaded via <see cref="PluginLoader"/>. Tracks the isolated

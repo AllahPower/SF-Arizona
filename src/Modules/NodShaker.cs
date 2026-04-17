@@ -1,4 +1,5 @@
-using SFSharp;
+
+namespace SFSharp.Runtime.Modules;
 
 [SFModule("nod-shaker", "NodShaker", Category = "Utility", Description = "Maps extra keys to +/- chat shortcuts.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 30)]
 public class NodShaker : SFModuleBase

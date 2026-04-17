@@ -1,8 +1,9 @@
-using SFSharp;
 using System;
 using System.Runtime.InteropServices;
 
-using unsafe SendDelegate = delegate* unmanaged[Thiscall]<CInput*, byte*, void>;
+using unsafe SendDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CInput*, byte*, void>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 6908, Pack = 1)]
 public unsafe ref struct CInput

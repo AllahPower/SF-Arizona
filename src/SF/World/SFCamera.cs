@@ -1,7 +1,7 @@
 using System.Numerics;
-using SFSharp.Interop.RakNet.Packets.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Ui;
 
 public sealed class SFCamera
     : ISFCamera

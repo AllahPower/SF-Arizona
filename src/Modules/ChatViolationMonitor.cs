@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
-using SFSharp;
 using System.Text.RegularExpressions;
+
+namespace SFSharp.Runtime.Modules;
 
 public record ChatViolationRecord(DateTime Timestamp, string PlayerName, string ViolationType, string MatchedFragment, string OriginalText);
 

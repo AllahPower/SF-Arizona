@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct CRakClientInterfaceVTable

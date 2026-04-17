@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 public sealed class JsonModuleConfig : IModuleConfig
 {

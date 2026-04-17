@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Diagnostics;
 
 public static class SFLog
 {

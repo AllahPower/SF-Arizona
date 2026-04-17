@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 /// <summary>Read-only pickup pool facade.</summary>
 /// <remarks>NOT thread-safe. Reads native SA-MP pickup pool memory - main-thread only.</remarks>

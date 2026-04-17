@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Game;
 
 public readonly struct SFPickup(int index)
 {

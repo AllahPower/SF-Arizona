@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 /// <summary>Read-only vehicle pool facade backed by copied vehicle snapshots.</summary>
 /// <remarks>NOT thread-safe. Members read native SA-MP pool memory - main-thread only.</remarks>

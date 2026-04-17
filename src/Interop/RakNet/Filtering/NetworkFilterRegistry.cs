@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 /// <summary>
 /// Thread-safe, lock-free-read filter registry for synchronous packet/RPC filtering on hook threads.

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 internal static class ModuleExecutionStateStore
 {

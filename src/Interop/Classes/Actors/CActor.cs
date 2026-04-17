@@ -1,9 +1,8 @@
-using SFSharp;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x56, Pack = 1)]
 public unsafe struct CActor

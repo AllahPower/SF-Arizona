@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 /// <summary>
 /// Plugin-facing read-only player API. Exposes scoreboard and targeting helpers without surfacing

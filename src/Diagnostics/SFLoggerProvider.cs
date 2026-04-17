@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Diagnostics;
 
 public sealed class SFLoggerProvider : ILoggerProvider
 {

@@ -1,15 +1,16 @@
-using SFSharp;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe ChatDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, byte*, void>;
-using unsafe GetColorAsArgbDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, uint>;
-using unsafe GetColorAsRgbaDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, uint>;
-using unsafe GetPedDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, CPed*>;
-using unsafe GetSpecialActionDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, byte>;
-using unsafe RequestSpawnDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, void>;
-using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<CLocalPlayer*, uint, void>;
+using unsafe ChatDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, byte*, void>;
+using unsafe GetColorAsArgbDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, uint>;
+using unsafe GetColorAsRgbaDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, uint>;
+using unsafe GetPedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, SFSharp.Runtime.Interop.CPed*>;
+using unsafe GetSpecialActionDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, byte>;
+using unsafe RequestSpawnDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, void>;
+using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, uint, void>;
+
+namespace SFSharp.Runtime.Interop;
 
 [StructLayout(LayoutKind.Explicit, Size = 812, Pack = 1)]
 public unsafe ref struct CLocalPlayer

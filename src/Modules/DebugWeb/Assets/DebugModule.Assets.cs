@@ -1,3 +1,5 @@
+namespace SFSharp.Runtime.Modules;
+
 public partial class DebugModule
 {
     private const string WwwRootRelativePath = "wwwroot";

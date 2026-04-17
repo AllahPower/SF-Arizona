@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Network;
 
 /// <summary>
 /// Plugin-facing RakNet transport facade. Sends packets/RPCs through the game's RakClient and

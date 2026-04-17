@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Modules;
 
 internal sealed class PluginManifestResolver
 {

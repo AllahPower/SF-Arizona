@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules;
 
 /// <summary>
 /// Telemetry surface for a single module run. Separated from <see cref="IModuleContext"/> so the

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Ui;
 
 /// <summary>
 /// Plugin-facing contract for SA-MP dialogs. Concrete implementation lives in the host and routes

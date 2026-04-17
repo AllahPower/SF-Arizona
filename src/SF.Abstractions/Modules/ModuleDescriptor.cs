@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules;
 
 /// <summary>
 /// Immutable snapshot of the metadata declared on a module type. Built once at registration time

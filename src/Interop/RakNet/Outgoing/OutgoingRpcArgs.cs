@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public readonly record struct OutgoingRpcArgs(int ERpcId, nint DataPtr, int DataBitLength)
 {

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Modules;
 
 /// <summary>Read-only catalog of modules currently known to the host.</summary>
 /// <remarks>Thread-safe - all queries read an immutable snapshot.</remarks>

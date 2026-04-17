@@ -1,8 +1,8 @@
 using System.Numerics;
 using System.Text;
-using SFSharp.Interop.RakNet.Arizona.Enum;
+using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public static partial class ArizonaPacket
 {

@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Abstractions.Game;
 
 /// <summary>
 /// Immutable read-only player snapshot suitable for external modules. Captured from the current

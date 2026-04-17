@@ -1,4 +1,4 @@
-namespace SFSharp;
+namespace SFSharp.Runtime.Game;
 
 public readonly unsafe record struct SFObjectMaterialSlot(SFObject Object, int Slot)
 {

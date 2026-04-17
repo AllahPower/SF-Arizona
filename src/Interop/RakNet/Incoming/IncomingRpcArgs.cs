@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace SFSharp;
+namespace SFSharp.Runtime.Networking;
 
 public readonly record struct IncomingRpcArgs(int ERpcId, nint DataPtr, int DataBitOffset, int DataBitLength)
 {

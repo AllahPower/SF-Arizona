@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp;
+namespace SFSharp.Abstractions.Ui;
 
 /// <summary>Read-only camera facade.</summary>
 /// <remarks>NOT thread-safe. Reads the GTA SA camera state struct - main-thread only.</remarks>
