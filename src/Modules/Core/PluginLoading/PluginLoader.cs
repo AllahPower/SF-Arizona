@@ -186,7 +186,7 @@ public sealed class PluginLoader
         {
             PluginLoadResult failure = CreateAssemblyLoadFailure(manifest, context, ex);
             SFLog.Error(ex, $"PluginLoader[{manifest.PluginId}]: {failure.Message}");
-            TryUnloadContext(context, manifest.PluginId);
+            BeginDetachedFailedLoadCleanup(context, manifest.PluginId);
             return failure;
         }
 
@@ -232,7 +232,7 @@ public sealed class PluginLoader
                 }
             }
 
-            TryUnloadContext(context, manifest.PluginId);
+            BeginDetachedFailedLoadCleanup(context, manifest.PluginId);
             return failure;
         }
 
@@ -240,7 +240,7 @@ public sealed class PluginLoader
         {
             string message = $"Plugin '{manifest.PluginId}' assembly has no types decorated with [SFModule].";
             SFLog.Warn($"PluginLoader[{manifest.PluginId}]: {message}");
-            TryUnloadContext(context, manifest.PluginId);
+            BeginDetachedFailedLoadCleanup(context, manifest.PluginId);
             return PluginLoadResult.FromFailure(PluginLoadFailureReason.NoModulesFound, message, manifest.PluginId, manifest);
         }
 
@@ -263,7 +263,7 @@ public sealed class PluginLoader
                 SFLog.Error($"PluginLoader[{manifest.PluginId}]: rollback failed for ids=[{string.Join(',', rollbackFailures)}]");
             }
 
-            TryUnloadContext(context, manifest.PluginId);
+            BeginDetachedFailedLoadCleanup(context, manifest.PluginId);
             return PluginLoadResult.FromFailure(
                 PluginLoadFailureReason.ModuleRegistrationFailed,
                 $"Plugin '{manifest.PluginId}' failed to register its modules: {ex.GetBaseException().Message}",
@@ -454,6 +454,42 @@ public sealed class PluginLoader
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void BeginDetachedFailedLoadCleanup(PluginLoadContext context, string pluginId)
+    {
+        WeakReference loadContextRef = new(context);
+        if (!TryUnloadContext(context, pluginId))
+        {
+            return;
+        }
+
+        ThreadPool.QueueUserWorkItem(static state =>
+        {
+            DetachedFailedLoadCleanup cleanup = (DetachedFailedLoadCleanup)state!;
+            FinalizeDetachedFailedLoadCleanup(cleanup.PluginId, cleanup.LoadContextRef);
+        }, new DetachedFailedLoadCleanup(pluginId, loadContextRef));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void FinalizeDetachedFailedLoadCleanup(string pluginId, WeakReference loadContextRef)
+    {
+        for (int attempt = 0; attempt < UnloadGcAttempts && loadContextRef.IsAlive; attempt++)
+        {
+            Thread.Sleep(50);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
+        if (loadContextRef.IsAlive)
+        {
+            SFLog.Warn($"PluginLoader[{pluginId}]: failed-load ALC is still alive after {UnloadGcAttempts} GC cycles. Plugin files may remain locked until a later collection.");
+            return;
+        }
+
+        SFLog.Debug($"PluginLoader[{pluginId}]: failed-load ALC fully collected");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static bool TryDetachAndUnloadContext(LoadedPlugin plugin, string pluginId)
     {
         PluginLoadContext? context = plugin.DetachLoadContext();
@@ -616,4 +652,6 @@ public sealed class PluginLoader
             manifest.PluginId,
             manifest);
     }
+
+    private sealed record DetachedFailedLoadCleanup(string PluginId, WeakReference LoadContextRef);
 }

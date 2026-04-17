@@ -1,12 +1,40 @@
 import { store } from "../store.js";
 import { esc } from "../utils.js";
 
-const CEF_TYPES = {
-    "Arizona220:InjectCode": { label: "InjectCode", css: "cef-inject" },
-    "Arizona220:SimpleCreate": { label: "SimpleCreate", css: "cef-create" },
-    "Arizona220:SendMessage": { label: "SendMessage", css: "cef-send", dir: "out" },
-    "Arizona220:BrowserClick": { label: "BrowserClick", css: "cef-click" },
+const CEF_GROUPS = {
+    injectCode: {
+        label: "InjectCode",
+        css: "cef-inject",
+        dir: "in",
+        names: ["Arizona220:InjectCode"],
+    },
+    simpleCreate: {
+        label: "SimpleCreate",
+        css: "cef-create",
+        dir: "in",
+        names: ["Arizona220:SimpleCreate"],
+    },
+    send: {
+        label: "Send",
+        css: "cef-send",
+        dir: "out",
+        names: ["Arizona220:Send", "Arizona220:SendMessage"],
+    },
+    browserClick: {
+        label: "BrowserClick",
+        css: "cef-click",
+        dir: "in",
+        names: ["Arizona220:BrowserClick"],
+    },
 };
+
+const CEF_NAME_MAP = new Map(
+    Object.entries(CEF_GROUPS).flatMap(([key, def]) =>
+        def.names.map(name => [name, { ...def, key }])
+    )
+);
+
+const CEF_GROUP_KEYS = Object.keys(CEF_GROUPS);
 
 const COPY_SVG = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/></svg>';
 
@@ -16,13 +44,13 @@ let entries = [];
 let _root = null;
 let paused = false;
 let searchText = "";
-let activeFilters = new Set(Object.keys(CEF_TYPES));
+let activeFilters = new Set(CEF_GROUP_KEYS);
 let expandedSeqs = new Set();
 let pendingFlush = false;
 let _searchTimer = 0;
 
 function render() {
-    const filterBtns = Object.entries(CEF_TYPES).map(([key, def]) =>
+    const filterBtns = Object.entries(CEF_GROUPS).map(([key, def]) =>
         `<button class="cef-filter-btn active" data-cef-type="${key}"><span class="cef-dot ${def.css}"></span>${def.label}</button>`
     ).join("");
 
@@ -49,9 +77,9 @@ function mount(root) {
     _root = root;
 
     root.querySelector("#cefBtnAll").addEventListener("click", () => {
-        const allActive = activeFilters.size === Object.keys(CEF_TYPES).length;
+        const allActive = activeFilters.size === CEF_GROUP_KEYS.length;
         if (allActive) activeFilters.clear();
-        else activeFilters = new Set(Object.keys(CEF_TYPES));
+        else activeFilters = new Set(CEF_GROUP_KEYS);
         syncFilterButtons();
         rebuildList();
     });
@@ -64,7 +92,7 @@ function mount(root) {
                 else activeFilters.add(type);
             } else {
                 if (activeFilters.size === 1 && activeFilters.has(type))
-                    activeFilters = new Set(Object.keys(CEF_TYPES));
+                    activeFilters = new Set(CEF_GROUP_KEYS);
                 else
                     activeFilters = new Set([type]);
             }
@@ -140,9 +168,8 @@ function onShow() {}
 function onHide() {}
 
 function onEntry(e) {
-    const def = CEF_TYPES[e.name];
-    if (!def) return;
-    if (def.dir === "out" ? e.direction !== 1 : e.direction !== 0) return;
+    const def = getCefDefinition(e);
+    if (!def || !matchesDirection(def, e)) return;
 
     entries.push(e);
     if (entries.length > MAX_CEF_ENTRIES) entries = entries.slice(-MAX_CEF_ENTRIES);
@@ -157,7 +184,8 @@ function onEntry(e) {
 }
 
 function passesFilter(e) {
-    if (!activeFilters.has(e.name)) return false;
+    const def = getCefDefinition(e);
+    if (!def || !activeFilters.has(def.key) || !matchesDirection(def, e)) return false;
     if (searchText) {
         const haystack = `${e.name} ${e.parsed || ""} ${e.detail || ""}`.toLowerCase();
         if (!haystack.includes(searchText)) return false;
@@ -221,7 +249,7 @@ function rebuildList() {
 }
 
 function buildCard(e) {
-    const def = CEF_TYPES[e.name];
+    const def = getCefDefinition(e);
     const expanded = expandedSeqs.has(e.seq);
     const parsed = parseCefEntry(e);
 
@@ -248,10 +276,13 @@ function buildCard(e) {
 
 function parseCefEntry(e) {
     const raw = e.parsed || e.detail || "";
-    if (e.name === "Arizona220:InjectCode") return parseInjectCode(raw, e);
-    if (e.name === "Arizona220:SimpleCreate") return parseSimpleCreate(raw, e);
-    if (e.name === "Arizona220:SendMessage") return parseSendMessage(raw, e);
-    if (e.name === "Arizona220:BrowserClick") return parseBrowserClick(raw, e);
+    const def = getCefDefinition(e);
+    if (!def) return { summary: raw.slice(0, 120), bodyHtml: copyBlock("Raw", raw) };
+
+    if (def.key === "injectCode") return parseInjectCode(raw, e);
+    if (def.key === "simpleCreate") return parseSimpleCreate(raw, e);
+    if (def.key === "send") return parseSendMessage(raw, e);
+    if (def.key === "browserClick") return parseBrowserClick(raw, e);
     return { summary: raw.slice(0, 120), bodyHtml: copyBlock("Raw", raw) };
 }
 
@@ -416,7 +447,7 @@ function syntaxHighlight(obj) {
 
 function syncFilterButtons() {
     if (!_root) return;
-    const allActive = activeFilters.size === Object.keys(CEF_TYPES).length;
+    const allActive = activeFilters.size === CEF_GROUP_KEYS.length;
     _root.querySelector("#cefBtnAll").classList.toggle("active", allActive);
     for (const btn of _root.querySelectorAll(".cef-filter-btn[data-cef-type]")) {
         btn.classList.toggle("active", activeFilters.has(btn.dataset.cefType));
@@ -428,6 +459,14 @@ function updateCounter() {
     const el = _root.querySelector("#cefCounter");
     const visible = entries.filter(passesFilter).length;
     if (el) el.textContent = `${visible} / ${entries.length} packets`;
+}
+
+function getCefDefinition(entry) {
+    return CEF_NAME_MAP.get(entry.name);
+}
+
+function matchesDirection(def, entry) {
+    return def.dir === "out" ? entry.direction === 1 : entry.direction === 0;
 }
 
 export const CefPage = { render, mount, onShow, onHide };

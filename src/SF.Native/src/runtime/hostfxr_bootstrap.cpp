@@ -446,7 +446,7 @@ bool BootstrapManagedEntry(const wchar_t *runtimeConfigPath, const wchar_t *asse
 
     rc = loadAssembly(
         assemblyPath,
-        L"SFSharp.SFBootstrap, SF.Runtime",
+        L"SFSharp.Runtime.Bootstrap.SFBootstrap, SF.Runtime",
         L"WinMainLoop",
         UNMANAGEDCALLERSONLY_METHOD,
         nullptr,
