@@ -3,6 +3,7 @@ using System.Numerics;
 namespace SFSharp;
 
 /// <summary>Read-only camera facade.</summary>
+/// <remarks>NOT thread-safe. Reads the GTA SA camera state struct - main-thread only.</remarks>
 public interface ISFCamera
 {
     bool IsAvailable { get; }

@@ -19,9 +19,16 @@ public partial class SFChat : ISFChat
         CLocalPlayer.Instance.Chat(message);
     }
 
+    // Main-thread only (CChat.Instance touches native SA-MP chat state).
     public void Add(string text, uint textColor = 0xFFAAAAAA, string? prefix = null, uint prefixColor = 0xFFAAAAAA)
     {
         CChat.Instance.AddEntry(EntryType.Debug, text, prefix, textColor, prefixColor);
+    }
+
+    // Main-thread only.
+    public void Add(string text, SFColor textColor, string? prefix = null, SFColor? prefixColor = null)
+    {
+        CChat.Instance.AddEntry(EntryType.Debug, text, prefix, textColor.Argb, (prefixColor ?? textColor).Argb);
     }
 
     [Obsolete]

@@ -3,8 +3,48 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public sealed class SFPackets : ISFPackets
+public sealed unsafe class SFPackets : ISFPackets
 {
+    public IDisposable RegisterIncomingFilter(int packetId, SFPacketFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.IncomingPacketFilters.Add(packetId, (dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(packetId, span, bitLength);
+        });
+    }
+
+    public IDisposable RegisterIncomingFilter(SFPacketFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.IncomingPacketFilters.Add((id, dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(id, span, bitLength);
+        });
+    }
+
+    public IDisposable RegisterOutgoingFilter(int packetId, SFPacketFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.OutgoingPacketFilters.Add(packetId, (dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(packetId, span, bitLength);
+        });
+    }
+
+    public IDisposable RegisterOutgoingFilter(SFPacketFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.OutgoingPacketFilters.Add((id, dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(id, span, bitLength);
+        });
+    }
+
     public IncomingPacketManager IncomingHandlers => SFBootstrap.IncomingPacketHandlers;
     public OutgoingPacketManager OutgoingHandlers => SFBootstrap.OutgoingPacketHandlers;
 
@@ -117,7 +157,7 @@ public sealed class SFPackets : ISFPackets
 
     /// <remarks>
     /// Arizona Packet 220 traffic cannot be cancelled via incoming filters because vorbisFile.dll
-    /// replaces the entire RakClientInterface vtable — those packets are intercepted and processed
+    /// replaces the entire RakClientInterface vtable - those packets are intercepted and processed
     /// before reaching SAMP's RakClient Receive, so our hook never sees them.
     /// </remarks>
     public IDisposable RegisterIncomingFilter(EPacketId packetId, Func<nint, int, bool> filter)

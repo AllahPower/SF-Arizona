@@ -4,6 +4,10 @@ namespace SFSharp;
 /// Plugin-facing contract for keyboard state queries. The host owns the polling loop and exposes
 /// the latest sampled state through this interface.
 /// </summary>
+/// <remarks>
+/// Thread-safe for reads - the host polls Win32 <c>GetAsyncKeyState</c> and caches state that
+/// these queries observe.
+/// </remarks>
 public interface ISFKeyboard
 {
     /// <summary>Returns <see langword="true"/> while the virtual key is currently held down.</summary>

@@ -4,6 +4,7 @@ namespace SFSharp;
 /// Plugin-facing Arizona packet transport facade. Surface includes only copied payload frames and
 /// sub-id routing, without exposing game-memory readers or parser internals.
 /// </summary>
+/// <remarks>Subscribe/Stream registration is thread-safe. Handlers fire on the main game thread.</remarks>
 public interface ISFArizonaPackets
 {
     IDisposable SubscribeIncoming(int subId, Action<IncomingArizonaPacketFrame> handler);

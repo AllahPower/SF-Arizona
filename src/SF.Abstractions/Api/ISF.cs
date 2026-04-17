@@ -52,6 +52,12 @@ public interface ISF
     /// <summary>Read-only camera facade.</summary>
     ISFCamera Camera { get; }
 
+    /// <summary>
+    /// Raw RakNet transport (send packet/RPC, simulate incoming). Every member is main-thread only -
+    /// see <see cref="ISFNetwork"/>.
+    /// </summary>
+    ISFNetwork Network { get; }
+
     /// <summary>Resolved GTA San Andreas user files directory.</summary>
     string UserFilesDirectory { get; }
 }

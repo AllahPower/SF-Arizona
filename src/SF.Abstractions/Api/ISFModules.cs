@@ -1,6 +1,7 @@
 namespace SFSharp;
 
 /// <summary>Read-only catalog of modules currently known to the host.</summary>
+/// <remarks>Thread-safe - all queries read an immutable snapshot.</remarks>
 public interface ISFModules
 {
     /// <summary>Returns a point-in-time snapshot of every registered module.</summary>

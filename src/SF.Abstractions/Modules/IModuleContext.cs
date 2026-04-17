@@ -4,9 +4,16 @@ namespace SFSharp;
 
 /// <summary>
 /// Per-run facade passed to <see cref="ISFModule.RunAsync(IModuleContext)"/>. Exposes the cancellation
-/// token, telemetry helpers, storage accessors and subscription helpers for a single module run.
-/// The concrete implementation is owned by the host and disposed after the module returns or faults.
+/// token, telemetry, storage accessors and subscription helpers for a single module run. The concrete
+/// implementation is owned by the host and disposed after the module returns or faults.
 /// </summary>
+/// <remarks>
+/// Member thread-safety varies. Telemetry helpers (<see cref="Telemetry"/>) and
+/// <see cref="RegisterChatCommand"/> / <see cref="RegisterDisposable"/> / <see cref="RunBackground"/>
+/// are thread-safe. Everything else (storage init, <see cref="Config"/> access, subscription
+/// extensions that touch native hooks) should be treated as main-thread-only unless documented
+/// otherwise on the specific API.
+/// </remarks>
 public interface IModuleContext : IDisposable
 {
     /// <summary>Static metadata for this module run.</summary>
@@ -20,7 +27,7 @@ public interface IModuleContext : IDisposable
 
     /// <summary>
     /// Logger scoped to <see cref="ModuleDescriptor.Id"/>. Messages go through the host logging
-    /// pipeline and end up in the standard SF log sinks.
+    /// pipeline and end up in the standard SF log sinks. Thread-safe.
     /// </summary>
     ILogger Log { get; }
 
@@ -33,34 +40,34 @@ public interface IModuleContext : IDisposable
     /// <summary>Typed JSON configuration stored inside <see cref="UserData"/>.</summary>
     IModuleConfig Config { get; }
 
-    /// <summary>Records a heartbeat tick and optionally updates the activity label.</summary>
-    void Heartbeat(string? activity = null);
+    /// <summary>Thread-safe telemetry surface for this run.</summary>
+    IModuleTelemetry Telemetry { get; }
 
-    /// <summary>Updates only the activity label without touching the heartbeat timestamp.</summary>
-    void ReportActivity(string activity);
+    /// <inheritdoc cref="IModuleTelemetry.Heartbeat"/>
+    void Heartbeat(string? activity = null) => Telemetry.Heartbeat(activity);
 
-    /// <summary>Sets the free-form status string surfaced in the runtime snapshot.</summary>
-    void SetStatusText(string? value);
+    /// <inheritdoc cref="IModuleTelemetry.ReportActivity"/>
+    void ReportActivity(string activity) => Telemetry.ReportActivity(activity);
 
-    /// <summary>Adds <paramref name="delta"/> to a named counter in the runtime snapshot.</summary>
-    void IncrementCounter(string counterName, long delta = 1);
+    /// <inheritdoc cref="IModuleTelemetry.SetStatusText"/>
+    void SetStatusText(string? value) => Telemetry.SetStatusText(value);
 
-    /// <summary>Sets a detail key in the runtime snapshot. Blank value removes the key.</summary>
-    void SetDetail(string key, string? value);
+    /// <inheritdoc cref="IModuleTelemetry.IncrementCounter"/>
+    void IncrementCounter(string counterName, long delta = 1) => Telemetry.IncrementCounter(counterName, delta);
 
-    /// <summary>
-    /// Starts a loop timer. Dispose the returned handle at the end of the iteration to record loop
-    /// duration, duty cycle and bump the loop counter.
-    /// </summary>
-    IDisposable TrackLoop(string? activity = null);
+    /// <inheritdoc cref="IModuleTelemetry.SetDetail"/>
+    void SetDetail(string key, string? value) => Telemetry.SetDetail(key, value);
+
+    /// <inheritdoc cref="IModuleTelemetry.TrackLoop"/>
+    IDisposable TrackLoop(string? activity = null) => Telemetry.TrackLoop(activity);
 
     /// <summary>
     /// Takes ownership of <paramref name="disposable"/>. The object is disposed when the module run
-    /// ends, even if the module faults.
+    /// ends, even if the module faults. Thread-safe.
     /// </summary>
     IDisposable RegisterDisposable(IDisposable disposable);
 
-    /// <summary>Registers a chat command scoped to this module's lifetime.</summary>
+    /// <summary>Registers a chat command scoped to this module's lifetime. Thread-safe.</summary>
     IDisposable RegisterChatCommand(string command, Action<string?> callback);
 
     /// <summary>Awaitable that resumes on the SAMP main thread. No-op when already there.</summary>
@@ -68,10 +75,10 @@ public interface IModuleContext : IDisposable
 
     /// <summary>
     /// Runs <paramref name="work"/> on a thread-pool thread and tracks the returned task as an
-    /// owned background task for this module run.
+    /// owned background task for this module run. Thread-safe.
     /// </summary>
     Task RunBackground(Func<Task> work);
 
-    /// <summary>Captures a current runtime snapshot. Safe to call from any thread.</summary>
-    ModuleRuntimeSnapshot GetSnapshot();
+    /// <inheritdoc cref="IModuleTelemetry.GetSnapshot"/>
+    ModuleRuntimeSnapshot GetSnapshot() => Telemetry.GetSnapshot();
 }

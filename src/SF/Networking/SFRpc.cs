@@ -3,8 +3,48 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp;
 
-public sealed class SFRpc : ISFRpc
+public sealed unsafe class SFRpc : ISFRpc
 {
+    public IDisposable RegisterIncomingFilter(int rpcId, SFRpcFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.IncomingRpcFilters.Add(rpcId, (dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(rpcId, span, bitLength);
+        });
+    }
+
+    public IDisposable RegisterIncomingFilter(SFRpcFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.IncomingRpcFilters.Add((id, dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(id, span, bitLength);
+        });
+    }
+
+    public IDisposable RegisterOutgoingFilter(int rpcId, SFRpcFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.OutgoingRpcFilters.Add(rpcId, (dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(rpcId, span, bitLength);
+        });
+    }
+
+    public IDisposable RegisterOutgoingFilter(SFRpcFilterCallback filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return SFBootstrap.OutgoingRpcFilters.Add((id, dataPtr, bitLength) =>
+        {
+            var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
+            return filter(id, span, bitLength);
+        });
+    }
+
     public RpcHandlerManager Handlers => SFBootstrap.RpcHandlers;
     public OutgoingRpcManager OutgoingHandlers => SFBootstrap.OutgoingRpcHandlers;
 

@@ -4,6 +4,10 @@ namespace SFSharp;
 /// Plugin-facing typed parsed event surface. Event payload models are supplied by host-shared
 /// assemblies and dispatched on the main thread after parsing completes.
 /// </summary>
+/// <remarks>
+/// Subscription/stream registration is thread-safe. Handlers themselves are always invoked on the
+/// main game thread, so subscribers don't need cross-thread synchronization.
+/// </remarks>
 public interface ISFEvents
 {
     IDisposable OnIncomingRpc<TRpc>(Action<TRpc> handler);

@@ -179,10 +179,3 @@ public readonly record struct NativeChatEntry(
     public bool IsEmpty => Type == EntryType.None && Text is null;
 }
 
-public enum EntryType : int
-{
-    None = 0,
-    Chat = 2,
-    Info = 4,
-    Debug = 8
-}

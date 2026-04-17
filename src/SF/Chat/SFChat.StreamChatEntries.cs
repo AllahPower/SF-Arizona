@@ -4,23 +4,6 @@ using System.Threading.Channels;
 
 namespace SFSharp;
 
-public record ChatEntry(EntryType Type, string? Text, string? Prefix, uint TextColor, uint PrefixColor);
-
-public enum ServerChatKind
-{
-    Chat,
-    ClientMessage
-}
-
-public record ServerChatEntry(ServerChatKind Kind, ERpcId ERpcId, ChatEntry Entry)
-{
-    public EntryType Type => Entry.Type;
-    public string? Text => Entry.Text;
-    public string? Prefix => Entry.Prefix;
-    public uint TextColor => Entry.TextColor;
-    public uint PrefixColor => Entry.PrefixColor;
-}
-
 public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 {
     private static readonly List<ChannelWriter<ServerChatEntry>> _serverConsumerWriters = new();
@@ -80,6 +63,10 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
             yield return entry.Entry;
         }
     }
+
+    public IAsyncEnumerable<ChatEntry> StreamEntries(CancellationToken token = default) => StreamLocalChatEntries(token);
+
+    public IAsyncEnumerable<ServerChatEntry> StreamServerEntries(CancellationToken token = default) => StreamServerChatEntries(token);
 
     public async IAsyncEnumerable<ChatEntry> StreamLocalChatEntries([EnumeratorCancellation] CancellationToken token = default)
     {

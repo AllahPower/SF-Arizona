@@ -4,6 +4,10 @@ namespace SFSharp;
 /// Plugin-facing read-only player API. Exposes scoreboard and targeting helpers without surfacing
 /// runtime-specific player wrapper objects.
 /// </summary>
+/// <remarks>
+/// NOT thread-safe. Every accessor reads native SA-MP player-pool memory and must be called from
+/// the main game thread.
+/// </remarks>
 public interface ISFPlayers
 {
     ushort LocalPlayerId { get; }

@@ -1,6 +1,7 @@
 namespace SFSharp;
 
 /// <summary>Read-only actor pool facade.</summary>
+/// <remarks>NOT thread-safe. Reads native SA-MP actor pool memory - main-thread only.</remarks>
 public interface ISFActors
 {
     int LargestId { get; }

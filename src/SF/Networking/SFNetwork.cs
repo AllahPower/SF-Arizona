@@ -11,7 +11,11 @@ public delegate void BitStreamBuildAction(ref BitStreamWriter writer);
 /// High-level facade over the RakNet client: sends packets/RPCs and injects synthetic
 /// traffic into the incoming pipeline the same way rakhook's emul_packet / emul_rpc does.
 /// </summary>
-public sealed unsafe class SFNetwork
+/// <remarks>
+/// NOT thread-safe. Every method must be called from the main game thread - the underlying
+/// RakPeer queues are single-producer and native send paths are not re-entrant.
+/// </remarks>
+public sealed unsafe class SFNetwork : ISFNetwork
 {
     private const byte IdRpc = (byte)EPacketId.Rpc;
 
@@ -162,7 +166,7 @@ public sealed unsafe class SFNetwork
             Buffer.MemoryCopy(src, packet->Data, data.Length, data.Length);
         }
 
-        // AllocPacket only wires Data/DeleteData — the rest must be populated or SA-MP's
+        // AllocPacket only wires Data/DeleteData - the rest must be populated or SA-MP's
         // Receive loop treats the packet as empty / non-server-originated and drops it.
         packet->Length = data.Length;
         packet->BitSize = data.Length * 8;

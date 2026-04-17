@@ -17,6 +17,7 @@ namespace SFSharp;
 public sealed class ModuleContext : IModuleContext
 {
     private readonly ModuleRuntimeInfo _runtime;
+    private readonly ModuleTelemetry _telemetry;
     private int _disposed;
     private IModuleStorage? _assets;
     private IModuleStorage? _userData;
@@ -31,8 +32,12 @@ public sealed class ModuleContext : IModuleContext
     {
         Descriptor = descriptor;
         _runtime = runtime;
+        _telemetry = new ModuleTelemetry(runtime);
         CancellationToken = cancellationToken;
     }
+
+    /// <summary>Thread-safe telemetry surface backed by <see cref="ModuleRuntimeInfo"/>.</summary>
+    public IModuleTelemetry Telemetry => _telemetry;
 
     /// <summary>Static metadata for this module run, see <see cref="ModuleDescriptor"/>.</summary>
     public ModuleDescriptor Descriptor { get; }
@@ -50,24 +55,15 @@ public sealed class ModuleContext : IModuleContext
     public ILogger Log => _log ??= SFLoggerProvider.Instance.CreateLogger(Descriptor.Id);
 
     /// <summary>
-    /// Read/write access to the module's asset folder next to <c>gta_sa.exe</c>. Rooted at
-    /// <see cref="SFPaths.GetModuleAssetsDirectory(string)"/>. Resolved lazily through
-    /// <see cref="SF.Modules"/>, which allows another module to override the backing store before
-    /// the first access.
+    /// Read/write access to the module's asset folder next to <c>gta_sa.exe</c>. Resolved lazily
+    /// through <see cref="SF.Modules"/>'s <see cref="IModuleStorageProvider"/>.
     /// </summary>
     public IModuleStorage Assets => _assets ??= global::SFSharp.SF.Modules.Storage.GetAssets(Descriptor);
 
-    /// <summary>
-    /// Read/write access to the module's user data folder under <c>My Documents</c>. Rooted at
-    /// <see cref="SFPaths.GetModuleUserDataDirectory(string)"/>.
-    /// </summary>
+    /// <summary>Read/write access to the module's user data folder under <c>My Documents</c>.</summary>
     public IModuleStorage UserData => _userData ??= global::SFSharp.SF.Modules.Storage.GetUserData(Descriptor);
 
-    /// <summary>
-    /// Typed configuration backed by a JSON file inside <see cref="UserData"/>. Source-generated
-    /// <see cref="System.Text.Json.Serialization.Metadata.JsonTypeInfo{T}"/> is required for AOT
-    /// compatibility, see <see cref="IModuleConfig"/>.
-    /// </summary>
+    /// <summary>Typed configuration backed by a JSON file inside <see cref="UserData"/>.</summary>
     public IModuleConfig Config => _config ??= global::SFSharp.SF.Modules.Storage.GetConfig(Descriptor);
 
     /// <summary>
