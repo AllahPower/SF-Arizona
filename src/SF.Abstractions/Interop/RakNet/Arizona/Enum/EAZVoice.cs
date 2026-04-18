@@ -1,8 +1,16 @@
 namespace SFSharp.Abstractions.Interop.RakNet;
 
-/// <summary>AZVoice plugin sub-RPC IDs dispatched within RPC 252.</summary>
+/// <summary>
+/// AZVoice sub-packet identifiers carried inside packet 252.
+/// </summary>
+/// <remarks>
+/// Assert: the first byte of the AZVoice payload is the sub-ID from this enum.
+/// Assert: the remaining bytes are a sub-packet-specific bitstream payload.
+/// </remarks>
 public enum EAZVoice : byte
 {
+    #region incoming (server -> client)
+
     PluginInit = 3,
     CreateStaticAudioStream = 6,
     DeleteStream = 7,
@@ -22,4 +30,6 @@ public enum EAZVoice : byte
     DestroyStreamObject = 21,
     Disconnect = 22,
     SetReadyFlag = 23,
+
+    #endregion
 }
