@@ -73,6 +73,7 @@ public partial class SFModuleContainer
                     else if (!string.IsNullOrWhiteSpace(startFailure))
                     {
                         SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, startFailure, SFColors.Red));
+                        EmitStartDependencyHints(registration);
                     }
                     break;
                 case "stop":
@@ -103,6 +104,25 @@ public partial class SFModuleContainer
         catch (Exception ex)
         {
             SFLog.Error(ex, "Unhandled exception in /sfs command handler");
+        }
+    }
+
+    private void EmitStartDependencyHints(ModuleRegistration registration)
+    {
+        foreach (string depId in registration.Descriptor.Dependencies)
+        {
+            if (!_registrationsById.TryGetValue(depId, out ModuleRegistration? dep))
+            {
+                SF.Chat.Add($"  {Paint(SFColors.Slate, "dep")} {Paint(SFColors.Cyan | SFColors.Blue, depId)} {Paint(SFColors.Rose, "is not installed")}");
+                continue;
+            }
+
+            if (_runningModules.ContainsKey(dep))
+            {
+                continue;
+            }
+
+            SF.Chat.Add($"  {Paint(SFColors.Slate, "run")} {Paint(SFColors.White | SFColors.Ice, $"/sfs start {depId}")} {Paint(SFColors.Slate, "first")}");
         }
     }
 
