@@ -267,6 +267,8 @@ public partial class SFModuleContainer
                 case int index when index == autoStartIndex:
                     registration.AutoStartEnabled = !registration.AutoStartEnabled;
                     registration.Runtime.SetAutoStartEnabled(registration.AutoStartEnabled);
+                    SFHostManifest.Instance.SetEnabled(registration.Descriptor.Id, registration.AutoStartEnabled);
+                    SFHostManifest.Instance.FlushSync();
                     PublishModuleCatalogSnapshot();
                     break;
                 case int index when index == clearIndex:

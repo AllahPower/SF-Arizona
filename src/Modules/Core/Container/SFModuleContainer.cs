@@ -117,7 +117,8 @@ public sealed partial class SFModuleContainer
             throw new InvalidOperationException($"Module id '{descriptor.Id}' is already registered.");
         }
 
-        bool autoStartEnabled = enabledOnStart ?? descriptor.DefaultEnabled;
+        bool? storedIntent = SFHostManifest.Instance.TryGetEnabled(descriptor.Id);
+        bool autoStartEnabled = enabledOnStart ?? storedIntent ?? descriptor.DefaultEnabled;
         ModuleRegistration registration = new(descriptor, factory, autoStartEnabled, ownerPluginId);
         _registrations.Add(registration);
         _registrations.Sort((left, right) =>
@@ -126,6 +127,7 @@ public sealed partial class SFModuleContainer
             return order != 0 ? order : string.Compare(left.Descriptor.DisplayName, right.Descriptor.DisplayName, StringComparison.OrdinalIgnoreCase);
         });
         _registrationsById.Add(descriptor.Id, registration);
+        SFHostManifest.Instance.Upsert(descriptor.Id, autoStartEnabled, ownerPluginId is null ? "builtin" : "plugin");
         SFLog.Info($"RegisterModule id={descriptor.Id} type={descriptor.ModuleType.Name} enabledOnStart={autoStartEnabled} execution={descriptor.ExecutionModel}");
         UpdateDependencyStatus(registration);
         PublishModuleCatalogSnapshot();

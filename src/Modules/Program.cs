@@ -15,6 +15,8 @@ public static class Program
         {
             SFLog.Info("Program.Main started");
 
+            SFHostManifest.Instance.Load();
+
             string version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
             SF.Chat.Add($"{{00FF00}}SF-Arizona {{FFFFFF}}v{version}");
             SF.Chat.Add("{95FF4F}github.com/AllahPower/SF-Arizona | by AllahPower");
@@ -34,6 +36,8 @@ public static class Program
             int loadedPluginCount = pluginLoader.DiscoverAndLoadAll();
             SFLog.Info($"Program.Main plugin discovery complete, loaded {loadedPluginCount} plugin(s)");
 #pragma warning restore IL3050
+
+            SFHostManifest.Instance.FlushSync();
 
             using var debugCommand = SF.Chat.RegisterChatCommand("sfd", _ =>
             {
