@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -176,6 +177,8 @@ public static class SFBootstrap
         try
         {
             SFLog.Debug("SFMain started");
+            LogEnvironment();
+
             uint baseAddress = await GetSampDllBaseAddress();
             SFLog.Debug($"samp.dll loaded at 0x{baseAddress:X8}");
 
@@ -299,6 +302,33 @@ public static class SFBootstrap
         while (!ModuleResolver.IsClassReady("samp.dll", SampOffsets.CNetGame.Instance))
         {
             await Task.Yield();
+        }
+    }
+
+    private static void LogEnvironment()
+    {
+        try
+        {
+            Assembly asm = typeof(Program).Assembly;
+            string informational = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+            string fileVersion = asm.GetName().Version?.ToString() ?? "unknown";
+            string asmLocation = string.IsNullOrEmpty(asm.Location) ? "<in-memory>" : asm.Location;
+
+            Process process = Process.GetCurrentProcess();
+            string processPath = process.MainModule?.FileName ?? "<unknown>";
+
+            SFLog.Info("");
+            SFLog.Info($"env.runtime      version={informational} fileVersion={fileVersion} assembly={asmLocation}");
+            SFLog.Info($"env.clr          framework={RuntimeInformation.FrameworkDescription} runtimeId={RuntimeInformation.RuntimeIdentifier} processArch={RuntimeInformation.ProcessArchitecture}");
+            SFLog.Info($"env.os           description={RuntimeInformation.OSDescription} osArch={RuntimeInformation.OSArchitecture} 64bitOs={Environment.Is64BitOperatingSystem} 64bitProc={Environment.Is64BitProcess}");
+            SFLog.Info($"env.process      pid={process.Id} path={processPath} cwd={Environment.CurrentDirectory} cpuCount={Environment.ProcessorCount}");
+            SFLog.Info($"env.paths        game={SFPaths.GameDirectory} assets={SFPaths.AssetsRoot} userData={SFPaths.UserDataRoot} host={SFBootstrap.HostDirectory}");
+            SFLog.Info($"env.culture      current={System.Globalization.CultureInfo.CurrentCulture.Name} ui={System.Globalization.CultureInfo.CurrentUICulture.Name} tz={TimeZoneInfo.Local.Id}");
+            SFLog.Info("");
+        }
+        catch (Exception ex)
+        {
+            SFLog.Error(ex, "LogEnvironment failed");
         }
     }
 }
