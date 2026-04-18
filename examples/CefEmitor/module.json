@@ -1,0 +1,9 @@
+{
+  "id": "example.cef-emitor",
+  "displayName": "CEF Emitor Example",
+  "version": "1.0.0",
+  "description": "Hosts a local web UI that injects synthetic Arizona 220/17 InjectCode packets via ISFNetwork.SimulateIncomingPacket.",
+  "author": "SF-Arizona",
+  "assembly": "SF.Example.CefEmitor.dll",
+  "enabledOnStart": false
+}

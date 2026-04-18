@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CEF Emitor</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="vendor/prism/prism.css">
+</head>
+<body>
+    <main>
+        <h1>CEF Emitor</h1>
+        <p class="hint">Emit a synthetic Arizona <code>220/17</code> (InjectCode) packet into the RakPeer receive queue. The in-game CEF handler will parse and execute the JS.</p>
+
+        <form id="emit-form">
+            <label>
+                <span>browserId (u32)</span>
+                <input type="number" name="browserId" value="0" min="0" max="4294967295" required>
+            </label>
+
+            <label class="code-field">
+                <span>JS code</span>
+                <div class="code-editor">
+                    <pre class="code-editor__highlight language-javascript" aria-hidden="true"><code id="code-highlight" class="language-javascript"></code></pre>
+                    <textarea id="code-input" name="code" rows="8" required spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">alert('hello from CefEmitor');</textarea>
+                </div>
+            </label>
+
+            <label>
+                <span>requestId (u32)</span>
+                <input type="number" name="requestId" value="0" min="0" max="4294967295" required>
+            </label>
+
+            <button type="submit">Emit InjectCode</button>
+        </form>
+
+        <pre id="result" aria-live="polite"></pre>
+
+        <footer class="footer">
+            <span>Project: <a href="https://github.com/AllahPower/SF-Arizona" target="_blank" rel="noreferrer">SF-Arizona</a></span>
+            <span>GitHub: <a href="https://github.com/AllahPower" target="_blank" rel="noreferrer">@AllahPower</a></span>
+        </footer>
+    </main>
+
+    <script src="vendor/prism/prism.js"></script>
+    <script>
+        const form = document.getElementById('emit-form');
+        const result = document.getElementById('result');
+        const codeInput = document.getElementById('code-input');
+        const codeHighlight = document.getElementById('code-highlight');
+        const codeHighlightHost = codeHighlight.parentElement;
+
+        if (!window.Prism) {
+            document.documentElement.classList.add('no-prism');
+        }
+
+        function syncCodeHighlight() {
+            if (!window.Prism) {
+                return;
+            }
+
+            const value = codeInput.value;
+            codeHighlight.textContent = value.length === 0
+                ? ' '
+                : value.endsWith('\n')
+                    ? value + ' '
+                    : value;
+            Prism.highlightElement(codeHighlight);
+            syncCodeScroll();
+        }
+
+        function syncCodeScroll() {
+            codeHighlightHost.scrollTop = codeInput.scrollTop;
+            codeHighlightHost.scrollLeft = codeInput.scrollLeft;
+        }
+
+        codeInput.addEventListener('input', syncCodeHighlight);
+        codeInput.addEventListener('scroll', syncCodeScroll);
+        syncCodeHighlight();
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            result.textContent = 'sending...';
+            result.dataset.state = 'pending';
+
+            const formData = new FormData(form);
+            const payload = {
+                browserId: Number(formData.get('browserId')),
+                code: formData.get('code'),
+                requestId: Number(formData.get('requestId')),
+            };
+
+            try {
+                const response = await fetch('/emit/injectcode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const body = await response.json();
+                result.dataset.state = response.ok && body.ok ? 'ok' : 'err';
+                result.textContent = JSON.stringify(body, null, 2);
+            } catch (err) {
+                result.dataset.state = 'err';
+                result.textContent = String(err);
+            }
+        });
+    </script>
+</body>
+</html>
