@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes;
 
 public static unsafe class CCamera
 {

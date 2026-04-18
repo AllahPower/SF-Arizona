@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.Players;
 
 public readonly record struct SFPlayerHeadState(Vector3 Direction, uint LastUpdate, uint LastLook);
 

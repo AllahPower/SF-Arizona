@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Native;
 
 internal static partial class NativeMemoryValidator
 {

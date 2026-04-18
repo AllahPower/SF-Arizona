@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Native;
 
 public static unsafe class ModuleResolver
 {

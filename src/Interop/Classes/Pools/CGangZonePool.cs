@@ -1,13 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
 
-using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CGangZonePool*, ushort, float, float, float, float, uint, void>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CGangZonePool*, ushort, void>;
-using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CGangZonePool*, void>;
-using unsafe StartFlashingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CGangZonePool*, ushort, uint, void>;
-using unsafe StopFlashingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CGangZonePool*, ushort, void>;
+using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CGangZonePool*, ushort, float, float, float, float, uint, void>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CGangZonePool*, ushort, void>;
+using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CGangZonePool*, void>;
+using unsafe StartFlashingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CGangZonePool*, ushort, uint, void>;
+using unsafe StopFlashingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CGangZonePool*, ushort, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Pools;
 
 [StructLayout(LayoutKind.Explicit, Size = 8192, Pack = 1)]
 public unsafe ref struct CGangZonePool

@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.Players;
 
 public sealed unsafe class SFLocalPlayer : SFPlayer
 {

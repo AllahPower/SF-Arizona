@@ -2,7 +2,7 @@ using System.Numerics;
 using System.Text;
 using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Arizona;
 
 public static partial class ArizonaPacket
 {

@@ -2,14 +2,14 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CMenuPool*, byte, byte*, float, float, byte, float, float, SFSharp.Runtime.Interop.CMenuInteraction*, nint>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CMenuPool*, byte, int>;
-using unsafe GetTextPointerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CMenuPool*, byte*, byte*>;
-using unsafe HideDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CMenuPool*, byte, void>;
-using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CMenuPool*, void>;
-using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CMenuPool*, byte, void>;
+using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, byte*, float, float, byte, float, float, SFSharp.Runtime.Interop.Classes.Pools.CMenuInteraction*, nint>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, int>;
+using unsafe GetTextPointerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte*, byte*>;
+using unsafe HideDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, void>;
+using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, void>;
+using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Pools;
 
 [StructLayout(LayoutKind.Explicit, Size = 1026, Pack = 1)]
 public unsafe ref struct CMenuPool

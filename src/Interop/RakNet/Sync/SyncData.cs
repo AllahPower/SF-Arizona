@@ -1,7 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet;
 
 // SA-MP 0.3.7 R3-1 sync packet structures.
 // Reference: samp.dll packet readers and SAMP.Lua synchronization.lua.

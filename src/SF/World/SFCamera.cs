@@ -1,7 +1,7 @@
 using System.Numerics;
 using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp.Runtime.Ui;
+namespace SFSharp.Runtime.Game.World;
 
 public sealed class SFCamera
     : ISFCamera

@@ -1,6 +1,6 @@
 using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Packets;
 
 public delegate TPacket IncomingPacketParseDelegate<TPacket>(IncomingPacketArgs args) where TPacket : IParsedIncomingPacket;
 public delegate TPacket OutgoingPacketParseDelegate<TPacket>(OutgoingPacketArgs args) where TPacket : IParsedOutgoingPacket;

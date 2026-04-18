@@ -1,7 +1,7 @@
 using SFSharp.Abstractions.Interop.RakNet;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Arizona;
 
 public readonly record struct IncomingArizonaPacketPayload(EPacketId EPacketId, int SubId, byte[] Data, int PayloadBitOffset, int PayloadBitLength)
 {

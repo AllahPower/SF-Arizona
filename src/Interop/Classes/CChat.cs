@@ -1,11 +1,11 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes;
 
-using unsafe AddChatMessageDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CChat*, byte*, uint, byte*, void>;
-using unsafe AddEntryDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CChat*, int, byte*, byte*, uint, uint, void>;
-using unsafe AddMessageDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CChat*, uint, byte*, void>;
+using unsafe AddChatMessageDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CChat*, byte*, uint, byte*, void>;
+using unsafe AddEntryDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CChat*, int, byte*, byte*, uint, uint, void>;
+using unsafe AddMessageDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CChat*, uint, byte*, void>;
 
 
 [StructLayout(LayoutKind.Explicit, Size = 25622, Pack = 1)]

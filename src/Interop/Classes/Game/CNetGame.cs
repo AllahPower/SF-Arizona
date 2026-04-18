@@ -2,20 +2,20 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes;
 
-using unsafe GetActorPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CActorPool*>;
-using unsafe GetMenuPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CMenuPool*>;
-using unsafe GetObjectPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CObjectPool*>;
-using unsafe GetPickupPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CPickupPool*>;
-using unsafe GetPlayerPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CPlayerPool*>;
-using unsafe GetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, int>;
-using unsafe GetCounterDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, long>;
-using unsafe GetVehiclePoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, SFSharp.Runtime.Interop.CVehiclePool*>;
-using unsafe InitializeDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, void>;
-using unsafe LanModeDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, int>;
-using unsafe SetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, int, void>;
-using unsafe UpdatePlayersDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CNetGame*, void>;
+using unsafe GetActorPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, SFSharp.Runtime.Interop.Classes.Pools.CActorPool*>;
+using unsafe GetMenuPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*>;
+using unsafe GetObjectPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*>;
+using unsafe GetPickupPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*>;
+using unsafe GetPlayerPoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*>;
+using unsafe GetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, int>;
+using unsafe GetCounterDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, long>;
+using unsafe GetVehiclePoolDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*>;
+using unsafe InitializeDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, void>;
+using unsafe LanModeDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, int>;
+using unsafe SetStateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, int, void>;
+using unsafe UpdatePlayersDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CNetGame*, void>;
 
 
 [StructLayout(LayoutKind.Explicit, Size = 994, Pack = 1)]

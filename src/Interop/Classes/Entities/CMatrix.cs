@@ -1,7 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Entities;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct CMatrix

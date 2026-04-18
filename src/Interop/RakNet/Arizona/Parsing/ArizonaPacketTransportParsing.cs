@@ -1,7 +1,7 @@
 using SFSharp.Abstractions.Interop.RakNet;
 using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Arizona;
 
 internal delegate TPayload ArizonaReaderParser<TPayload>(ref BitStreamReader reader);
 

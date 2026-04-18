@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet;
 
 /// <summary>
 /// Managed bitstream writer, mirrors BitStreamReader.

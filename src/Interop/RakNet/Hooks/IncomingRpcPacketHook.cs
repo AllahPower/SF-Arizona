@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Network.RakNet.Hooks;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct RakNetPlayerId

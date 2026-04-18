@@ -2,15 +2,15 @@ using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPickupPool*, SFSharp.Runtime.Interop.Pickup*, ushort, void>;
-using unsafe CreateWeaponDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPickupPool*, int, System.Numerics.Vector3, int, ushort, void>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPickupPool*, int, void>;
-using unsafe DeleteWeaponDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPickupPool*, ushort, void>;
-using unsafe GetIndexDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPickupPool*, int, int>;
-using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPickupPool*, void>;
-using unsafe SendNotificationDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CPickupPool*, int, void>;
+using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*, SFSharp.Runtime.Interop.Classes.Pools.Pickup*, ushort, void>;
+using unsafe CreateWeaponDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*, int, System.Numerics.Vector3, int, ushort, void>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*, int, void>;
+using unsafe DeleteWeaponDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*, ushort, void>;
+using unsafe GetIndexDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*, int, int>;
+using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*, void>;
+using unsafe SendNotificationDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPickupPool*, int, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Pools;
 
 [StructLayout(LayoutKind.Explicit, Size = 143364, Pack = 1)]
 public unsafe ref struct CPickupPool

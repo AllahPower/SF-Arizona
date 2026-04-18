@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.Players;
 
 public sealed unsafe class SFRemotePlayer : SFPlayer
 {

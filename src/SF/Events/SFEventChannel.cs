@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
-namespace SFSharp.Runtime;
+namespace SFSharp.Runtime.Events;
 
 internal sealed class SFEventChannel<T>
 {

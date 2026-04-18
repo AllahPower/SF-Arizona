@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.Pools;
 
 public sealed class SFPickups : ISFPickups
 {

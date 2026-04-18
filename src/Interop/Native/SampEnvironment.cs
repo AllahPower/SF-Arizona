@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Native;
 
 /// <summary>
 /// Detects the SA-MP client version and companion modules at runtime

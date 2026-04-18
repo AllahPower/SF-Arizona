@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Native;
 
 public static unsafe partial class Win32
 {

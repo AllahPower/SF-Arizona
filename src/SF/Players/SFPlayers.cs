@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.Players;
 
 public partial class SFPlayers : ISFPlayers
 {

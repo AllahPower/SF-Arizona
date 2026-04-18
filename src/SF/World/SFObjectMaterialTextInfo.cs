@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.World;
 
 public readonly record struct SFObjectMaterialTextInfo(
     byte MaterialIndex,

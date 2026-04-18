@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Packets;
 
 public enum PacketParseFailureReason
 {

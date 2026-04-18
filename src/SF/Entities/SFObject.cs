@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.Entities;
 
 public sealed unsafe class SFObject : SFEntity
 {

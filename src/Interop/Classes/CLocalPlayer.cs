@@ -2,15 +2,15 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe ChatDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, byte*, void>;
-using unsafe GetColorAsArgbDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, uint>;
-using unsafe GetColorAsRgbaDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, uint>;
-using unsafe GetPedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, SFSharp.Runtime.Interop.CPed*>;
-using unsafe GetSpecialActionDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, byte>;
-using unsafe RequestSpawnDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, void>;
-using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CLocalPlayer*, uint, void>;
+using unsafe ChatDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, byte*, void>;
+using unsafe GetColorAsArgbDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, uint>;
+using unsafe GetColorAsRgbaDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, uint>;
+using unsafe GetPedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, SFSharp.Runtime.Interop.Classes.Entities.CPed*>;
+using unsafe GetSpecialActionDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, byte>;
+using unsafe RequestSpawnDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, void>;
+using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, uint, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes;
 
 [StructLayout(LayoutKind.Explicit, Size = 812, Pack = 1)]
 public unsafe ref struct CLocalPlayer

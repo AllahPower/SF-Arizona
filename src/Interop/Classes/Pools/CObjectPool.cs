@@ -2,15 +2,15 @@ using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CObjectPool*, ushort, int, System.Numerics.Vector3, System.Numerics.Vector3, float, int>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CObjectPool*, ushort, int>;
-using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CObjectPool*, void>;
-using unsafe GetCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CObjectPool*, int>;
-using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CObjectPool*, ushort, nint>;
-using unsafe GetIdDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CObjectPool*, nint, int>;
-using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CObjectPool*, void>;
+using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*, ushort, int, System.Numerics.Vector3, System.Numerics.Vector3, float, int>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*, ushort, int>;
+using unsafe DrawDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*, void>;
+using unsafe GetCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*, int>;
+using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*, ushort, nint>;
+using unsafe GetIdDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*, nint, int>;
+using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CObjectPool*, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Pools;
 
 [StructLayout(LayoutKind.Explicit, Size = 8004, Pack = 1)]
 public unsafe ref struct CObjectPool

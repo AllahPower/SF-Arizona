@@ -1,6 +1,6 @@
 using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Rpc;
 
 public sealed record IncomingRpc<TPayload>(ERpcId ERpcId, string Name, TPayload Payload) : IParsedIncomingRpc
 {

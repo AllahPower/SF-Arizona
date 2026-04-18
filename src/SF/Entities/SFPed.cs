@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.Entities;
 
 public readonly record struct SFPedSnapshot(
     Vector3 Position,

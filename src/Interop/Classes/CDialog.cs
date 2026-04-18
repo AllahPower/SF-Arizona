@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
 
-using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CDialog*, int, int, byte*, byte*, byte*, byte*, int, void>;
+using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CDialog*, int, int, byte*, byte*, byte*, byte*, int, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes;
 
 [StructLayout(LayoutKind.Explicit, Size = 689, Pack = 1)]
 public unsafe ref struct CDialog

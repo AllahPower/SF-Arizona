@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Network.RakNet.Hooks;
 
 // Hook on AZVoice.asi PluginInterface::OnReceive to capture incoming packet 252
 // before the plugin consumes it from the RakNet receive queue.

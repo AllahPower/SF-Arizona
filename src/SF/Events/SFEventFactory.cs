@@ -1,6 +1,6 @@
 using SFSharp.Abstractions.Interop.RakNet;
 
-namespace SFSharp.Runtime;
+namespace SFSharp.Runtime.Events;
 
 internal static class SFEventFactory
 {

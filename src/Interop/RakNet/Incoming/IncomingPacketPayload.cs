@@ -1,7 +1,7 @@
 using SFSharp.Abstractions.Interop.RakNet;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Incoming;
 
 public readonly record struct IncomingPacketPayload(EPacketId EPacketId, byte[] Data, int DataBitLength)
 {

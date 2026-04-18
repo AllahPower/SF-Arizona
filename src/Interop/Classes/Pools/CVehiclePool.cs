@@ -1,16 +1,16 @@
 using System;
 using System.Runtime.InteropServices;
 
-using unsafe ChangeInteriorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, ushort, int, void>;
-using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, ushort, int>;
-using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, ushort, int>;
-using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, ushort, SFSharp.Runtime.Interop.CVehicle*>;
-using unsafe GetNearestDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, ushort>;
-using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, void>;
-using unsafe SetParamsDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, ushort, int, int, void>;
-using unsafe UpdateCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CVehiclePool*, void>;
+using unsafe ChangeInteriorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int, void>;
+using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int>;
+using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int>;
+using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, SFSharp.Runtime.Interop.Classes.Entities.CVehicle*>;
+using unsafe GetNearestDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort>;
+using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, void>;
+using unsafe SetParamsDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int, int, void>;
+using unsafe UpdateCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Pools;
 
 [StructLayout(LayoutKind.Explicit, Size = 96408, Pack = 1)]
 public unsafe ref struct CVehiclePool

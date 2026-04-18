@@ -1,7 +1,7 @@
 using SFSharp.Abstractions.Interop.RakNet;
 using System.Runtime.CompilerServices;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network;
 
 public sealed unsafe class SFRpc : ISFRpc
 {

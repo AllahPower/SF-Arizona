@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Entities;
 
 [StructLayout(LayoutKind.Explicit, Size = 4508, Pack = 1)]
 public unsafe struct CObject

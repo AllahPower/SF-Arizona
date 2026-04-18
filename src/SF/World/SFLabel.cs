@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Game;
+namespace SFSharp.Runtime.Game.World;
 
 public readonly unsafe struct SFLabel(ushort id)
 {

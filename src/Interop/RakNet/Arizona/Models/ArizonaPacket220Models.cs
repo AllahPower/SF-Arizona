@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Networking;
+namespace SFSharp.Runtime.Network.RakNet.Arizona;
 
 // Shared helper payloads used by multiple Arizona packet models.
 public readonly record struct ArzPlayerAnimGroupEntry(string GroupName, uint PackedValue, string AnimationName, byte Selector);

@@ -2,14 +2,14 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CRemotePlayer*, int>;
-using unsafe GetColorAsArgbDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CRemotePlayer*, uint>;
-using unsafe GetColorAsRgbaDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CRemotePlayer*, uint>;
-using unsafe GetDistanceToLocalPlayerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CRemotePlayer*, float>;
-using unsafe GetStatusDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CRemotePlayer*, int>;
-using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.CRemotePlayer*, uint, void>;
+using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Players.CRemotePlayer*, int>;
+using unsafe GetColorAsArgbDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Players.CRemotePlayer*, uint>;
+using unsafe GetColorAsRgbaDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Players.CRemotePlayer*, uint>;
+using unsafe GetDistanceToLocalPlayerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Players.CRemotePlayer*, float>;
+using unsafe GetStatusDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Players.CRemotePlayer*, int>;
+using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Players.CRemotePlayer*, uint, void>;
 
-namespace SFSharp.Runtime.Interop;
+namespace SFSharp.Runtime.Interop.Classes.Players;
 
 [StructLayout(LayoutKind.Explicit, Size = 509, Pack = 1)]
 public unsafe struct CRemotePlayer
