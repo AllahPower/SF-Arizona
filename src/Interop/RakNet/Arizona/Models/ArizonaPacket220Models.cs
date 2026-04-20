@@ -36,6 +36,13 @@ public sealed record ArzGpsRouteWorldPoint(Vector3 Position) : ArzGpsRoutePoint;
 public sealed record ArzGpsRouteLinePoint(byte LineType, ushort LineId, Vector3 Position) : ArzGpsRoutePoint;
 public sealed record ArzGpsRoutePedBonePoint(bool UseEntitySpace, ushort EntityId, ushort BoneId) : ArzGpsRoutePoint;
 public sealed record ArzGpsRouteVehiclePoint(ushort VehicleId, string Label, Vector3 Position) : ArzGpsRoutePoint;
+public readonly record struct ArzBulletTracersPresetData(uint Rgba, float Time, bool LongTracers);
+public enum ArzBulletTracersIndexedPresetOp : byte
+{
+    ResetAll,
+    ResetSlot,
+    SetSlot,
+}
 
 #region outgoing (client -> server)
 public readonly record struct ArzSendKey(byte Key, byte Unknown);
@@ -87,7 +94,14 @@ public readonly record struct ArzSetBrowserControlState(string BrowserId, bool S
 public readonly record struct ArzResize(string BrowserId, uint Width, uint Height);
 public readonly record struct ArzAddObject(string BrowserId, uint Value0, uint Value1);
 public readonly record struct ArzRemoveObject(string BrowserId, uint Value0, uint Value1);
-public readonly record struct ArzUiColorScale(ushort BrowserId, uint Argb, float Scale, ushort U16a, ushort U16b, byte Flags);
+public readonly record struct ArzSetBulletTracersGroupPreset(ushort PresetGroupId, ArzBulletTracersPresetData Preset);
+public readonly record struct ArzSetBulletTracersIndexedPreset(ushort PresetGroupId, ArzBulletTracersIndexedPresetOp Operation, byte? PresetSlot, ArzBulletTracersPresetData? Preset)
+{
+    public bool ResetAll => Operation == ArzBulletTracersIndexedPresetOp.ResetAll;
+    public bool ResetSlot => Operation == ArzBulletTracersIndexedPresetOp.ResetSlot;
+    public bool SetSlot => Operation == ArzBulletTracersIndexedPresetOp.SetSlot;
+    public bool HasPresetPayload => Operation == ArzBulletTracersIndexedPresetOp.SetSlot && PresetSlot.HasValue && Preset.HasValue;
+}
 public readonly record struct ArzSetChatGroup(byte ChatId, string Icon, int Color, string ChatName, byte Flags)
 {
     public bool IsVisible => (Flags & 1) != 0;
@@ -98,12 +112,16 @@ public readonly record struct ArzSetLocalInVehicle(byte State);
 public readonly record struct ArzSetNicknameMode(byte Mode);
 public readonly record struct ArzSetChatFlag(byte State);
 public readonly record struct ArzSwitchChatMode(byte Mode);
+public readonly record struct ArzSetAntiAfkEnabled(bool Enabled);
 public readonly record struct ArzSrcursorSyncMode(byte Mode, float? MinCursorDelta);
 public readonly record struct ArzTranslateObservedTextDrawPosition(ushort TextDrawId, float X, float Y);
 public readonly record struct ArzWaypoint3DSetPosition(bool Enabled, Vector3? Position);
 public readonly record struct ArzShowPositionInDiscord(bool Status);
 public readonly record struct ArzChatCommandHelperEnabled(bool Enabled);
-public readonly record struct ArzUnknown74(byte Value);
+public readonly record struct ArzSetRadarFixEnabled(byte Value)
+{
+    public bool Enabled => Value != 0;
+}
 public readonly record struct ArzDiscordSetStateText(string Text);
 public readonly record struct ArzDiscordClearStateText;
 public readonly record struct ArzSetRadarVisibility(bool State);
@@ -128,7 +146,7 @@ public readonly record struct ArzSetSpectatorPatches(byte State, byte Unknown);
 public readonly record struct ArzSetActionStateToggleEnabled(bool Enabled);
 public readonly record struct ArzSetViceCityFlag(bool State);
 public readonly record struct ArzSetTuningConfig(byte Value);
-public readonly record struct SetPlayerNametagFlags(ushort Id, byte[] RawPayload, bool? TrailingBit);
+public readonly record struct ArzSetPlayerNametagFlags(ushort Id, byte[] RawPayload, bool? TrailingBit);
 public readonly record struct ArzLoadSharedTexture(byte[] Data);
 public readonly record struct ArzToggleSharedTxdFlag(bool State);
 public readonly record struct ArzStreamFixMode(byte Mode);
@@ -221,6 +239,8 @@ public readonly record struct ArzModuleReadRequest(uint ModuleOffset, string Mod
 public readonly record struct ArzSetVisibleDistance3DMarker(bool Status, float Distance, byte Pad);
 public readonly record struct ArzUiConfig(byte Type, byte Len);
 public readonly record struct ArzScaleRadarMapIcon(byte RadarIconId, float ScaleX, float ScaleY);
-public readonly record struct ArzGangZonePoly(byte ZoneId, uint[] PackedPolygonPoints, byte ColorR, byte ColorG, byte ColorB, byte ColorA, byte Style, bool Enabled);
+public readonly record struct ArzGangZonePoly(byte ZoneId, uint[] PackedPolygonPoints, byte ColorR, byte ColorG, byte ColorB, byte ColorA, bool Enabled);
 
 #endregion
+
+

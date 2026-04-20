@@ -164,8 +164,17 @@ public enum EArizona : byte
     // Assert: numericString browserId, u32 value0, u32 value1.
     RemoveObject = 31,
 
-    // Assert: u16 server_id, u32 argb, float scale, u16 a, u16 b, u8 flags.
-    UiColorScale = 34,
+    // Assert: vorbisFile.dll BulletTracers uses u16 groupId, u32 rgba, f32 time, bit long_tracers.
+    // Assert: groupId is the internal BulletTracers preset-group selector captured from event/entity context, not a vehicle/player network id.
+    // Assert: applies a partial group-base tracers preset; radius and laser_gun are not carried by packet 34 and stay inherited/preserved.
+    SetBulletTracersGroupPreset = 34,
+
+    // Assert: vorbisFile.dll BulletTracers uses u16 groupId, optional u8 slot, and when slot is present then u32 rgba, f32 time, bit long_tracers.
+    // Assert: groupId is the internal BulletTracers preset-group selector captured from event/entity context, not a vehicle/player network id.
+    // Assert: if slot byte is absent, packet 35 resets all 255 indexed presets in the group from defaults.
+    // Assert: if slot byte exists but the rest of the payload is missing, the selected slot is reset from the default preset table.
+    // Assert: like packet 34, this is a partial tracers preset update and does not carry radius or laser_gun.
+    SetBulletTracersIndexedPreset = 35,
 
     // Assert: u8 chat_id, string8 icon, i32 color, string8 chat_name, u8 flags.
     // Assert: _chat.asi extends this into UpsertDynamicRoom where flags bit 0 means visible.
@@ -193,31 +202,36 @@ public enum EArizona : byte
     // Assert: u8 mode.
     SwitchChatMode = 52,
 
-    // Assert: SRCursor uses u8 mode, and when mode == 2 then f32 min cursor delta for outgoing sync.
+    // Assert: vorbisFile.dll AntiAfk uses a single-bit enabled flag exported through isAntiAfk/setAntiAfk and changes the inactive sleep throttle path.
+    SetAntiAfkEnabled = 54,
+
+    // Assert: vorbisFile.dll SRCursor uses u8 mode, and when mode == 2 then f32 min cursor delta for outgoing sync.
     SrcursorSyncMode = 57,
 
-    // Assert: Translate path uses u16 textDrawId, f32 x, f32 y.
+    // Assert: vorbisFile.dll SRCursor observed-textdraw translate path uses u16 textDrawId, f32 x, f32 y.
     TranslateObservedTextDrawPosition = 58,
 
-    // Assert: Waypoint3D uses bit-bool enabled, and when enabled then f32 radius.
+    // Assert: vorbisFile.dll Waypoint3D uses bit-bool enabled, and when enabled then f32 radius.
     Waypoint3DSetRadius = 64,
 
-    // Assert: Waypoint3D uses bit-bool enabled, and when enabled then f32 x, f32 y, f32 z.
+    // Assert: vorbisFile.dll Waypoint3D uses bit-bool enabled, and when enabled then f32 x, f32 y, f32 z.
     Waypoint3DSetPosition = 65,
 
-    // Assert: bool8 status.
+    // Assert: vorbisFile.dll Discord rich presence toggle uses bool8 status.
     ShowPositionInDiscord = 71,
 
-    // Assert: ChatCommandHelper uses a single enable bit.
+    // Assert: vorbisFile.dll ChatCommandHelper uses a single enable bit.
+    // Assert: enables the local chat-input suggestion helper that reacts to typed text and accepts selection with Ctrl+Space.
     ChatCommandHelperEnabled = 72,
 
-    // Assert: u8 value; shares callback with SetRadarMode(9), exact behavior still being recovered.
-    Unknown74 = 74,
+    // Assert: vorbisFile.dll RadarFix shared route with packet 9; reads one u8 enable-like value.
+    // Assert: 0 disables both RadarFix substates, any non-zero value enables them; the exact non-zero byte is not otherwise interpreted in the handler.
+    SetRadarFixEnabled = 74,
 
-    // Assert: Discord payload is u32 byteLength plus UTF-8 text bytes.
+    // Assert: vorbisFile.dll Discord payload is u32 byteLength plus UTF-8 text bytes.
     DiscordSetStateText = 80,
 
-    // Assert: empty payload that clears Discord rich presence state text.
+    // Assert: vorbisFile.dll empty payload that clears Discord rich presence state text.
     DiscordClearStateText = 82,
 
     // Assert: core.asi CRadarHook uses a single-bit flag to toggle radar visibility.
@@ -286,7 +300,7 @@ public enum EArizona : byte
     // Assert: core.asi SimpleTuning + CarMods store a single u8 config value globally.
     SetTuningConfig = 118,
 
-    // Assert: not handled in core.asi custom-packet subscribers; raw payload only.
+    // Assert: no confirmed packet-reader path yet; kept as raw payload only.
     SetPlayerNametagFlags = 120,
 
     // Assert: core.asi SharedTxd uses u8 stringLen + char[len] texture data and loads it into site16M TXD.
@@ -358,7 +372,7 @@ public enum EArizona : byte
     // Assert: core.asi NumberPlate uses u16 vehicleId, u8 plateStyle, and when non-zero then string8 plateText + string8 plateRegion.
     SetVehicleNumberPlate = 153,
 
-    // Assert: u16 player_id, i32 index, bool create, then attachment data block with model, bone, transforms, and colors.
+    // Assert: vorbisFile.dll / SimpleAttachments route: u16 player_id, i32 index, bool create, then attachment data block with model, bone, transforms, and colors.
     SetPlayerAttachedObject = 155,
 
     // Assert: u16 vehicle_id, bit-bool state; vehicle feature reset path.
@@ -427,7 +441,7 @@ public enum EArizona : byte
     // Assert: core.asi VehicleLightsSize uses u16 vehicleId, u8 stringLen, string lightName.
     SetVehicleLights = 193,
 
-    // Assert: SimpleAttachments uses u16 playerId, u16 attachIndex, u8 selector, string8 materialName, string8 textureName, u8[4] extra.
+    // Assert: vorbisFile.dll SimpleAttachments material override uses u16 playerId, u16 attachIndex, u8 selector, string8 materialName, string8 textureName, u8[4] extra.
     SimpleAttachmentsSetMaterial = 194,
 
     // Assert: no payload; resets first-person camera state.
@@ -483,6 +497,11 @@ public enum EArizona : byte
     // Assert: core.asi VehicleBrakeCalipers uses u16 vehicleId, bit-bool toggle, and optional simple-model data.
     SetVehicleBrakeCalipers = 222,
 
+    // Assert: confirmed 220/subId route in vorbisFile.dll via direct listener registration.
+    // Assert: belongs to the same SimpleAttachments cluster as SetPlayerAttachedObject(155) and SimpleAttachmentsSetMaterial(194).
+    // Assert: downstream consumer applies text override to the selected attachment slot, but the exact wire structure is still unresolved.
+    SimpleAttachmentsSetText = 226,
+
     #endregion
 
     #region multiplexed / aliased packet IDs
@@ -514,12 +533,14 @@ public enum EArizona : byte
     // Assert: vorbisFile.dll reuses this ID for UiConfig (u8 type, u16 len).
     UiConfig = 110,
 
-    // Assert: raw payload path used by the cef_loader blip icon bridge.
-    BlipIcon = 0xBE,
+    // Assert: vorbisFile.dll ScaleRadarMapIcons packet: u8 radarIconId, optional f32 scaleX, optional f32 scaleY; missing floats default to 1.0.
+    ScaleRadarMapIcons = 0xBE,
 
-    // Assert: raw payload path used for marker / icon batches.
-    // Assert: Tornado triggers parsing errors because the packet goes through an unknown path.
-    MarkerIconBatch = 0xBF,
+    // Assert: vorbisFile.dll GangZonePoly packet: u8 zoneId, u32 pointCount, packed polygon points, RGBA, trailing bit flag.
+    // Assert: recovered from GangZonePoly_ReadZonePacket in vorbisFile.dll; prior MarkerIconBatch naming was stale.
+    GangZonePoly = 0xBF,
 
     #endregion
 }
+
+

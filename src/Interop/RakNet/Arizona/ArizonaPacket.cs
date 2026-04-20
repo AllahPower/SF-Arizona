@@ -85,15 +85,13 @@ public static partial class ArizonaPacket
         return new(billboardId, pad12a, link, userAgent, pad12b);
     }
 
-    public static ArzUiColorScale ParseUiColorScale(ref BitStreamReader r)
+    public static ArzSetBulletTracersGroupPreset ParseSetBulletTracersGroupPreset(ref BitStreamReader r)
     {
-        ushort sid = r.ReadUInt16();
-        uint argb = r.ReadUInt32();
-        float scale = r.ReadFloat();
-        ushort a = r.ReadUInt16();
-        ushort b = r.ReadUInt16();
-        byte flags = r.ReadUInt8();
-        return new(sid, argb, scale, a, b, flags);
+        ushort presetGroupId = r.ReadUInt16();
+        uint rgba = r.ReadUInt32();
+        float time = r.ReadFloat();
+        bool longTracers = r.ReadBitBool();
+        return new(presetGroupId, new ArzBulletTracersPresetData(rgba, time, longTracers));
     }
 
     public static ArzSetChatGroup ParseSetChatGroup(ref BitStreamReader r)
@@ -146,6 +144,11 @@ public static partial class ArizonaPacket
         return new(r.ReadUInt8());
     }
 
+    public static ArzSetAntiAfkEnabled ParseSetAntiAfkEnabled(ref BitStreamReader r)
+    {
+        return new(r.ReadBitBool());
+    }
+
     public static ArzSetVisibleDistance3DMarker ParseSetVisibleDistance3DMarker(ref BitStreamReader r)
     {
         bool status = r.ReadBool8();
@@ -164,9 +167,29 @@ public static partial class ArizonaPacket
         return new(r.ReadBitBool());
     }
 
-    public static ArzUnknown74 ParseUnknown74(ref BitStreamReader r)
+    public static ArzSetRadarFixEnabled ParseSetRadarFixEnabled(ref BitStreamReader r)
     {
         return new(r.ReadUInt8());
+    }
+
+    public static ArzSetBulletTracersIndexedPreset ParseSetBulletTracersIndexedPreset(ref BitStreamReader r)
+    {
+        ushort presetGroupId = r.ReadUInt16();
+        if (r.RemainingBits < 8)
+        {
+            return new(presetGroupId, ArzBulletTracersIndexedPresetOp.ResetAll, null, null);
+        }
+
+        byte presetSlot = r.ReadUInt8();
+        if (r.RemainingBits < 65)
+        {
+            return new(presetGroupId, ArzBulletTracersIndexedPresetOp.ResetSlot, presetSlot, null);
+        }
+
+        uint rgba = r.ReadUInt32();
+        float time = r.ReadFloat();
+        bool longTracers = r.ReadBitBool();
+        return new(presetGroupId, ArzBulletTracersIndexedPresetOp.SetSlot, presetSlot, new ArzBulletTracersPresetData(rgba, time, longTracers));
     }
 
 
@@ -282,7 +305,7 @@ public static partial class ArizonaPacket
         return new(r.ReadBitBool());
     }
 
-    public static SetPlayerNametagFlags ParseSetPlayerNametagFlags(ref BitStreamReader r)
+    public static ArzSetPlayerNametagFlags ParseSetPlayerNametagFlags(ref BitStreamReader r)
     {
         ushort pid = r.ReadUInt16();
         byte[] rawPayload = r.RemainingBits >= 8 ? r.ReadBytes(r.RemainingBits / 8).ToArray() : [];
@@ -1176,4 +1199,5 @@ public static partial class ArizonaPacket
 
 
 }
+
 

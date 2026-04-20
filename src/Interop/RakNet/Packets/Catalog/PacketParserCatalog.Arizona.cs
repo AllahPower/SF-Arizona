@@ -1,6 +1,3 @@
-using SFSharp.Abstractions.Interop.RakNet;
-using SFSharp.Abstractions.Interop.RakNet;
-
 namespace SFSharp.Runtime.Network.RakNet.Packets;
 
 public static partial class PacketParserCatalog
@@ -59,19 +56,21 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.Resize, ArizonaPacket.ParseResize, "Resize");
         Register220Incoming(registry, EArizona.AddObject, ArizonaPacket.ParseAddObject, "AddObject");
         Register220Incoming(registry, EArizona.RemoveObject, ArizonaPacket.ParseRemoveObject, "RemoveObject");
-        Register220Incoming(registry, EArizona.UiColorScale, ArizonaPacket.ParseUiColorScale);
+        Register220Incoming(registry, EArizona.SetBulletTracersGroupPreset, ArizonaPacket.ParseSetBulletTracersGroupPreset);
+        Register220Incoming(registry, EArizona.SetBulletTracersIndexedPreset, ArizonaPacket.ParseSetBulletTracersIndexedPreset);
         Register220Incoming(registry, EArizona.SetChatGroup, ArizonaPacket.ParseSetChatGroup);
         Register220Incoming(registry, EArizona.HideDynamicRoom, ArizonaPacket.ParseHideDynamicRoom);
         Register220Incoming(registry, EArizona.SetLocalInVehicle, ArizonaPacket.ParseSetLocalInVehicle);
         Register220Incoming(registry, EArizona.SetNicknameMode, ArizonaPacket.ParseSetNicknameMode);
         Register220Incoming(registry, EArizona.SetChatFlag, ArizonaPacket.ParseSetChatFlag);
         Register220Incoming(registry, EArizona.SwitchChatMode, ArizonaPacket.ParseSwitchChatMode);
+        Register220Incoming(registry, EArizona.SetAntiAfkEnabled, ArizonaPacket.ParseSetAntiAfkEnabled);
         Register220Incoming(registry, EArizona.SrcursorSyncMode, ArizonaPacket.ParseSrcursorSyncMode, "SrcursorSyncMode");
         Register220Incoming(registry, EArizona.TranslateObservedTextDrawPosition, ArizonaPacket.ParseTranslateObservedTextDrawPosition, "TranslateObservedTextDrawPosition");
         Register220Incoming(registry, EArizona.Waypoint3DSetPosition, ArizonaPacket.ParseWaypoint3DSetPosition);
         Register220Incoming(registry, EArizona.ShowPositionInDiscord, ArizonaPacket.ParseShowPositionInDiscord);
         Register220Incoming(registry, EArizona.ChatCommandHelperEnabled, ArizonaPacket.ParseChatCommandHelperEnabled);
-        Register220Incoming(registry, EArizona.Unknown74, ArizonaPacket.ParseUnknown74);
+        Register220Incoming(registry, EArizona.SetRadarFixEnabled, ArizonaPacket.ParseSetRadarFixEnabled);
         Register220Incoming(registry, EArizona.DiscordSetStateText, ArizonaPacket.ParseDiscordSetStateText);
         Register220Incoming(registry, EArizona.DiscordClearStateText, ArizonaPacket.ParseDiscordClearStateText);
         Register220Incoming(registry, EArizona.SetRadarVisibility, ArizonaPacket.ParseSetRadarVisibility);
@@ -173,8 +172,8 @@ public static partial class PacketParserCatalog
         Register220Incoming(registry, EArizona.Waypoint3DSetRadius, ArizonaPacket.ParseSetVisibleDistance3DMarker, "Waypoint3DSetRadius");
         Register220Incoming(registry, EArizona.SetVisibleDistance3DMarker, ArizonaPacket.ParseSetVisibleDistance3DMarker, "SetVisibleDistance3DMarker");
         Register220Incoming(registry, EArizona.UiConfig, ArizonaPacket.ParseUiConfig, "UiConfig");
-        Register220Incoming(registry, EArizona.BlipIcon, ArizonaPacket.ParseBlipIconRaw, "BlipIcon");
-        Register220Incoming(registry, EArizona.MarkerIconBatch, ArizonaPacket.ParseMarkerIconBatchRaw, "MarkerIconBatch");
+        Register220Incoming(registry, EArizona.ScaleRadarMapIcons, ArizonaPacket.ParseScaleRadarMapIconsRaw, "ScaleRadarMapIcons");
+        Register220Incoming(registry, EArizona.GangZonePoly, ArizonaPacket.ParseGangZonePolyRaw, "GangZonePoly");
         #endregion
     }
 
@@ -226,4 +225,6 @@ public static partial class PacketParserCatalog
     }
 
 }
+
+
 

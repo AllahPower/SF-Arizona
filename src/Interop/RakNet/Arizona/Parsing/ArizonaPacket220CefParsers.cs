@@ -1,6 +1,3 @@
-using System.Numerics;
-using System.Text;
-
 namespace SFSharp.Runtime.Network.RakNet.Arizona;
 
 public static partial class ArizonaPacket
@@ -265,7 +262,7 @@ public static partial class ArizonaPacket
         return new(playerId, [.. batches]);
     }
 
-    public static ArzScaleRadarMapIcon ParseBlipIconRaw(ref BitStreamReader reader)
+    public static ArzScaleRadarMapIcon ParseScaleRadarMapIconsRaw(ref BitStreamReader reader)
     {
         byte radarIconId = reader.ReadUInt8();
         float scaleX = reader.RemainingBits >= 32 ? reader.ReadFloat() : 1.0f;
@@ -273,7 +270,7 @@ public static partial class ArizonaPacket
         return new(radarIconId, scaleX, scaleY);
     }
 
-    public static ArzGangZonePoly ParseMarkerIconBatchRaw(ref BitStreamReader reader)
+    public static ArzGangZonePoly ParseGangZonePolyRaw(ref BitStreamReader reader)
     {
         byte zoneId = reader.ReadUInt8();
         uint pointWordCount = reader.ReadUInt32();
@@ -287,9 +284,8 @@ public static partial class ArizonaPacket
         byte colorG = reader.ReadUInt8();
         byte colorB = reader.ReadUInt8();
         byte colorA = reader.ReadUInt8();
-        byte style = reader.ReadUInt8();
         bool enabled = reader.ReadBitBool();
-        return new(zoneId, packedPolygonPoints, colorR, colorG, colorB, colorA, style, enabled);
+        return new(zoneId, packedPolygonPoints, colorR, colorG, colorB, colorA, enabled);
     }
 
     // ============================================================================
@@ -316,4 +312,5 @@ public static partial class ArizonaPacket
         return reader.ReadUInt16();
     }
 }
+
 
