@@ -276,10 +276,13 @@ public static class SFBootstrap
         HookManager.CDialogShow.AddSubHook(SF.Dialog);
         HookManager.CDialogHide.AddSubHook(SF.Dialog);
         HookManager.CDialogClose.AddSubHook(SF.Dialog);
+        _ = OutgoingRpcHandlers.Subscribe(
+            SFSharp.Abstractions.Interop.RakNet.ERpcId.DialogResponse,
+            args => SF.Dialog.ObserveOutgoingDialogResponse(SFSharp.Runtime.Network.RakNet.Rpc.SampRpc.ParseDialogResponse(args)));
         HookManager.CChatAddEntry.AddSubHook(SF.Chat);
         HookManager.CInputCommandSend.AddSubHook(SF.Chat);
         HookManager.UpdateScoresPingsIps.AddSubHook(SF.Players);
-        SFLog.Debug("Sub-hooks registered: Dialog, Chat, Input, Scoreboard.");
+        SFLog.Debug("Sub-hooks registered: Dialog, DialogResponseRpc, Chat, Input, Scoreboard.");
     }
 
     private static async Task<uint> GetSampDllBaseAddress()

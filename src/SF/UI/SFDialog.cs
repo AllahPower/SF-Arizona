@@ -1,5 +1,7 @@
 namespace SFSharp.Runtime.Ui;
 
+using SFSharp.Runtime.Network.RakNet.Rpc;
+
 using DialogResultArgs = (SFDialogButton Button, int SelectedItemIndex, string? InputText);
 
 public class SFDialog :
@@ -57,28 +59,38 @@ public class SFDialog :
         return _nextDialogId;
     }
 
-    private static unsafe void SetResult(SFDialogButton button)
+    private static void SetResult(DialogResultArgs result)
     {
         if (_tcs is null)
         {
             return;
         }
 
-        var result = (button, CDialog.Instance.ListBox->SelectedIndex, AnsiString.Decode(CDialog.Instance.Text));
-        SFLog.Debug($"Dialog result button={button} selected={result.Item2} input={result.Item3 ?? "<null>"}");
+        SFLog.Debug($"Dialog result button={result.Button} selected={result.Item2} input={result.Item3 ?? "<null>"}");
         _tcs.SetResult(result);
         _tcs = null;
         _activeDialogId = null;
     }
 
+    private static unsafe void SetResult(SFDialogButton button)
+    {
+        SetResult((button, CDialog.Instance.ListBox->SelectedIndex, AnsiString.Decode(CDialog.Instance.Text)));
+    }
+
+    public void ObserveOutgoingDialogResponse(DialogResponseRpc response)
+    {
+        SFLog.Debug($"Dialog response rpc id={response.DialogId} button={response.Button} list={response.ListboxId} input={response.Input ?? "<null>"} activeId={_activeDialogId?.ToString() ?? "<null>"}");
+        if (_tcs is null || _activeDialogId != response.DialogId)
+        {
+            return;
+        }
+
+        SetResult(((SFDialogButton)response.Button, response.ListboxId, response.Input));
+    }
+
     NoRetValue ISubHook<CDialogCloseArgs, NoRetValue>.Process(CDialogCloseArgs args, Func<CDialogCloseArgs, NoRetValue> next)
     {
         SFLog.Debug($"Dialog close button={args.DialogButton} activeId={_activeDialogId?.ToString() ?? "<null>"} currentId={CDialog.Instance.Id}");
-        if (_tcs is not null && _activeDialogId == (int)CDialog.Instance.Id)
-        {
-            SetResult((SFDialogButton)args.DialogButton);
-        }
-
         return next(args);
     }
 
@@ -96,11 +108,6 @@ public class SFDialog :
     NoRetValue ISubHook<CDialogHideArgs, NoRetValue>.Process(CDialogHideArgs args, Func<CDialogHideArgs, NoRetValue> next)
     {
         SFLog.Debug($"Dialog hide observed activeId={_activeDialogId?.ToString() ?? "<null>"} currentId={CDialog.Instance.Id}");
-        if (_tcs is not null && _activeDialogId == (int)CDialog.Instance.Id)
-        {
-            SetResult(SFDialogButton.None);
-        }
-
         return next(args);
     }
 }
