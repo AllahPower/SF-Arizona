@@ -1,5 +1,5 @@
-using System.Numerics;
 using System.Net.WebSockets;
+using System.Numerics;
 using System.Text.Json;
 
 namespace SFSharp.Runtime.Modules;

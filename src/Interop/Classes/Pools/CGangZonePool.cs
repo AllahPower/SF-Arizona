@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CGangZonePool*, ushort, float, float, float, float, uint, void>;

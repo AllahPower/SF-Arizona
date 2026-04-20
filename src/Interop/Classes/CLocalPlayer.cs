@@ -1,5 +1,3 @@
-using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using unsafe ChatDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CLocalPlayer*, byte*, void>;

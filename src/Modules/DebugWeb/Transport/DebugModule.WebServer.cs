@@ -1,8 +1,8 @@
-using System.Net.WebSockets;
-using Microsoft.Extensions.FileProviders;
-using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.FileProviders;
+using System.Net.WebSockets;
+using System.Text.Json;
 
 namespace SFSharp.Runtime.Modules;
 
@@ -123,10 +123,10 @@ public partial class DebugModule
                 if (result.MessageType == WebSocketMessageType.Close) break;
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                        ApplyClientSessionMessage(client, buf.AsSpan(0, result.Count));
-                        await SendWorldSnapshotAsync(client);
-                    }
+                    ApplyClientSessionMessage(client, buf.AsSpan(0, result.Count));
+                    await SendWorldSnapshotAsync(client);
                 }
+            }
         }
         finally
         {

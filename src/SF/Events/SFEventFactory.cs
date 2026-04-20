@@ -1,5 +1,3 @@
-using SFSharp.Abstractions.Interop.RakNet;
-
 namespace SFSharp.Runtime.Events;
 
 internal static class SFEventFactory

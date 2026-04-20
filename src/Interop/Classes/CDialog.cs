@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 using unsafe ShowDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CDialog*, int, int, byte*, byte*, byte*, byte*, int, void>;

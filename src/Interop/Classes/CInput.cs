@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 using unsafe SendDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.CInput*, byte*, void>;

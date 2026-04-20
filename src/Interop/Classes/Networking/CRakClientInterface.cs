@@ -1,13 +1,12 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-using unsafe ReceiveDelegate = delegate* unmanaged[Thiscall]<nint, nint>;
 using unsafe DeallocatePacketDelegate = delegate* unmanaged[Thiscall]<nint, nint, void>;
+using unsafe PushBackPacketDelegate = delegate* unmanaged[Thiscall]<nint, nint, bool, void>;
+using unsafe ReceiveDelegate = delegate* unmanaged[Thiscall]<nint, nint>;
 using unsafe RpcBitStreamDelegate = delegate* unmanaged[Thiscall]<nint, int*, nint, int, int, byte, bool, bool>;
 using unsafe RpcDataDelegate = delegate* unmanaged[Thiscall]<nint, int*, byte*, uint, int, int, byte, bool, bool>;
 using unsafe SendBitStreamDelegate = delegate* unmanaged[Thiscall]<nint, nint, int, int, byte, bool>;
 using unsafe SendDataDelegate = delegate* unmanaged[Thiscall]<nint, byte*, int, int, int, byte, bool>;
-using unsafe PushBackPacketDelegate = delegate* unmanaged[Thiscall]<nint, nint, bool, void>;
 
 namespace SFSharp.Runtime.Interop.Classes.Networking;
 

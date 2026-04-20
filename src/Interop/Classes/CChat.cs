@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.Classes;
@@ -122,7 +121,7 @@ public unsafe ref struct CChat
 
     // -- Internals --
 
-    private static byte* GetEntryPtr(CChat* instance, int index) 
+    private static byte* GetEntryPtr(CChat* instance, int index)
     {
         return (byte*)instance + SampOffsets.CChat.Entries + index * SampOffsets.CChat.EntrySize;
     }

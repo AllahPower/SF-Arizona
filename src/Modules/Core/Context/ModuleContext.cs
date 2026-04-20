@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace SFSharp.Runtime.Modules;
 

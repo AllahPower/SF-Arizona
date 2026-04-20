@@ -1,5 +1,3 @@
-using SFSharp.Abstractions.Interop.RakNet;
-
 namespace SFSharp.Abstractions.Ui;
 
 /// <summary>Native SA-MP chat entry kind. Values mirror the in-game engine.</summary>

@@ -8,7 +8,6 @@ global using SFSharp.Abstractions.Network;
 global using SFSharp.Abstractions.Parsing;
 global using SFSharp.Abstractions.Storage;
 global using SFSharp.Abstractions.Ui;
-global using SFSharp.Runtime;
 global using SFSharp.Runtime.Bootstrap;
 global using SFSharp.Runtime.Diagnostics;
 global using SFSharp.Runtime.Events;

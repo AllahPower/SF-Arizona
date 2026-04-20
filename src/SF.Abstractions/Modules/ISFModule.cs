@@ -28,10 +28,10 @@ public interface ISFModule
         ?? throw new InvalidOperationException("Module logger is available only during an active module run.");
 
     /// <summary>
-     /// Entry point invoked by the host after the module is constructed. The returned task represents
-     /// the whole lifetime of the module, it it completes either when the module finishes naturally or
-     /// when <paramref name="context"/>'s cancellation token fires.
-     /// </summary>
+    /// Entry point invoked by the host after the module is constructed. The returned task represents
+    /// the whole lifetime of the module, it it completes either when the module finishes naturally or
+    /// when <paramref name="context"/>'s cancellation token fires.
+    /// </summary>
     /// <param name="context">
     /// Per-run context with telemetry, storage and registration helpers. Valid only until the returned
     /// task completes, the host disposes it afterwards.

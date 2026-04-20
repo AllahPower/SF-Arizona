@@ -1,7 +1,7 @@
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 
 namespace SFSharp.Runtime.Modules;
 

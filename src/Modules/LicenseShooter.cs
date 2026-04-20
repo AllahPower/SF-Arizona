@@ -76,7 +76,7 @@ public class LicenseShooter : SFModuleBase
         };
     }
 
-    private bool TryDecodeOffer(string text,[NotNullWhen(true)] out LicenseSale? sale)
+    private bool TryDecodeOffer(string text, [NotNullWhen(true)] out LicenseSale? sale)
     {
         var match = RegexHelper.LicenseOfferText().Match(text);
         if (!match.Success)
@@ -121,7 +121,7 @@ public class LicenseShooter : SFModuleBase
 
         var offers = new Dictionary<string, LicenseSale>();
 
-        await foreach(var entry in SF.Chat.StreamChatEntries(cancellationToken))
+        await foreach (var entry in SF.Chat.StreamChatEntries(cancellationToken))
         {
             Context.IncrementCounter("chat.entries");
             if (entry.TextColor != 0xFF6495ED) continue;
@@ -137,7 +137,7 @@ public class LicenseShooter : SFModuleBase
             }
             if (TryDecodeSale(entry.Text, out var name))
             {
-                if(!offers.TryGetValue(name, out var previousOffer))
+                if (!offers.TryGetValue(name, out var previousOffer))
                 {
                     sf.Chat.Add($"Detected sale {name}, but could not find an offer.");
                     Context.IncrementCounter("sales.missed");
@@ -184,7 +184,7 @@ public class LicenseShooter : SFModuleBase
                 SaveSales(list);
             }
         }
-        
+
     }
 
     private async Task<DateOnly?> ShowDateList()
@@ -218,7 +218,7 @@ public class LicenseShooter : SFModuleBase
             .Select(x => $"{GetLicenseDisplayText(x.LicenseType)}\t{x.Name}\t{x.DateTime.ToShortTimeString()}\t{x.Price}")
             .ToArray();
         var result = await dialog.ShowList($"Проданные лицензии за {date.ToShortDateString()}", items, header);
-        if(result.Button != SFDialogButton.OK)
+        if (result.Button != SFDialogButton.OK)
         {
             return (result.Button, null);
         }

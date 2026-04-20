@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 using unsafe ChangeInteriorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int, void>;

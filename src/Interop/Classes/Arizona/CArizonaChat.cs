@@ -1,22 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 
 namespace SFSharp.Runtime.Interop.Classes;
 
 using unsafe ArizonaChatAddEntryDelegate = delegate* unmanaged[Stdcall]<int, byte*, byte*, uint, uint, int>;
-using unsafe UpsertDynamicRoomDelegate = delegate* unmanaged[Cdecl]<byte, byte*, nuint, int, byte*, nuint, int, byte>;
-using unsafe HideDynamicRoomDelegate = delegate* unmanaged[Cdecl]<byte, void>;
-using unsafe ResetDynamicRoomsDelegate = delegate* unmanaged[Cdecl]<int>;
 // cdecl(_DWORD* output, int* pColor, byte** pText, byte* pFlags) -> _DWORD*
 using unsafe CreateFromRawEntryArgsDelegate = delegate* unmanaged[Cdecl]<nint*, nint*, byte**, byte*, nint*>;
 // cdecl(_DWORD* msgHandle, byte chatType, byte flags) -> int
 using unsafe DispatchMessageToHandlersDelegate = delegate* unmanaged[Cdecl]<nint*, byte, byte, int>;
+using unsafe HideDynamicRoomDelegate = delegate* unmanaged[Cdecl]<byte, void>;
 // thiscall(refcountObj) -> int
 using unsafe RefCountedReleaseDelegate = delegate* unmanaged[Thiscall]<nint, int>;
+using unsafe ResetDynamicRoomsDelegate = delegate* unmanaged[Cdecl]<int>;
+using unsafe UpsertDynamicRoomDelegate = delegate* unmanaged[Cdecl]<byte, byte*, nuint, int, byte*, nuint, int, byte>;
 
 public enum ArizonaChatRoomType
 {

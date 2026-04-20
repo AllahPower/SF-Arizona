@@ -351,59 +351,59 @@ public partial class SFModuleContainer
         switch (verb)
         {
             case "plugin-load":
-            {
-                string manifestPath = target;
-                if (!File.Exists(manifestPath))
                 {
-                    string candidate = Path.Combine(SFPaths.AssetsRoot, "modules", target, "module.json");
-                    if (File.Exists(candidate))
+                    string manifestPath = target;
+                    if (!File.Exists(manifestPath))
                     {
-                        manifestPath = candidate;
+                        string candidate = Path.Combine(SFPaths.AssetsRoot, "modules", target, "module.json");
+                        if (File.Exists(candidate))
+                        {
+                            manifestPath = candidate;
+                        }
                     }
-                }
 
-                PluginLoadResult result = _pluginLoader.LoadFromManifest(manifestPath);
-                if (result.Success)
-                {
-                    SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId!, $"{result.RegisteredModuleCount} module(s)", SFColors.Green));
-                }
-                else
-                {
-                    SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId ?? target, result.Message, SFColors.Red));
-                }
+                    PluginLoadResult result = _pluginLoader.LoadFromManifest(manifestPath);
+                    if (result.Success)
+                    {
+                        SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId!, $"{result.RegisteredModuleCount} module(s)", SFColors.Green));
+                    }
+                    else
+                    {
+                        SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId ?? target, result.Message, SFColors.Red));
+                    }
 
-                break;
-            }
+                    break;
+                }
 
             case "plugin-unload":
-            {
-                PluginUnloadResult result = _pluginLoader.Unload(target);
-                if (result.Success)
                 {
-                    SF.Chat.Add(FormatChatAction("plugin-unload", target, "done", SFColors.Orange));
-                }
-                else
-                {
-                    SF.Chat.Add(FormatChatAction("plugin-unload", target, result.Message, SFColors.Red));
-                }
+                    PluginUnloadResult result = _pluginLoader.Unload(target);
+                    if (result.Success)
+                    {
+                        SF.Chat.Add(FormatChatAction("plugin-unload", target, "done", SFColors.Orange));
+                    }
+                    else
+                    {
+                        SF.Chat.Add(FormatChatAction("plugin-unload", target, result.Message, SFColors.Red));
+                    }
 
-                break;
-            }
+                    break;
+                }
 
             case "plugin-reload":
-            {
-                PluginReloadResult result = _pluginLoader.Reload(target);
-                if (result.Success)
                 {
-                    SF.Chat.Add(FormatChatAction("plugin-reload", target, "done", SFColors.Yellow));
-                }
-                else
-                {
-                    SF.Chat.Add(FormatChatAction("plugin-reload", target, result.Message, SFColors.Red));
-                }
+                    PluginReloadResult result = _pluginLoader.Reload(target);
+                    if (result.Success)
+                    {
+                        SF.Chat.Add(FormatChatAction("plugin-reload", target, "done", SFColors.Yellow));
+                    }
+                    else
+                    {
+                        SF.Chat.Add(FormatChatAction("plugin-reload", target, result.Message, SFColors.Red));
+                    }
 
-                break;
-            }
+                    break;
+                }
         }
     }
 

@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 using unsafe GetCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, int, int>;
