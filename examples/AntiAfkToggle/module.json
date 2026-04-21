@@ -1,0 +1,9 @@
+{
+  "id": "example.anti-afk-toggle",
+  "displayName": "AntiAFK Toggle Example",
+  "version": "1.0.0",
+  "description": "Toggles the vorbisFile.asi AntiAFK flag via /sfafk by calling the setAntiAfk/isAntiAfk exports.",
+  "author": "SF-Arizona",
+  "assembly": "SF.Example.AntiAfkToggle.dll",
+  "enabledOnStart": true
+}
