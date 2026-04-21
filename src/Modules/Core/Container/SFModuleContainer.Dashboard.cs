@@ -6,6 +6,8 @@ public partial class SFModuleContainer
 {
     private const int StatusPageSize = 6;
 
+    private Action? _deferredAfterDialog;
+
     private async void OnCommand(string? args)
     {
         try
@@ -17,10 +19,17 @@ public partial class SFModuleContainer
             if (segments.Length == 0)
             {
                 await ShowDashboard();
+                DispatchDeferredAfterDialog();
                 return;
             }
 
             string verb = segments[0].ToLowerInvariant();
+            if (verb is "help" or "?" or "--help")
+            {
+                ShowHelpInChat();
+                return;
+            }
+
             if (verb == "status")
             {
                 int page = 1;
@@ -63,6 +72,7 @@ public partial class SFModuleContainer
             {
                 case "info":
                     await ShowModuleDetail(registration);
+                    DispatchDeferredAfterDialog();
                     break;
                 case "start":
                     if (TryStartModule(registration, out string? startFailure))
@@ -126,11 +136,20 @@ public partial class SFModuleContainer
         }
     }
 
+    private void ShowHelpInChat()
+    {
+        foreach (string line in FormatHelpLines())
+        {
+            SF.Chat.Add(line);
+        }
+    }
+
     private void ShowStatusInChat(int page)
     {
         if (_registrations.Count == 0)
         {
-            SF.Chat.Add(Paint(SFColors.Slate, "No modules registered."));
+            SF.Chat.Add(FormatHeader("Modules", "0"));
+            SF.Chat.Add(FormatTip("No modules registered."));
             return;
         }
 
@@ -142,27 +161,34 @@ public partial class SFModuleContainer
             .Take(StatusPageSize)
             .ToList();
 
-        string sep = Paint(SFColors.Slate, " \u00b7 ");
+        int runningCount = _runningModules.Count;
+        SF.Chat.Add(FormatHeader("Modules", $"{runningCount}/{_registrations.Count} running \u00b7 page {page}/{totalPages}"));
+
+        string sep = FormatSeparator();
         foreach (ModuleRegistration registration in pageItems)
         {
             ModuleRuntimeSnapshot snapshot = registration.Runtime.CreateSnapshot();
+            string pluginBadge = registration.OwnerPluginId is null
+                ? string.Empty
+                : sep + Paint(SFColors.Purple, "plugin");
             string line = string.Concat(
+                "  ",
                 Paint(SFColors.Cyan | SFColors.Blue, registration.Descriptor.Id),
-                Paint(SFColors.White | SFColors.Ice, " \u00bb "),
+                FormatArrow(),
                 FormatState(snapshot.State),
                 sep,
                 Paint(SFColor.FromHex("A8DADC"), snapshot.Descriptor.ExecutionModel.ToString()),
                 sep,
                 Paint(SFColors.Sand, FormatDuration(snapshot.Uptime)),
                 sep,
-                FormatLoad(snapshot.EstimatedLoadPercent));
+                FormatLoad(snapshot.EstimatedLoadPercent),
+                pluginBadge);
             SF.Chat.Add(line);
         }
 
         if (totalPages > 1)
         {
-            SF.Chat.Add(Paint(SFColors.Slate, $"Page {page}/{totalPages}") + " " +
-                         Paint(SFColors.White | SFColors.Ice, $"/sfs status <1-{totalPages}>"));
+            SF.Chat.Add(FormatTip($"next page: /sfs status {Math.Min(page + 1, totalPages)}"));
         }
     }
 
@@ -184,6 +210,10 @@ public partial class SFModuleContainer
 
             ModuleRegistration selected = _registrations[result.SelectedIndex];
             await ShowModuleDetail(selected);
+            if (_deferredAfterDialog is not null)
+            {
+                return;
+            }
         }
     }
 
@@ -219,6 +249,11 @@ public partial class SFModuleContainer
                 items.Add($"{Label("Description")}\t{Value(registration.Descriptor.Description)}");
             }
 
+            if (registration.OwnerPluginId is { Length: > 0 } pluginOwner)
+            {
+                items.Add($"{Label("Plugin")}\t{Paint(SFColors.Purple, pluginOwner)}");
+            }
+
             if (!string.IsNullOrWhiteSpace(snapshot.LastExceptionType))
             {
                 items.Add($"{Label("Last error")}\t{Paint(SFColors.Rose, $"{snapshot.LastExceptionType}: {snapshot.LastExceptionMessage}")}");
@@ -246,6 +281,16 @@ public partial class SFModuleContainer
                 : $"{Paint(SFColors.Mint, "[Autostart]")}\t{Paint(SFColor.FromHex("E0F2F1"), "Enable autostart")}");
             int clearIndex = items.Count;
             items.Add($"{Paint(SFColors.Blue, "[Telemetry]")}\t{Paint(SFColor.FromHex("E1F5FE"), "Clear counters and details")}");
+
+            int pluginReloadIndex = -1;
+            int pluginUnloadIndex = -1;
+            if (registration.OwnerPluginId is { Length: > 0 } && _pluginLoader is not null)
+            {
+                pluginReloadIndex = items.Count;
+                items.Add($"{Paint(SFColors.Yellow, "[Plugin Reload]")}\t{Paint(SFColor.FromHex("FFF3D6"), "Reload owning plugin")}");
+                pluginUnloadIndex = items.Count;
+                items.Add($"{Paint(SFColors.Rose, "[Plugin Unload]")}\t{Paint(SFColor.FromHex("FFE0E0"), "Unload owning plugin")}");
+            }
 
             SFColor detailTitleColor = SFColors.Yellow | SFColors.Orange;
             SFColor detailHeaderColor = SFColors.Cyan | SFColors.Ice;
@@ -294,6 +339,18 @@ public partial class SFModuleContainer
                 case int index when index == clearIndex:
                     registration.Runtime.ClearTelemetry();
                     break;
+                case int index when pluginReloadIndex >= 0 && index == pluginReloadIndex:
+                    {
+                        string pluginId = registration.OwnerPluginId!;
+                        DeferPluginReload(pluginId);
+                        return;
+                    }
+                case int index when pluginUnloadIndex >= 0 && index == pluginUnloadIndex:
+                    {
+                        string pluginId = registration.OwnerPluginId!;
+                        DeferPluginUnload(pluginId);
+                        return;
+                    }
             }
         }
     }
@@ -302,34 +359,50 @@ public partial class SFModuleContainer
     {
         if (_pluginLoader is null)
         {
-            SF.Chat.Add(Paint(SFColors.Slate, "Plugin loader is not attached."));
+            SF.Chat.Add(FormatHeader("Plugins"));
+            SF.Chat.Add(FormatTip("Plugin loader is not attached."));
             return;
         }
 
         IReadOnlyCollection<PluginRuntimeSnapshot> plugins = _pluginLoader.LoadedPlugins;
         if (plugins.Count == 0)
         {
-            SF.Chat.Add(Paint(SFColors.Slate, "No plugins loaded."));
+            SF.Chat.Add(FormatHeader("Plugins", "0"));
+            SF.Chat.Add(FormatTip("No plugins loaded."));
             return;
         }
 
-        SF.Chat.Add(Paint(SFColors.Cyan | SFColors.Blue, $"Loaded plugins ({plugins.Count}):"));
+        SF.Chat.Add(FormatHeader("Plugins", plugins.Count.ToString()));
+        string sep = FormatSeparator();
         foreach (PluginRuntimeSnapshot plugin in plugins.OrderBy(static plugin => plugin.PluginId, StringComparer.OrdinalIgnoreCase))
         {
-            string line = "  " +
-                Paint(SFColors.White | SFColors.Ice, plugin.PluginId) +
-                Paint(SFColors.Slate, " · ") +
-                Paint(SFColors.Sand, plugin.DisplayName) +
-                Paint(SFColors.Slate, " · ") +
-                Paint(plugin.State == PluginState.Loaded ? SFColors.Green : SFColors.Red, plugin.State.ToString());
+            SFColor stateColor = plugin.State switch
+            {
+                PluginState.Loaded => SFColors.Green,
+                PluginState.Unloading => SFColors.Orange,
+                PluginState.UnloadFailed => SFColors.Rose,
+                _ => SFColors.Slate,
+            };
+
+            string line = string.Concat(
+                "  ",
+                Paint(SFColors.Cyan | SFColors.Blue, plugin.PluginId),
+                FormatArrow(),
+                Paint(stateColor, plugin.State.ToString()),
+                sep,
+                Paint(SFColors.Sand, plugin.DisplayName),
+                sep,
+                Paint(SFColors.Slate, $"{plugin.RegisteredModuleCount} module(s)"));
 
             if (plugin.LastUnloadFailureReason != PluginUnloadFailureReason.None && !string.IsNullOrWhiteSpace(plugin.LastUnloadFailureMessage))
             {
-                line += Paint(SFColors.Slate, " · ") + Paint(SFColors.Rose, plugin.LastUnloadFailureReason.ToString());
+                line += sep + Paint(SFColors.Rose, plugin.LastUnloadFailureReason.ToString());
             }
 
             SF.Chat.Add(line);
         }
+
+        SF.Chat.Add(FormatTip("manage: /sfs plugin-reload <id>  \u00b7  /sfs plugin-unload <id>"));
     }
 
     private void HandlePluginCommand(string verb, string[] segments)
@@ -405,6 +478,54 @@ public partial class SFModuleContainer
                     break;
                 }
         }
+    }
+
+    private void DeferPluginUnload(string pluginId)
+    {
+        _deferredAfterDialog = () =>
+        {
+            if (_pluginLoader is null)
+            {
+                return;
+            }
+
+            PluginUnloadResult result = _pluginLoader.Unload(pluginId);
+            SFColor accent = result.Success ? SFColors.Orange : SFColors.Red;
+            string tail = result.Success ? "done" : result.Message;
+            SF.Chat.Add(FormatChatAction("plugin-unload", pluginId, tail, accent));
+        };
+    }
+
+    private void DeferPluginReload(string pluginId)
+    {
+        _deferredAfterDialog = () =>
+        {
+            if (_pluginLoader is null)
+            {
+                return;
+            }
+
+            PluginReloadResult result = _pluginLoader.Reload(pluginId);
+            SFColor accent = result.Success ? SFColors.Yellow : SFColors.Red;
+            string tail = result.Success ? "done" : result.Message;
+            SF.Chat.Add(FormatChatAction("plugin-reload", pluginId, tail, accent));
+        };
+    }
+
+    private void DispatchDeferredAfterDialog()
+    {
+        Action? operation = _deferredAfterDialog;
+        if (operation is null)
+        {
+            return;
+        }
+
+        _deferredAfterDialog = null;
+        // Post back to the main thread so this method (and its caller OnCommand) can unwind
+        // first. Executing inline would still be inside the completed-but-cached async state
+        // machines of the dialog call chain, which pin plugin-owned Type references and
+        // prevent the plugin's AssemblyLoadContext from being collected.
+        SFBootstrap.PostToMainThread(operation);
     }
 
     private static string BuildDashboardLine(ModuleRegistration registration)

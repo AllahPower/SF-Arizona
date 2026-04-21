@@ -6,12 +6,60 @@ internal static class ModuleChatFormatter
     public static string Value(string value) => Paint(SFColors.White | SFColors.Ice, value);
     public static string Paint(SFColor color, string value) => color.Apply(value);
 
-    public static string FormatUsage() =>
-        $"{Paint(SFColors.Yellow, "Usage")}: {Paint(SFColors.White | SFColors.Ice, "/sfs status | info|start|stop|restart <moduleId> | plugins | plugin-load|plugin-unload|plugin-reload <id>")}";
+    public static string FormatBrand() => Paint(SFColors.Yellow | SFColors.Sand, "SF");
+    public static string FormatSeparator() => Paint(SFColors.Slate, " \u00b7 ");
+    public static string FormatArrow() => Paint(SFColors.Slate, " \u00bb ");
 
-    public static string FormatChatAction(string action, string moduleName, string tail, SFColor accent)
+    public static string FormatHeader(string title, string? badge = null)
     {
-        return $"{Paint(accent, action)} {Paint(SFColors.White | SFColors.Ice, moduleName)} {Paint(SFColors.Slate, tail)}";
+        string head = $"{FormatBrand()} {Paint(SFColors.Slate, "\u00bb")} {Paint(SFColors.White | SFColors.Ice, title)}";
+        if (!string.IsNullOrWhiteSpace(badge))
+        {
+            head += $"  {Paint(SFColors.Slate, "[")}{Paint(SFColors.Sand, badge)}{Paint(SFColors.Slate, "]")}";
+        }
+
+        return head;
+    }
+
+    public static string FormatTip(string text) =>
+        $"  {Paint(SFColors.Slate, "\u00bb")} {Paint(SFColors.White | SFColors.Ice, text)}";
+
+    public static string FormatUsage() =>
+        $"{Paint(SFColors.Yellow, "Usage")}: {Paint(SFColors.White | SFColors.Ice, "/sfs")} " +
+        $"{Paint(SFColors.Slate, "[status|info|start|stop|restart|plugins|plugin-load|plugin-unload|plugin-reload|help]")}";
+
+    public static IEnumerable<string> FormatHelpLines()
+    {
+        yield return FormatHeader("Command reference", "/sfs");
+        yield return FormatHelpEntry("",                      "open the interactive dashboard");
+        yield return FormatHelpEntry("status [page]",         "compact module list");
+        yield return FormatHelpEntry("info <id>",             "detailed view with actions");
+        yield return FormatHelpEntry("start|stop|restart <id>", "module lifecycle control");
+        yield return FormatHelpEntry("plugins",               "list loaded plugins");
+        yield return FormatHelpEntry("plugin-load <id|path>", "load plugin by id or manifest path");
+        yield return FormatHelpEntry("plugin-unload <id>",    "unload plugin and its modules");
+        yield return FormatHelpEntry("plugin-reload <id>",    "re-scan and reload a plugin");
+        yield return FormatHelpEntry("help",                  "show this reference");
+    }
+
+    private static string FormatHelpEntry(string verb, string summary)
+    {
+        string left = string.IsNullOrEmpty(verb)
+            ? Paint(SFColors.White | SFColors.Ice, "/sfs")
+            : Paint(SFColors.White | SFColors.Ice, "/sfs ") + Paint(SFColors.Cyan | SFColors.Blue, verb);
+        return $"  {left}{FormatArrow()}{Paint(SFColors.Slate, summary)}";
+    }
+
+    public static string FormatChatAction(string action, string subject, string tail, SFColor accent)
+    {
+        string glyph = Paint(accent, "\u00bb");
+        string line = $"{glyph} {Paint(accent, action)} {Paint(SFColors.White | SFColors.Ice, subject)}";
+        if (!string.IsNullOrWhiteSpace(tail))
+        {
+            line += $"{FormatSeparator()}{Paint(SFColors.Slate, tail)}";
+        }
+
+        return line;
     }
 
     public static string FormatState(ModuleLifecycleState state)
