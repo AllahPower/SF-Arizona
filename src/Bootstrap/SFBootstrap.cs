@@ -277,8 +277,8 @@ public static class SFBootstrap
         HookManager.CDialogHide.AddSubHook(SF.Dialog);
         HookManager.CDialogClose.AddSubHook(SF.Dialog);
         _ = OutgoingRpcHandlers.Subscribe(
-            SFSharp.Abstractions.Interop.RakNet.ERpcId.DialogResponse,
-            args => SF.Dialog.ObserveOutgoingDialogResponse(SFSharp.Runtime.Network.RakNet.Rpc.SampRpc.ParseDialogResponse(args)));
+            ERpcId.DialogResponse,
+            args => SF.Dialog.ObserveOutgoingDialogResponse(SampRpc.ParseDialogResponse(args)));
         HookManager.CChatAddEntry.AddSubHook(SF.Chat);
         HookManager.CInputCommandSend.AddSubHook(SF.Chat);
         HookManager.UpdateScoresPingsIps.AddSubHook(SF.Players);
