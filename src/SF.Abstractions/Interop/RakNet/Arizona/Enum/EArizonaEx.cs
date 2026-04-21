@@ -70,16 +70,23 @@ public enum EArizonaEx : ushort
     // Assert: u16 ped_id, u16 unknown0, u16 player_id.
     BotShootPedAtPlayer = 72,
 
-    // Assert: u16 ped_id, u16 unknown0, u16 player_id, u32 unknown1.
+    // Assert: visible libPED RPC_AttackPlayer handler resolves the acting bot from the second u16 field.
+    // Assert: the third u16 is passed as target player id and the trailing u32 is forwarded as an attack argument/state.
+    // Assert: live traffic was also observed at 64 bits, so the trailing u32 is treated as optional until the hidden/runtime path is fully recovered.
     BotAttackPlayer = 80,
 
-    // Assert: u16 ped_id, u16 vehicle_id, u16 seat_id, u32 unknown0.
+    // Assert: visible libPED RPC_EnterToVehicle handler resolves the acting bot from the second u16 field.
+    // Assert: the third u16 is passed as vehicle id, the fourth u16 as seat id, and the trailing u32 as an extra enter-vehicle argument/state.
     BotEnterToVehicle = 81,
 
-    // Assert: u16 ped_id, u16 vehicle_id, u16 seat_id, float health, float armour.
+    // Assert: visible libPED RPC_PassengerPedSync handler resolves the acting bot from the second u16 field.
+    // Assert: the third u16 is used as vehicle id; the low 16 bits of the first u32 are used as passenger seat id.
+    // Assert: the remaining upper bits / trailing u32 are still unresolved.
     BotPassengerPedSync = 82,
 
-    // Assert: u16 ped_id, u16 vehicle_id, u16 unknown0, u32 state0, u32 state1.
+    // Assert: visible libPED RPC_DrivePedSync handler resolves the acting bot from the second u16 field.
+    // Assert: the third u16 is used as vehicle id and the bot is forced into driver seat 0.
+    // Assert: both trailing u32 state fields are still unresolved.
     BotDrivePedSync = 83,
 
     // Assert: u16 ped_id.
@@ -106,7 +113,8 @@ public enum EArizonaEx : ushort
     // Assert: u16 ped_id, u16 unknown0, string8 animation_group.
     BotSetAnimationGroup = 98,
 
-    // Assert: u16 ped_id, u16 target_ped_id, u32 unknown0.
+    // Assert: visible libPED RPC_AttackPed handler resolves the acting bot from the second u16 field.
+    // Assert: the third u16 is passed as target bot/ped id and the trailing u32 is forwarded as an attack argument/state.
     BotAttackPed = 101,
 
     // Assert: u16 ped_id, bool state.
@@ -115,13 +123,17 @@ public enum EArizonaEx : ushort
     // Assert: same layout as id 86 plus one trailing bit-bool flag.
     BotAttachSimpleObject = 103,
 
-    // Assert: u16 ped_id, u16 slot.
+    // Assert: visible libPED RPC_DetachSimpleObject class reads u16 ped_id, u16 slot, u16 unknown0.
     BotDetachSimpleObject = 104,
 
-    // Assert: u16 ped_id, u16 unknown0, u32 status, float current_value, float max_value.
+    // Assert: live traffic is observed as 112 bits, not 128 bits.
+    // Assert: current provisional shape is u16 ped_id, u16 unknown0, u32 status, float current_value, u16 trailing_value.
+    // Assert: a visible libPED RPC registry handler for 105 is still not located in the current binary.
     BotSetHealth = 105,
 
-    // Assert: u16 ped_id, u16 unknown0, u32 status, float current_value, float max_value.
+    // Assert: live traffic is observed as 112 bits, not 128 bits.
+    // Assert: current provisional shape is u16 ped_id, u16 unknown0, u32 status, float current_value, u16 trailing_value.
+    // Assert: a visible libPED RPC registry handler for 112 is still not located in the current binary.
     BotSetArmour = 112,
 
     // Assert: u16 onfoot_sync_rate.

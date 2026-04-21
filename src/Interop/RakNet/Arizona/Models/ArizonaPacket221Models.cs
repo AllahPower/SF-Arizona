@@ -103,29 +103,42 @@ public readonly record struct ArzClearBotAction(ushort BotId, ushort Unknown0);
 // id=72 | force bot aim/fire at player
 public readonly record struct ArzShootBotAtPlayer(ushort BotId, ushort Unknown0, ushort PlayerId);
 
-// id=80 | bot attacks a player
-public readonly record struct ArzBotAttackPlayer(ushort BotId, ushort Unknown0, ushort PlayerId, uint Unknown1);
+// id=80 | visible libPED apply path uses the second field as acting bot id
+public readonly record struct ArzBotAttackPlayer(
+    ushort BotId,
+    ushort TargetPlayerId,
+    uint? AttackArgument
+);
 
 // id=81 | bot enters a vehicle
-public readonly record struct ArzBotEnterVehicle(ushort BotId, ushort VehicleId, ushort SeatId, uint Unknown0);
-
-// id=82 | bot riding as passenger sync
-public readonly record struct ArzBotPassengerSync(
+public readonly record struct ArzBotEnterVehicle(
     ushort BotId,
     ushort VehicleId,
     ushort SeatId,
-    float Health,
-    float Armour
+    uint EnterVehicleArgument
 );
+
+// id=82 | visible libPED apply path uses the second field as acting bot id
+public readonly record struct ArzBotPassengerSync(
+    ushort BotId,
+    ushort VehicleId,
+    uint PackedSeatState,
+    uint PassengerState
+)
+{
+    public ushort SeatId => (ushort)(PackedSeatState & 0xFFFF);
+}
 
 // id=83 | bot driving vehicle sync
 public readonly record struct ArzBotDriveSync(
     ushort BotId,
     ushort VehicleId,
-    ushort Unknown0,
-    uint StateValue0,
-    uint StateValue1
-);
+    uint DriveState0,
+    uint DriveState1
+)
+{
+    public ushort SeatId => 0;
+}
 
 // id=84 | bot exits vehicle
 public readonly record struct ArzBotExitVehicle(ushort BotId);
@@ -161,8 +174,12 @@ public readonly record struct ArzShootBotAtBot(ushort ShooterBotId, ushort Targe
 // id=98 | assign named animation group to bot
 public readonly record struct ArzSetBotAnimationGroup(ushort BotId, ushort Unknown0, string GroupName);
 
-// id=101 | bot attacks another remote ped/bot
-public readonly record struct ArzBotAttackPed(ushort BotId, ushort TargetBotId, uint Unknown0);
+// id=101 | visible libPED apply path uses the second field as acting bot id
+public readonly record struct ArzBotAttackPed(
+    ushort BotId,
+    ushort TargetBotId,
+    uint AttackArgument
+);
 
 // id=102 | collision toggle for a remote ped
 public readonly record struct ArzTogglePedCollision(ushort BotId, bool State);
@@ -182,13 +199,13 @@ public readonly record struct ArzSetBotAttachedSimpleObject(
 );
 
 // id=104 | detach simple object from bot
-public readonly record struct ArzRemoveBotAttachedSimpleObject(ushort BotId, ushort Slot);
+public readonly record struct ArzRemoveBotAttachedSimpleObject(ushort BotId, ushort Slot, ushort Unknown0);
 
-// id=105 | set bot health values
-public readonly record struct ArzSetBotHealth(ushort BotId, ushort Unknown0, uint Status, float CurrentValue, float MaximumValue);
+// id=105 | live packets are observed as 112 bits; trailing field semantics are still unresolved
+public readonly record struct ArzSetBotHealth(ushort BotId, ushort Unknown0, uint Status, float CurrentValue, ushort TrailingValue);
 
-// id=112 | set bot armour values
-public readonly record struct ArzSetBotArmour(ushort BotId, ushort Unknown0, uint Status, float CurrentValue, float MaximumValue);
+// id=112 | live packets are observed as 112 bits; trailing field semantics are still unresolved
+public readonly record struct ArzSetBotArmour(ushort BotId, ushort Unknown0, uint Status, float CurrentValue, ushort TrailingValue);
 
 // id=113 | set libPED on-foot sync rate
 public readonly record struct ArzSetBotOnfootSyncRate(ushort Rate);

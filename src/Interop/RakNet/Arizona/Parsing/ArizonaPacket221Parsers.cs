@@ -186,40 +186,41 @@ public static partial class ArizonaPacket
 
     public static ArzBotAttackPlayer ParseBotAttackPlayer(ref BitStreamReader r)
     {
+        r.ReadUInt16();
         ushort botId = r.ReadUInt16();
-        ushort unknown0 = r.ReadUInt16();
-        ushort playerId = r.ReadUInt16();
-        uint unknown1 = r.ReadUInt32();
-        return new(botId, unknown0, playerId, unknown1);
+        ushort targetPlayerId = r.ReadUInt16();
+        uint? attackArgument = r.RemainingBits >= 32 ? r.ReadUInt32() : null;
+        return new(botId, targetPlayerId, attackArgument);
     }
 
     public static ArzBotEnterVehicle ParseBotEnterVehicle(ref BitStreamReader r)
     {
+        r.ReadUInt16();
         ushort botId = r.ReadUInt16();
-        ushort vid = r.ReadUInt16();
+        ushort vehicleId = r.ReadUInt16();
         ushort seatId = r.ReadUInt16();
-        uint unknown0 = r.ReadUInt32();
-        return new(botId, vid, seatId, unknown0);
+        uint enterVehicleArgument = r.ReadUInt32();
+        return new(botId, vehicleId, seatId, enterVehicleArgument);
     }
 
     public static ArzBotPassengerSync ParseBotPassengerSync(ref BitStreamReader r)
     {
+        r.ReadUInt16();
         ushort botId = r.ReadUInt16();
         ushort vehicleId = r.ReadUInt16();
-        ushort seatId = r.ReadUInt16();
-        float health = r.ReadFloat();
-        float armour = r.ReadFloat();
-        return new(botId, vehicleId, seatId, health, armour);
+        uint packedSeatState = r.ReadUInt32();
+        uint passengerState = r.ReadUInt32();
+        return new(botId, vehicleId, packedSeatState, passengerState);
     }
 
     public static ArzBotDriveSync ParseBotDriveSync(ref BitStreamReader r)
     {
+        r.ReadUInt16();
         ushort botId = r.ReadUInt16();
         ushort vehicleId = r.ReadUInt16();
-        ushort unknown0 = r.ReadUInt16();
-        uint stateValue0 = r.ReadUInt32();
-        uint stateValue1 = r.ReadUInt32();
-        return new(botId, vehicleId, unknown0, stateValue0, stateValue1);
+        uint driveState0 = r.ReadUInt32();
+        uint driveState1 = r.ReadUInt32();
+        return new(botId, vehicleId, driveState0, driveState1);
     }
 
     public static ArzBotExitVehicle ParseBotExitVehicle(ref BitStreamReader r)
@@ -292,10 +293,11 @@ public static partial class ArizonaPacket
 
     public static ArzBotAttackPed ParseBotAttackPed(ref BitStreamReader r)
     {
+        r.ReadUInt16();
         ushort botId = r.ReadUInt16();
         ushort targetBotId = r.ReadUInt16();
-        uint unknown0 = r.ReadUInt32();
-        return new(botId, targetBotId, unknown0);
+        uint attackArgument = r.ReadUInt32();
+        return new(botId, targetBotId, attackArgument);
     }
 
     public static ArzTogglePedCollision ParseTogglePedCollision(ref BitStreamReader r)
@@ -324,7 +326,8 @@ public static partial class ArizonaPacket
     {
         ushort botId = r.ReadUInt16();
         ushort slot = r.ReadUInt16();
-        return new(botId, slot);
+        ushort unknown0 = r.ReadUInt16();
+        return new(botId, slot, unknown0);
     }
 
     public static ArzSetBotHealth ParseSetBotHealth(ref BitStreamReader r)
@@ -333,8 +336,8 @@ public static partial class ArizonaPacket
         ushort unknown0 = r.ReadUInt16();
         uint status = r.ReadUInt32();
         float currentValue = r.ReadFloat();
-        float maximumValue = r.ReadFloat();
-        return new(botId, unknown0, status, currentValue, maximumValue);
+        ushort trailingValue = r.ReadUInt16();
+        return new(botId, unknown0, status, currentValue, trailingValue);
     }
 
     public static ArzSetBotArmour ParseSetBotArmour(ref BitStreamReader r)
@@ -343,8 +346,8 @@ public static partial class ArizonaPacket
         ushort unknown0 = r.ReadUInt16();
         uint status = r.ReadUInt32();
         float currentValue = r.ReadFloat();
-        float maximumValue = r.ReadFloat();
-        return new(botId, unknown0, status, currentValue, maximumValue);
+        ushort trailingValue = r.ReadUInt16();
+        return new(botId, unknown0, status, currentValue, trailingValue);
     }
 
     public static ArzSetBotOnfootSyncRate ParseSetBotOnfootSyncRate(ref BitStreamReader r)
