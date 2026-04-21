@@ -560,20 +560,15 @@ public sealed class PluginLoader
 
     private PluginUnloadResult FinalizeDetachedUnload(LoadedPlugin plugin)
     {
-        bool onMainThread = SynchronizationContext.Current is SFSynchronizationContext;
-        for (int attempt = 0; attempt < UnloadGcAttempts && plugin.LoadContextRef.IsAlive; attempt++)
+        if (SynchronizationContext.Current is SFSynchronizationContext)
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            if (onMainThread)
-            {
-                SFBootstrap.PumpMainThreadQueue();
-            }
+            SFBootstrap.PumpMainThreadQueue();
         }
 
-        if (plugin.LoadContextRef.IsAlive)
+        WeakReference loadContextRef = plugin.LoadContextRef;
+        bool collected = Task.Run(() => RunDetachedGcLoop(loadContextRef)).GetAwaiter().GetResult();
+
+        if (!collected)
         {
             return RecordUnloadFailure(
                 plugin,
@@ -588,6 +583,20 @@ public sealed class PluginLoader
 
         SFLog.Info($"PluginLoader[{plugin.PluginId}]: ALC fully collected");
         return PluginUnloadResult.FromSuccess(plugin.PluginId);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool RunDetachedGcLoop(WeakReference loadContextRef)
+    {
+        for (int attempt = 0; attempt < UnloadGcAttempts && loadContextRef.IsAlive; attempt++)
+        {
+            Thread.Sleep(50);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
+        return !loadContextRef.IsAlive;
     }
 
     private static PluginLoadResult CreateAssemblyLoadFailure(ResolvedPluginManifest manifest, PluginLoadContext context, Exception ex)
