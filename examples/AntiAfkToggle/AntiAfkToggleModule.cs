@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using SFSharp.Abstractions.Modules;
 using SFSharp.Abstractions.Modules.Lifecycle;
@@ -28,25 +29,40 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
     private delegate* unmanaged[Cdecl]<int, int> _setAntiAfk;
     private delegate* unmanaged[Cdecl]<byte> _isAntiAfk;
     private string? _resolvedModuleName;
+    private AntiAfkConfig _config = new();
 
     public Task OnStartingAsync()
     {
+        _config = Context.Config.Load(
+            AntiAfkToggleJsonContext.Default.AntiAfkConfig,
+            static () => new AntiAfkConfig());
+
         if (!TryResolveExports())
         {
             Log.LogWarning("vorbisFile exports not found. /sfafk will report unavailable.");
             Context.SetStatusText("unavailable: vorbisFile not loaded");
             Context.SetDetail("state", "unavailable");
+            Context.SetDetail("config.persisted", _config.Enabled ? "on" : "off");
             Context.RegisterChatCommand("sfafk", OnCommandUnavailable);
             return Task.CompletedTask;
+        }
+
+        if (_config.Enabled && !ReadState())
+        {
+            SetState(true);
+            Log.LogInformation("Restored AntiAFK=on from config");
         }
 
         Context.RegisterChatCommand("sfafk", OnCommand);
         Context.SetDetail("export-host", _resolvedModuleName!);
         Context.SetDetail("state", ReadState() ? "on" : "off");
+        Context.SetDetail("config.path", Context.Config.Location);
         Context.SetStatusText("ready, type /sfafk");
         Log.LogInformation("AntiAFK toggle attached to {Module}", _resolvedModuleName);
         Context.SF.Chat.Add(
-            "Type /sfafk to toggle the AntiAFK flag. Optional: /sfafk on|off.",
+            _config.Enabled
+                ? "AntiAFK restored to enabled from config. Type /sfafk to toggle."
+                : "Type /sfafk to toggle the AntiAFK flag. Optional: /sfafk on|off.",
             prefix: ChatPrefix,
             prefixColor: PrefixColor);
         return Task.CompletedTask;
@@ -108,6 +124,7 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
 
         bool next = explicitTarget ?? !ReadState();
         SetState(next);
+        PersistState(next);
 
         Context.IncrementCounter(next ? "afk.enabled" : "afk.disabled");
         Context.SetDetail("state", next ? "on" : "off");
@@ -151,9 +168,29 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
         return null;
     }
 
+    private void PersistState(bool enabled)
+    {
+        if (_config.Enabled == enabled)
+        {
+            return;
+        }
+
+        _config.Enabled = enabled;
+        Context.Config.Save(AntiAfkToggleJsonContext.Default.AntiAfkConfig, _config);
+    }
+
     [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW", StringMarshalling = StringMarshalling.Utf16)]
     private static partial nint GetModuleHandleW(string lpModuleName);
 
     [LibraryImport("kernel32.dll", EntryPoint = "GetProcAddress", StringMarshalling = StringMarshalling.Utf8)]
     private static partial nint GetProcAddress(nint hModule, string lpProcName);
 }
+
+public sealed class AntiAfkConfig
+{
+    public bool Enabled { get; set; }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(AntiAfkConfig))]
+internal partial class AntiAfkToggleJsonContext : JsonSerializerContext;
