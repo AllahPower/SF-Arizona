@@ -47,7 +47,8 @@ public static class HookManager
 
             if (_incomingAZVoiceRpc is null && ModuleResolver.IsModuleLoaded("AZVoice.asi"))
             {
-                _incomingAZVoiceRpc = new IncomingAZVoiceRpcHook();
+                // _incomingAZVoiceRpc = new IncomingAZVoiceRpcHook(); // Disabled for now, as it causes crashes in AZVoice.asi
+                _incomingAZVoiceRpc = null;
             }
 
             return _incomingAZVoiceRpc;
