@@ -48,13 +48,26 @@ public partial class DebugModule
         }
 
         string? fallbackName = Enum.IsDefined((EAZVoice)args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
-        return ($"AZVoice:{fallbackName}", $"subId={args.SubId}", null);
+        string hex = HexDump(args.DataPtr, args.PayloadBitOffset + args.PayloadBitLength);
+        return ($"AZVoice:{fallbackName}", $"subId={args.SubId} hex={hex}", hex);
     }
 
     private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingAZVoiceControl(OutgoingArizonaPacketArgs args)
     {
         string? fallbackName = Enum.IsDefined((EAZVoice)args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
-        return ($"AZVoice:{fallbackName}", $"subId={args.SubId}", null);
+        string hex = HexDump(args.DataPtr, args.PayloadBitOffset + args.PayloadBitLength);
+        return ($"AZVoice:{fallbackName}", $"subId={args.SubId} hex={hex}", hex);
+    }
+
+    private static unsafe string HexDump(nint dataPtr, int totalBits)
+    {
+        int length = (totalBits + 7) / 8;
+        if (dataPtr == 0 || length <= 0)
+        {
+            return string.Empty;
+        }
+
+        return Convert.ToHexString(new ReadOnlySpan<byte>((void*)dataPtr, length));
     }
 
     private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingPacket(OutgoingPacketArgs args)
