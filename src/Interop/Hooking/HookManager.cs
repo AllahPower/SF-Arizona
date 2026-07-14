@@ -13,11 +13,9 @@ public static class HookManager
     private static IncomingPacketHook? _incomingPacket;
     private static IncomingAZVoicePacketHook? _incomingAZVoicePacket;
     private static IncomingAZVoiceRpcHook? _incomingAZVoiceRpc;
-    private static OutgoingAZVoicePacketHook? _outgoingAZVoicePacket;
     private static OutgoingAZVoiceRpcHook? _outgoingAZVoiceRpc;
     private static bool _azVoiceHookChecked;
     private static bool _azVoiceRpcHookChecked;
-    private static bool _azVoiceOutPacketHookChecked;
     private static bool _azVoiceOutRpcHookChecked;
 
     //public static Hook<PeekMessageArgs, PeekMessageResult> PeekMessage { get; } = new PeekMessageHook();
@@ -55,21 +53,6 @@ public static class HookManager
             }
 
             return _incomingAZVoiceRpc;
-        }
-    }
-
-    internal static OutgoingAZVoicePacketHook? OutgoingAZVoicePacket
-    {
-        get
-        {
-            if (!_azVoiceOutPacketHookChecked)
-            {
-                _azVoiceOutPacketHookChecked = true;
-                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && OutgoingAZVoicePacketHook.IsAvailable)
-                    _outgoingAZVoicePacket = new OutgoingAZVoicePacketHook();
-            }
-
-            return _outgoingAZVoicePacket;
         }
     }
 
