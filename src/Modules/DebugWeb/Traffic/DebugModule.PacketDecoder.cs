@@ -47,13 +47,13 @@ public partial class DebugModule
             return (name, detail, packet.Detail);
         }
 
-        string? fallbackName = Enum.IsDefined(typeof(EAZVoice), args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
+        string? fallbackName = Enum.IsDefined((EAZVoice)args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
         return ($"AZVoice:{fallbackName}", $"subId={args.SubId}", null);
     }
 
     private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingAZVoiceControl(OutgoingArizonaPacketArgs args)
     {
-        string? fallbackName = Enum.IsDefined(typeof(EAZVoice), args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
+        string? fallbackName = Enum.IsDefined((EAZVoice)args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
         return ($"AZVoice:{fallbackName}", $"subId={args.SubId}", null);
     }
 
