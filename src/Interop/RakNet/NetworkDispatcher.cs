@@ -16,6 +16,7 @@ internal sealed class NetworkDispatcher
         OutgoingPacket,
         IncomingAZVoiceControl,
         IncomingAZVoiceData,
+        OutgoingAZVoiceControl,
     }
 
     private readonly struct NetworkEvent
@@ -45,6 +46,7 @@ internal sealed class NetworkDispatcher
     private OutgoingPacketManager _outgoingPacketHandlers = new();
     private IncomingAZVoiceControlManager _incomingAZVoiceControlHandlers = new();
     private IncomingAZVoiceDataManager _incomingAZVoiceDataHandlers = new();
+    private OutgoingAZVoiceControlManager _outgoingAZVoiceControlHandlers = new();
 
     public RpcHandlerManager IncomingRpcHandlers => _incomingRpcHandlers;
     public OutgoingRpcManager OutgoingRpcHandlers => _outgoingRpcHandlers;
@@ -52,6 +54,7 @@ internal sealed class NetworkDispatcher
     public OutgoingPacketManager OutgoingPacketHandlers => _outgoingPacketHandlers;
     public IncomingAZVoiceControlManager IncomingAZVoiceControlHandlers => _incomingAZVoiceControlHandlers;
     public IncomingAZVoiceDataManager IncomingAZVoiceDataHandlers => _incomingAZVoiceDataHandlers;
+    public OutgoingAZVoiceControlManager OutgoingAZVoiceControlHandlers => _outgoingAZVoiceControlHandlers;
 
     public void Reset()
     {
@@ -61,6 +64,7 @@ internal sealed class NetworkDispatcher
         _outgoingPacketHandlers = new OutgoingPacketManager();
         _incomingAZVoiceControlHandlers = new IncomingAZVoiceControlManager();
         _incomingAZVoiceDataHandlers = new IncomingAZVoiceDataManager();
+        _outgoingAZVoiceControlHandlers = new OutgoingAZVoiceControlManager();
     }
 
     public void EnqueueIncomingRpc(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)
@@ -99,6 +103,12 @@ internal sealed class NetworkDispatcher
         ScheduleDispatch();
     }
 
+    public void EnqueueOutgoingAZVoiceControl(int subId, byte[] data, int dataBitLength)
+    {
+        _pendingEvents.Enqueue(new NetworkEvent(EventKind.OutgoingAZVoiceControl, subId, data, dataBitLength));
+        ScheduleDispatch();
+    }
+
     private void ScheduleDispatch()
     {
         if (Interlocked.CompareExchange(ref _dispatchScheduled, 1, 0) == 0)
@@ -131,6 +141,9 @@ internal sealed class NetworkDispatcher
                     break;
                 case EventKind.IncomingAZVoiceData:
                     _incomingAZVoiceDataHandlers.Dispatch(ev.Data, ev.BitParam1);
+                    break;
+                case EventKind.OutgoingAZVoiceControl:
+                    _outgoingAZVoiceControlHandlers.Dispatch(ev.Id, ev.Data, ev.BitParam1);
                     break;
             }
             processed++;

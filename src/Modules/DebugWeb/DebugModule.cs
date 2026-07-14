@@ -139,6 +139,8 @@ public partial class DebugModule : SFModuleBase
         {
             subs.Add(Context.RegisterDisposable(
                 SF.Arizona.SubscribeIncomingAZVoice(subId, args => OnIncomingAZVoiceControl(args))));
+            subs.Add(Context.RegisterDisposable(
+                SF.Arizona.SubscribeOutgoingAZVoice(subId, args => OnOutgoingAZVoiceControl(args))));
         }
 
         subs.Add(Context.RegisterDisposable(
@@ -155,6 +157,17 @@ public partial class DebugModule : SFModuleBase
         (string? name, string? detail, string? parsed) = DecodeIncomingAZVoiceControl(args);
         int dataByteLength = (args.PayloadBitOffset + args.PayloadBitLength + 7) / 8;
         Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.EPacketId, name,
+            parsed, detail, dataByteLength, Environment.TickCount64));
+    }
+
+    private void OnOutgoingAZVoiceControl(OutgoingArizonaPacketArgs args)
+    {
+        Interlocked.Increment(ref _totalOutPkt);
+        if (!_captureEnabled || !_captureOutgoing || !_capturePackets) return;
+
+        (string? name, string? detail, string? parsed) = DecodeOutgoingAZVoiceControl(args);
+        int dataByteLength = (args.PayloadBitOffset + args.PayloadBitLength + 7) / 8;
+        Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Packet, args.EPacketId, name,
             parsed, detail, dataByteLength, Environment.TickCount64));
     }
 

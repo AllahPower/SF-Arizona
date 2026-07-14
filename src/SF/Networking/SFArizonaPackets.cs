@@ -114,6 +114,21 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         });
     }
 
+    public NetworkSubscription SubscribeOutgoingAZVoice(EAZVoice subId, Action<OutgoingArizonaPacketArgs> handler)
+    {
+        return SFBootstrap.OutgoingAZVoiceControlHandlers.Subscribe((int)subId, handler);
+    }
+
+    public IDisposable SubscribeOutgoingAZVoice(int subId, Action<OutgoingArizonaPacketFrame> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return SubscribeOutgoingAZVoice((EAZVoice)subId, args =>
+        {
+            OutgoingArizonaPacketPayload payload = OutgoingArizonaPacketPayload.From(args);
+            handler(new OutgoingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+        });
+    }
+
     public NetworkSubscription SubscribeIncomingAZVoiceData(Action<IncomingPacketArgs> handler)
     {
         return SFBootstrap.IncomingAZVoiceDataHandlers.Subscribe(handler);

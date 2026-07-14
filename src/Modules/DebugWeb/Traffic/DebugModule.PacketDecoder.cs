@@ -51,6 +51,12 @@ public partial class DebugModule
         return ($"AZVoice:{fallbackName}", $"subId={args.SubId}", null);
     }
 
+    private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingAZVoiceControl(OutgoingArizonaPacketArgs args)
+    {
+        string? fallbackName = Enum.IsDefined(typeof(EAZVoice), args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
+        return ($"AZVoice:{fallbackName}", $"subId={args.SubId}", null);
+    }
+
     private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingPacket(OutgoingPacketArgs args)
     {
         if (SF.PacketParsers.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)

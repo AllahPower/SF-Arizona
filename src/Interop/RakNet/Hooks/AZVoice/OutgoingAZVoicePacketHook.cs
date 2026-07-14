@@ -50,10 +50,11 @@ internal unsafe class OutgoingAZVoicePacketHook : NativeHook<nint, int, Outgoing
         0x66, 0x8B, 0x86, 0x82, 0x00, 0x00, 0x00,                   // mov ax, [esi+82h] (packet counter)
     ];
 
+    private const int PacketIdAZVoice = 252; // 0xFC
+
     // Offsets into the micStream object, from the IDA prologue above.
     private const int StreamIdOffset = 33;      // *((byte*)this + 33)
     private const int PacketCounterOffset = 0x82; // *((ushort*)this + 65)
-    private const int PayloadPreviewBytes = 48;
 
     private static nint _senderAddress;
     private static bool _resolved;
@@ -80,29 +81,32 @@ internal unsafe class OutgoingAZVoicePacketHook : NativeHook<nint, int, Outgoing
             throw new UnreachableException();
         }
 
-        if (thisPtr != 0)
+        // Reconstruct the on-the-wire voice frame and feed it to the outgoing packet
+        // channel so it surfaces in the DebugWeb dashboard exactly like any other
+        // outbound packet 252 (SF.Arizona.SubscribeOutgoingAZVoiceData subscribes here).
+        if (thisPtr != 0 && SFBootstrap.OutgoingPacketHandlers.HasSubscribers(PacketIdAZVoice))
         {
             byte streamId = *(byte*)(thisPtr + StreamIdOffset);
             ushort packetNumber = (ushort)(*(ushort*)(thisPtr + PacketCounterOffset) + 1);
-            string preview = HexPreview(opusData, opusLength);
-            SFLog.Debug(
-                $"AZVoice OUT packet 252: stream={streamId} packet#={packetNumber} opus={opusLength}B [{preview}]");
+            int opusBytes = (int)opusLength;
+
+            byte[] packet = new byte[4 + opusBytes];
+            packet[0] = PacketIdAZVoice;
+            packet[1] = (byte)(packetNumber & 0xFF);
+            packet[2] = (byte)(packetNumber >> 8);
+            packet[3] = streamId;
+            if (opusBytes > 0 && opusData != 0)
+            {
+                fixed (byte* dst = &packet[4])
+                {
+                    Buffer.MemoryCopy((void*)opusData, dst, opusBytes, opusBytes);
+                }
+            }
+
+            SFBootstrap.EnqueueOutgoingPacket(PacketIdAZVoice, packet, packet.Length * 8);
         }
 
         return _instance.OriginalFunction(thisPtr, opusData, opusLength);
-    }
-
-    private static string HexPreview(nint data, uint length)
-    {
-        if (data == 0 || length == 0)
-        {
-            return string.Empty;
-        }
-
-        int take = (int)Math.Min(length, PayloadPreviewBytes);
-        var span = new ReadOnlySpan<byte>((void*)data, take);
-        string hex = Convert.ToHexString(span);
-        return length > PayloadPreviewBytes ? hex + "…" : hex;
     }
 
     protected override int InvokeOriginalFunction(nint args)

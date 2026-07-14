@@ -45,11 +45,14 @@ internal unsafe class OutgoingAZVoiceRpcHook : NativeHook<nint, int, OutgoingAZV
         0x8A, 0x85, null, null, null, null,                         // mov al, byte ptr [ebp+subOp]
     ];
 
-    private const int PayloadPreviewBytes = 48;
+    private const int PacketIdAZVoice = 252; // 0xFC
 
     // AZVoice's own RakNet BitStream layout: numberOfBitsUsed at +0, data pointer at +12.
     private const int BitStreamNumberOfBitsUsed = 0;
     private const int BitStreamData = 12;
+
+    // Guard against reading a garbage body BitStream (1 MB of bits is far past any real frame).
+    private const int MaxBodyBits = 8 << 20;
 
     private static nint _senderAddress;
     private static bool _resolved;
@@ -76,30 +79,40 @@ internal unsafe class OutgoingAZVoiceRpcHook : NativeHook<nint, int, OutgoingAZV
             throw new UnreachableException();
         }
 
-        SFLog.Debug($"AZVoice OUT RPC 252: subOp={subOp & 0xFF} body=[{DescribeBody(body)}]");
+        // Reconstruct the control message as [252][subOp][body] and feed it to the
+        // outgoing AZVoice control channel so it surfaces in the DebugWeb dashboard
+        // (SF.Arizona.SubscribeOutgoingAZVoice), mirroring the incoming control path.
+        int sub = subOp & 0xFF;
+        if (SFBootstrap.OutgoingAZVoiceControlHandlers.HasSubscribers(sub))
+        {
+            byte[] bodyBytes = ReadBody(body);
+            byte[] packet = new byte[2 + bodyBytes.Length];
+            packet[0] = PacketIdAZVoice;
+            packet[1] = (byte)sub;
+            bodyBytes.CopyTo(packet, 2);
+
+            SFBootstrap.EnqueueOutgoingAZVoiceControl(sub, packet, packet.Length * 8);
+        }
 
         return _instance.OriginalFunction(thisPtr, subOp, body);
     }
 
-    private static string DescribeBody(nint body)
+    private static byte[] ReadBody(nint body)
     {
         if (body == 0)
         {
-            return "none";
+            return [];
         }
 
         int bitsUsed = *(int*)(body + BitStreamNumberOfBitsUsed);
         byte* data = *(byte**)(body + BitStreamData);
-        if (data == null || bitsUsed <= 0 || bitsUsed > (8 << 20))
+        if (data == null || bitsUsed <= 0 || bitsUsed > MaxBodyBits)
         {
-            return "empty";
+            return [];
         }
 
         int byteLength = (bitsUsed + 7) / 8;
-        int take = Math.Min(byteLength, PayloadPreviewBytes);
-        string hex = Convert.ToHexString(new ReadOnlySpan<byte>(data, take));
-        string suffix = byteLength > PayloadPreviewBytes ? "…" : string.Empty;
-        return $"{byteLength}B {hex}{suffix}";
+        return new ReadOnlySpan<byte>(data, byteLength).ToArray();
     }
 
     protected override int InvokeOriginalFunction(nint args)

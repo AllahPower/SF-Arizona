@@ -72,6 +72,7 @@ public static class SFBootstrap
     public static OutgoingPacketManager OutgoingPacketHandlers => _dispatcher.OutgoingPacketHandlers;
     public static IncomingAZVoiceControlManager IncomingAZVoiceControlHandlers => _dispatcher.IncomingAZVoiceControlHandlers;
     public static IncomingAZVoiceDataManager IncomingAZVoiceDataHandlers => _dispatcher.IncomingAZVoiceDataHandlers;
+    public static OutgoingAZVoiceControlManager OutgoingAZVoiceControlHandlers => _dispatcher.OutgoingAZVoiceControlHandlers;
 
     public static NetworkFilterRegistry OutgoingPacketFilters { get; } = new();
     public static NetworkFilterRegistry OutgoingRpcFilters { get; } = new();
@@ -153,6 +154,11 @@ public static class SFBootstrap
     public static void EnqueueIncomingAZVoiceData(byte[] data, int dataBitLength)
     {
         _dispatcher.EnqueueIncomingAZVoiceData(data, dataBitLength);
+    }
+
+    public static void EnqueueOutgoingAZVoiceControl(int subId, byte[] data, int dataBitLength)
+    {
+        _dispatcher.EnqueueOutgoingAZVoiceControl(subId, data, dataBitLength);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]

@@ -22,6 +22,8 @@ public interface ISFArizonaPackets
     IDisposable SubscribeIncomingAZVoice(int subId, Action<IncomingArizonaPacketFrame> handler);
     IAsyncEnumerable<IncomingArizonaPacketFrame> StreamIncomingAZVoice(int subId, CancellationToken token = default);
 
+    IDisposable SubscribeOutgoingAZVoice(int subId, Action<OutgoingArizonaPacketFrame> handler);
+
     IDisposable SubscribeIncomingAZVoiceData(Action<IncomingPacketFrame> handler);
     IAsyncEnumerable<IncomingPacketFrame> StreamIncomingAZVoiceData(CancellationToken token = default);
 
