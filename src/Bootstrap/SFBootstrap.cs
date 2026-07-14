@@ -269,6 +269,12 @@ public static class SFBootstrap
 
         if (HookManager.IncomingAZVoiceRpc is not null)
             SFLog.Debug("AZVoice incoming RPC hook installed.");
+
+        if (HookManager.OutgoingAZVoicePacket is not null)
+            SFLog.Debug("AZVoice outgoing packet hook installed.");
+
+        if (HookManager.OutgoingAZVoiceRpc is not null)
+            SFLog.Debug("AZVoice outgoing RPC hook installed.");
     }
 
     private static void InstallSubHooks()

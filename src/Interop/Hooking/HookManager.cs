@@ -13,8 +13,12 @@ public static class HookManager
     private static IncomingPacketHook? _incomingPacket;
     private static IncomingAZVoicePacketHook? _incomingAZVoicePacket;
     private static IncomingAZVoiceRpcHook? _incomingAZVoiceRpc;
+    private static OutgoingAZVoicePacketHook? _outgoingAZVoicePacket;
+    private static OutgoingAZVoiceRpcHook? _outgoingAZVoiceRpc;
     private static bool _azVoiceHookChecked;
     private static bool _azVoiceRpcHookChecked;
+    private static bool _azVoiceOutPacketHookChecked;
+    private static bool _azVoiceOutRpcHookChecked;
 
     //public static Hook<PeekMessageArgs, PeekMessageResult> PeekMessage { get; } = new PeekMessageHook();
     public static HookBase<CChatAddEntryArgs, NoRetValue> CChatAddEntry { get; } = new CChatAddEntryHook();
@@ -53,6 +57,37 @@ public static class HookManager
             return _incomingAZVoiceRpc;
         }
     }
+
+    internal static OutgoingAZVoicePacketHook? OutgoingAZVoicePacket
+    {
+        get
+        {
+            if (!_azVoiceOutPacketHookChecked)
+            {
+                _azVoiceOutPacketHookChecked = true;
+                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && OutgoingAZVoicePacketHook.IsAvailable)
+                    _outgoingAZVoicePacket = new OutgoingAZVoicePacketHook();
+            }
+
+            return _outgoingAZVoicePacket;
+        }
+    }
+
+    internal static OutgoingAZVoiceRpcHook? OutgoingAZVoiceRpc
+    {
+        get
+        {
+            if (!_azVoiceOutRpcHookChecked)
+            {
+                _azVoiceOutRpcHookChecked = true;
+                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && OutgoingAZVoiceRpcHook.IsAvailable)
+                    _outgoingAZVoiceRpc = new OutgoingAZVoiceRpcHook();
+            }
+
+            return _outgoingAZVoiceRpc;
+        }
+    }
+
     public static HookBase<CDialogCloseArgs, NoRetValue> CDialogClose => _cDialogClose ??= !ModuleResolver.IsModuleLoaded("sampfuncs.asi") ? new CDialogCloseHook() : new CDialogCloseHook_SF();
     public static HookBase<CDialogHideArgs, NoRetValue> CDialogHide => _cDialogHide ??= new CDialogHideHook();
     public static HookBase<CDialogShowHookArgs, NoRetValue> CDialogShow => _cDialogShow ??= new CDialogShowHook();
