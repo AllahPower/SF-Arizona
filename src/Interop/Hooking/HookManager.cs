@@ -14,6 +14,7 @@ public static class HookManager
     private static IncomingAZVoicePacketHook? _incomingAZVoicePacket;
     private static IncomingAZVoiceRpcHook? _incomingAZVoiceRpc;
     private static bool _azVoiceHookChecked;
+    private static bool _azVoiceRpcHookChecked;
 
     //public static Hook<PeekMessageArgs, PeekMessageResult> PeekMessage { get; } = new PeekMessageHook();
     public static HookBase<CChatAddEntryArgs, NoRetValue> CChatAddEntry { get; } = new CChatAddEntryHook();
@@ -40,15 +41,13 @@ public static class HookManager
     {
         get
         {
-            if (!_azVoiceHookChecked)
+            if (!_azVoiceRpcHookChecked)
             {
-                _ = IncomingAZVoicePacket;
-            }
-
-            if (_incomingAZVoiceRpc is null && ModuleResolver.IsModuleLoaded("AZVoice.asi"))
-            {
-                // _incomingAZVoiceRpc = new IncomingAZVoiceRpcHook(); // Disabled for now, as it causes crashes in AZVoice.asi
-                _incomingAZVoiceRpc = null;
+                _azVoiceRpcHookChecked = true;
+                // Resolved by a stable byte pattern now (see IncomingAZVoiceRpcHook); the
+                // earlier crashes came from a stale module offset landing mid-function.
+                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && IncomingAZVoiceRpcHook.IsAvailable)
+                    _incomingAZVoiceRpc = new IncomingAZVoiceRpcHook();
             }
 
             return _incomingAZVoiceRpc;
