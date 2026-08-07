@@ -245,7 +245,7 @@ public static partial class ArizonaPacket
         uint port = r.ReadUInt32();
         string nickname = r.ReadStringUInt32Length();
         string password = r.ReadStringUInt32Length();
-        bool connectMode = r.ReadBool8();
+        bool connectMode = r.ReadBitBool();
         return new(host, port, nickname, password, connectMode);
     }
 
