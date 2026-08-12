@@ -10,6 +10,7 @@ public unsafe ref struct CDialog
     private static readonly nuint _instanceAddress = (nuint)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CDialog.Instance);
     private static CDialog* CurrentInstance => *(CDialog**)_instanceAddress;
     public static ref readonly CDialog Instance => ref *RequireInstance();
+    public static bool IsAvailable => CurrentInstance is not null;
 
     [FieldOffset(32)]
     public CDXUTListBox* ListBox;
