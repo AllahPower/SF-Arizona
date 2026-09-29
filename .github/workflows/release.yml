@@ -2,66 +2,74 @@ name: Build & Release
 
 on:
   push:
-    branches: [master]
-    paths:
-      - 'src/SF.csproj'
+    branches: [master, experiment/jit-runtime]
+    tags: ['v*']
+  pull_request:
+    branches: [master, experiment/jit-runtime]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: sf-build-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-and-release:
-    runs-on: windows-latest
-
+  build:
+    runs-on: windows-2025-vs2026
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      publish: ${{ steps.version.outputs.publish }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-
-      - name: Check version changed
-        id: version_diff
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          dotnet-version: '10.0.x'
+      - name: Resolve release version
+        id: version
+        shell: pwsh
+        run: ./scripts/release-version.ps1
+      - name: Check structure and release rules
+        shell: pwsh
+        run: ./scripts/verify.ps1
+      - name: Build native loader, runtime and examples
+        shell: pwsh
+        run: ./scripts/build.ps1 -Version '${{ steps.version.outputs.version }}'
+      - name: Package and verify deployment archive
         shell: pwsh
         run: |
-          [xml]$current = Get-Content src/SF.csproj
-          $curVer = $current.Project.PropertyGroup[0].Version
-          $prevContent = git show HEAD~1:src/SF.csproj 2>$null
-          if ($prevContent) {
-            [xml]$prev = $prevContent
-            $prevVer = $prev.Project.PropertyGroup[0].Version
-          } else {
-            $prevVer = ""
-          }
-          echo "CURRENT=$curVer" >> $env:GITHUB_OUTPUT
-          if ($curVer -ne $prevVer) {
-            echo "CHANGED=true" >> $env:GITHUB_OUTPUT
-            echo "Version changed: $prevVer -> $curVer"
-          } else {
-            echo "CHANGED=false" >> $env:GITHUB_OUTPUT
-            echo "Version unchanged: $curVer"
-          }
-
-      - name: Setup .NET 10
-        if: steps.version_diff.outputs.CHANGED == 'true'
-        uses: actions/setup-dotnet@v4
+          ./scripts/package.ps1 -Version '${{ steps.version.outputs.version }}'
+          ./scripts/verify.ps1 -Archive 'artifacts/releases/SF-Arizona-${{ steps.version.outputs.version }}-win-x86.zip'
+      - uses: actions/upload-artifact@v4
         with:
-          dotnet-version: '10.0.x'
-          dotnet-quality: 'preview'
+          name: SF-Arizona-${{ steps.version.outputs.version }}-win-x86
+          path: artifacts/releases/SF-Arizona-${{ steps.version.outputs.version }}-win-x86.zip*
+          if-no-files-found: error
 
-      - name: Restore dependencies
-        if: steps.version_diff.outputs.CHANGED == 'true'
-        run: dotnet restore src/SF.csproj
-
-      - name: Publish (NativeAOT win-x86)
-        if: steps.version_diff.outputs.CHANGED == 'true'
-        run: dotnet publish src/SF.csproj -c Release
-
-      - name: Create GitHub Release
-        if: steps.version_diff.outputs.CHANGED == 'true'
-        uses: softprops/action-gh-release@v2
+  release:
+    needs: build
+    if: github.event_name == 'push' && needs.build.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
         with:
-          tag_name: v${{ steps.version_diff.outputs.CURRENT }}
-          name: SF-Arizona v${{ steps.version_diff.outputs.CURRENT }}
-          make_latest: true
+          name: SF-Arizona-${{ needs.build.outputs.version }}-win-x86
+          path: release
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: SF-Arizona v${{ needs.build.outputs.version }}
+          prerelease: ${{ needs.build.outputs.prerelease == 'true' }}
+          make_latest: ${{ needs.build.outputs.prerelease == 'true' && 'false' || 'true' }}
           generate_release_notes: true
-          files: src/bin/Release/net10.0/win-x86/publish/SF.asi
+          fail_on_unmatched_files: true
+          files: release/*
