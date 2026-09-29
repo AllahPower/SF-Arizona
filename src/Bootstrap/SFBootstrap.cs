@@ -282,8 +282,9 @@ public static class SFBootstrap
 
     private static void InstallSubHooks()
     {
-        // No CDialog::Show/Hide/Close hooks on purpose: the Arizona client detours those itself and
-        // patches out samp's native dialog drawing, so detouring them can leave dialogs invisible.
+        // Only CDialog::Show is hooked. Its entry is free (the Arizona client hooks 0x40 bytes
+        // further in), while the close entry it detours itself must stay untouched.
+        HookManager.CDialogShow.AddSubHook(SF.Dialog);
         _ = RpcHandlers.Subscribe(
             ERpcId.ShowDialog,
             args => SF.Dialog.ObserveIncomingShowDialog(SampRpc.ParseShowDialog(args)));
@@ -296,7 +297,7 @@ public static class SFBootstrap
         HookManager.CChatAddEntry.AddSubHook(SF.Chat);
         HookManager.CInputCommandSend.AddSubHook(SF.Chat);
         HookManager.UpdateScoresPingsIps.AddSubHook(SF.Players);
-        SFLog.Debug("Sub-hooks registered: ShowDialogRpc, DialogResponseRpc, Chat, Input, Scoreboard.");
+        SFLog.Debug("Sub-hooks registered: DialogShow, ShowDialogRpc, DialogResponseRpc, Chat, Input, Scoreboard.");
     }
 
     private static async Task<uint> GetSampDllBaseAddress()

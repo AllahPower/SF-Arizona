@@ -3,12 +3,12 @@ namespace SFSharp.Runtime.Ui;
 using DialogResultArgs = (SFDialogButton Button, int SelectedItemIndex, string? InputText);
 
 /// <summary>
-/// SA-MP dialog facade. Deliberately installs no hooks over <c>CDialog::Show/Hide/Close</c>: the
-/// Arizona client renders dialogs through CEF and patches out samp's native dialog drawing, so any
-/// detour on those functions can knock its own chain out and leave the dialog invisible. Server
-/// dialogs are observed through incoming RPC 61 instead, and completion comes from outgoing RPC 62.
+/// SA-MP dialog facade. <c>CDialog::Show</c> is hooked at its entry, which the Arizona client leaves
+/// free (its own hook sits 0x40 bytes further in). <c>CDialog::Hide</c> and <c>CDialog::Close</c> are
+/// deliberately left alone: the client detours the close entry itself, and its CEF path is the only
+/// thing that still draws dialogs. Completion comes from outgoing RPC 62.
 /// </summary>
-public class SFDialog : ISFDialog
+public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
 {
     private const int InitialDialogId = 0x5346;
     private const int AppearTimeoutMs = 5000;
@@ -25,6 +25,11 @@ public class SFDialog : ISFDialog
 
     /// <summary>Last dialog the server pushed through RPC 61, or <c>null</c> if none was seen yet.</summary>
     public ShowDialogRpc? LastServerDialog { get; private set; }
+
+    /// <summary>
+    /// Last dialog that reached native <c>CDialog::Show</c>, server-sent or opened by SF itself.
+    /// </summary>
+    public CDialogShowHookArgs? LastShownDialog { get; private set; }
 
     public Task<DialogResultArgs> Show(DialogStyle style, string title, string text, string okButton, string cancelButton)
     {
@@ -67,6 +72,13 @@ public class SFDialog : ISFDialog
     {
         LastServerDialog = dialog;
         SFLog.Debug($"Dialog rpc id={dialog.DialogId} style={dialog.Style} title={dialog.Title} textLength={dialog.Text.Length}");
+    }
+
+    NoRetValue ISubHook<CDialogShowHookArgs, NoRetValue>.Process(CDialogShowHookArgs args, Func<CDialogShowHookArgs, NoRetValue> next)
+    {
+        LastShownDialog = args;
+        SFLog.Debug($"Dialog show observed id={args.Id} style={args.Style} serverSide={args.ServerSide} title={args.Caption ?? "<null>"}");
+        return next(args);
     }
 
     public void ObserveOutgoingDialogResponse(DialogResponseRpc response)

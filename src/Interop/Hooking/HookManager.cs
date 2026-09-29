@@ -71,10 +71,10 @@ public static class HookManager
         }
     }
 
-    // Nothing installs these any more. The Arizona client detours CDialog::Show/Close itself and
-    // patches out samp's native dialog drawing, so a detour here can drop its CEF chain and leave
-    // dialogs invisible; dialogs are observed through RPC 61/62 instead. Touching any of these
-    // properties re-installs the hook.
+    // Close and Hide are not installed. The Arizona client detours the CDialog::Close entry itself
+    // and patches out samp's native dialog drawing, so a detour here can drop its CEF chain and
+    // leave dialogs invisible; closing is observed through outgoing RPC 62 instead. Touching either
+    // property re-installs the hook.
     public static HookBase<CDialogCloseArgs, NoRetValue> CDialogClose => _cDialogClose ??= !ModuleResolver.IsModuleLoaded("sampfuncs.asi") ? new CDialogCloseHook() : new CDialogCloseHook_SF();
     public static HookBase<CDialogHideArgs, NoRetValue> CDialogHide => _cDialogHide ??= new CDialogHideHook();
     public static HookBase<CDialogShowHookArgs, NoRetValue> CDialogShow => _cDialogShow ??= new CDialogShowHook();
