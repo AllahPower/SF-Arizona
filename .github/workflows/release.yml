@@ -2,10 +2,10 @@ name: Build & Release
 
 on:
   push:
-    branches: [master, experiment/jit-runtime]
+    branches: [main, experiment/jit-runtime]
     tags: ['v*']
   pull_request:
-    branches: [master, experiment/jit-runtime]
+    branches: [main, experiment/jit-runtime]
   workflow_dispatch:
 
 permissions:

@@ -50,6 +50,8 @@ try {
     Assert-True (($preview -join "`n") -eq ($retry -join "`n")) 'Re-run changed the release identity.'
     $pr = @(& "$PSScriptRoot/release-version.ps1" -Ref 'refs/pull/123/merge')
     Assert-True ('publish=false' -in $pr) 'Pull requests must not publish releases.'
+    $main = @(& "$PSScriptRoot/release-version.ps1" -Ref 'refs/heads/main')
+    Assert-True ("version=$base" -in $main -and 'prerelease=false' -in $main -and 'publish=false' -in $main) 'Main must build the base release version without publishing an untagged release.'
     $rejected = $false
     try { & "$PSScriptRoot/release-version.ps1" -Ref 'refs/tags/v999.0.0' | Out-Null } catch { $rejected = $true }
     Assert-True $rejected 'Version mismatch was accepted.'

@@ -21,6 +21,8 @@ The core idea is simple: instead of writing raw memory patches and ASM hooks, yo
 
 The project is a fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), rebuilt from the ground up for Arizona RP.
 
+**Maintained branch:** [`main`](https://github.com/AllahPower/SF-Arizona/tree/main), promoted from the managed-runtime experiment. The former `master` implementation is preserved in [`legacy/master-outdated`](https://github.com/AllahPower/SF-Arizona/tree/legacy/master-outdated) for historical reference only.
+
 ### Goals
 
 - **Game environment in C#** - expose players, vehicles, objects, dialogs, chat, and all other SA-MP entities as typed, safe abstractions that module authors can use directly
