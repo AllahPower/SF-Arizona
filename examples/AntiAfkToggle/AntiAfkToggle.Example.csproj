@@ -9,7 +9,7 @@
     <RootNamespace>SFSharp.Examples.AntiAfkToggle</RootNamespace>
     <AssemblyName>SF.Example.AntiAfkToggle</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)\anti-afk-toggle\</OutputPath>
+    <OutputPath>$(RepositoryRoot)artifacts\examples\$(Configuration)\anti-afk-toggle\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

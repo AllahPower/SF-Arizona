@@ -374,3 +374,6 @@ FodyWeavers.xsd
 .windsurf/
 CLAUDE.md
 AGENTS.md
+
+# Repository-wide build, publish and local verification output
+/artifacts/

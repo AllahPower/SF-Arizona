@@ -8,7 +8,7 @@
     <RootNamespace>SFSharp.Examples.ConfigCounter</RootNamespace>
     <AssemblyName>SF.Example.ConfigCounter</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)\config-counter\</OutputPath>
+    <OutputPath>$(RepositoryRoot)artifacts\examples\$(Configuration)\config-counter\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

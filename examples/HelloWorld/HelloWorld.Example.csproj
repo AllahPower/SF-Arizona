@@ -8,7 +8,7 @@
     <RootNamespace>SFSharp.Examples.HelloWorld</RootNamespace>
     <AssemblyName>SF.Example.HelloWorld</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)\hello-world\</OutputPath>
+    <OutputPath>$(RepositoryRoot)artifacts\examples\$(Configuration)\hello-world\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

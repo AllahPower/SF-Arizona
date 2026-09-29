@@ -8,7 +8,7 @@
     <RootNamespace>SFSharp.Examples.CefEmitor</RootNamespace>
     <AssemblyName>SF.Example.CefEmitor</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)\cef-emitor\</OutputPath>
+    <OutputPath>$(RepositoryRoot)artifacts\examples\$(Configuration)\cef-emitor\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

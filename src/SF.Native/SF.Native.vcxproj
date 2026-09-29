@@ -38,9 +38,9 @@
     <_DotNetRoot64 Condition="'$(_DotNetRoot64)'==''">$(ProgramFiles)\dotnet</_DotNetRoot64>
     <DotNetHostPackRoot Condition="'$(DotNetHostPackRoot)'=='' and Exists('$(_DotNetRoot64)\packs\Microsoft.NETCore.App.Host.win-x86')">$(_DotNetRoot64)\packs\Microsoft.NETCore.App.Host.win-x86</DotNetHostPackRoot>
     <DotNetHostPackRoot Condition="'$(DotNetHostPackRoot)'==''">$(MSBuildProgramFiles32)\dotnet\packs\Microsoft.NETCore.App.Host.win-x86</DotNetHostPackRoot>
-    <_ProjectSrcRoot>$(MSBuildProjectDirectory)\..\</_ProjectSrcRoot>
-    <OutDir>$(_ProjectSrcRoot)bin\$(Configuration)\win-x86\</OutDir>
-    <IntDir>$(_ProjectSrcRoot)obj\SF.Native\$(Configuration)\win-x86\</IntDir>
+    <_RepositoryRoot>$(MSBuildProjectDirectory)\..\..\</_RepositoryRoot>
+    <OutDir>$(_RepositoryRoot)artifacts\native\$(Configuration)\win-x86\</OutDir>
+    <IntDir>$(_RepositoryRoot)artifacts\obj\SF.Native\$(Configuration)\win-x86\</IntDir>
     <TargetName>SF</TargetName>
     <TargetExt>.asi</TargetExt>
   </PropertyGroup>

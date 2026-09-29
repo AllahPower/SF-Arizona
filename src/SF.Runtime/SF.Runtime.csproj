@@ -12,10 +12,7 @@
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<PlatformTarget>x86</PlatformTarget>
-		<Version>3.2.6</Version>
-		<AssemblyVersion>3.2.6.0</AssemblyVersion>
-		<FileVersion>3.2.6.0</FileVersion>
-		<InformationalVersion>3.2.6</InformationalVersion>
+		<SelfContained>false</SelfContained>
 		<Product>SF-Arizona</Product>
 		<Authors>AllahPower</Authors>
 		<Company>AllahPower</Company>
@@ -23,8 +20,8 @@
 		<RepositoryType>git</RepositoryType>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<OutputPath>bin\$(Configuration)\win-x86\SF\</OutputPath>
-		<PublishDir>bin\$(Configuration)\win-x86\SF\</PublishDir>
+		<OutputPath>$(RepositoryRoot)artifacts\bin\SF.Runtime\$(Configuration)\win-x86\</OutputPath>
+		<PublishDir>$(RepositoryRoot)artifacts\publish\$(Configuration)\win-x86\SF\</PublishDir>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -36,7 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Modules\DebugWeb\wwwroot\**\*">
+		<Content Include="Diagnostics\DebugWeb\wwwroot\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 			<TargetPath>debug-web\wwwroot\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
@@ -44,9 +41,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Remove="SF.Abstractions\**\*.cs" />
-		<None Remove="SF.Abstractions\**\*" />
-		<ProjectReference Include="SF.Abstractions\SF.Abstractions.csproj" />
+		<ProjectReference Include="..\SF.Abstractions\SF.Abstractions.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

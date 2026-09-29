@@ -10,7 +10,7 @@
 		<IsTrimmable>false</IsTrimmable>
 		<RootNamespace>SFSharp.Abstractions</RootNamespace>
 		<AssemblyName>SF.Abstractions</AssemblyName>
-		<Version>3.2.6</Version>
+
 	</PropertyGroup>
 
 	<ItemGroup>

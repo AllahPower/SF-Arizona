@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <SFBaseVersion>3.2.6</SFBaseVersion>
+    <Version Condition="'$(Version)' == ''">$(SFBaseVersion)</Version>
+    <AssemblyVersion>$(SFBaseVersion).0</AssemblyVersion>
+    <FileVersion>$(SFBaseVersion).0</FileVersion>
+    <InformationalVersion Condition="'$(InformationalVersion)' == ''">$(Version)</InformationalVersion>
+  </PropertyGroup>
+</Project>
