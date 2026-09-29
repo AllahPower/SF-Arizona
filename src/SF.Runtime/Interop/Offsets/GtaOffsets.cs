@@ -2,6 +2,25 @@ namespace SFSharp.Runtime.Interop.Offsets;
 
 public static class GtaOffsets
 {
+    // GTA SA 1.0 US / current Arizona client. RVAs are relative to the EXE base,
+    // unlike the legacy absolute camera addresses below. Device/HWND verified by
+    // read-only process inspection on 2026-09-29; function identities checked in IDA.
+    public static class RenderWareRva
+    {
+        public const int D3D9Device = 0x897C28;
+        public const int WindowHandle = 0x897C1C;
+        public const int RasterShowRaster = 0x3F99B0;
+        public const int CameraBeginUpdate = 0x3F8F20;
+        public const int CameraEndUpdate = 0x3F98D0;
+    }
+
+    public static class InputRva
+    {
+        public const int MainWndProc = 0x347EB0;
+        public const int UpdateMouse = 0x13F3C0;
+        public const int GetMouseState = 0x346ED0;
+    }
+
     public static class CCamera
     {
         public const nint TheCamera = 0xB6F028;

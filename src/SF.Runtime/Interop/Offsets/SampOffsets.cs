@@ -220,11 +220,14 @@ public static class SampOffsets
     {
         public const int Instance = 0x26E8CC;
         public const int Send = 0x69190;
+        // SAMP-API R3-1, packed x86 CInput::m_bEnabled (BOOL).
+        public const int Enabled = 0x14E0;
     }
 
     public static class CDialog
     {
         public const int Instance = 0x26E898;
+        public const int Active = 0x28;
         public const int Show = 0x6F8C0;
         public const int Hide = 0x6F110;
         public const int Close = 0x6FF40;
@@ -352,7 +355,19 @@ public static class SampOffsets
 
     public static class CScoreboard
     {
+        public const int Instance = 0x26E894;
+        public const int Enabled = 0x00;
         public const int UpdateScoresPingsIps = 0x10090;
+    }
+
+    // SAMP-API commit 0d43a3603239f2f4bc65b8305ffc72177386cc29, R3-1.
+    public static class CGame
+    {
+        public const int Instance = 0x26E8F4;
+        // CGame::m_nCursorMode in the pinned packed x86 layout.
+        public const int CursorMode = 0x61;
+        public const int SetCursorMode = 0x9FFE0;
+        public const int GetWindowHandle = 0x2CF0;
     }
 
     public static class SampFuncs
