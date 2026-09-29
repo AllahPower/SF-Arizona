@@ -11,7 +11,9 @@ namespace SFSharp.Abstractions.Network;
 /// </remarks>
 public interface ISFPackets
 {
+    /// <summary>Subscribes by original wire ID. Timestamp envelopes use ID 40; inspect the frame's timestamp and effective ID explicitly.</summary>
     IDisposable SubscribeIncoming(int packetId, Action<IncomingPacketFrame> handler);
+    /// <summary>Streams by original wire ID without stripping ID_TIMESTAMP envelopes.</summary>
     IAsyncEnumerable<IncomingPacketFrame> StreamIncoming(int packetId, CancellationToken token = default);
 
     IDisposable SubscribeOutgoing(int packetId, Action<OutgoingPacketFrame> handler);

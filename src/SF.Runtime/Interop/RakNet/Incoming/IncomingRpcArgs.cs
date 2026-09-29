@@ -10,8 +10,7 @@ public readonly record struct IncomingRpcArgs(int ERpcId, nint DataPtr, int Data
 
 public class NetworkSubscription : IDisposable
 {
-    private readonly Action _unsubscribe;
-    private int _disposed;
+    private Action? _unsubscribe;
 
     internal NetworkSubscription(Action unsubscribe)
     {
@@ -20,12 +19,8 @@ public class NetworkSubscription : IDisposable
 
     public virtual void Dispose()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-        {
-            return;
-        }
-
-        _unsubscribe();
+        // Release the captured handler/owner even if the disposed subscription is retained.
+        Interlocked.Exchange(ref _unsubscribe, null)?.Invoke();
     }
 }
 

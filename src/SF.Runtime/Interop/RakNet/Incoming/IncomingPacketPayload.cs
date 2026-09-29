@@ -4,6 +4,8 @@ namespace SFSharp.Runtime.Network.RakNet.Incoming;
 
 public readonly record struct IncomingPacketPayload(EPacketId EPacketId, byte[] Data, int DataBitLength)
 {
+    public IncomingPacketFrame ToFrame() => new((int)EPacketId, Data, DataBitLength);
+
     public T Parse<T>(Func<IncomingPacketArgs, T> parser)
     {
         unsafe

@@ -57,7 +57,7 @@ public sealed unsafe class SFPackets : ISFPackets
     public IDisposable SubscribeIncoming(int packetId, Action<IncomingPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeIncoming((EPacketId)packetId, args => handler(new IncomingPacketFrame(args.EPacketId, IncomingPacketPayload.From(args).Data, args.DataBitLength)));
+        return SubscribeIncoming((EPacketId)packetId, args => handler(IncomingPacketPayload.From(args).ToFrame()));
     }
 
     public async IAsyncEnumerable<IncomingPacketPayload> StreamIncoming(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
@@ -130,7 +130,7 @@ public sealed unsafe class SFPackets : ISFPackets
     {
         await foreach (IncomingPacketPayload payload in StreamIncoming((EPacketId)packetId, token))
         {
-            yield return new IncomingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
+            yield return payload.ToFrame();
         }
     }
 

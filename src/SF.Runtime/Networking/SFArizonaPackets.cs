@@ -137,7 +137,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     public IDisposable SubscribeIncomingAZVoiceData(Action<IncomingPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeIncomingAZVoiceData(args => handler(new IncomingPacketFrame(args.EPacketId, IncomingPacketPayload.From(args).Data, args.DataBitLength)));
+        return SubscribeIncomingAZVoiceData(args => handler(IncomingPacketPayload.From(args).ToFrame()));
     }
 
     public NetworkSubscription SubscribeOutgoingAZVoiceData(Action<OutgoingPacketArgs> handler)
@@ -378,7 +378,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     {
         await foreach (IncomingPacketPayload payload in StreamIncomingAZVoiceData(token))
         {
-            yield return new IncomingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
+            yield return payload.ToFrame();
         }
     }
 
