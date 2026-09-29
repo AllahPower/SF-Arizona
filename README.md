@@ -1,5 +1,24 @@
 <div align="center">
 
+# ⛔ OUTDATED — LEGACY VERSION ⛔
+
+## THIS BRANCH IS ARCHIVED AND NO LONGER MAINTAINED
+
+**The former `master` implementation is preserved here for historical reference only.**
+
+### ➜ [USE THE CURRENT PROJECT ON `main`](https://github.com/AllahPower/SF-Arizona/tree/main)
+
+**The build, installation and architecture instructions below describe the old implementation, not the current managed runtime.**
+
+</div>
+
+> [!WARNING]
+> **OUTDATED:** do not use this branch for new development or current releases. Switch to [`main`](https://github.com/AllahPower/SF-Arizona/tree/main). This legacy branch retains the original source and commit history.
+
+---
+
+<div align="center">
+
 # SF-Arizona
 
 *A C# framework that brings the full SA-MP/GTA game environment into managed code - build game modules with a clean API, not raw memory hacks*
