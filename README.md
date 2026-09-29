@@ -77,7 +77,7 @@ dotnet build src/SF.Runtime/SF.Runtime.csproj -c Release
 
 # Package and verify deployment
 ./scripts/package.ps1
-./scripts/verify.ps1 -Archive artifacts/releases/SF-Arizona-3.2.6-win-x86.zip
+./scripts/verify.ps1 -Archive artifacts/releases/SF-Arizona-3.3.0-win-x86.zip
 ```
 
 Open `SF-Arizona.sln` in Visual Studio. Native output: `artifacts/native/Release/win-x86/`; managed deployment: `artifacts/publish/Release/win-x86/SF/`; archives/checksums: `artifacts/releases/`. For offline checks, `build.ps1 -RestoreSource` accepts absolute local NuGet-cache paths.
@@ -245,11 +245,11 @@ For detailed guides, API reference, and examples, visit the **[SF-Arizona Wiki](
 
 ## Versioning and Releases
 
-`Version.props` owns the base version (**3.2.6**) and numeric assembly/file versions. Use SemVer: patch for fixes, minor for compatible features, major for breaking changes. The number of commits does not dictate version bumps; a folder-only refactor retains the current version.
+`Version.props` owns the base version (**3.3.0**) and numeric assembly/file versions. Use SemVer: patch for fixes, minor for compatible features, major for breaking changes. The number of commits does not dictate version bumps; a folder-only refactor retains the current version.
 
 - PRs and supported branch pushes build and verify a deployment archive.
-- Pushes to `experiment/jit-runtime` publish `3.2.6-preview.<run_number>.<short_sha>` prereleases, never latest.
-- Tag `v3.2.6` publishes a stable release; `v3.2.6-rc.1` publishes a prerelease. The numeric version must match Version.props.
+- Pushes to `experiment/jit-runtime` publish `3.3.0-preview.<run_number>.<short_sha>` prereleases, never latest.
+- Tag `v3.3.0` publishes a stable release; `v3.3.0-rc.1` publishes a prerelease. The numeric version must match Version.props.
 - Reruns reuse the same preview identity. Archives contain build-info.json and a separate SHA-256 checksum.
 - Automatic NuGet publication is not configured.
 
