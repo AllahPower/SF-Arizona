@@ -4,7 +4,7 @@
 
 *A C# framework that brings the full SA-MP/GTA game environment into managed code - build game modules with a clean API, not raw memory hacks*
 
-[![.NET](https://img.shields.io/badge/.NET_10-NativeAOT-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET_10-managed_runtime-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/platform-win--x86-blue)](https://github.com/AllahPower/SF-Arizona)
 [![Wiki](https://img.shields.io/badge/docs-Wiki-green?logo=github)](https://github.com/AllahPower/SF-Arizona/wiki)
 [![SAMPFUNCS](https://img.shields.io/badge/SAMPFUNCS-v5.5.0-orange)](https://www.blast.hk/threads/17/)
@@ -15,9 +15,9 @@
 
 ## About
 
-**SF-Arizona** is a C# framework that exposes the entire SA-MP/GTA San Andreas game environment through a high-level API abstraction layer. It targets **SA-MP 0.3.7 R3-1** on **Arizona RP** and compiles via NativeAOT into a single `SF.asi` plugin - no .NET runtime required on the target machine.
+**SF-Arizona** is a C# framework that exposes the SA-MP/GTA San Andreas game environment through a high-level API abstraction layer. It targets **SA-MP 0.3.7 R3-1** on **Arizona RP**. A native win-x86 `SF.asi` loader hosts managed `SF.Runtime.dll` through hostfxr; the target machine requires **ASP.NET Core Runtime .NET 10 x86**.
 
-The core idea is simple: instead of writing raw memory patches and ASM hooks, you write **modules** - regular C# classes in the `src/Modules/` directory where you implement whatever game logic you need. The framework handles everything underneath: hooking into RakNet for network traffic, mapping native memory pools for players, vehicles, objects, and other game entities, providing structured events, and managing module lifecycles.
+The core idea is simple: instead of writing raw memory patches and ASM hooks, you write **modules** against `SF.Abstractions`. Built-in modules live in `src/SF.Runtime/Modules/BuiltIn/`; independent plugin samples live in `examples/`. The framework handles RakNet interception, native memory pools, typed events and module lifecycles.
 
 The project is a fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), rebuilt from the ground up for Arizona RP.
 
@@ -25,9 +25,9 @@ The project is a fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), re
 
 - **Game environment in C#** - expose players, vehicles, objects, dialogs, chat, and all other SA-MP entities as typed, safe abstractions that module authors can use directly
 - **Network layer access** - intercept and decode every RPC and raw packet in both directions, including Arizona-specific custom packets (ID 220/221), with zero-allocation `BitStreamReader` parsing
-- **Module-first architecture** - everything the user builds lives in `src/Modules/`. A module is a self-contained C# class with full access to the game API, network events, native pools, chat commands, and background threading
+- **Module-first architecture** - built-in and external modules use typed game/network contracts, chat commands and explicit lifecycle ownership
 - **Developer tooling** - built-in web traffic debugger, structured logging, telemetry, and the `/sfs` in-game dashboard for module management
-- **Single-file delivery** - ship as one native DLL with no external dependencies thanks to .NET 10 NativeAOT
+- **Managed plugin delivery** - ship a native loader and managed dependencies in an installable win-x86 archive
 
 ---
 
@@ -35,7 +35,7 @@ The project is a fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), re
 
 | Category | Description |
 |---|---|
-| **NativeAOT Build** | Compiled ahead-of-time to a single `SF.asi` - no .NET runtime installation required on the target machine |
+| **Native + Managed Host** | Native `SF.asi` loads `SF.Runtime.dll` through hostfxr; requires ASP.NET Core Runtime .NET 10 x86 |
 | **RakNet Interception** | Full duplex hooking of `RakClient::RPC`, `RakClient::Send`, `RakClient::Receive`, and `HandleRpcPacket` via MinHook trampolines |
 | **Arizona Packet Parsing** | Dedicated enum, model, and parser catalog for Arizona RP custom packets (Packet 220 sub-IDs, Packet 221) with `BitStreamReader` zero-allocation parsing |
 | **Module System** | Attribute-based module registration with lifecycle management, telemetry, heartbeat tracking, counters, and the `/sfs` in-game dashboard |
@@ -58,27 +58,59 @@ The project is a fork of [TheLeftExit/SF](https://github.com/TheLeftExit/SF), re
 | Arizona RP | Client installed and configured |
 | SA-MP | **0.3.7 R3-1** |
 | SAMPFUNCS | **v5.5.0 rel.22** |
-| .NET SDK | **10.0** (for building from source) |
+| .NET SDK | Stable **10.0**, selected by `global.json` (for building) |
+| Native build tools | Visual Studio 2026 C++ x86/x64 tools, v145 |
+| PowerShell | **7** for build/package scripts |
+| Target runtime | **ASP.NET Core Runtime .NET 10 x86**; x64 alone is insufficient |
 
 ### Build
 
-```bash
-# Debug build
-dotnet build src/SF.Runtime.csproj -c Debug
+```powershell
+# Managed compilation
+dotnet build src/SF.Runtime/SF.Runtime.csproj -c Release
 
-# Release build with NativeAOT publish
-dotnet publish src/SF.Runtime.csproj -c Release
+# Source boundaries and release-rule tests
+./scripts/verify.ps1
+
+# Build native loader, runtime, abstractions and five example plugins; publish Runtime
+./scripts/build.ps1
+
+# Package and verify deployment
+./scripts/package.ps1
+./scripts/verify.ps1 -Archive artifacts/releases/SF-Arizona-3.2.6-win-x86.zip
 ```
 
-Output: `src/bin/Release/net10.0/win-x86/publish/SF.asi`
+Open `SF-Arizona.sln` in Visual Studio. Native output: `artifacts/native/Release/win-x86/`; managed deployment: `artifacts/publish/Release/win-x86/SF/`; archives/checksums: `artifacts/releases/`. For offline checks, `build.ps1 -RestoreSource` accepts absolute local NuGet-cache paths.
 
 ### Install
 
-Copy the published `SF.asi` into your GTA San Andreas game directory alongside `samp.dll`. The plugin is loaded automatically by SAMPFUNCS on game startup.
+Install ASP.NET Core Runtime .NET 10 **x86** and extract the archive beside `gta_sa.exe` and `samp.dll`. Keep `SF.asi`, `nethost.dll` and the `SF/` dependency/assets directory together. See [installation instructions](docs/INSTALL.md).
 
 ---
 
 ## Architecture
+
+```text
+src/
+  SF.Abstractions/  # plugin-visible contracts and managed bitstreams
+  SF.Runtime/
+    Bootstrap/     # initialization, composition and main-thread dispatch
+    Ui/            # chat, dialogs, keyboard and UI facades
+    Game/          # entities, players, pools and world facades
+    Events/        # typed event streams
+    Networking/    # managed dispatch, filters, catalogs, models and parsers
+    Modules/       # Hosting, Lifecycle, PluginLoading and BuiltIn
+    Storage/       # module config/storage implementations
+    Diagnostics/   # logging and DebugWeb with static assets
+    Interop/       # native wrappers, offsets, hooks and RakNet ABI adapters
+  SF.Native/       # C++ loader/hostfxr integration
+examples/          # independent plugins referencing Abstractions only
+scripts/           # reproducible build, package and verification tooling
+docs/              # deployment instructions
+artifacts/         # ignored generated output
+```
+
+Runtime depends on Abstractions, never the reverse. The native loader bootstraps Runtime without a managed project reference. Public assembly/type identities are unchanged. This is a modular layered runtime; existing native-facing facades and raw callback bridges remain compatibility boundaries rather than a claim of complete assembly-enforced Clean Architecture.
 
 SF-Arizona intercepts network traffic at two levels: **RPC** (Remote Procedure Calls) and **raw packets**. Both pipelines follow the same pattern: hook the native function, enqueue the event, dispatch on the main thread.
 
@@ -142,7 +174,7 @@ public sealed class ExampleModule : SFModuleBase
 }
 ```
 
-Register in `src/Modules/Program.cs`:
+Register built-in modules in `src/SF.Runtime/Bootstrap/Program.cs`:
 
 ```csharp
 container.RegisterModule<ExampleModule>();
@@ -194,7 +226,6 @@ For detailed guides, API reference, and examples, visit the **[SF-Arizona Wiki](
 |---|---|---|
 | [`MinHook.NET`](https://www.nuget.org/packages/MinHook.NET) | 1.1.2 | Function hooking with trampoline calls |
 | [`Microsoft.Extensions.Logging.Abstractions`](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions) | 10.0.5 | Logging interfaces and abstractions |
-| [`DllMain`](https://www.nuget.org/packages/DllMain) | 1.0.2 | Native DLL entry point for NativeAOT |
 
 ### Framework References
 
@@ -206,57 +237,27 @@ For detailed guides, API reference, and examples, visit the **[SF-Arizona Wiki](
 
 | Tool | Version |
 |---|---|
-| .NET SDK | 10.0+ |
-| Target | `net10.0`, `win-x86`, NativeAOT |
+| .NET SDK | Stable 10.0, selected by global.json |
+| Native tools | Visual Studio 2026 C++ x86/x64, v145 |
+| Target | `net10.0`, `win-x86`, native loader + managed runtime |
 
 ---
 
-## Project Structure
+## Versioning and Releases
 
-```
-SF-Arizona/
-├── src/
-│   ├── SF.Runtime.csproj                  # Project file (NativeAOT, win-x86)
-│   ├── Bootstrap/                         # Application init and context setup
-│   ├── Diagnostics/                       # Logging provider and file logger
-│   ├── Interop/
-│   │   ├── Classes/                       # Native SA-MP class wrappers
-│   │   │   ├── CChat.cs                   #   Chat functions
-│   │   │   ├── CDialog.cs                 #   Dialog system
-│   │   │   ├── CInput.cs                  #   Input/command handling
-│   │   │   ├── CNetGame.cs                #   Network game state
-│   │   │   ├── CPlayerPool.cs             #   Player pool access
-│   │   │   ├── CVehiclePool.cs            #   Vehicle pool access
-│   │   │   └── ...                        #   Actors, objects, pickups, etc.
-│   │   ├── Hooking/                       # MinHook installation and management
-│   │   │   └── Hooks/                     #   Chat, dialog, input, scoreboard hooks
-│   │   ├── Native/                        # Win32 interop (VK, MEM, AnsiString)
-│   │   ├── Offsets/                       # SA-MP memory offsets (SampOffsets.cs)
-│   │   └── RakNet/
-│   │       ├── Arizona/                   # Arizona RP packet definitions
-│   │       │   ├── EArizonaPacketId.cs    #   Sub-ID enum for Packet 220
-│   │       │   └── ArizonaPacket.cs       #   Parsers for each sub-ID
-│   │       ├── Incoming/                  # Incoming RPC/packet handlers
-│   │       ├── Outgoing/                  # Outgoing RPC/packet handlers
-│   │       ├── Packets/                   # Packet models and parser catalog
-│   │       ├── Rpc/                       # RPC models and parser catalog
-│   │       ├── Sync/                      # Sync data structures
-│   │       └── Hooks/                     # RakNet function hooks
-│   ├── Modules/
-│   │   ├── Program.cs                     # Module registration
-│   │   ├── Core/                          # Container, runtime, context helpers
-│   │   ├── ChatViolationMonitor.cs        # Chat monitoring module
-│   │   ├── DialogScraper.cs               # Dialog interception module
-│   │   ├── RpcDebugger.cs                 # In-game RPC debugger
-│   │   ├── DebugWeb/                      # Web-based traffic debugger
-│   │   └── ...                            # Other modules
-│   └── SF/                                # High-level SA-MP wrapper APIs
-│       ├── Events/                        #   Parsed RPC/packet event surface
-│       ├── SFColor.cs                     #   Color builder
-│       ├── SFColors.cs                    #   Predefined color palette
-│       └── ...                            #   Chat, dialog, player, vehicle APIs
-└── README.md
-```
+`Version.props` owns the base version (**3.2.6**) and numeric assembly/file versions. Use SemVer: patch for fixes, minor for compatible features, major for breaking changes. The number of commits does not dictate version bumps; a folder-only refactor retains the current version.
+
+- PRs and supported branch pushes build and verify a deployment archive.
+- Pushes to `experiment/jit-runtime` publish `3.2.6-preview.<run_number>.<short_sha>` prereleases, never latest.
+- Tag `v3.2.6` publishes a stable release; `v3.2.6-rc.1` publishes a prerelease. The numeric version must match Version.props.
+- Reruns reuse the same preview identity. Archives contain build-info.json and a separate SHA-256 checksum.
+- Automatic NuGet publication is not configured.
+
+## Contribution and Validation
+
+Use scoped Conventional Commits with imperative English subjects and concrete body bullets prefixed with `-`. Do not add coauthor trailers or assistant attribution. Keep fixes, structural moves, documentation and CI changes in separate commits.
+
+Build and structural checks are the automated minimum. Native hooks require focused in-game checks: loader logs, CEF dialogs, `/sfs`, plugin load/unload and web debugger assets/traffic. Offset-sensitive changes must document the verified source/client build.
 
 ---
 
