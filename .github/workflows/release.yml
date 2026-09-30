@@ -44,9 +44,22 @@ jobs:
       - name: Test packet contracts
         shell: pwsh
         run: dotnet test tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
+      - name: Install x86 test runtimes
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile artifacts/dotnet-install.ps1
+          $installDir = "$pwd/artifacts/dotnet-x86"
+          foreach ($runtime in @('dotnet', 'aspnetcore')) {
+            ./artifacts/dotnet-install.ps1 -Runtime $runtime -Channel 10.0 -Architecture x86 -InstallDir $installDir -NoPath
+            if ($LASTEXITCODE -ne 0) { throw "x86 $runtime runtime installation failed" }
+          }
       - name: Test runtime packet handling and managed memory lifetime
         shell: pwsh
-        run: dotnet test tests/SF.Network.Tests/SF.Network.Tests.csproj -c Release
+        run: |
+          dotnet build tests/SF.Network.Tests/SF.Network.Tests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'x86 Runtime test build failed' }
+          & "$pwd/artifacts/dotnet-x86/dotnet.exe" artifacts/bin/SF.Network.Tests/Release/net10.0/SF.Network.Tests.dll
+          if ($LASTEXITCODE -ne 0) { throw 'x86 Runtime tests failed' }
       - name: Package and verify deployment archive
         shell: pwsh
         run: |
