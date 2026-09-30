@@ -79,7 +79,7 @@ dotnet build src/SF.Runtime/SF.Runtime.csproj -c Release
 
 # Package and verify deployment
 ./scripts/package.ps1
-./scripts/verify.ps1 -Archive artifacts/releases/SF-Arizona-3.3.0-win-x86.zip
+./scripts/verify.ps1 -Archive artifacts/releases/SF-Arizona-3.3.1-win-x86.zip
 ```
 
 Open `SF-Arizona.sln` in Visual Studio. Native output: `artifacts/native/Release/win-x86/`; managed deployment: `artifacts/publish/Release/win-x86/SF/`; archives/checksums: `artifacts/releases/`. For offline checks, `build.ps1 -RestoreSource` accepts absolute local NuGet-cache paths.
