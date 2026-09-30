@@ -18,7 +18,7 @@ if ($Ref.StartsWith('refs/tags/')) {
     $prerelease = $version.Contains('-')
     $publish = $true
 }
-elseif ($Ref -eq 'refs/heads/experiment/jit-runtime') {
+elseif ($Ref -in @('refs/heads/main', 'refs/heads/experiment/jit-runtime')) {
     if ($RunNumber -notmatch '^\d+$' -or $Commit -notmatch '^[0-9a-fA-F]{7,40}$') { throw 'Preview requires run number and commit SHA.' }
     $version = "$base-preview.$RunNumber.$($Commit.Substring(0, 7))"
     $tag = "v$version"
