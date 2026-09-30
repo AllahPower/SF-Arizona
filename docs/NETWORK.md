@@ -73,12 +73,15 @@ Read-only IDA verification: SA-MP R3 reference `sampR3.dll`, image base `0x10000
 This verifies the envelope layout, not every Arizona/mobile sync body.
 
 ```powershell
+dotnet test tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
 dotnet test tests/SF.Network.Tests/SF.Network.Tests.csproj -c Release
 dotnet build src/SF.Runtime/SF.Runtime.csproj -c Release
 ```
 
-The xUnit v3 tests cover zero/max timestamps, an independent little-endian wire fixture, inner IDs,
-partial bit lengths, truncated/inconsistent headers, legacy fields/deconstruction and detached copies.
+The xUnit v3 contract tests run on the host architecture and cover zero/max timestamps, an independent
+little-endian wire fixture, inner IDs, partial bit lengths, truncated/inconsistent headers and legacy fields.
+Runtime tests run x86 and cover detached copies and managed dispatch.
+Runtime tests reference the compiled x86 Runtime assembly rather than recompiling Runtime source files into the test assembly.
 The timestamp prefix is decoded by `RakNetTimestampEnvelope.TryRead`, not guessed from arrival time,
 sync payload fields or native structure padding. No packed native overlay or synthesized fallback is used.
 
@@ -90,9 +93,9 @@ allocation-free: packet ownership still requires a byte copy and dispatch still 
 Weak-reference tests force GC after 10,000 dispatches and check sampled source/copied buffers while
 the manager and subscription remain alive. A disposed subscription must release its captured callback
 owner even if the subscription itself is retained; disposal remains idempotent under contention and
-propagates callback failures. CI runs the same test project before release packaging.
+propagates callback failures. CI runs both test projects before release packaging.
 
-These checks do not prove absence of every leak in the game. They cover the linked production packet
+These checks do not prove absence of every leak in the game. They cover the referenced production packet
 manager, payload and subscription implementations, not the native hook, native allocator or scheduled
 dispatcher/channel backlog. Slow consumers can still accumulate queued packets; in-game profiling
 is required for those paths. The tests also do not replace native transport/routing validation.

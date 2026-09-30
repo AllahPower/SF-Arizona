@@ -41,7 +41,10 @@ jobs:
       - name: Build native loader, runtime and examples
         shell: pwsh
         run: ./scripts/build.ps1 -Version '${{ steps.version.outputs.version }}'
-      - name: Test packet contracts and managed memory lifetime
+      - name: Test packet contracts
+        shell: pwsh
+        run: dotnet test tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
+      - name: Test runtime packet handling and managed memory lifetime
         shell: pwsh
         run: dotnet test tests/SF.Network.Tests/SF.Network.Tests.csproj -c Release
       - name: Package and verify deployment archive

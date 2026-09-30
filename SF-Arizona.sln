@@ -14,6 +14,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SF.Native", "src\SF.Native\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.Network.Tests", "tests\SF.Network.Tests\SF.Network.Tests.csproj", "{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F803}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SF.Network.Contracts.Tests", "tests\SF.Network.Contracts.Tests\SF.Network.Contracts.Tests.csproj", "{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,6 +24,14 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Debug|Win32.Build.0 = Debug|Any CPU
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Release|Win32.ActiveCfg = Release|Any CPU
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804}.Release|Win32.Build.0 = Release|Any CPU
 		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F803}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F803}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F803}.Debug|Win32.ActiveCfg = Debug|Any CPU
@@ -66,5 +76,6 @@ Global
 		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F802} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{B7C9E0A1-4F3D-4A90-BBA0-1C9E9F54B001} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F803} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{2A1B3C4D-5E6F-7081-92A3-B4C5D6E7F804} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

@@ -6,8 +6,8 @@ namespace SFSharp.Runtime.Modules;
 
 /// <summary>
 /// Collectible <see cref="AssemblyLoadContext"/> that isolates a single plugin's assembly graph
-/// while re-using the host's <see cref="AssemblyLoadContext.Default"/> for a fixed set of shared
-/// contracts. Without the shared routing, <c>typeof(ISFModule)</c> from the plugin would not equal
+/// while re-using the host's <see cref="AssemblyLoadContext.Default"/> for shared contracts and
+/// libraries installed beside the host. Without the shared routing, <c>typeof(ISFModule)</c> from the plugin would not equal
 /// the one from the host and registration would fail with an obscure cast error.
 /// </summary>
 [RequiresDynamicCode("Plugin loading is unavailable under NativeAOT.")]
@@ -45,7 +45,8 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {
-        if (assemblyName.Name is string name && PluginSharedAssemblyPolicy.IsShared(name))
+        if (assemblyName.Name is string name
+            && (PluginSharedAssemblyPolicy.IsShared(name) || PluginSharedAssemblyPolicy.IsHostLibrary(assemblyName)))
         {
             lock (_sync)
             {
@@ -55,7 +56,12 @@ internal sealed class PluginLoadContext : AssemblyLoadContext
                 }
             }
 
-            if (PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name, out Assembly? hostAsm) && hostAsm is not null)
+            Assembly? hostAsm;
+            if (PluginSharedAssemblyPolicy.IsShared(name))
+                PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(name, out hostAsm);
+            else
+                hostAsm = PluginSharedAssemblyPolicy.ResolveHostLibrary(assemblyName);
+            if (hostAsm is not null)
             {
                 lock (_sync)
                 {
