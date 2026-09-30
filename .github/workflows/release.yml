@@ -51,7 +51,13 @@ jobs:
           $installDir = "$pwd/artifacts/dotnet-x86"
           foreach ($runtime in @('dotnet', 'aspnetcore')) {
             ./artifacts/dotnet-install.ps1 -Runtime $runtime -Channel 10.0 -Architecture x86 -InstallDir $installDir -NoPath
-            if ($LASTEXITCODE -ne 0) { throw "x86 $runtime runtime installation failed" }
+          }
+          if (!(Test-Path "$installDir/dotnet.exe")) { throw 'x86 dotnet host was not installed' }
+          $installedRuntimes = & "$installDir/dotnet.exe" --list-runtimes
+          if ($LASTEXITCODE -ne 0 -or
+              @($installedRuntimes -match '^Microsoft\.NETCore\.App 10\.0\.').Count -eq 0 -or
+              @($installedRuntimes -match '^Microsoft\.AspNetCore\.App 10\.0\.').Count -eq 0) {
+            throw "Required x86 .NET 10 runtimes were not installed: $installedRuntimes"
           }
       - name: Test runtime packet handling and managed memory lifetime
         shell: pwsh
