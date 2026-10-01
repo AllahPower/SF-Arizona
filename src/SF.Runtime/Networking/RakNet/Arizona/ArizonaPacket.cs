@@ -121,13 +121,34 @@ public static partial class ArizonaPacket
         return new(r.ReadUInt8());
     }
 
-    public static ArzChatMessageRelay ParseChatMessageRelay(ref BitStreamReader r)
+    public static ArzChatMessageRelay ParseChatMessageRelay(ref BitStreamReader r) =>
+        ParseChatMessageRelay(ref r, Encoding.GetEncoding(1251));
+
+    // The native client defaults to CP1251 and switches to CP1252 with -cp1252.
+    public static unsafe ArzChatMessageRelay ParseChatMessageRelay(ref BitStreamReader r, Encoding encoding)
     {
         uint colorRgba = r.ReadUInt32();
-        byte chatType = r.ReadUInt8();
+        byte senderSlot = r.ReadUInt8();
         byte[] rawPayload = r.ReadRemainingBytes();
-        return new(colorRgba, chatType, rawPayload);
+        ArzChatMessageSegment[] segments;
+        byte? unsupportedKind;
+        fixed (byte* data = rawPayload)
+        {
+            BitStreamReader segmentReader = new(data, 0, rawPayload.Length * 8);
+            segments = ArizonaChatMessageParsing.ParseIncoming(ref segmentReader, encoding, out unsupportedKind);
+        }
+        return new ArzChatMessageRelay(colorRgba, senderSlot, rawPayload)
+        {
+            Segments = segments,
+            UnsupportedSegmentKind = unsupportedKind
+        };
     }
+
+    public static ArzLinkedChatSend ParseLinkedChatSend(ref BitStreamReader r) =>
+        ParseLinkedChatSend(ref r, Encoding.GetEncoding(1251));
+
+    public static ArzLinkedChatSend ParseLinkedChatSend(ref BitStreamReader r, Encoding encoding) =>
+        ArizonaChatMessageParsing.ParseOutgoing(ref r, encoding);
 
     public static ArzSetLocalInVehicle ParseSetLocalInVehicle(ref BitStreamReader r)
     {

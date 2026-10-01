@@ -465,9 +465,10 @@ public enum EArizona : byte
     // Assert: core.asi VehicleStrobeLights uses u16 vehicleId, u8 step, float speed, bit-bool beam.
     SetVehicleStrobelights = 209,
 
-    // Assert: _chat.asi uses u32 color_rgba, u8 chat_type, then rich message segments.
+    // Assert: inbound _chat.asi uses u32 color_rgba, u8 sender_slot, u8 segment_count, then typed segments.
+    // Assert: outbound _chat.asi uses u8 reserved, u8 segment_count, then text/item/slot/command segments.
     // Assert: color transform is `(color_rgba >> 8) | 0xFF000000`.
-    // Assert: when dword_10095554 is set, the message is also relayed as SA:MP RPC 93.
+    // Assert: the optional SA:MP RPC 93 relay is synthetic and carries only rendered text.
     ChatMessageRelay = 210,
 
     // Assert: single-bit AttachVehicleToVehicle toggle.

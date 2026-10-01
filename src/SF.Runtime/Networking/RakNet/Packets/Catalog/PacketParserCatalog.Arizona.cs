@@ -32,6 +32,7 @@ public static partial class PacketParserCatalog
         Register220Outgoing(registry, EArizona.SendPortalPlacementPreview, ArizonaPacket.ParseSendPortalPlacementPreview);
         Register220Outgoing(registry, EArizona.SendWeaponScroll, ArizonaPacket.ParseSendWeaponScroll);
         Register220Outgoing(registry, EArizona.SendDamageResponseWeapon, ArizonaPacket.ParseSendDamageResponseWeapon, "SendDamageResponseWeapon");
+        Register220Outgoing(registry, EArizona.ChatMessageRelay, ArizonaPacket.ParseLinkedChatSend, "LinkedChatSend");
 
         #endregion
 

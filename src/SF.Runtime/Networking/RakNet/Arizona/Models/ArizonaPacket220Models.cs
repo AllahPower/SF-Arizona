@@ -209,6 +209,9 @@ public readonly record struct ArzGoogleAnalyticsMessage(string Text, uint Flags)
 public readonly record struct ArzSetVehicleStrobelights(ushort VehicleId, byte Step, float Speed, bool Beam);
 public readonly record struct ArzChatMessageRelay(uint ColorRgba, byte ChatType, byte[] RawPayload)
 {
+    public byte SenderSlot => ChatType;
+    public ArzChatMessageSegment[] Segments { get; init; } = [];
+    public byte? UnsupportedSegmentKind { get; init; }
     public uint ArgbColor => (ColorRgba >> 8) | 0xFF000000;
 }
 public readonly record struct ArzAttachVehicleToVehicleToggle(bool Enabled);
