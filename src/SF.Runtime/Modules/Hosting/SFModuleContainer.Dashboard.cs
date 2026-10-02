@@ -387,6 +387,8 @@ public partial class SFModuleContainer
             string line = string.Concat(
                 "  ",
                 Paint(SFColors.Cyan | SFColors.Blue, plugin.PluginId),
+                " ",
+                Paint(SFColors.Slate, plugin.Version.ToString()),
                 FormatArrow(),
                 Paint(stateColor, plugin.State.ToString()),
                 sep,
@@ -400,6 +402,10 @@ public partial class SFModuleContainer
             }
 
             SF.Chat.Add(line);
+            foreach (string warning in plugin.Warnings)
+            {
+                SF.Chat.Add("    " + Paint(SFColors.Orange, warning));
+            }
         }
 
         SF.Chat.Add(FormatTip("manage: /sfs plugin-reload <id>  \u00b7  /sfs plugin-unload <id>"));
@@ -428,7 +434,7 @@ public partial class SFModuleContainer
                     string manifestPath = target;
                     if (!File.Exists(manifestPath))
                     {
-                        string candidate = Path.Combine(SFPaths.AssetsRoot, "modules", target, "module.json");
+                        string candidate = Path.Combine(SFPaths.AssetsRoot, "modules", target, PluginManifest.FileName);
                         if (File.Exists(candidate))
                         {
                             manifestPath = candidate;

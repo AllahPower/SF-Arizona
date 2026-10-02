@@ -6,7 +6,7 @@ namespace SFSharp.Runtime.Modules.PluginLoading;
 
 /// <summary>
 /// Discovers, loads, unloads and hot-reloads third-party plugins from
-/// <c>&lt;GameDir&gt;\SF\modules\*\module.json</c>. Each plugin is isolated inside its own
+/// <c>&lt;GameDir&gt;\SF\modules\*\manifest.json</c>. Each plugin is isolated inside its own
 /// collectible <see cref="PluginLoadContext"/> and registers every type decorated with
 /// <see cref="SFModuleAttribute"/> with the passed <see cref="SFModuleContainer"/>.
 /// </summary>
@@ -19,13 +19,13 @@ namespace SFSharp.Runtime.Modules.PluginLoading;
 [RequiresDynamicCode("Third-party plugin loading requires dynamic code generation.")]
 public sealed class PluginLoader
 {
-    private const string ManifestFileName = "module.json";
+    private const string LegacyManifestFileName = "module.json";
     private const int UnloadGcAttempts = 10;
     private static readonly TimeSpan UnloadStopTimeout = TimeSpan.FromSeconds(5);
 
     private readonly SFModuleContainer _container;
     private readonly string _pluginsRoot;
-    private readonly Version _hostVersion;
+    private readonly SemanticVersion _hostVersion;
     private readonly PluginManifestResolver _manifestResolver = new();
     private readonly Dictionary<string, LoadedPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _sync = new();
@@ -68,7 +68,8 @@ public sealed class PluginLoader
     }
 
     /// <summary>
-    /// Enumerates <c>&lt;pluginsRoot&gt;/*/module.json</c> and loads every well-formed plugin.
+    /// Enumerates <c>&lt;pluginsRoot&gt;/*/manifest.json</c>, resolves every manifest first and then loads
+    /// the plugins whose dependencies are satisfied, dependencies before dependents.
     /// Errors are logged per-plugin and do not abort the scan.
     /// </summary>
     /// <returns>Number of successfully loaded plugins.</returns>
@@ -92,35 +93,59 @@ public sealed class PluginLoader
         }
 
         SFLog.Info($"PluginLoader: scanning '{_pluginsRoot}' for manifests");
-        int loaded = 0;
+        List<ResolvedPluginManifest> candidates = [];
         foreach (string pluginDir in Directory.EnumerateDirectories(_pluginsRoot))
         {
-            string manifestPath = Path.Combine(pluginDir, ManifestFileName);
+            string manifestPath = Path.Combine(pluginDir, PluginManifest.FileName);
             if (!File.Exists(manifestPath))
             {
-                SFLog.Info($"PluginLoader: skip '{pluginDir}', no {ManifestFileName}");
+                string legacyHint = File.Exists(Path.Combine(pluginDir, LegacyManifestFileName))
+                    ? $" (found legacy {LegacyManifestFileName}; rename it to {PluginManifest.FileName})"
+                    : string.Empty;
+                SFLog.Info($"PluginLoader: skip '{pluginDir}', no {PluginManifest.FileName}{legacyHint}");
                 continue;
             }
 
+            PluginManifestResolutionResult resolution = _manifestResolver.Resolve(manifestPath);
+            if (resolution.Success)
+            {
+                candidates.Add(resolution.Manifest!);
+            }
+            else
+            {
+                SFLog.Error($"PluginLoader: {resolution.Message}");
+            }
+        }
+
+        PluginLoadPlan plan = PluginDependencyPlanner.Plan(candidates, _hostVersion, SnapshotLoadedVersions());
+        foreach (RejectedPlugin rejected in plan.Rejected)
+        {
+            SFLog.Error($"PluginLoader[{rejected.Manifest.PluginId}]: {rejected.Message}");
+        }
+
+        int loaded = 0;
+        foreach (PlannedPlugin planned in plan.Ordered)
+        {
             try
             {
-                if (LoadFromManifestCore(manifestPath).Success)
+                if (LoadResolvedCore(planned).Success)
                 {
                     loaded++;
                 }
             }
             catch (Exception ex)
             {
-                SFLog.Error(ex, $"PluginLoader: unhandled error while loading '{manifestPath}'");
+                SFLog.Error(ex, $"PluginLoader: unhandled error while loading '{planned.Manifest.ManifestPath}'");
             }
         }
 
-        SFLog.Info($"PluginLoader: discovery done, loaded {loaded} plugin(s)");
+        SFLog.Info($"PluginLoader: discovery done, loaded {loaded} plugin(s), rejected {plan.Rejected.Count}");
         return loaded;
     }
 
     /// <summary>
-    /// Loads a single plugin from its <c>module.json</c>. Safe to call from any thread; the
+    /// Loads a single plugin from its <c>manifest.json</c>. Its dependencies must already be loaded.
+    /// Safe to call from any thread; the
     /// actual mutation is serialized onto the container/main thread.
     /// </summary>
     public bool TryLoadFromManifest(string manifestPath, out string pluginId, out int registeredModuleCount)
@@ -155,11 +180,23 @@ public sealed class PluginLoader
         }
 
         ResolvedPluginManifest manifest = manifestResolution.Manifest!;
-        if (manifest.MinHostVersion is Version required && required > _hostVersion)
+        PluginLoadPlan plan = PluginDependencyPlanner.Plan([manifest], _hostVersion, SnapshotLoadedVersions());
+        if (plan.Rejected.Count != 0)
         {
-            string message = $"Plugin '{manifest.PluginId}' requires host >= {required}, current is {_hostVersion}. Skipping.";
-            SFLog.Error($"PluginLoader[{manifest.PluginId}]: {message}");
-            return PluginLoadResult.FromFailure(PluginLoadFailureReason.ManifestResolutionFailed, message, manifest.PluginId, manifest);
+            RejectedPlugin rejected = plan.Rejected[0];
+            SFLog.Error($"PluginLoader[{manifest.PluginId}]: {rejected.Message}");
+            return PluginLoadResult.FromFailure(rejected.Reason, rejected.Message, manifest.PluginId, manifest);
+        }
+
+        return LoadResolvedCore(plan.Ordered[0]);
+    }
+
+    private PluginLoadResult LoadResolvedCore(PlannedPlugin planned)
+    {
+        ResolvedPluginManifest manifest = planned.Manifest;
+        foreach (string warning in planned.Warnings)
+        {
+            SFLog.Warn($"PluginLoader[{manifest.PluginId}]: {warning}");
         }
 
         lock (_sync)
@@ -277,6 +314,7 @@ public sealed class PluginLoader
             LoadContext = context,
             RegisteredModuleIds = [.. registered.Select(static descriptor => descriptor.Id)],
             LoadContextRef = new WeakReference(context),
+            Warnings = planned.Warnings,
         };
 
         lock (_sync)
@@ -329,6 +367,13 @@ public sealed class PluginLoader
                 string message = $"Plugin '{pluginId}' is in state {plugin.State} and cannot be unloaded.";
                 SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
                 return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.PluginBusy, message, pluginId);
+            }
+            else if (_plugins.Values.Where(other => other.State != PluginState.UnloadFailed && other.Manifest.DependsOn(pluginId))
+                         .Select(static other => other.PluginId).ToArray() is { Length: > 0 } dependents)
+            {
+                string message = $"Plugin '{pluginId}' cannot be unloaded while dependent plugins are loaded: {string.Join(", ", dependents)}. Unload them first.";
+                SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
+                return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.DependentPluginsLoaded, message, pluginId);
             }
             else
             {
@@ -501,20 +546,24 @@ public sealed class PluginLoader
         return TryUnloadContext(context, pluginId);
     }
 
-    private static Version ResolveHostVersion()
+    private static SemanticVersion ResolveHostVersion()
     {
-        string? informational = typeof(PluginLoader).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        if (!string.IsNullOrWhiteSpace(informational))
+        if (SemanticVersion.TryParse(RuntimeBuildInfo.Version, out SemanticVersion? version))
         {
-            int plus = informational.IndexOf('+');
-            string trimmed = plus < 0 ? informational : informational[..plus];
-            if (Version.TryParse(trimmed, out Version? parsed))
-            {
-                return parsed;
-            }
+            return version!;
         }
 
-        return typeof(PluginLoader).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
+        return SemanticVersion.FromAssemblyVersion(typeof(PluginLoader).Assembly.GetName().Version ?? new Version(0, 0, 0));
+    }
+
+    private Dictionary<string, SemanticVersion> SnapshotLoadedVersions()
+    {
+        lock (_sync)
+        {
+            return _plugins.Values
+                .Where(static plugin => plugin.State != PluginState.UnloadFailed)
+                .ToDictionary(static plugin => plugin.PluginId, static plugin => plugin.Manifest.Version, StringComparer.OrdinalIgnoreCase);
+        }
     }
 
     private static T ExecuteOnContainerThread<T>(Func<T> action)

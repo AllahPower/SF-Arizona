@@ -54,8 +54,11 @@ internal static unsafe class RuntimeInfoCommand
         int pluginModules = modules.Count(static module => module.IsPluginModule);
         AppendLine(text, "Registered", $"{modules.Length} ({modules.Length - pluginModules} built-in, {pluginModules} from plugins)");
         AppendStatus(text, "Running", faulted == 0, $"{running}, faulted {faulted}");
-        IReadOnlyCollection<string> plugins = pluginLoader.LoadedPluginIds;
-        AppendLine(text, "Plugins", plugins.Count == 0 ? "none" : $"{plugins.Count}: {string.Join(", ", plugins)}");
+        IReadOnlyCollection<PluginRuntimeSnapshot> plugins = pluginLoader.LoadedPlugins;
+        int pluginsWithWarnings = plugins.Count(static plugin => plugin.Warnings.Count != 0);
+        string pluginList = string.Join(", ", plugins.Select(static plugin =>
+            $"{plugin.PluginId} {plugin.Version}{(plugin.Warnings.Count == 0 ? string.Empty : " (!)")}"));
+        AppendStatus(text, "Plugins", pluginsWithWarnings == 0, plugins.Count == 0 ? "none" : $"{plugins.Count}: {pluginList}");
         bool debugWebRunning = SF.Instance.Modules.TryGet("debug-web", out SFModuleInfo debugWeb) && debugWeb.State == ModuleLifecycleState.Running;
         AppendLine(text, "DebugWeb", debugWebRunning ? "http://localhost:7777/" : "stopped");
 

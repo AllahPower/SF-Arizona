@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Text.Json;
 
 namespace SFSharp.Runtime.Modules.PluginLoading;
@@ -56,6 +58,27 @@ internal sealed class PluginManifestResolver
                 $"Plugin manifest '{manifestPath}' contains invalid plugin id '{pluginId}'.");
         }
 
+        if (string.Equals(pluginId, PluginManifest.HostDependencyId, StringComparison.OrdinalIgnoreCase))
+        {
+            return PluginManifestResolutionResult.FromFailure(
+                PluginManifestResolutionFailureReason.ReservedPluginId,
+                $"Plugin manifest '{manifestPath}' uses id '{pluginId}', which is reserved for the SF host.");
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.Version))
+        {
+            return PluginManifestResolutionResult.FromFailure(
+                PluginManifestResolutionFailureReason.MissingVersion,
+                $"Plugin manifest '{manifestPath}' is missing required field 'version'.");
+        }
+
+        if (!SemanticVersion.TryParse(manifest.Version, out SemanticVersion? version))
+        {
+            return PluginManifestResolutionResult.FromFailure(
+                PluginManifestResolutionFailureReason.InvalidVersion,
+                $"Plugin manifest '{manifestPath}' contains version '{manifest.Version}', which is not SemVer 2.0.");
+        }
+
         if (string.IsNullOrWhiteSpace(manifest.Assembly))
         {
             return PluginManifestResolutionResult.FromFailure(
@@ -87,13 +110,12 @@ internal sealed class PluginManifestResolver
                 $"Plugin assembly file not found at '{assemblyPath}'.");
         }
 
-        Version? minHostVersion = null;
-        if (!string.IsNullOrWhiteSpace(manifest.MinHostVersion) &&
-            !Version.TryParse(manifest.MinHostVersion.Trim(), out minHostVersion))
+        List<string> warnings = [];
+        if (!TryResolveDependencies(manifest, pluginId, assemblyPath, warnings, out List<ResolvedPluginDependency> dependencies, out string? dependencyError))
         {
             return PluginManifestResolutionResult.FromFailure(
-                PluginManifestResolutionFailureReason.InvalidMinHostVersion,
-                $"Plugin manifest '{manifestPath}' contains invalid minHostVersion '{manifest.MinHostVersion}'.");
+                PluginManifestResolutionFailureReason.InvalidDependency,
+                $"Plugin manifest '{manifestPath}' has an invalid dependency: {dependencyError}.");
         }
 
         PluginManifestMetadata metadata = new(
@@ -109,11 +131,106 @@ internal sealed class PluginManifestResolver
             pluginRoot,
             assemblyPath,
             manifest.EnabledOnStart,
-            minHostVersion,
+            version!,
+            dependencies,
+            warnings,
             metadata,
             manifest);
 
         return PluginManifestResolutionResult.FromSuccess(resolved);
+    }
+
+    private static bool TryResolveDependencies(
+        PluginManifest manifest,
+        string pluginId,
+        string assemblyPath,
+        List<string> warnings,
+        out List<ResolvedPluginDependency> dependencies,
+        out string? error)
+    {
+        dependencies = [];
+        error = null;
+        PluginDependencyRange? hostRange = null;
+
+        foreach ((string rawId, PluginDependencyManifest? declared) in manifest.Dependencies ?? [])
+        {
+            string id = rawId.Trim();
+            bool isHost = string.Equals(id, PluginManifest.HostDependencyId, StringComparison.OrdinalIgnoreCase);
+            if (!isHost && (!PluginManifestIdPolicy.IsValid(id) || string.Equals(id, pluginId, StringComparison.OrdinalIgnoreCase)))
+            {
+                error = $"'{rawId}' is not a valid plugin id or refers to the plugin itself";
+                return false;
+            }
+
+            if (!PluginDependencyRange.TryParse(declared?.Min, declared?.Max, declared?.Target, out PluginDependencyRange? range, out string? rangeError))
+            {
+                error = $"'{id}': {rangeError}";
+                return false;
+            }
+
+            if (isHost)
+            {
+                hostRange = range;
+            }
+            else
+            {
+                dependencies.Add(new ResolvedPluginDependency(id, range!, IsInferred: false));
+            }
+        }
+
+        // Bounds the manifest left out default to the SF.Abstractions version the plugin was compiled against.
+        SemanticVersion? compiled = TryReadReferencedVersion(assemblyPath, "SF.Abstractions");
+        if (compiled is null)
+        {
+            if (hostRange is null)
+            {
+                warnings.Add("the plugin does not reference SF.Abstractions directly, so the host version is not checked");
+                return true;
+            }
+
+            dependencies.Insert(0, new ResolvedPluginDependency(PluginManifest.HostDependencyId, hostRange, IsInferred: false));
+            return true;
+        }
+
+        PluginDependencyRange effective = (hostRange ?? PluginDependencyRange.Empty).WithDefaults(compiled);
+        string? effectiveError = effective.Validate();
+        if (effectiveError is not null)
+        {
+            error = $"'{PluginManifest.HostDependencyId}' after filling defaults from SF.Abstractions {compiled}: {effectiveError}";
+            return false;
+        }
+
+        dependencies.Insert(0, new ResolvedPluginDependency(PluginManifest.HostDependencyId, effective, IsInferred: hostRange is null));
+        return true;
+    }
+
+    private static SemanticVersion? TryReadReferencedVersion(string assemblyPath, string referencedName)
+    {
+        try
+        {
+            using FileStream stream = File.OpenRead(assemblyPath);
+            using PEReader peReader = new(stream);
+            if (!peReader.HasMetadata)
+            {
+                return null;
+            }
+
+            MetadataReader reader = peReader.GetMetadataReader();
+            foreach (AssemblyReferenceHandle handle in reader.AssemblyReferences)
+            {
+                AssemblyReference reference = reader.GetAssemblyReference(handle);
+                if (string.Equals(reader.GetString(reference.Name), referencedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return SemanticVersion.FromAssemblyVersion(reference.Version);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or BadImageFormatException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+
+        return null;
     }
 
     private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

@@ -11,6 +11,7 @@ internal sealed class LoadedPlugin
     public required PluginLoadContext? LoadContext { get; set; }
     public required IReadOnlyList<string> RegisteredModuleIds { get; init; }
     public required WeakReference LoadContextRef { get; init; }
+    public required IReadOnlyList<string> Warnings { get; init; }
     public PluginState State { get; set; } = PluginState.Loaded;
     public PluginUnloadFailureReason LastUnloadFailureReason { get; set; } = PluginUnloadFailureReason.None;
     public string? LastUnloadFailureMessage { get; set; }
@@ -30,6 +31,8 @@ internal sealed class LoadedPlugin
     public PluginRuntimeSnapshot CreateSnapshot() => new(
         PluginId,
         Manifest.DisplayNameOrFallback,
+        Manifest.Version,
+        Warnings,
         State,
         RegisteredModuleCount,
         LastUnloadFailureReason,

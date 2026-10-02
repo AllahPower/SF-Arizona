@@ -5,6 +5,11 @@ namespace SFSharp.Runtime.Modules.PluginLoading;
 
 public sealed class PluginManifest
 {
+    public const string FileName = "manifest.json";
+
+    /// <summary>Dependency key that refers to the SF host itself rather than to another plugin.</summary>
+    public const string HostDependencyId = "sf";
+
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
@@ -26,11 +31,24 @@ public sealed class PluginManifest
     [JsonPropertyName("assembly")]
     public string? Assembly { get; set; }
 
-    [JsonPropertyName("minHostVersion")]
-    public string? MinHostVersion { get; set; }
-
     [JsonPropertyName("enabledOnStart")]
     public bool? EnabledOnStart { get; set; }
+
+    /// <summary>Keyed by plugin id, or by <see cref="HostDependencyId"/> for the host.</summary>
+    [JsonPropertyName("dependencies")]
+    public Dictionary<string, PluginDependencyManifest>? Dependencies { get; set; }
+}
+
+public sealed class PluginDependencyManifest
+{
+    [JsonPropertyName("min")]
+    public string? Min { get; set; }
+
+    [JsonPropertyName("max")]
+    public string? Max { get; set; }
+
+    [JsonPropertyName("target")]
+    public string? Target { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNameCaseInsensitive = true)]
@@ -50,11 +68,22 @@ public sealed record ResolvedPluginManifest(
     string PluginRoot,
     string AssemblyPath,
     bool? EnabledOnStartOverride,
-    Version? MinHostVersion,
+    SemanticVersion Version,
+    IReadOnlyList<ResolvedPluginDependency> Dependencies,
+    IReadOnlyList<string> Warnings,
     PluginManifestMetadata Metadata,
     PluginManifest RawManifest)
 {
     public string DisplayNameOrFallback => string.IsNullOrWhiteSpace(Metadata.DisplayName) ? PluginId : Metadata.DisplayName.Trim();
+
+    public bool DependsOn(string pluginId)
+        => Dependencies.Any(dependency => !dependency.IsHost && string.Equals(dependency.Id, pluginId, StringComparison.OrdinalIgnoreCase));
+}
+
+/// <param name="IsInferred">True when bounds were filled from the SF.Abstractions version the plugin was compiled against.</param>
+public sealed record ResolvedPluginDependency(string Id, PluginDependencyRange Range, bool IsInferred)
+{
+    public bool IsHost => string.Equals(Id, PluginManifest.HostDependencyId, StringComparison.OrdinalIgnoreCase);
 }
 
 public enum PluginManifestResolutionFailureReason
@@ -65,9 +94,12 @@ public enum PluginManifestResolutionFailureReason
     ManifestMissingId,
     ManifestMissingAssembly,
     InvalidPluginId,
+    ReservedPluginId,
     InvalidAssemblyPath,
     AssemblyFileNotFound,
-    InvalidMinHostVersion,
+    MissingVersion,
+    InvalidVersion,
+    InvalidDependency,
     IoFailure,
 }
 

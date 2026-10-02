@@ -19,6 +19,9 @@ public enum PluginLoadFailureReason
     ModuleRegistrationFailed,
     MissingManagedDependency,
     MissingNativeDependency,
+    DependencyMissing,
+    DependencyVersionOutOfRange,
+    DependencyCycle,
     Busy,
     UnexpectedError,
 }
@@ -28,6 +31,7 @@ public enum PluginUnloadFailureReason
     None,
     PluginNotLoaded,
     PluginBusy,
+    DependentPluginsLoaded,
     ModuleStopTimeout,
     ModuleStillRunning,
     ModuleUnregisterFailed,
@@ -94,6 +98,8 @@ public sealed record PluginReloadResult(
 public sealed record PluginRuntimeSnapshot(
     string PluginId,
     string DisplayName,
+    SemanticVersion Version,
+    IReadOnlyList<string> Warnings,
     PluginState State,
     int RegisteredModuleCount,
     PluginUnloadFailureReason LastUnloadFailureReason,
