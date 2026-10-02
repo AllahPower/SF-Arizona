@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, SFSharp.Runtime.Interop.Classes.Pools.ActorInfo*, int>;
 using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, ushort, int>;
 using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, ushort, int>;
-using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, SFSharp.Runtime.Interop.Classes.Peds.CPed*, ushort>;
+using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, nint, ushort>;
 using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, ushort, nint>;
 
 namespace SFSharp.Runtime.Interop.Classes.Pools;
@@ -55,7 +55,7 @@ public unsafe ref struct CActorPool
         return _delete(RequireInstance(), actorId) != 0;
     }
 
-    public ushort Find(CPed* gamePed)
+    public ushort Find(nint gamePed)
     {
         return _find(RequireInstance(), gamePed);
     }

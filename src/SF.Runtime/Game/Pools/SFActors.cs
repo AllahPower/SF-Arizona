@@ -25,7 +25,8 @@ public sealed unsafe class SFActors : ISFActors
 
     public ushort Find(SFPed ped)
     {
-        return ped.Native == null ? ushort.MaxValue : CActorPool.Instance.Find(ped.Native);
+        nint gamePed = ped.GamePedPointer;
+        return gamePed == 0 ? ushort.MaxValue : CActorPool.Instance.Find(gamePed);
     }
 
     public bool Delete(ushort actorId)
