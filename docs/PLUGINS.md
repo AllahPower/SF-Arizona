@@ -26,7 +26,7 @@ and `System.Text.Json`, plus every library installed directly in `SF/`.
   "assembly": "ArizonaChat.dll",
   "enabledOnStart": true,
   "dependencies": {
-    "sf":    { "min": "3.3.1", "max": "3.x", "target": "3.3.1" },
+    "sf":    { "min": "4.0.0", "max": "4.x", "target": "4.0.0" },
     "sf.ui": { "min": "0.3.0-alpha.2", "max": "0.3.x" }
   }
 }
@@ -46,8 +46,8 @@ Each dependency accepts three optional fields:
 
 - `min`: lowest supported version, inclusive.
 - `max`: highest supported version, inclusive. Either an exact SemVer version or a wildcard:
-  `3.x` accepts every 3.\* release and prerelease, `3.4.x` every 3.4.\*. Wildcards compare numeric
-  components only, so `3.x` never accepts `4.0.0-alpha`.
+  `4.x` accepts every 4.\* release and prerelease, `4.1.x` every 4.1.\*. Wildcards compare numeric
+  components only, so `4.x` never accepts `5.0.0-alpha`.
 - `target`: the version the plugin was built and tested against.
 
 The manifest is rejected when `min` is above `max`, or `target` is outside `[min, max]`.
@@ -60,12 +60,13 @@ log, `/sfs` and `/sfd`.
 ### The host: `sf`
 
 The host version is the SF-Arizona release (`Version.props`), which is also the `SF.Abstractions` version.
-Preview builds such as `3.3.1-preview.43.1234567` are compared as their core version `3.3.1`; their tag
+Preview builds such as `4.0.0-preview.43.1234567` are compared as their core version `4.0.0`; their tag
 marks the build channel, not a different API.
 
 Bounds missing for `sf` are filled from the `SF.Abstractions` version the plugin assembly references:
-`min` and `target` become that version and `max` becomes its major (`3.x`). A plugin with no `sf` entry
-built against 3.3.1 therefore loads on 3.3.1 up to any 3.\*, warns on a newer 3.\* and is rejected by 4.0.0.
+`min` and `target` become that version and `max` becomes its major (`4.x`). A plugin with no `sf` entry
+built against 4.0.0 therefore loads on 4.0.0 up to any 4.\*, warns on a newer 4.\* and is rejected by 5.0.0.
+Plugins built against 3.x are rejected by 4.0.0 and must be rebuilt.
 Declare `sf` explicitly when the plugin needs a wider or narrower range.
 
 ### Other plugins
