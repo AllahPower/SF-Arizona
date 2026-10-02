@@ -49,6 +49,7 @@ public static class SampOffsets
         public const int Delete = 0x1E330;
         public const int ChangeInterior = 0x1E3B0;
         public const int SetParams = 0x1E3E0;
+        public const int Find = 0x1E440;
         public const int GetNearest = 0x1E4B0;
         public const int ProcessWaitingList = 0x1EBC0;
         public const int Process = 0x1EC80;
@@ -346,6 +347,7 @@ public static class SampOffsets
         public const int GetPlayer = 0x10F0;
         public const int GetLocalPlayer = 0x1A30;
         public const int GetCount = 0x13670;
+        public const int Find = 0x13570;
         public const int GetLocalPlayerName = 0xA170;
         public const int GetName = 0x16F00;
         public const int GetScore = 0x6E0E0;

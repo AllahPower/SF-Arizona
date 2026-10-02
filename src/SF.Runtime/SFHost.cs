@@ -16,6 +16,7 @@ internal sealed class SFHost : ISF
     public SFPlayers PlayersImpl { get; } = new();
     public SFVehicles VehiclesImpl { get; } = new();
     public SFGamePools PoolsImpl { get; } = new();
+    public SFEntities EntitiesImpl { get; } = new();
     public SFRpc RpcImpl { get; } = new();
     public SFPackets PacketsImpl { get; } = new();
     public SFArizonaPackets ArizonaImpl { get; } = new();
@@ -35,6 +36,7 @@ internal sealed class SFHost : ISF
     ISFPlayers ISF.Players => PlayersImpl;
     ISFVehicles ISF.Vehicles => VehiclesImpl;
     ISFGamePools ISF.Pools => PoolsImpl;
+    ISFEntities ISF.Entities => EntitiesImpl;
     ISFModules ISF.Modules => SFPublicModules.Instance;
     ISFEvents ISF.Events => EventsImpl;
     ISFRpc ISF.Rpc => RpcImpl;

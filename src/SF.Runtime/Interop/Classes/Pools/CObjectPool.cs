@@ -72,9 +72,9 @@ public unsafe ref struct CObjectPool
         return _create(RequireInstance(), objectId, modelId, position, rotation, drawDistance) != 0;
     }
 
-    public int GetId(CObject* obj)
+    public int GetId(nint gameObject)
     {
-        return _getId(RequireInstance(), (nint)obj);
+        return _getId(RequireInstance(), gameObject);
     }
 
     public unsafe ushort[] GetAllocatedIds()

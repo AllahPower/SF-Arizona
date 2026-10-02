@@ -22,6 +22,9 @@ public interface ISF
     /// <summary>Read-only vehicle helpers, see <see cref="ISFVehicles"/>.</summary>
     ISFVehicles Vehicles { get; }
 
+    /// <summary>GTA world entities by pool handle or SA-MP id, see <see cref="ISFEntities"/>.</summary>
+    ISFEntities Entities { get; }
+
     /// <summary>Read-only game pool helpers, see <see cref="ISFGamePools"/>.</summary>
     ISFGamePools Pools { get; }
 

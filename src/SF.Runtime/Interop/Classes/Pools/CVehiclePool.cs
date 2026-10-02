@@ -4,6 +4,7 @@ using unsafe ChangeInteriorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runt
 using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int>;
 using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int>;
 using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*>;
+using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, nint, ushort>;
 using unsafe GetNearestDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort>;
 using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, void>;
 using unsafe SetParamsDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int, int, void>;
@@ -28,6 +29,7 @@ public unsafe ref struct CVehiclePool
     private static readonly DeleteDelegate _delete = (DeleteDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehiclePool.Delete);
     private static readonly ChangeInteriorDelegate _changeInterior = (ChangeInteriorDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehiclePool.ChangeInterior);
     private static readonly SetParamsDelegate _setParams = (SetParamsDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehiclePool.SetParams);
+    private static readonly FindDelegate _find = (FindDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehiclePool.Find);
     private static readonly GetNearestDelegate _getNearest = (GetNearestDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehiclePool.GetNearest);
     private static readonly ProcessDelegate _process = (ProcessDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehiclePool.Process);
 
@@ -67,6 +69,11 @@ public unsafe ref struct CVehiclePool
     public void SetParams(ushort vehicleId, bool isObjective, bool isLocked)
     {
         _setParams(RequireInstance(), vehicleId, isObjective ? 1 : 0, isLocked ? 1 : 0);
+    }
+
+    public ushort Find(nint gameVehicle)
+    {
+        return _find(RequireInstance(), gameVehicle);
     }
 
     public ushort GetNearest()

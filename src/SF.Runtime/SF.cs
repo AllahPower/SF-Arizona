@@ -15,6 +15,7 @@ public static class SF
     public static SFPlayers Players => SFHost.Shared.PlayersImpl;
     public static SFVehicles Vehicles => SFHost.Shared.VehiclesImpl;
     public static SFGamePools Pools => SFHost.Shared.PoolsImpl;
+    public static SFEntities Entities => SFHost.Shared.EntitiesImpl;
     public static SFRpc Rpc => SFHost.Shared.RpcImpl;
     public static SFPackets Packets => SFHost.Shared.PacketsImpl;
     public static SFArizonaPackets Arizona => SFHost.Shared.ArizonaImpl;

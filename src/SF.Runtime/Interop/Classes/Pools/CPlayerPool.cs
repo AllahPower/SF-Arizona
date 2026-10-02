@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 
+using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, nint, ushort>;
 using unsafe GetCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, int, int>;
 using unsafe GetLocalPlayerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, SFSharp.Runtime.Interop.Classes.CLocalPlayer*>;
 using unsafe GetLocalPlayerNameDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, byte*>;
@@ -38,6 +39,7 @@ public unsafe ref struct CPlayerPool
     private static readonly GetPlayerDelegate _getPlayer = (GetPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetPlayer);
     private static readonly GetLocalPlayerDelegate _getLocalPlayer = (GetLocalPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetLocalPlayer);
     private static readonly GetCountDelegate _getCount = (GetCountDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetCount);
+    private static readonly FindDelegate _find = (FindDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.Find);
     private static readonly GetLocalPlayerNameDelegate _getLocalPlayerName = (GetLocalPlayerNameDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetLocalPlayerName);
     private static readonly GetNameDelegate _getName = (GetNameDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetName);
     private static readonly GetScoreDelegate _getScore = (GetScoreDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetScore);
@@ -105,6 +107,11 @@ public unsafe ref struct CPlayerPool
     {
         localPlayer = GetLocalPlayer();
         return localPlayer != null;
+    }
+
+    public ushort Find(nint gamePed)
+    {
+        return _find(RequireInstance(), gamePed);
     }
 
     public int GetCount(bool includeNpcPlayers = true)
