@@ -17,20 +17,20 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
             return;
         }
 
-        manager.Bind(ERpcId.Chat, SampRpc.ParseChatMessage, static (payload, args) =>
+        manager.Bind(SampRpcId.Chat, SampRpc.ParseChatMessage, static (payload, args) =>
         {
             // Chat prefixColor is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
             uint prefixColor = (payload.PrefixColor >> 8) | ((payload.PrefixColor & 0xFF) << 24);
             ChatEntry entry = new(EntryType.Chat, payload.Text, payload.Prefix, 0xFFFFFFFF, prefixColor);
-            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.Chat, ERpcId.Chat, entry));
+            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.Chat, SampRpcId.Chat, entry));
         }, name: "IncomingChatMessageRpc");
 
-        manager.Bind(ERpcId.ClientMessage, SampRpc.ParseClientMessage, static (payload, args) =>
+        manager.Bind(SampRpcId.ClientMessage, SampRpc.ParseClientMessage, static (payload, args) =>
         {
             // SendClientMessage color is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
             uint color = (payload.Color >> 8) | ((payload.Color & 0xFF) << 24);
             ChatEntry entry = new(EntryType.Info, payload.Text, null, color, 0);
-            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.ClientMessage, ERpcId.ClientMessage, entry));
+            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.ClientMessage, SampRpcId.ClientMessage, entry));
         }, name: "IncomingClientMessageRpc");
 
         _rpcBindingsRegistered = true;

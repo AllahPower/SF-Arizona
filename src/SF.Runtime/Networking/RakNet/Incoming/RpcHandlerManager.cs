@@ -18,7 +18,7 @@ public sealed class RpcHandlerManager : IDisposable
         }
     }
 
-    public bool HasSubscribers(ERpcId rpcId)
+    public bool HasSubscribers(SampRpcId rpcId)
     {
         return HasSubscribers((int)rpcId);
     }
@@ -31,7 +31,7 @@ public sealed class RpcHandlerManager : IDisposable
         }
     }
 
-    public RpcSubscription Subscribe(ERpcId rpcId, Action<IncomingRpcArgs> handler)
+    public RpcSubscription Subscribe(SampRpcId rpcId, Action<IncomingRpcArgs> handler)
     {
         return Subscribe((int)rpcId, handler);
     }
@@ -86,7 +86,7 @@ public sealed class RpcHandlerManager : IDisposable
             _handlers.Add(handler);
         }
 
-        SFLog.Debug($"RpcHandlerManager registered name={handler.Name} rpcId={(int)handler.ERpcId}");
+        SFLog.Debug($"RpcHandlerManager registered name={handler.Name} rpcId={(int)handler.SampRpcId}");
 
         if (_started && attachNow)
         {
@@ -106,7 +106,7 @@ public sealed class RpcHandlerManager : IDisposable
         return binding;
     }
 
-    public IDisposable Bind<TPayload>(ERpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, Action<TPayload, IncomingRpcArgs> handler, CancellationToken token = default, string? name = null)
+    public IDisposable Bind<TPayload>(SampRpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, Action<TPayload, IncomingRpcArgs> handler, CancellationToken token = default, string? name = null)
     {
         DelegateRpcHandler<TPayload> rpcHandler = new(rpcId, parser, handler, name);
         return Bind(rpcHandler, token);
@@ -123,7 +123,7 @@ public sealed class RpcHandlerManager : IDisposable
         }
 
         handler.Detach();
-        SFLog.Debug($"RpcHandlerManager unregistered name={handler.Name} rpcId={(int)handler.ERpcId}");
+        SFLog.Debug($"RpcHandlerManager unregistered name={handler.Name} rpcId={(int)handler.SampRpcId}");
         return true;
     }
 

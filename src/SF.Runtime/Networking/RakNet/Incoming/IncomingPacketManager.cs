@@ -13,7 +13,7 @@ public sealed class IncomingPacketManager : IDisposable
         }
     }
 
-    public bool HasSubscribers(EPacketId packetId)
+    public bool HasSubscribers(RakNetPacketId packetId)
     {
         return HasSubscribers((int)packetId);
     }
@@ -31,7 +31,7 @@ public sealed class IncomingPacketManager : IDisposable
         }
     }
 
-    public NetworkSubscription Subscribe(EPacketId packetId, Action<IncomingPacketArgs> handler)
+    public NetworkSubscription Subscribe(RakNetPacketId packetId, Action<IncomingPacketArgs> handler)
     {
         return Subscribe((int)packetId, handler);
     }

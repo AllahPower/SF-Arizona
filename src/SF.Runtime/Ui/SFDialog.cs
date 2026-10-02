@@ -105,7 +105,7 @@ public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
             return false;
         }
 
-        DialogResponseRpc response = SampRpc.ParseDialogResponse(new OutgoingRpcArgs((int)ERpcId.DialogResponse, dataPtr, bitLength));
+        DialogResponseRpc response = SampRpc.ParseDialogResponse(new OutgoingRpcArgs((int)SampRpcId.DialogResponse, dataPtr, bitLength));
         if (response.DialogId != activeId)
         {
             return false;

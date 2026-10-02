@@ -32,7 +32,7 @@ public sealed class SFPacketParsers : ISFPacketParsers
             if (route.SubId is null)
             {
                 IIncomingPacketParser parser = (IIncomingPacketParser)route.Parser;
-                group.Add(SF.Packets.SubscribeIncoming(route.EPacketId, args =>
+                group.Add(SF.Packets.SubscribeIncoming(route.RakNetPacketId, args =>
                 {
                     if (parser.TryParse(args, out PacketParseResult result) && TryExtractIncoming(result, out TPacket packet))
                     {
@@ -43,9 +43,9 @@ public sealed class SFPacketParsers : ISFPacketParsers
             }
 
             IIncomingArizonaPacketParser parserArizona = (IIncomingArizonaPacketParser)route.Parser;
-            if (route.EPacketId == EPacketId.AZVoice)
+            if (route.RakNetPacketId == RakNetPacketId.AZVoice)
             {
-                group.Add(SF.Arizona.SubscribeIncomingAZVoice((EAZVoice)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeIncomingAZVoice((AZVoiceMessageId)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {
@@ -55,7 +55,7 @@ public sealed class SFPacketParsers : ISFPacketParsers
             }
             else if (route.IsEx)
             {
-                group.Add(SF.Arizona.SubscribeIncomingEx((EArizonaEx)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeIncomingEx((ArizonaPacket221Id)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {
@@ -65,7 +65,7 @@ public sealed class SFPacketParsers : ISFPacketParsers
             }
             else
             {
-                group.Add(SF.Arizona.SubscribeIncoming((EArizona)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeIncoming((ArizonaPacket220Id)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {
@@ -93,7 +93,7 @@ public sealed class SFPacketParsers : ISFPacketParsers
             if (route.SubId is null)
             {
                 IOutgoingPacketParser parser = (IOutgoingPacketParser)route.Parser;
-                group.Add(SF.Packets.SubscribeOutgoing(route.EPacketId, args =>
+                group.Add(SF.Packets.SubscribeOutgoing(route.RakNetPacketId, args =>
                 {
                     if (parser.TryParse(args, out PacketParseResult result) && TryExtractOutgoing(result, out TPacket packet))
                     {
@@ -106,7 +106,7 @@ public sealed class SFPacketParsers : ISFPacketParsers
             IOutgoingArizonaPacketParser parserArizona = (IOutgoingArizonaPacketParser)route.Parser;
             if (route.IsEx)
             {
-                group.Add(SF.Arizona.SubscribeOutgoingEx((EArizonaEx)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeOutgoingEx((ArizonaPacket221Id)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {
@@ -116,7 +116,7 @@ public sealed class SFPacketParsers : ISFPacketParsers
             }
             else
             {
-                group.Add(SF.Arizona.SubscribeOutgoing((EArizona)route.SubId.Value, args =>
+                group.Add(SF.Arizona.SubscribeOutgoing((ArizonaPacket220Id)route.SubId.Value, args =>
                 {
                     if (parserArizona.TryParse(args, out PacketParseResult result) && result.Packet is TPacket packet)
                     {

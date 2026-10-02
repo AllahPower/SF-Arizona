@@ -2,14 +2,14 @@ namespace SFSharp.Runtime.Interop.RakNet.Packets.Parsing;
 
 internal interface IIncomingPacketTransportRouter
 {
-    EPacketId PacketId { get; }
+    RakNetPacketId PacketId { get; }
 
     bool TryParse(IncomingPacketArgs args, PacketParserRegistry registry, out PacketParseResult result);
 }
 
 internal interface IOutgoingPacketTransportRouter
 {
-    EPacketId PacketId { get; }
+    RakNetPacketId PacketId { get; }
 
     bool TryParse(OutgoingPacketArgs args, PacketParserRegistry registry, out PacketParseResult result);
 }
@@ -18,7 +18,7 @@ internal sealed class Arizona220PacketTransportRouter : IIncomingPacketTransport
 {
     private const int PayloadBitOffset = 16;
 
-    public EPacketId PacketId => EPacketId.ArizonaCef;
+    public RakNetPacketId PacketId => RakNetPacketId.ArizonaCef;
 
     public bool TryParse(IncomingPacketArgs args, PacketParserRegistry registry, out PacketParseResult result)
     {
@@ -75,7 +75,7 @@ internal sealed class Arizona220PacketTransportRouter : IIncomingPacketTransport
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId220(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
             return true;
         }
     }
@@ -93,7 +93,7 @@ internal sealed class Arizona220PacketTransportRouter : IIncomingPacketTransport
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId220(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
             return true;
         }
     }
@@ -103,7 +103,7 @@ internal sealed class Arizona221PacketTransportRouter : IIncomingPacketTransport
 {
     private const int PayloadBitOffset = 24;
 
-    public EPacketId PacketId => EPacketId.ArizonaCefEx;
+    public RakNetPacketId PacketId => RakNetPacketId.ArizonaCefEx;
 
     public bool TryParse(IncomingPacketArgs args, PacketParserRegistry registry, out PacketParseResult result)
     {
@@ -160,7 +160,7 @@ internal sealed class Arizona221PacketTransportRouter : IIncomingPacketTransport
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId221(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
             return true;
         }
     }
@@ -178,7 +178,7 @@ internal sealed class Arizona221PacketTransportRouter : IIncomingPacketTransport
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId221(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
             return true;
         }
     }
@@ -186,7 +186,7 @@ internal sealed class Arizona221PacketTransportRouter : IIncomingPacketTransport
 
 internal sealed class AZVoiceIncomingPacketTransportRouter : IIncomingPacketTransportRouter
 {
-    public EPacketId PacketId => EPacketId.AZVoice;
+    public RakNetPacketId PacketId => RakNetPacketId.AZVoice;
 
     public bool TryParse(IncomingPacketArgs args, PacketParserRegistry registry, out PacketParseResult result)
     {
@@ -212,8 +212,8 @@ internal sealed class AZVoiceIncomingPacketTransportRouter : IIncomingPacketTran
             return true;
         }
 
-        SFLog.Warn($"AZVoice packet parse failed: packetId={EPacketId.AZVoice} bits={args.DataBitLength} error=unrecognized raw 252 payload");
-        result = PacketParseResult.Unsupported(EPacketId.AZVoice);
+        SFLog.Warn($"AZVoice packet parse failed: packetId={RakNetPacketId.AZVoice} bits={args.DataBitLength} error=unrecognized raw 252 payload");
+        result = PacketParseResult.Unsupported(RakNetPacketId.AZVoice);
         return false;
     }
 }

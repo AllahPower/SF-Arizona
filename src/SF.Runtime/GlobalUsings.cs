@@ -1,7 +1,7 @@
 global using SFSharp.Abstractions;
 global using SFSharp.Abstractions.Arizona;
 global using SFSharp.Abstractions.Game;
-global using SFSharp.Abstractions.Interop.RakNet;
+global using SFSharp.Abstractions.Network.Protocol;
 global using SFSharp.Abstractions.Modules;
 global using SFSharp.Abstractions.Modules.Lifecycle;
 global using SFSharp.Abstractions.Network;

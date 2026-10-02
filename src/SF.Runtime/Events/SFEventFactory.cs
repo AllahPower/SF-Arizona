@@ -3,7 +3,7 @@ namespace SFSharp.Runtime.Events;
 internal static class SFEventFactory
 {
     public static SFEventChannel<TEvent> FromIncomingRpc<TEvent, TRpc>(
-        ERpcId rpcId,
+        SampRpcId rpcId,
         Func<IncomingRpcArgs, TRpc> parser,
         Func<TRpc, TEvent> map,
         string name)
@@ -13,7 +13,7 @@ internal static class SFEventFactory
     }
 
     public static SFEventChannel<TEvent> FromOutgoingRpc<TEvent>(
-        ERpcId rpcId,
+        SampRpcId rpcId,
         Func<OutgoingRpcArgs, TEvent> map)
     {
         return new SFEventChannel<TEvent>(publish =>
@@ -21,7 +21,7 @@ internal static class SFEventFactory
     }
 
     public static SFEventChannel<TEvent> FromOutgoingRpc<TEvent, TRpc>(
-        ERpcId rpcId,
+        SampRpcId rpcId,
         Func<OutgoingRpcArgs, TRpc> parser,
         Func<TRpc, TEvent> map)
     {

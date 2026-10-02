@@ -13,32 +13,32 @@ public static partial class PacketParserCatalog
         return registry;
     }
 
-    private static void Register220Incoming<TPayload>(PacketParserRegistry registry, EArizona subId, ArizonaReaderParser<TPayload> parser, string? name = null)
+    private static void Register220Incoming<TPayload>(PacketParserRegistry registry, ArizonaPacket220Id subId, ArizonaReaderParser<TPayload> parser, string? name = null)
     {
         string packetName = name ?? subId.ToString();
-        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<TPayload>>(EPacketId.ArizonaCef, (int)subId, args => ArizonaPacketTransportParsing.ParseIncoming220(args, subId, packetName, parser), name: $"Arizona220:{packetName}"));
+        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<TPayload>>(RakNetPacketId.ArizonaCef, (int)subId, args => ArizonaPacketTransportParsing.ParseIncoming220(args, subId, packetName, parser), name: $"Arizona220:{packetName}"));
     }
 
-    private static void Register220Outgoing<TPayload>(PacketParserRegistry registry, EArizona subId, ArizonaReaderParser<TPayload> parser, string? name = null)
+    private static void Register220Outgoing<TPayload>(PacketParserRegistry registry, ArizonaPacket220Id subId, ArizonaReaderParser<TPayload> parser, string? name = null)
     {
         string packetName = name ?? subId.ToString();
-        registry.Register(new DelegateOutgoingArizonaPacketParser<OutgoingSubPacket<TPayload>>(EPacketId.ArizonaCef, (int)subId, args => ArizonaPacketTransportParsing.ParseOutgoing220(args, subId, packetName, parser), name: $"Arizona220:{packetName}"));
+        registry.Register(new DelegateOutgoingArizonaPacketParser<OutgoingSubPacket<TPayload>>(RakNetPacketId.ArizonaCef, (int)subId, args => ArizonaPacketTransportParsing.ParseOutgoing220(args, subId, packetName, parser), name: $"Arizona220:{packetName}"));
     }
 
-    private static void Register221Incoming<TPayload>(PacketParserRegistry registry, EArizonaEx subId, ArizonaReaderParser<TPayload> parser)
+    private static void Register221Incoming<TPayload>(PacketParserRegistry registry, ArizonaPacket221Id subId, ArizonaReaderParser<TPayload> parser)
     {
-        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<TPayload>>(EPacketId.ArizonaCefEx, (int)subId, args => ArizonaPacketTransportParsing.ParseIncoming221(args, subId, parser), name: $"Arizona221:{subId}"));
+        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<TPayload>>(RakNetPacketId.ArizonaCefEx, (int)subId, args => ArizonaPacketTransportParsing.ParseIncoming221(args, subId, parser), name: $"Arizona221:{subId}"));
     }
 
-    private static void Register221Outgoing<TPayload>(PacketParserRegistry registry, EArizonaEx subId, ArizonaReaderParser<TPayload> parser)
+    private static void Register221Outgoing<TPayload>(PacketParserRegistry registry, ArizonaPacket221Id subId, ArizonaReaderParser<TPayload> parser)
     {
-        registry.Register(new DelegateOutgoingArizonaPacketParser<OutgoingSubPacket<TPayload>>(EPacketId.ArizonaCefEx, (int)subId, args => ArizonaPacketTransportParsing.ParseOutgoing221(args, subId, parser), name: $"Arizona221:{subId}"));
+        registry.Register(new DelegateOutgoingArizonaPacketParser<OutgoingSubPacket<TPayload>>(RakNetPacketId.ArizonaCefEx, (int)subId, args => ArizonaPacketTransportParsing.ParseOutgoing221(args, subId, parser), name: $"Arizona221:{subId}"));
     }
 
-    private static void RegisterAZVoiceIncoming<TPayload>(PacketParserRegistry registry, EAZVoice subId, ArizonaReaderParser<TPayload> parser, string? name = null)
+    private static void RegisterAZVoiceIncoming<TPayload>(PacketParserRegistry registry, AZVoiceMessageId subId, ArizonaReaderParser<TPayload> parser, string? name = null)
     {
         string packetName = name ?? subId.ToString();
-        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<TPayload>>(EPacketId.AZVoice, (int)subId, args => AZVoiceTransportParsing.ParseIncomingControl(args, subId, packetName, parser), name: $"AZVoice:{packetName}"));
+        registry.Register(new DelegateIncomingArizonaPacketParser<IncomingSubPacket<TPayload>>(RakNetPacketId.AZVoice, (int)subId, args => AZVoiceTransportParsing.ParseIncomingControl(args, subId, packetName, parser), name: $"AZVoice:{packetName}"));
     }
 
     private static void RegisterTransportRouters(PacketParserRegistry registry)

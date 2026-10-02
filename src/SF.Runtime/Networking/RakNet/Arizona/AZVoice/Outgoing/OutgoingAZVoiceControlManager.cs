@@ -80,7 +80,7 @@ public sealed class OutgoingAZVoiceControlManager : IDisposable
         {
             fixed (byte* dataPtr = data)
             {
-                OutgoingArizonaPacketArgs args = new((int)EPacketId.AZVoice, subId, (nint)dataPtr, AZVoiceTransport.ControlPayloadBitOffset, dataBitLength - AZVoiceTransport.ControlPayloadBitOffset);
+                OutgoingArizonaPacketArgs args = new((int)RakNetPacketId.AZVoice, subId, (nint)dataPtr, AZVoiceTransport.ControlPayloadBitOffset, dataBitLength - AZVoiceTransport.ControlPayloadBitOffset);
                 foreach (Action<OutgoingArizonaPacketArgs> listener in snapshot)
                 {
                     listener(args);

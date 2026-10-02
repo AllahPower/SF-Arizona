@@ -33,7 +33,7 @@ then inspect `EffectivePacketId`. Keep the normal 207/200 subscriptions as well 
 Filters see the original ID and original bytes exactly as before; effective-ID filtering is not added implicitly.
 
 ```csharp
-await foreach (IncomingPacketFrame frame in sf.Packets.StreamIncoming((int)EPacketId.Timestamp, token))
+await foreach (IncomingPacketFrame frame in sf.Packets.StreamIncoming((int)RakNetPacketId.Timestamp, token))
 {
     if (!frame.TryGetTimestampEnvelope(out RakNetTimestampEnvelope envelope))
     {

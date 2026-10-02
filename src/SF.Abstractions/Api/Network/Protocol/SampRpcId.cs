@@ -1,4 +1,4 @@
-namespace SFSharp.Abstractions.Interop.RakNet;
+namespace SFSharp.Abstractions.Network.Protocol;
 
 /// <summary>
 /// Known SA:MP 0.3.7 RPC identifiers.
@@ -9,7 +9,7 @@ namespace SFSharp.Abstractions.Interop.RakNet;
 /// Assert: some IDs are intentionally listed in bidirectional groups because the same numeric RPC is reused with different semantics.
 /// Assert: reference list is based on https://github.com/Brunoo16/samp-packet-list/wiki/RPC-List
 /// </remarks>
-public enum ERpcId : byte
+public enum SampRpcId : byte
 {
     #region incoming (server -> client)
 

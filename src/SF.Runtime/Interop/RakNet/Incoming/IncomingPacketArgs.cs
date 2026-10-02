@@ -1,6 +1,6 @@
 namespace SFSharp.Runtime.Interop.RakNet.Incoming;
 
-public readonly record struct IncomingPacketArgs(int EPacketId, nint DataPtr, int DataBitLength)
+public readonly record struct IncomingPacketArgs(int RakNetPacketId, nint DataPtr, int DataBitLength)
 {
     public int DataByteLength => (DataBitLength + 7) / 8;
 

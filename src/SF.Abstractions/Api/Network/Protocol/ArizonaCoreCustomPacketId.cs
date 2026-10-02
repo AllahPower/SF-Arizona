@@ -1,4 +1,4 @@
-namespace SFSharp.Abstractions.Interop.RakNet;
+namespace SFSharp.Abstractions.Network.Protocol;
 
 /// <summary>
 /// Internal core.asi custom dispatcher packet identifiers observed in IDA.
@@ -9,7 +9,7 @@ namespace SFSharp.Abstractions.Interop.RakNet;
 /// Assert: duplicate values are intentional because several core modules subscribe to the same dispatcher ID.
 /// Assert: only IDs confirmed in reverse engineering are named here.
 /// </remarks>
-public enum EArizonaCoreCustomPacketId : ushort
+public enum ArizonaCoreCustomPacketId : ushort
 {
     // Assert: u16 vehicleId, bool toggle, and when enabled then bool isSimpleModel + u16 modelId.
     VehicleBrakeCalipers = 15,

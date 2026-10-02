@@ -33,77 +33,77 @@ public sealed class SFCamera
 
     public IAsyncEnumerable<SetPlayerCameraPosRpc> StreamSetPosition(CancellationToken token = default)
     {
-        return SF.Rpc.Stream(ERpcId.SetPlayerCameraPos, SampRpc.ParseSetPlayerCameraPos, token);
+        return SF.Rpc.Stream(SampRpcId.SetPlayerCameraPos, SampRpc.ParseSetPlayerCameraPos, token);
     }
 
     public IAsyncEnumerable<SetPlayerCameraLookAtRpc> StreamSetLookAt(CancellationToken token = default)
     {
-        return SF.Rpc.Stream(ERpcId.SetPlayerCameraLookAt, SampRpc.ParseSetPlayerCameraLookAt, token);
+        return SF.Rpc.Stream(SampRpcId.SetPlayerCameraLookAt, SampRpc.ParseSetPlayerCameraLookAt, token);
     }
 
     public IAsyncEnumerable<InterpolateCameraRpc> StreamInterpolate(CancellationToken token = default)
     {
-        return SF.Rpc.Stream(ERpcId.InterpolateCamera, SampRpc.ParseInterpolateCamera, token);
+        return SF.Rpc.Stream(SampRpcId.InterpolateCamera, SampRpc.ParseInterpolateCamera, token);
     }
 
     public IAsyncEnumerable<AttachCameraToObjectRpc> StreamAttachToObject(CancellationToken token = default)
     {
-        return SF.Rpc.Stream(ERpcId.AttachCameraToObject, SampRpc.ParseAttachCameraToObject, token);
+        return SF.Rpc.Stream(SampRpcId.AttachCameraToObject, SampRpc.ParseAttachCameraToObject, token);
     }
 
     public IAsyncEnumerable<SetCameraBehindPlayerRpc> StreamResetBehindPlayer(CancellationToken token = default)
     {
-        return SF.Rpc.Stream(ERpcId.SetCameraBehindPlayer, SampRpc.ParseSetCameraBehindPlayer, token);
+        return SF.Rpc.Stream(SampRpcId.SetCameraBehindPlayer, SampRpc.ParseSetCameraBehindPlayer, token);
     }
 
     public IAsyncEnumerable<ToggleCameraTargetRpc> StreamToggleTarget(CancellationToken token = default)
     {
-        return SF.Rpc.Stream(ERpcId.ToggleCameraTarget, SampRpc.ParseToggleCameraTarget, token);
+        return SF.Rpc.Stream(SampRpcId.ToggleCameraTarget, SampRpc.ParseToggleCameraTarget, token);
     }
 
     public IAsyncEnumerable<SetPlayerObjectNoCameraColRpc> StreamDisableObjectCollision(CancellationToken token = default)
     {
-        return SF.Rpc.Stream(ERpcId.SetPlayerObjectNoCameraCol, SampRpc.ParseSetPlayerObjectNoCameraCol, token);
+        return SF.Rpc.Stream(SampRpcId.SetPlayerObjectNoCameraCol, SampRpc.ParseSetPlayerObjectNoCameraCol, token);
     }
 
     public IDisposable OnSetPosition(Action<SetPlayerCameraPosRpc> handler, CancellationToken token = default)
     {
-        return SF.Rpc.Bind(ERpcId.SetPlayerCameraPos, SampRpc.ParseSetPlayerCameraPos,
+        return SF.Rpc.Bind(SampRpcId.SetPlayerCameraPos, SampRpc.ParseSetPlayerCameraPos,
             (rpc, _) => handler(rpc), token, "Camera.SetPos");
     }
 
     public IDisposable OnSetLookAt(Action<SetPlayerCameraLookAtRpc> handler, CancellationToken token = default)
     {
-        return SF.Rpc.Bind(ERpcId.SetPlayerCameraLookAt, SampRpc.ParseSetPlayerCameraLookAt,
+        return SF.Rpc.Bind(SampRpcId.SetPlayerCameraLookAt, SampRpc.ParseSetPlayerCameraLookAt,
             (rpc, _) => handler(rpc), token, "Camera.SetLookAt");
     }
 
     public IDisposable OnInterpolate(Action<InterpolateCameraRpc> handler, CancellationToken token = default)
     {
-        return SF.Rpc.Bind(ERpcId.InterpolateCamera, SampRpc.ParseInterpolateCamera,
+        return SF.Rpc.Bind(SampRpcId.InterpolateCamera, SampRpc.ParseInterpolateCamera,
             (rpc, _) => handler(rpc), token, "Camera.Interpolate");
     }
 
     public IDisposable OnAttachToObject(Action<AttachCameraToObjectRpc> handler, CancellationToken token = default)
     {
-        return SF.Rpc.Bind(ERpcId.AttachCameraToObject, SampRpc.ParseAttachCameraToObject,
+        return SF.Rpc.Bind(SampRpcId.AttachCameraToObject, SampRpc.ParseAttachCameraToObject,
             (rpc, _) => handler(rpc), token, "Camera.AttachToObject");
     }
 
     public IDisposable OnResetBehindPlayer(Action<SetCameraBehindPlayerRpc> handler, CancellationToken token = default)
     {
-        return SF.Rpc.Bind(ERpcId.SetCameraBehindPlayer, SampRpc.ParseSetCameraBehindPlayer,
+        return SF.Rpc.Bind(SampRpcId.SetCameraBehindPlayer, SampRpc.ParseSetCameraBehindPlayer,
             (rpc, _) => handler(rpc), token, "Camera.ResetBehind");
     }
 
     public IDisposable OnToggleTarget(Action<ToggleCameraTargetRpc> handler, CancellationToken token = default)
     {
-        return SF.Rpc.Bind(ERpcId.ToggleCameraTarget, SampRpc.ParseToggleCameraTarget,
+        return SF.Rpc.Bind(SampRpcId.ToggleCameraTarget, SampRpc.ParseToggleCameraTarget,
             (rpc, _) => handler(rpc), token, "Camera.ToggleTarget");
     }
 
     public IAsyncEnumerable<CameraTargetUpdateRpc> StreamOutgoingTargetUpdate(CancellationToken token = default)
     {
-        return SF.Rpc.StreamOutgoing(ERpcId.CameraTargetUpdate, SampRpc.ParseCameraTargetUpdate, token);
+        return SF.Rpc.StreamOutgoing(SampRpcId.CameraTargetUpdate, SampRpc.ParseCameraTargetUpdate, token);
     }
 }

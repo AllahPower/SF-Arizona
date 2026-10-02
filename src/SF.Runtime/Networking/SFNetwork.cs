@@ -15,7 +15,7 @@ public delegate void BitStreamBuildAction(ref SampBitStreamWriter writer);
 /// </remarks>
 public sealed unsafe class SFNetwork : ISFNetwork
 {
-    private const byte IdRpc = (byte)EPacketId.Rpc;
+    private const byte IdRpc = (byte)RakNetPacketId.Rpc;
 
     // Packet* __cdecl AllocPacket(unsigned int dataSize)
     private static readonly delegate* unmanaged[Cdecl]<uint, CRakNetPacket*> _allocPacket =
@@ -84,7 +84,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
     }
 
     public bool SendRpc(
-        ERpcId rpcId,
+        SampRpcId rpcId,
         ReadOnlySpan<byte> payload,
         int payloadBitLength,
         RakNetPacketPriority priority = RakNetPacketPriority.High,
@@ -109,7 +109,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
     }
 
     public bool SendRpc(
-        ERpcId rpcId,
+        SampRpcId rpcId,
         BitStreamBuildAction build,
         RakNetPacketPriority priority = RakNetPacketPriority.High,
         RakNetPacketReliability reliability = RakNetPacketReliability.ReliableOrdered,
@@ -126,7 +126,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
         => SendRpc(rpcId, ReadOnlySpan<byte>.Empty, 0, priority, reliability, orderingChannel, shiftTimestamp);
 
     public bool SendRpc(
-        ERpcId rpcId,
+        SampRpcId rpcId,
         RakNetPacketPriority priority = RakNetPacketPriority.High,
         RakNetPacketReliability reliability = RakNetPacketReliability.ReliableOrdered,
         byte orderingChannel = 0,
@@ -225,7 +225,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
         return SimulateIncomingPacket(writer.AsSpan());
     }
 
-    public bool SimulateIncomingRpc(ERpcId rpcId, ReadOnlySpan<byte> payload, int payloadBitLength)
+    public bool SimulateIncomingRpc(SampRpcId rpcId, ReadOnlySpan<byte> payload, int payloadBitLength)
         => SimulateIncomingRpc((int)rpcId, payload, payloadBitLength);
 
     public bool SimulateIncomingRpc(int rpcId, BitStreamBuildAction build)
@@ -237,12 +237,12 @@ public sealed unsafe class SFNetwork : ISFNetwork
         return SimulateIncomingRpc(rpcId, payload.AsSpan(), payload.BitLength);
     }
 
-    public bool SimulateIncomingRpc(ERpcId rpcId, BitStreamBuildAction build)
+    public bool SimulateIncomingRpc(SampRpcId rpcId, BitStreamBuildAction build)
         => SimulateIncomingRpc((int)rpcId, build);
 
     public bool SimulateIncomingRpc(int rpcId)
         => SimulateIncomingRpc(rpcId, ReadOnlySpan<byte>.Empty, 0);
 
-    public bool SimulateIncomingRpc(ERpcId rpcId)
+    public bool SimulateIncomingRpc(SampRpcId rpcId)
         => SimulateIncomingRpc((int)rpcId);
 }

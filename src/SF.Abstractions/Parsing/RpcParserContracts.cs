@@ -2,7 +2,7 @@ namespace SFSharp.Abstractions.Parsing;
 
 public interface IParsedRpc
 {
-    ERpcId ERpcId { get; }
+    SampRpcId SampRpcId { get; }
     string Name { get; }
     string? Detail { get; }
 }

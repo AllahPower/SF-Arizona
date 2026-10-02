@@ -2,7 +2,7 @@ namespace SFSharp.Runtime.Networking.RakNet.Packets.Parsing;
 
 public interface IIncomingPacketParser
 {
-    EPacketId EPacketId { get; }
+    RakNetPacketId RakNetPacketId { get; }
     Type ParsedType { get; }
     string Name { get; }
 
@@ -11,7 +11,7 @@ public interface IIncomingPacketParser
 
 public interface IOutgoingPacketParser
 {
-    EPacketId EPacketId { get; }
+    RakNetPacketId RakNetPacketId { get; }
     Type ParsedType { get; }
     string Name { get; }
 
@@ -20,7 +20,7 @@ public interface IOutgoingPacketParser
 
 public interface IIncomingArizonaPacketParser
 {
-    EPacketId EPacketId { get; }
+    RakNetPacketId RakNetPacketId { get; }
     int SubId { get; }
     Type ParsedType { get; }
     string Name { get; }
@@ -30,7 +30,7 @@ public interface IIncomingArizonaPacketParser
 
 public interface IOutgoingArizonaPacketParser
 {
-    EPacketId EPacketId { get; }
+    RakNetPacketId RakNetPacketId { get; }
     int SubId { get; }
     Type ParsedType { get; }
     string Name { get; }

@@ -21,7 +21,7 @@ public sealed class IncomingPacketPayloadTests
         payload.Use(args =>
         {
             var reader = args.CreateReader();
-            Assert.Equal(40, args.EPacketId);
+            Assert.Equal(40, args.RakNetPacketId);
             Assert.Equal(40, reader.ReadUInt8());
             Assert.Equal(0x12345678u, reader.ReadUInt32());
         });

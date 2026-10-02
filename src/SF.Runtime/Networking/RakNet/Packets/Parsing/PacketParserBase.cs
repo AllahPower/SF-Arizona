@@ -46,7 +46,7 @@ internal static class PacketParseHelper
 public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
     where TPacket : IParsedIncomingPacket
 {
-    public abstract EPacketId EPacketId { get; }
+    public abstract RakNetPacketId RakNetPacketId { get; }
     public virtual string Name => GetType().Name;
     public Type ParsedType => typeof(TPacket);
     protected virtual int MinimumBitLength => 0;
@@ -65,7 +65,7 @@ public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
                 TPacket packet = Parse(args);
                 return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
             },
-            $"packetId={EPacketId}",
+            $"packetId={RakNetPacketId}",
             out result);
     }
 
@@ -75,7 +75,7 @@ public abstract class IncomingPacketParserBase<TPacket> : IIncomingPacketParser
 public abstract class OutgoingPacketParserBase<TPacket> : IOutgoingPacketParser
     where TPacket : IParsedOutgoingPacket
 {
-    public abstract EPacketId EPacketId { get; }
+    public abstract RakNetPacketId RakNetPacketId { get; }
     public virtual string Name => GetType().Name;
     public Type ParsedType => typeof(TPacket);
     protected virtual int MinimumBitLength => 0;
@@ -94,7 +94,7 @@ public abstract class OutgoingPacketParserBase<TPacket> : IOutgoingPacketParser
                 TPacket packet = Parse(args);
                 return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
             },
-            $"packetId={EPacketId}",
+            $"packetId={RakNetPacketId}",
             out result);
     }
 
@@ -104,7 +104,7 @@ public abstract class OutgoingPacketParserBase<TPacket> : IOutgoingPacketParser
 public abstract class IncomingArizonaPacketParserBase<TPacket> : IIncomingArizonaPacketParser
     where TPacket : IParsedIncomingPacket
 {
-    public abstract EPacketId EPacketId { get; }
+    public abstract RakNetPacketId RakNetPacketId { get; }
     public abstract int SubId { get; }
     public virtual string Name => GetType().Name;
     public Type ParsedType => typeof(TPacket);
@@ -124,7 +124,7 @@ public abstract class IncomingArizonaPacketParserBase<TPacket> : IIncomingArizon
                 TPacket packet = Parse(args);
                 return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
             },
-            $"packetId={EPacketId} subId={SubId}",
+            $"packetId={RakNetPacketId} subId={SubId}",
             out result);
     }
 
@@ -134,7 +134,7 @@ public abstract class IncomingArizonaPacketParserBase<TPacket> : IIncomingArizon
 public abstract class OutgoingArizonaPacketParserBase<TPacket> : IOutgoingArizonaPacketParser
     where TPacket : IParsedOutgoingPacket
 {
-    public abstract EPacketId EPacketId { get; }
+    public abstract RakNetPacketId RakNetPacketId { get; }
     public abstract int SubId { get; }
     public virtual string Name => GetType().Name;
     public Type ParsedType => typeof(TPacket);
@@ -154,7 +154,7 @@ public abstract class OutgoingArizonaPacketParserBase<TPacket> : IOutgoingArizon
                 TPacket packet = Parse(args);
                 return new PacketParseResult(true, packet, Name, PacketParseFailureReason.None);
             },
-            $"packetId={EPacketId} subId={SubId}",
+            $"packetId={RakNetPacketId} subId={SubId}",
             out result);
     }
 
@@ -164,13 +164,13 @@ public abstract class OutgoingArizonaPacketParserBase<TPacket> : IOutgoingArizon
 public sealed class DelegateIncomingPacketParser<TPacket> : IncomingPacketParserBase<TPacket>
     where TPacket : IParsedIncomingPacket
 {
-    private readonly EPacketId _packetId;
+    private readonly RakNetPacketId _packetId;
     private readonly string _name;
     private readonly IncomingPacketParseDelegate<TPacket> _parser;
     private readonly int _minimumBitLength;
     private readonly int? _exactBitLength;
 
-    public DelegateIncomingPacketParser(EPacketId packetId, IncomingPacketParseDelegate<TPacket> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
+    public DelegateIncomingPacketParser(RakNetPacketId packetId, IncomingPacketParseDelegate<TPacket> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
     {
         _packetId = packetId;
         _parser = parser;
@@ -179,7 +179,7 @@ public sealed class DelegateIncomingPacketParser<TPacket> : IncomingPacketParser
         _exactBitLength = exactBitLength;
     }
 
-    public override EPacketId EPacketId => _packetId;
+    public override RakNetPacketId RakNetPacketId => _packetId;
     public override string Name => _name;
     protected override int MinimumBitLength => _minimumBitLength;
     protected override int? ExactBitLength => _exactBitLength;
@@ -193,13 +193,13 @@ public sealed class DelegateIncomingPacketParser<TPacket> : IncomingPacketParser
 public sealed class DelegateOutgoingPacketParser<TPacket> : OutgoingPacketParserBase<TPacket>
     where TPacket : IParsedOutgoingPacket
 {
-    private readonly EPacketId _packetId;
+    private readonly RakNetPacketId _packetId;
     private readonly string _name;
     private readonly OutgoingPacketParseDelegate<TPacket> _parser;
     private readonly int _minimumBitLength;
     private readonly int? _exactBitLength;
 
-    public DelegateOutgoingPacketParser(EPacketId packetId, OutgoingPacketParseDelegate<TPacket> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
+    public DelegateOutgoingPacketParser(RakNetPacketId packetId, OutgoingPacketParseDelegate<TPacket> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
     {
         _packetId = packetId;
         _parser = parser;
@@ -208,7 +208,7 @@ public sealed class DelegateOutgoingPacketParser<TPacket> : OutgoingPacketParser
         _exactBitLength = exactBitLength;
     }
 
-    public override EPacketId EPacketId => _packetId;
+    public override RakNetPacketId RakNetPacketId => _packetId;
     public override string Name => _name;
     protected override int MinimumBitLength => _minimumBitLength;
     protected override int? ExactBitLength => _exactBitLength;
@@ -222,14 +222,14 @@ public sealed class DelegateOutgoingPacketParser<TPacket> : OutgoingPacketParser
 public sealed class DelegateIncomingArizonaPacketParser<TPacket> : IncomingArizonaPacketParserBase<TPacket>
     where TPacket : IParsedIncomingPacket
 {
-    private readonly EPacketId _packetId;
+    private readonly RakNetPacketId _packetId;
     private readonly int _subId;
     private readonly string _name;
     private readonly IncomingArizonaPacketParseDelegate<TPacket> _parser;
     private readonly int _minimumPayloadBitLength;
     private readonly int? _exactPayloadBitLength;
 
-    public DelegateIncomingArizonaPacketParser(EPacketId packetId, int subId, IncomingArizonaPacketParseDelegate<TPacket> parser, string? name = null, int minimumPayloadBitLength = 0, int? exactPayloadBitLength = null)
+    public DelegateIncomingArizonaPacketParser(RakNetPacketId packetId, int subId, IncomingArizonaPacketParseDelegate<TPacket> parser, string? name = null, int minimumPayloadBitLength = 0, int? exactPayloadBitLength = null)
     {
         _packetId = packetId;
         _subId = subId;
@@ -239,7 +239,7 @@ public sealed class DelegateIncomingArizonaPacketParser<TPacket> : IncomingArizo
         _exactPayloadBitLength = exactPayloadBitLength;
     }
 
-    public override EPacketId EPacketId => _packetId;
+    public override RakNetPacketId RakNetPacketId => _packetId;
     public override int SubId => _subId;
     public override string Name => _name;
     protected override int MinimumPayloadBitLength => _minimumPayloadBitLength;
@@ -254,14 +254,14 @@ public sealed class DelegateIncomingArizonaPacketParser<TPacket> : IncomingArizo
 public sealed class DelegateOutgoingArizonaPacketParser<TPacket> : OutgoingArizonaPacketParserBase<TPacket>
     where TPacket : IParsedOutgoingPacket
 {
-    private readonly EPacketId _packetId;
+    private readonly RakNetPacketId _packetId;
     private readonly int _subId;
     private readonly string _name;
     private readonly OutgoingArizonaPacketParseDelegate<TPacket> _parser;
     private readonly int _minimumPayloadBitLength;
     private readonly int? _exactPayloadBitLength;
 
-    public DelegateOutgoingArizonaPacketParser(EPacketId packetId, int subId, OutgoingArizonaPacketParseDelegate<TPacket> parser, string? name = null, int minimumPayloadBitLength = 0, int? exactPayloadBitLength = null)
+    public DelegateOutgoingArizonaPacketParser(RakNetPacketId packetId, int subId, OutgoingArizonaPacketParseDelegate<TPacket> parser, string? name = null, int minimumPayloadBitLength = 0, int? exactPayloadBitLength = null)
     {
         _packetId = packetId;
         _subId = subId;
@@ -271,7 +271,7 @@ public sealed class DelegateOutgoingArizonaPacketParser<TPacket> : OutgoingArizo
         _exactPayloadBitLength = exactPayloadBitLength;
     }
 
-    public override EPacketId EPacketId => _packetId;
+    public override RakNetPacketId RakNetPacketId => _packetId;
     public override int SubId => _subId;
     public override string Name => _name;
     protected override int MinimumPayloadBitLength => _minimumPayloadBitLength;

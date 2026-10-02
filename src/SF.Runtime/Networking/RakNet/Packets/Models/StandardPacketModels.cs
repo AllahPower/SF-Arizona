@@ -4,50 +4,50 @@ namespace SFSharp.Runtime.Networking.RakNet.Packets.Models;
 
 public sealed record IncomingRconResponsePacket(string Response) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.RconResponse;
-    public string Name => nameof(EPacketId.RconResponse);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.RconResponse;
+    public string Name => nameof(RakNetPacketId.RconResponse);
     public string Detail => $"response={Response}";
 }
 
 public sealed record IncomingInvalidPasswordPacket() : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.InvalidPassword;
-    public string Name => nameof(EPacketId.InvalidPassword);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.InvalidPassword;
+    public string Name => nameof(RakNetPacketId.InvalidPassword);
     public string? Detail => null;
 }
 
 public sealed record IncomingConnectionBannedPacket() : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.ConnectionBanned;
-    public string Name => nameof(EPacketId.ConnectionBanned);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.ConnectionBanned;
+    public string Name => nameof(RakNetPacketId.ConnectionBanned);
     public string? Detail => null;
 }
 
 public sealed record IncomingConnectionRequestAcceptedPacket(int Ip, ushort Port, ushort PlayerId, int Challenge) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.ConnectionRequestAccepted;
-    public string Name => nameof(EPacketId.ConnectionRequestAccepted);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.ConnectionRequestAccepted;
+    public string Name => nameof(RakNetPacketId.ConnectionRequestAccepted);
     public string Detail => $"ip=0x{Ip:X8} port={Port} pid={PlayerId} challenge={Challenge}";
 }
 
 public sealed record IncomingConnectionLostPacket() : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.ConnectionLost;
-    public string Name => nameof(EPacketId.ConnectionLost);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.ConnectionLost;
+    public string Name => nameof(RakNetPacketId.ConnectionLost);
     public string? Detail => null;
 }
 
 public sealed record IncomingDisconnectionNotificationPacket() : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.DisconnectionNotification;
-    public string Name => nameof(EPacketId.DisconnectionNotification);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.DisconnectionNotification;
+    public string Name => nameof(RakNetPacketId.DisconnectionNotification);
     public string? Detail => null;
 }
 
 public sealed record IncomingNoFreeIncomingConnectionsPacket() : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.NoFreeIncomingConnections;
-    public string Name => nameof(EPacketId.NoFreeIncomingConnections);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.NoFreeIncomingConnections;
+    public string Name => nameof(RakNetPacketId.NoFreeIncomingConnections);
     public string? Detail => null;
 }
 
@@ -57,8 +57,8 @@ public sealed record IncomingNoFreeIncomingConnectionsPacket() : IParsedIncoming
 
 public sealed record OutgoingRconCommandPacket(string Command) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.RconCommand;
-    public string Name => nameof(EPacketId.RconCommand);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.RconCommand;
+    public string Name => nameof(RakNetPacketId.RconCommand);
     public string Detail => $"cmd={Command}";
 }
 
@@ -68,183 +68,183 @@ public sealed record OutgoingRconCommandPacket(string Command) : IParsedOutgoing
 
 public sealed record IncomingConnectionAttemptFailedPacket() : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.ConnectionAttemptFailed;
-    public string Name => nameof(EPacketId.ConnectionAttemptFailed);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.ConnectionAttemptFailed;
+    public string Name => nameof(RakNetPacketId.ConnectionAttemptFailed);
     public string? Detail => null;
 }
 
 public sealed record IncomingConnectionFailedPacket() : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.ConnectionFailed;
-    public string Name => nameof(EPacketId.ConnectionFailed);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.ConnectionFailed;
+    public string Name => nameof(RakNetPacketId.ConnectionFailed);
     public string? Detail => null;
 }
 
 public sealed record IncomingAuthenticationPacket(string Key) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.Authentication;
-    public string Name => nameof(EPacketId.Authentication);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.Authentication;
+    public string Name => nameof(RakNetPacketId.Authentication);
     public string Detail => $"key={Key}";
 }
 
 public sealed record OutgoingAuthenticationPacket(string Response) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.Authentication;
-    public string Name => nameof(EPacketId.Authentication);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.Authentication;
+    public string Name => nameof(RakNetPacketId.Authentication);
     public string Detail => $"response={Response}";
 }
 
 public sealed record IncomingSpectatorPacket(ushort PlayerId, SpectatorSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.SpectatorData;
-    public string Name => nameof(EPacketId.SpectatorData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.SpectatorData;
+    public string Name => nameof(RakNetPacketId.SpectatorData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingSpectatorPacket(SpectatorSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.SpectatorData;
-    public string Name => nameof(EPacketId.SpectatorData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.SpectatorData;
+    public string Name => nameof(RakNetPacketId.SpectatorData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingPassengerPacket(ushort PlayerId, PassengerSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.PassengerData;
-    public string Name => nameof(EPacketId.PassengerData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.PassengerData;
+    public string Name => nameof(RakNetPacketId.PassengerData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingPassengerPacket(PassengerSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.PassengerData;
-    public string Name => nameof(EPacketId.PassengerData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.PassengerData;
+    public string Name => nameof(RakNetPacketId.PassengerData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingTrailerPacket(ushort PlayerId, TrailerSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.TrailerData;
-    public string Name => nameof(EPacketId.TrailerData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.TrailerData;
+    public string Name => nameof(RakNetPacketId.TrailerData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingTrailerPacket(TrailerSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.TrailerData;
-    public string Name => nameof(EPacketId.TrailerData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.TrailerData;
+    public string Name => nameof(RakNetPacketId.TrailerData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingUnoccupiedPacket(ushort PlayerId, UnoccupiedSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.UnoccupiedData;
-    public string Name => nameof(EPacketId.UnoccupiedData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.UnoccupiedData;
+    public string Name => nameof(RakNetPacketId.UnoccupiedData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingUnoccupiedPacket(UnoccupiedSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.UnoccupiedData;
-    public string Name => nameof(EPacketId.UnoccupiedData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.UnoccupiedData;
+    public string Name => nameof(RakNetPacketId.UnoccupiedData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingMarkersPacket(byte MarkerSource, MarkersSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.MarkersData;
-    public string Name => nameof(EPacketId.MarkersData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.MarkersData;
+    public string Name => nameof(RakNetPacketId.MarkersData);
     public string Detail => $"src={MarkerSource} {Data}";
 }
 
 public sealed record OutgoingMarkersPacket(MarkersSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.MarkersData;
-    public string Name => nameof(EPacketId.MarkersData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.MarkersData;
+    public string Name => nameof(RakNetPacketId.MarkersData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingOnfootPacket(ushort PlayerId, OnfootSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.OnfootData;
-    public string Name => nameof(EPacketId.OnfootData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.OnfootData;
+    public string Name => nameof(RakNetPacketId.OnfootData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingOnfootPacket(OutgoingOnfootSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.OnfootData;
-    public string Name => nameof(EPacketId.OnfootData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.OnfootData;
+    public string Name => nameof(RakNetPacketId.OnfootData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingBulletPacket(ushort PlayerId, BulletSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.BulletData;
-    public string Name => nameof(EPacketId.BulletData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.BulletData;
+    public string Name => nameof(RakNetPacketId.BulletData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingBulletPacket(BulletSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.BulletData;
-    public string Name => nameof(EPacketId.BulletData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.BulletData;
+    public string Name => nameof(RakNetPacketId.BulletData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingStatsPacket(ushort PlayerId, StatsSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.StatsData;
-    public string Name => nameof(EPacketId.StatsData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.StatsData;
+    public string Name => nameof(RakNetPacketId.StatsData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingStatsPacket(StatsSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.StatsData;
-    public string Name => nameof(EPacketId.StatsData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.StatsData;
+    public string Name => nameof(RakNetPacketId.StatsData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingWeaponsPacket(ushort PlayerId, WeaponsSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.WeaponsData;
-    public string Name => nameof(EPacketId.WeaponsData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.WeaponsData;
+    public string Name => nameof(RakNetPacketId.WeaponsData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingWeaponsPacket(WeaponsSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.WeaponsData;
-    public string Name => nameof(EPacketId.WeaponsData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.WeaponsData;
+    public string Name => nameof(RakNetPacketId.WeaponsData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingAimPacket(ushort PlayerId, AimSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.AimData;
-    public string Name => nameof(EPacketId.AimData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.AimData;
+    public string Name => nameof(RakNetPacketId.AimData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingAimPacket(AimSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.AimData;
-    public string Name => nameof(EPacketId.AimData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.AimData;
+    public string Name => nameof(RakNetPacketId.AimData);
     public string Detail => Data.ToString();
 }
 
 public sealed record IncomingIncarPacket(ushort PlayerId, IncarSyncData Data) : IParsedIncomingPacket
 {
-    public EPacketId EPacketId => EPacketId.IncarData;
-    public string Name => nameof(EPacketId.IncarData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.IncarData;
+    public string Name => nameof(RakNetPacketId.IncarData);
     public string Detail => $"pid={PlayerId} {Data}";
 }
 
 public sealed record OutgoingIncarPacket(OutgoingIncarSyncData Data) : IParsedOutgoingPacket
 {
-    public EPacketId EPacketId => EPacketId.IncarData;
-    public string Name => nameof(EPacketId.IncarData);
+    public RakNetPacketId RakNetPacketId => RakNetPacketId.IncarData;
+    public string Name => nameof(RakNetPacketId.IncarData);
     public string Detail => Data.ToString();
 }
 

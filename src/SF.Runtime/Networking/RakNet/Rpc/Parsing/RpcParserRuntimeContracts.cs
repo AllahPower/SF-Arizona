@@ -2,7 +2,7 @@ namespace SFSharp.Runtime.Networking.RakNet.Rpc.Parsing;
 
 public interface IIncomingRpcParser
 {
-    ERpcId ERpcId { get; }
+    SampRpcId SampRpcId { get; }
     Type ParsedType { get; }
     string Name { get; }
 
@@ -11,7 +11,7 @@ public interface IIncomingRpcParser
 
 public interface IOutgoingRpcParser
 {
-    ERpcId ERpcId { get; }
+    SampRpcId SampRpcId { get; }
     Type ParsedType { get; }
     string Name { get; }
 

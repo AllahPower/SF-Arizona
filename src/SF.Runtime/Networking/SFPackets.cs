@@ -49,7 +49,7 @@ public sealed unsafe class SFPackets : ISFPackets
 
     // - Incoming packets (server -> client) -
 
-    public NetworkSubscription SubscribeIncoming(EPacketId packetId, Action<IncomingPacketArgs> handler)
+    public NetworkSubscription SubscribeIncoming(RakNetPacketId packetId, Action<IncomingPacketArgs> handler)
     {
         return IncomingHandlers.Subscribe(packetId, handler);
     }
@@ -57,10 +57,10 @@ public sealed unsafe class SFPackets : ISFPackets
     public IDisposable SubscribeIncoming(int packetId, Action<IncomingPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeIncoming((EPacketId)packetId, args => handler(IncomingPacketPayload.From(args).ToFrame()));
+        return SubscribeIncoming((RakNetPacketId)packetId, args => handler(IncomingPacketPayload.From(args).ToFrame()));
     }
 
-    public async IAsyncEnumerable<IncomingPacketPayload> StreamIncoming(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<IncomingPacketPayload> StreamIncoming(RakNetPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<IncomingPacketPayload>();
         using NetworkSubscription subscription = SubscribeIncoming(packetId, args => channel.Writer.TryWrite(IncomingPacketPayload.From(args)));
@@ -78,7 +78,7 @@ public sealed unsafe class SFPackets : ISFPackets
         }
     }
 
-    public async IAsyncEnumerable<TPayload> StreamIncoming<TPayload>(EPacketId packetId, Func<IncomingPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamIncoming<TPayload>(RakNetPacketId packetId, Func<IncomingPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (IncomingPacketPayload payload in StreamIncoming(packetId, token))
         {
@@ -88,7 +88,7 @@ public sealed unsafe class SFPackets : ISFPackets
 
     // - Outgoing packets (client -> server) -
 
-    public NetworkSubscription SubscribeOutgoing(EPacketId packetId, Action<OutgoingPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoing(RakNetPacketId packetId, Action<OutgoingPacketArgs> handler)
     {
         return OutgoingHandlers.Subscribe(packetId, handler);
     }
@@ -96,10 +96,10 @@ public sealed unsafe class SFPackets : ISFPackets
     public IDisposable SubscribeOutgoing(int packetId, Action<OutgoingPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeOutgoing((EPacketId)packetId, args => handler(new OutgoingPacketFrame(args.EPacketId, OutgoingPacketPayload.From(args).Data, args.DataBitLength)));
+        return SubscribeOutgoing((RakNetPacketId)packetId, args => handler(new OutgoingPacketFrame(args.RakNetPacketId, OutgoingPacketPayload.From(args).Data, args.DataBitLength)));
     }
 
-    public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoing(EPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<OutgoingPacketPayload> StreamOutgoing(RakNetPacketId packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<OutgoingPacketPayload>();
         using NetworkSubscription subscription = SubscribeOutgoing(packetId, args => channel.Writer.TryWrite(OutgoingPacketPayload.From(args)));
@@ -118,7 +118,7 @@ public sealed unsafe class SFPackets : ISFPackets
     }
 
 
-    public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(EPacketId packetId, Func<OutgoingPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(RakNetPacketId packetId, Func<OutgoingPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (OutgoingPacketPayload payload in StreamOutgoing(packetId, token))
         {
@@ -128,7 +128,7 @@ public sealed unsafe class SFPackets : ISFPackets
 
     public async IAsyncEnumerable<IncomingPacketFrame> StreamIncoming(int packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        await foreach (IncomingPacketPayload payload in StreamIncoming((EPacketId)packetId, token))
+        await foreach (IncomingPacketPayload payload in StreamIncoming((RakNetPacketId)packetId, token))
         {
             yield return payload.ToFrame();
         }
@@ -136,15 +136,15 @@ public sealed unsafe class SFPackets : ISFPackets
 
     public async IAsyncEnumerable<OutgoingPacketFrame> StreamOutgoing(int packetId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        await foreach (OutgoingPacketPayload payload in StreamOutgoing((EPacketId)packetId, token))
+        await foreach (OutgoingPacketPayload payload in StreamOutgoing((RakNetPacketId)packetId, token))
         {
-            yield return new OutgoingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
+            yield return new OutgoingPacketFrame((int)payload.RakNetPacketId, payload.Data, payload.DataBitLength);
         }
     }
 
     // - Packet filters (synchronous, run on hook thread) -
 
-    public IDisposable RegisterOutgoingFilter(EPacketId packetId, Func<nint, int, bool> filter)
+    public IDisposable RegisterOutgoingFilter(RakNetPacketId packetId, Func<nint, int, bool> filter)
     {
         return SFBootstrap.OutgoingPacketFilters.Add((int)packetId, filter);
     }
@@ -159,7 +159,7 @@ public sealed unsafe class SFPackets : ISFPackets
     /// replaces the entire RakClientInterface vtable - those packets are intercepted and processed
     /// before reaching SAMP's RakClient Receive, so our hook never sees them.
     /// </remarks>
-    public IDisposable RegisterIncomingFilter(EPacketId packetId, Func<nint, int, bool> filter)
+    public IDisposable RegisterIncomingFilter(RakNetPacketId packetId, Func<nint, int, bool> filter)
     {
         return SFBootstrap.IncomingPacketFilters.Add((int)packetId, filter);
     }

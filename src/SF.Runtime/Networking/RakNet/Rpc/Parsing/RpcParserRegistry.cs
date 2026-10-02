@@ -9,8 +9,8 @@ public sealed class RpcParserRegistry
 
     public void Register(IIncomingRpcParser parser)
     {
-        _incoming[(int)parser.ERpcId] = parser;
-        IncomingRpcRoute route = new(parser.ERpcId, parser);
+        _incoming[(int)parser.SampRpcId] = parser;
+        IncomingRpcRoute route = new(parser.SampRpcId, parser);
         AddIncomingRoute(parser.ParsedType, route);
         if (TryGetWrappedPayloadType(parser.ParsedType, typeof(IncomingRpc<>), out Type payloadType))
         {
@@ -20,8 +20,8 @@ public sealed class RpcParserRegistry
 
     public void Register(IOutgoingRpcParser parser)
     {
-        _outgoing[(int)parser.ERpcId] = parser;
-        OutgoingRpcRoute route = new(parser.ERpcId, parser);
+        _outgoing[(int)parser.SampRpcId] = parser;
+        OutgoingRpcRoute route = new(parser.SampRpcId, parser);
         AddOutgoingRoute(parser.ParsedType, route);
         if (TryGetWrappedPayloadType(parser.ParsedType, typeof(OutgoingRpc<>), out Type payloadType))
         {
@@ -31,14 +31,14 @@ public sealed class RpcParserRegistry
 
     public bool TryParseIncoming(IncomingRpcArgs args, out RpcParseResult result)
     {
-        if (_incoming.TryGetValue(args.ERpcId, out IIncomingRpcParser? parser))
+        if (_incoming.TryGetValue(args.SampRpcId, out IIncomingRpcParser? parser))
         {
             return parser.TryParse(args, out result);
         }
 
         result = new RpcParseResult(
             true,
-            new IncomingUnknownRpc((ERpcId)args.ERpcId, args.DataBitLength),
+            new IncomingUnknownRpc((SampRpcId)args.SampRpcId, args.DataBitLength),
             "Unknown",
             PacketParseFailureReason.None);
         return true;
@@ -46,14 +46,14 @@ public sealed class RpcParserRegistry
 
     public bool TryParseOutgoing(OutgoingRpcArgs args, out RpcParseResult result)
     {
-        if (_outgoing.TryGetValue(args.ERpcId, out IOutgoingRpcParser? parser))
+        if (_outgoing.TryGetValue(args.SampRpcId, out IOutgoingRpcParser? parser))
         {
             return parser.TryParse(args, out result);
         }
 
         result = new RpcParseResult(
             true,
-            new OutgoingUnknownRpc((ERpcId)args.ERpcId, args.DataBitLength),
+            new OutgoingUnknownRpc((SampRpcId)args.SampRpcId, args.DataBitLength),
             "Unknown",
             PacketParseFailureReason.None);
         return true;
@@ -113,6 +113,6 @@ public sealed class RpcParserRegistry
         return true;
     }
 
-    public sealed record IncomingRpcRoute(ERpcId ERpcId, object Parser);
-    public sealed record OutgoingRpcRoute(ERpcId ERpcId, object Parser);
+    public sealed record IncomingRpcRoute(SampRpcId SampRpcId, object Parser);
+    public sealed record OutgoingRpcRoute(SampRpcId SampRpcId, object Parser);
 }

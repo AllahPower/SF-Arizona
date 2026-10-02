@@ -1,4 +1,4 @@
-namespace SFSharp.Abstractions.Interop.RakNet;
+namespace SFSharp.Abstractions.Network.Protocol;
 
 /// <summary>
 /// AZVoice sub-packet identifiers carried inside packet 252.
@@ -7,7 +7,7 @@ namespace SFSharp.Abstractions.Interop.RakNet;
 /// Assert: the first byte of the AZVoice payload is the sub-ID from this enum.
 /// Assert: the remaining bytes are a sub-packet-specific bitstream payload.
 /// </remarks>
-public enum EAZVoice : byte
+public enum AZVoiceMessageId : byte
 {
     #region incoming (server -> client)
 

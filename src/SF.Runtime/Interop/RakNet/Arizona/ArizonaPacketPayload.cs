@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.RakNet.Arizona;
 
-public readonly record struct IncomingArizonaPacketPayload(EPacketId EPacketId, int SubId, byte[] Data, int PayloadBitOffset, int PayloadBitLength)
+public readonly record struct IncomingArizonaPacketPayload(RakNetPacketId RakNetPacketId, int SubId, byte[] Data, int PayloadBitOffset, int PayloadBitLength)
 {
     public T Parse<T>(Func<IncomingArizonaPacketArgs, T> parser)
     {
@@ -10,7 +10,7 @@ public readonly record struct IncomingArizonaPacketPayload(EPacketId EPacketId, 
         {
             fixed (byte* dataPtr = Data)
             {
-                IncomingArizonaPacketArgs args = new((int)EPacketId, SubId, (nint)dataPtr, PayloadBitOffset, PayloadBitLength);
+                IncomingArizonaPacketArgs args = new((int)RakNetPacketId, SubId, (nint)dataPtr, PayloadBitOffset, PayloadBitLength);
                 return parser(args);
             }
         }
@@ -25,11 +25,11 @@ public readonly record struct IncomingArizonaPacketPayload(EPacketId EPacketId, 
             Marshal.Copy(args.DataPtr, data, 0, byteLength);
         }
 
-        return new IncomingArizonaPacketPayload((EPacketId)args.EPacketId, args.SubId, data, args.PayloadBitOffset, args.PayloadBitLength);
+        return new IncomingArizonaPacketPayload((RakNetPacketId)args.RakNetPacketId, args.SubId, data, args.PayloadBitOffset, args.PayloadBitLength);
     }
 }
 
-public readonly record struct OutgoingArizonaPacketPayload(EPacketId EPacketId, int SubId, byte[] Data, int PayloadBitOffset, int PayloadBitLength)
+public readonly record struct OutgoingArizonaPacketPayload(RakNetPacketId RakNetPacketId, int SubId, byte[] Data, int PayloadBitOffset, int PayloadBitLength)
 {
     public T Parse<T>(Func<OutgoingArizonaPacketArgs, T> parser)
     {
@@ -37,7 +37,7 @@ public readonly record struct OutgoingArizonaPacketPayload(EPacketId EPacketId, 
         {
             fixed (byte* dataPtr = Data)
             {
-                OutgoingArizonaPacketArgs args = new((int)EPacketId, SubId, (nint)dataPtr, PayloadBitOffset, PayloadBitLength);
+                OutgoingArizonaPacketArgs args = new((int)RakNetPacketId, SubId, (nint)dataPtr, PayloadBitOffset, PayloadBitLength);
                 return parser(args);
             }
         }
@@ -52,6 +52,6 @@ public readonly record struct OutgoingArizonaPacketPayload(EPacketId EPacketId, 
             Marshal.Copy(args.DataPtr, data, 0, byteLength);
         }
 
-        return new OutgoingArizonaPacketPayload((EPacketId)args.EPacketId, args.SubId, data, args.PayloadBitOffset, args.PayloadBitLength);
+        return new OutgoingArizonaPacketPayload((RakNetPacketId)args.RakNetPacketId, args.SubId, data, args.PayloadBitOffset, args.PayloadBitLength);
     }
 }

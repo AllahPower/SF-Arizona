@@ -6,7 +6,7 @@ public delegate TRpc OutgoingRpcParseDelegate<TRpc>(OutgoingRpcArgs args) where 
 public abstract class IncomingRpcParserBase<TRpc> : IIncomingRpcParser
     where TRpc : IParsedIncomingRpc
 {
-    public abstract ERpcId ERpcId { get; }
+    public abstract SampRpcId SampRpcId { get; }
     public virtual string Name => GetType().Name;
     public Type ParsedType => typeof(TRpc);
     protected virtual int MinimumBitLength => 0;
@@ -34,7 +34,7 @@ public abstract class IncomingRpcParserBase<TRpc> : IIncomingRpcParser
         }
         catch (Exception ex)
         {
-            SFLog.Error($"RPC parse exception parser={Name} rpcId={ERpcId} bits={args.DataBitLength}: {ex}");
+            SFLog.Error($"RPC parse exception parser={Name} rpcId={SampRpcId} bits={args.DataBitLength}: {ex}");
             result = RpcParseResult.FromException(Name, ex);
             return false;
         }
@@ -46,7 +46,7 @@ public abstract class IncomingRpcParserBase<TRpc> : IIncomingRpcParser
 public abstract class OutgoingRpcParserBase<TRpc> : IOutgoingRpcParser
     where TRpc : IParsedOutgoingRpc
 {
-    public abstract ERpcId ERpcId { get; }
+    public abstract SampRpcId SampRpcId { get; }
     public virtual string Name => GetType().Name;
     public Type ParsedType => typeof(TRpc);
     protected virtual int MinimumBitLength => 0;
@@ -74,7 +74,7 @@ public abstract class OutgoingRpcParserBase<TRpc> : IOutgoingRpcParser
         }
         catch (Exception ex)
         {
-            SFLog.Error($"RPC parse exception parser={Name} rpcId={ERpcId} bits={args.DataBitLength}: {ex}");
+            SFLog.Error($"RPC parse exception parser={Name} rpcId={SampRpcId} bits={args.DataBitLength}: {ex}");
             result = RpcParseResult.FromException(Name, ex);
             return false;
         }
@@ -86,13 +86,13 @@ public abstract class OutgoingRpcParserBase<TRpc> : IOutgoingRpcParser
 public sealed class DelegateIncomingRpcParser<TRpc> : IncomingRpcParserBase<TRpc>
     where TRpc : IParsedIncomingRpc
 {
-    private readonly ERpcId _rpcId;
+    private readonly SampRpcId _rpcId;
     private readonly string _name;
     private readonly IncomingRpcParseDelegate<TRpc> _parser;
     private readonly int _minimumBitLength;
     private readonly int? _exactBitLength;
 
-    public DelegateIncomingRpcParser(ERpcId rpcId, IncomingRpcParseDelegate<TRpc> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
+    public DelegateIncomingRpcParser(SampRpcId rpcId, IncomingRpcParseDelegate<TRpc> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
     {
         _rpcId = rpcId;
         _parser = parser;
@@ -101,7 +101,7 @@ public sealed class DelegateIncomingRpcParser<TRpc> : IncomingRpcParserBase<TRpc
         _exactBitLength = exactBitLength;
     }
 
-    public override ERpcId ERpcId => _rpcId;
+    public override SampRpcId SampRpcId => _rpcId;
     public override string Name => _name;
     protected override int MinimumBitLength => _minimumBitLength;
     protected override int? ExactBitLength => _exactBitLength;
@@ -115,13 +115,13 @@ public sealed class DelegateIncomingRpcParser<TRpc> : IncomingRpcParserBase<TRpc
 public sealed class DelegateOutgoingRpcParser<TRpc> : OutgoingRpcParserBase<TRpc>
     where TRpc : IParsedOutgoingRpc
 {
-    private readonly ERpcId _rpcId;
+    private readonly SampRpcId _rpcId;
     private readonly string _name;
     private readonly OutgoingRpcParseDelegate<TRpc> _parser;
     private readonly int _minimumBitLength;
     private readonly int? _exactBitLength;
 
-    public DelegateOutgoingRpcParser(ERpcId rpcId, OutgoingRpcParseDelegate<TRpc> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
+    public DelegateOutgoingRpcParser(SampRpcId rpcId, OutgoingRpcParseDelegate<TRpc> parser, string? name = null, int minimumBitLength = 0, int? exactBitLength = null)
     {
         _rpcId = rpcId;
         _parser = parser;
@@ -130,7 +130,7 @@ public sealed class DelegateOutgoingRpcParser<TRpc> : OutgoingRpcParserBase<TRpc
         _exactBitLength = exactBitLength;
     }
 
-    public override ERpcId ERpcId => _rpcId;
+    public override SampRpcId SampRpcId => _rpcId;
     public override string Name => _name;
     protected override int MinimumBitLength => _minimumBitLength;
     protected override int? ExactBitLength => _exactBitLength;

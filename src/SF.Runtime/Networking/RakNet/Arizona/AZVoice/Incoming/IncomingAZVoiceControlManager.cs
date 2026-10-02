@@ -77,7 +77,7 @@ public sealed class IncomingAZVoiceControlManager : IDisposable
         {
             fixed (byte* dataPtr = data)
             {
-                IncomingArizonaPacketArgs args = new((int)EPacketId.AZVoice, subId, (nint)dataPtr, AZVoiceTransport.ControlPayloadBitOffset, dataBitLength - AZVoiceTransport.ControlPayloadBitOffset);
+                IncomingArizonaPacketArgs args = new((int)RakNetPacketId.AZVoice, subId, (nint)dataPtr, AZVoiceTransport.ControlPayloadBitOffset, dataBitLength - AZVoiceTransport.ControlPayloadBitOffset);
                 foreach (Action<IncomingArizonaPacketArgs> listener in snapshot)
                 {
                     listener(args);

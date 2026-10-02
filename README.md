@@ -144,7 +144,7 @@ RakClient::Receive                    RakClient::Send
 
 ### Arizona Custom Packets
 
-Arizona RP uses **Packet ID 220** as a multiplexed container. Each packet carries an inner `subId` byte that identifies the actual payload type. SF-Arizona maintains a full catalog of known sub-IDs in `EArizonaPacketId` with dedicated parsers for each in `ArizonaPacket.cs`, registered through `PacketParserCatalog`.
+Arizona RP uses **Packet ID 220** as a multiplexed container. Each packet carries an inner `subId` byte that identifies the actual payload type. SF-Arizona maintains a full catalog of known sub-IDs in `ArizonaPacket220Id` with dedicated parsers for each in `ArizonaPacket.cs`, registered through `PacketParserCatalog`.
 
 ---
 

@@ -20,7 +20,7 @@ public sealed class PacketMemoryTests
     [Fact]
     public void TimestampDecodingAndFrameViewsAllocateNoManagedMemory()
     {
-        IncomingPacketPayload payload = new(EPacketId.Timestamp, [40, 1, 2, 3, 4, 207, 0xAA, 0xBB], 61);
+        IncomingPacketPayload payload = new(RakNetPacketId.Timestamp, [40, 1, 2, 3, 4, 207, 0xAA, 0xBB], 61);
         ReadViews(payload, 10_000);
         long before = GC.GetAllocatedBytesForCurrentThread();
         long checksum = ReadViews(payload, 1_000_000);

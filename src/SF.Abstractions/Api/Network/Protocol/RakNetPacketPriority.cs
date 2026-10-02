@@ -1,4 +1,4 @@
-namespace SFSharp.Abstractions.Interop.RakNet;
+namespace SFSharp.Abstractions.Network.Protocol;
 
 public enum RakNetPacketPriority
 {

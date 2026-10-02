@@ -1,4 +1,4 @@
-using SFSharp.Abstractions.Interop.RakNet;
+using SFSharp.Abstractions.Network.Protocol;
 
 namespace SFSharp.Abstractions.Network;
 
@@ -33,7 +33,7 @@ public readonly record struct IncomingPacketFrame(int PacketId, ReadOnlyMemory<b
     public bool TryGetTimestampEnvelope(out RakNetTimestampEnvelope envelope)
     {
         envelope = default;
-        return PacketId == (int)EPacketId.Timestamp
+        return PacketId == (int)RakNetPacketId.Timestamp
             && RakNetTimestampEnvelope.TryRead(Data.Span, DataBitLength, out envelope);
     }
 }

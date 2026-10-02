@@ -1,4 +1,4 @@
-namespace SFSharp.Abstractions.Interop.RakNet;
+namespace SFSharp.Abstractions.Network.Protocol;
 
 /// <summary>
 /// Arizona RP extended sub-packet identifiers for packet 221.
@@ -8,7 +8,7 @@ namespace SFSharp.Abstractions.Interop.RakNet;
 /// Assert: libcef.asi confirms that packet 221 payloads are decoded by the libPED RPC registry.
 /// Assert: only IDs confirmed in libcef.asi are named here.
 /// </remarks>
-public enum EArizonaEx : ushort
+public enum ArizonaPacket221Id : ushort
 {
     #region outgoing (client -> server)
 

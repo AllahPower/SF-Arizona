@@ -1,4 +1,4 @@
-namespace SFSharp.Abstractions.Interop.RakNet;
+namespace SFSharp.Abstractions.Network.Protocol;
 
 /// <summary>
 /// Arizona RP custom sub-packet identifiers carried inside packet 220.
@@ -9,7 +9,7 @@ namespace SFSharp.Abstractions.Interop.RakNet;
 /// Assert: names and payload notes are recovered from `arizona-events`, `core.asi`, `vorbisFile.dll`, `libcef.asi`, and live packet captures.
 /// Assert: duplicate values are intentional and represent directional or alias semantics.
 /// </remarks>
-public enum EArizona : byte
+public enum ArizonaPacket220Id : byte
 {
     #region outgoing (client -> server)
 

@@ -30,7 +30,7 @@ public sealed class SFRpcParsers : ISFRpcParsers
         foreach (RpcParserRegistry.IncomingRpcRoute route in routes)
         {
             IIncomingRpcParser parser = (IIncomingRpcParser)route.Parser;
-            group.Add(SF.Rpc.Subscribe(route.ERpcId, args =>
+            group.Add(SF.Rpc.Subscribe(route.SampRpcId, args =>
             {
                 if (parser.TryParse(args, out RpcParseResult result) && TryExtractIncoming(result, out TRpc rpc))
                 {
@@ -55,7 +55,7 @@ public sealed class SFRpcParsers : ISFRpcParsers
         foreach (RpcParserRegistry.OutgoingRpcRoute route in routes)
         {
             IOutgoingRpcParser parser = (IOutgoingRpcParser)route.Parser;
-            group.Add(SF.Rpc.SubscribeOutgoing(route.ERpcId, args =>
+            group.Add(SF.Rpc.SubscribeOutgoing(route.SampRpcId, args =>
             {
                 if (parser.TryParse(args, out RpcParseResult result) && TryExtractOutgoing(result, out TRpc rpc))
                 {

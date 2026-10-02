@@ -114,7 +114,7 @@ public partial class DebugModule : SFModuleBase
 
     private void SubscribeAll(List<IDisposable> subs)
     {
-        foreach (ERpcId rpcId in Enum.GetValues<ERpcId>())
+        foreach (SampRpcId rpcId in Enum.GetValues<SampRpcId>())
         {
             subs.Add(Context.RegisterDisposable(
                 SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
@@ -122,9 +122,9 @@ public partial class DebugModule : SFModuleBase
                 SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
         }
 
-        foreach (EPacketId packetId in Enum.GetValues<EPacketId>())
+        foreach (RakNetPacketId packetId in Enum.GetValues<RakNetPacketId>())
         {
-            if (packetId == EPacketId.AZVoice)
+            if (packetId == RakNetPacketId.AZVoice)
             {
                 continue;
             }
@@ -135,7 +135,7 @@ public partial class DebugModule : SFModuleBase
                 SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
         }
 
-        foreach (EAZVoice subId in Enum.GetValues<EAZVoice>())
+        foreach (AZVoiceMessageId subId in Enum.GetValues<AZVoiceMessageId>())
         {
             subs.Add(Context.RegisterDisposable(
                 SF.Arizona.SubscribeIncomingAZVoice(subId, args => OnIncomingAZVoiceControl(args))));
@@ -156,7 +156,7 @@ public partial class DebugModule : SFModuleBase
 
         (string? name, string? detail, string? parsed) = DecodeIncomingAZVoiceControl(args);
         int dataByteLength = (args.PayloadBitOffset + args.PayloadBitLength + 7) / 8;
-        Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.EPacketId, name,
+        Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.RakNetPacketId, name,
             parsed, detail, dataByteLength, Environment.TickCount64));
     }
 
@@ -167,7 +167,7 @@ public partial class DebugModule : SFModuleBase
 
         (string? name, string? detail, string? parsed) = DecodeOutgoingAZVoiceControl(args);
         int dataByteLength = (args.PayloadBitOffset + args.PayloadBitLength + 7) / 8;
-        Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Packet, args.EPacketId, name,
+        Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Packet, args.RakNetPacketId, name,
             parsed, detail, dataByteLength, Environment.TickCount64));
     }
 

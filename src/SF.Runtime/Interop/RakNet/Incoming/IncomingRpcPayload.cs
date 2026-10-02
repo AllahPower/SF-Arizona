@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.RakNet.Incoming;
 
-public readonly record struct IncomingRpcPayload(ERpcId ERpcId, byte[] Data, int DataBitOffset, int DataBitLength)
+public readonly record struct IncomingRpcPayload(SampRpcId SampRpcId, byte[] Data, int DataBitOffset, int DataBitLength)
 {
     public T Parse<T>(Func<IncomingRpcArgs, T> parser)
     {
@@ -10,7 +10,7 @@ public readonly record struct IncomingRpcPayload(ERpcId ERpcId, byte[] Data, int
         {
             fixed (byte* dataPtr = Data)
             {
-                IncomingRpcArgs args = new((int)ERpcId, (nint)dataPtr, DataBitOffset, DataBitLength);
+                IncomingRpcArgs args = new((int)SampRpcId, (nint)dataPtr, DataBitOffset, DataBitLength);
                 return parser(args);
             }
         }
@@ -22,7 +22,7 @@ public readonly record struct IncomingRpcPayload(ERpcId ERpcId, byte[] Data, int
         {
             fixed (byte* dataPtr = Data)
             {
-                IncomingRpcArgs args = new((int)ERpcId, (nint)dataPtr, DataBitOffset, DataBitLength);
+                IncomingRpcArgs args = new((int)SampRpcId, (nint)dataPtr, DataBitOffset, DataBitLength);
                 action(args);
             }
         }
@@ -38,6 +38,6 @@ public readonly record struct IncomingRpcPayload(ERpcId ERpcId, byte[] Data, int
             Marshal.Copy(args.DataPtr, data, 0, byteLength);
         }
 
-        return new IncomingRpcPayload((ERpcId)args.ERpcId, data, args.DataBitOffset, args.DataBitLength);
+        return new IncomingRpcPayload((SampRpcId)args.SampRpcId, data, args.DataBitOffset, args.DataBitLength);
     }
 }

@@ -109,7 +109,7 @@ public static class ModuleContextEventExtensions
     /// <param name="filter">Predicate receiving the raw pointer and length of the packet payload.</param>
     public static IDisposable RegisterOutgoingPacketFilter(
         this IModuleContext context,
-        EPacketId packetId,
+        RakNetPacketId packetId,
         Func<nint, int, bool> filter)
     {
         return context.RegisterDisposable(SF.Packets.RegisterOutgoingFilter(packetId, filter));
@@ -117,7 +117,7 @@ public static class ModuleContextEventExtensions
 
     /// <summary>
     /// Registers a synchronous filter for incoming packets with <paramref name="packetId"/>.
-    /// Same thread and semantics as <see cref="RegisterOutgoingPacketFilter(ModuleContext, EPacketId, Func{nint, int, bool})"/>.
+    /// Same thread and semantics as <see cref="RegisterOutgoingPacketFilter(ModuleContext, RakNetPacketId, Func{nint, int, bool})"/>.
     /// </summary>
     /// <param name="context">Module context that owns the filter registration.</param>
     /// <param name="packetId">Packet id to match.</param>
@@ -129,7 +129,7 @@ public static class ModuleContextEventExtensions
     /// </remarks>
     public static IDisposable RegisterIncomingPacketFilter(
         this IModuleContext context,
-        EPacketId packetId,
+        RakNetPacketId packetId,
         Func<nint, int, bool> filter)
     {
         return context.RegisterDisposable(SF.Packets.RegisterIncomingFilter(packetId, filter));
@@ -144,7 +144,7 @@ public static class ModuleContextEventExtensions
     /// <param name="filter">Predicate receiving the raw pointer and length of the RPC payload.</param>
     public static IDisposable RegisterOutgoingRpcFilter(
         this IModuleContext context,
-        ERpcId rpcId,
+        SampRpcId rpcId,
         Func<nint, int, bool> filter)
     {
         return context.RegisterDisposable(SF.Rpc.RegisterOutgoingFilter(rpcId, filter));
@@ -159,7 +159,7 @@ public static class ModuleContextEventExtensions
     /// <param name="filter">Predicate receiving the raw pointer and length of the RPC payload.</param>
     public static IDisposable RegisterIncomingRpcFilter(
         this IModuleContext context,
-        ERpcId rpcId,
+        SampRpcId rpcId,
         Func<nint, int, bool> filter)
     {
         return context.RegisterDisposable(SF.Rpc.RegisterIncomingFilter(rpcId, filter));

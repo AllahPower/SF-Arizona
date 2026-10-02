@@ -2,7 +2,7 @@ namespace SFSharp.Abstractions.Parsing;
 
 public interface IParsedPacket
 {
-    EPacketId EPacketId { get; }
+    RakNetPacketId RakNetPacketId { get; }
     string Name { get; }
     string? Detail { get; }
 }

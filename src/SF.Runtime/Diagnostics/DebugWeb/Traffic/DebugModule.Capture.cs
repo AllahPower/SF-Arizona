@@ -8,7 +8,7 @@ public partial class DebugModule
         if (!_captureEnabled || !_captureIncoming || !_captureRpc) return;
 
         (string? name, string? detail, string? parsed) = DecodeIncomingRpc(args);
-        Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Rpc, args.ERpcId, name,
+        Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Rpc, args.SampRpcId, name,
             parsed, detail, (args.DataBitLength + 7) / 8, Environment.TickCount64));
     }
 
@@ -18,7 +18,7 @@ public partial class DebugModule
         if (!_captureEnabled || !_captureOutgoing || !_captureRpc) return;
 
         (string? name, string? detail, string? parsed) = DecodeOutgoingRpc(args);
-        Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Rpc, args.ERpcId, name,
+        Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Rpc, args.SampRpcId, name,
             parsed, detail, (args.DataBitLength + 7) / 8, Environment.TickCount64));
     }
 
@@ -28,7 +28,7 @@ public partial class DebugModule
         if (!_captureEnabled || !_captureIncoming || !_capturePackets) return;
 
         (string? name, string? detail, string? parsed) = DecodeIncomingPacket(args);
-        Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.EPacketId, name,
+        Push(new TrafficEntry(0, TrafficDirection.Incoming, TrafficKind.Packet, args.RakNetPacketId, name,
             parsed, detail, args.DataByteLength, Environment.TickCount64));
     }
 
@@ -38,7 +38,7 @@ public partial class DebugModule
         if (!_captureEnabled || !_captureOutgoing || !_capturePackets) return;
 
         (string? name, string? detail, string? parsed) = DecodeOutgoingPacket(args);
-        Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Packet, args.EPacketId, name,
+        Push(new TrafficEntry(0, TrafficDirection.Outgoing, TrafficKind.Packet, args.RakNetPacketId, name,
             parsed, detail, args.DataByteLength, Environment.TickCount64));
     }
 }

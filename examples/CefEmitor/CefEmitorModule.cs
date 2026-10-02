@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SFSharp.Abstractions.Interop.RakNet.BitStream;
+using SFSharp.Abstractions.Network.Protocol.BitStream;
 using SFSharp.Abstractions.Modules;
 using SFSharp.Abstractions.Modules.Lifecycle;
 

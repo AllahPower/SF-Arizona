@@ -7,9 +7,9 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     private const int Packet220PayloadBitOffset = 16;
     private const int Packet221PayloadBitOffset = 24;
 
-    public NetworkSubscription SubscribeIncoming(EArizona subId, Action<IncomingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeIncoming(ArizonaPacket220Id subId, Action<IncomingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeIncoming(EPacketId.ArizonaCef, args =>
+        return SF.Packets.SubscribeIncoming(RakNetPacketId.ArizonaCef, args =>
         {
             if (!TryCreateIncoming220(args, out IncomingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -23,16 +23,16 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     public IDisposable SubscribeIncoming(int subId, Action<IncomingArizonaPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeIncoming((EArizona)subId, args =>
+        return SubscribeIncoming((ArizonaPacket220Id)subId, args =>
         {
             IncomingArizonaPacketPayload payload = IncomingArizonaPacketPayload.From(args);
-            handler(new IncomingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+            handler(new IncomingArizonaPacketFrame(args.RakNetPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
         });
     }
 
-    public NetworkSubscription SubscribeIncomingEx(EArizonaEx subId, Action<IncomingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeIncomingEx(ArizonaPacket221Id subId, Action<IncomingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeIncoming(EPacketId.ArizonaCefEx, args =>
+        return SF.Packets.SubscribeIncoming(RakNetPacketId.ArizonaCefEx, args =>
         {
             if (!TryCreateIncoming221(args, out IncomingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -46,16 +46,16 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     public IDisposable SubscribeIncomingEx(int subId, Action<IncomingArizonaPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeIncomingEx((EArizonaEx)subId, args =>
+        return SubscribeIncomingEx((ArizonaPacket221Id)subId, args =>
         {
             IncomingArizonaPacketPayload payload = IncomingArizonaPacketPayload.From(args);
-            handler(new IncomingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+            handler(new IncomingArizonaPacketFrame(args.RakNetPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
         });
     }
 
-    public NetworkSubscription SubscribeOutgoing(EArizona subId, Action<OutgoingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoing(ArizonaPacket220Id subId, Action<OutgoingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeOutgoing(EPacketId.ArizonaCef, args =>
+        return SF.Packets.SubscribeOutgoing(RakNetPacketId.ArizonaCef, args =>
         {
             if (!TryCreateOutgoing220(args, out OutgoingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -69,16 +69,16 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     public IDisposable SubscribeOutgoing(int subId, Action<OutgoingArizonaPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeOutgoing((EArizona)subId, args =>
+        return SubscribeOutgoing((ArizonaPacket220Id)subId, args =>
         {
             OutgoingArizonaPacketPayload payload = OutgoingArizonaPacketPayload.From(args);
-            handler(new OutgoingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+            handler(new OutgoingArizonaPacketFrame(args.RakNetPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
         });
     }
 
-    public NetworkSubscription SubscribeOutgoingEx(EArizonaEx subId, Action<OutgoingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoingEx(ArizonaPacket221Id subId, Action<OutgoingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeOutgoing(EPacketId.ArizonaCefEx, args =>
+        return SF.Packets.SubscribeOutgoing(RakNetPacketId.ArizonaCefEx, args =>
         {
             if (!TryCreateOutgoing221(args, out OutgoingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -92,14 +92,14 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     public IDisposable SubscribeOutgoingEx(int subId, Action<OutgoingArizonaPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeOutgoingEx((EArizonaEx)subId, args =>
+        return SubscribeOutgoingEx((ArizonaPacket221Id)subId, args =>
         {
             OutgoingArizonaPacketPayload payload = OutgoingArizonaPacketPayload.From(args);
-            handler(new OutgoingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+            handler(new OutgoingArizonaPacketFrame(args.RakNetPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
         });
     }
 
-    public NetworkSubscription SubscribeIncomingAZVoice(EAZVoice subId, Action<IncomingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeIncomingAZVoice(AZVoiceMessageId subId, Action<IncomingArizonaPacketArgs> handler)
     {
         return SFBootstrap.IncomingAZVoiceControlHandlers.Subscribe((int)subId, handler);
     }
@@ -107,14 +107,14 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     public IDisposable SubscribeIncomingAZVoice(int subId, Action<IncomingArizonaPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeIncomingAZVoice((EAZVoice)subId, args =>
+        return SubscribeIncomingAZVoice((AZVoiceMessageId)subId, args =>
         {
             IncomingArizonaPacketPayload payload = IncomingArizonaPacketPayload.From(args);
-            handler(new IncomingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+            handler(new IncomingArizonaPacketFrame(args.RakNetPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
         });
     }
 
-    public NetworkSubscription SubscribeOutgoingAZVoice(EAZVoice subId, Action<OutgoingArizonaPacketArgs> handler)
+    public NetworkSubscription SubscribeOutgoingAZVoice(AZVoiceMessageId subId, Action<OutgoingArizonaPacketArgs> handler)
     {
         return SFBootstrap.OutgoingAZVoiceControlHandlers.Subscribe((int)subId, handler);
     }
@@ -122,10 +122,10 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     public IDisposable SubscribeOutgoingAZVoice(int subId, Action<OutgoingArizonaPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeOutgoingAZVoice((EAZVoice)subId, args =>
+        return SubscribeOutgoingAZVoice((AZVoiceMessageId)subId, args =>
         {
             OutgoingArizonaPacketPayload payload = OutgoingArizonaPacketPayload.From(args);
-            handler(new OutgoingArizonaPacketFrame(args.EPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
+            handler(new OutgoingArizonaPacketFrame(args.RakNetPacketId, args.SubId, payload.Data, args.PayloadBitOffset, args.PayloadBitLength));
         });
     }
 
@@ -142,16 +142,16 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeOutgoingAZVoiceData(Action<OutgoingPacketArgs> handler)
     {
-        return SF.Packets.SubscribeOutgoing(EPacketId.AZVoice, handler);
+        return SF.Packets.SubscribeOutgoing(RakNetPacketId.AZVoice, handler);
     }
 
     public IDisposable SubscribeOutgoingAZVoiceData(Action<OutgoingPacketFrame> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
-        return SubscribeOutgoingAZVoiceData(args => handler(new OutgoingPacketFrame(args.EPacketId, OutgoingPacketPayload.From(args).Data, args.DataBitLength)));
+        return SubscribeOutgoingAZVoiceData(args => handler(new OutgoingPacketFrame(args.RakNetPacketId, OutgoingPacketPayload.From(args).Data, args.DataBitLength)));
     }
 
-    public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncoming(EArizona subId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncoming(ArizonaPacket220Id subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<IncomingArizonaPacketPayload>();
         using NetworkSubscription subscription = SubscribeIncoming(subId, args => channel.Writer.TryWrite(IncomingArizonaPacketPayload.From(args)));
@@ -169,7 +169,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingEx(EArizonaEx subId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingEx(ArizonaPacket221Id subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<IncomingArizonaPacketPayload>();
         using NetworkSubscription subscription = SubscribeIncomingEx(subId, args => channel.Writer.TryWrite(IncomingArizonaPacketPayload.From(args)));
@@ -187,7 +187,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoing(EArizona subId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoing(ArizonaPacket220Id subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<OutgoingArizonaPacketPayload>();
         using NetworkSubscription subscription = SubscribeOutgoing(subId, args => channel.Writer.TryWrite(OutgoingArizonaPacketPayload.From(args)));
@@ -205,7 +205,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoingEx(EArizonaEx subId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<OutgoingArizonaPacketPayload> StreamOutgoingEx(ArizonaPacket221Id subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<OutgoingArizonaPacketPayload>();
         using NetworkSubscription subscription = SubscribeOutgoingEx(subId, args => channel.Writer.TryWrite(OutgoingArizonaPacketPayload.From(args)));
@@ -223,7 +223,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingAZVoice(EAZVoice subId, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<IncomingArizonaPacketPayload> StreamIncomingAZVoice(AZVoiceMessageId subId, [EnumeratorCancellation] CancellationToken token = default)
     {
         var channel = SFChannel.CreateUnbounded<IncomingArizonaPacketPayload>();
         using NetworkSubscription subscription = SubscribeIncomingAZVoice(subId, args => channel.Writer.TryWrite(IncomingArizonaPacketPayload.From(args)));
@@ -278,7 +278,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     }
 
 
-    public async IAsyncEnumerable<TPayload> StreamIncoming<TPayload>(EArizona subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamIncoming<TPayload>(ArizonaPacket220Id subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (IncomingArizonaPacketPayload payload in StreamIncoming(subId, token))
         {
@@ -286,7 +286,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<TPayload> StreamIncomingEx<TPayload>(EArizonaEx subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamIncomingEx<TPayload>(ArizonaPacket221Id subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (IncomingArizonaPacketPayload payload in StreamIncomingEx(subId, token))
         {
@@ -294,7 +294,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(EArizona subId, Func<OutgoingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamOutgoing<TPayload>(ArizonaPacket220Id subId, Func<OutgoingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoing(subId, token))
         {
@@ -302,7 +302,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<TPayload> StreamOutgoingEx<TPayload>(EArizonaEx subId, Func<OutgoingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamOutgoingEx<TPayload>(ArizonaPacket221Id subId, Func<OutgoingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoingEx(subId, token))
         {
@@ -310,7 +310,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
         }
     }
 
-    public async IAsyncEnumerable<TPayload> StreamIncomingAZVoice<TPayload>(EAZVoice subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
+    public async IAsyncEnumerable<TPayload> StreamIncomingAZVoice<TPayload>(AZVoiceMessageId subId, Func<IncomingArizonaPacketArgs, TPayload> parser, [EnumeratorCancellation] CancellationToken token = default)
     {
         await foreach (IncomingArizonaPacketPayload payload in StreamIncomingAZVoice(subId, token))
         {
@@ -336,41 +336,41 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public async IAsyncEnumerable<IncomingArizonaPacketFrame> StreamIncoming(int subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        await foreach (IncomingArizonaPacketPayload payload in StreamIncoming((EArizona)subId, token))
+        await foreach (IncomingArizonaPacketPayload payload in StreamIncoming((ArizonaPacket220Id)subId, token))
         {
-            yield return new IncomingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+            yield return new IncomingArizonaPacketFrame((int)payload.RakNetPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
         }
     }
 
     public async IAsyncEnumerable<IncomingArizonaPacketFrame> StreamIncomingEx(int subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        await foreach (IncomingArizonaPacketPayload payload in StreamIncomingEx((EArizonaEx)subId, token))
+        await foreach (IncomingArizonaPacketPayload payload in StreamIncomingEx((ArizonaPacket221Id)subId, token))
         {
-            yield return new IncomingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+            yield return new IncomingArizonaPacketFrame((int)payload.RakNetPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
         }
     }
 
     public async IAsyncEnumerable<OutgoingArizonaPacketFrame> StreamOutgoing(int subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoing((EArizona)subId, token))
+        await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoing((ArizonaPacket220Id)subId, token))
         {
-            yield return new OutgoingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+            yield return new OutgoingArizonaPacketFrame((int)payload.RakNetPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
         }
     }
 
     public async IAsyncEnumerable<OutgoingArizonaPacketFrame> StreamOutgoingEx(int subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoingEx((EArizonaEx)subId, token))
+        await foreach (OutgoingArizonaPacketPayload payload in StreamOutgoingEx((ArizonaPacket221Id)subId, token))
         {
-            yield return new OutgoingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+            yield return new OutgoingArizonaPacketFrame((int)payload.RakNetPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
         }
     }
 
     public async IAsyncEnumerable<IncomingArizonaPacketFrame> StreamIncomingAZVoice(int subId, [EnumeratorCancellation] CancellationToken token = default)
     {
-        await foreach (IncomingArizonaPacketPayload payload in StreamIncomingAZVoice((EAZVoice)subId, token))
+        await foreach (IncomingArizonaPacketPayload payload in StreamIncomingAZVoice((AZVoiceMessageId)subId, token))
         {
-            yield return new IncomingArizonaPacketFrame((int)payload.EPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
+            yield return new IncomingArizonaPacketFrame((int)payload.RakNetPacketId, payload.SubId, payload.Data, payload.PayloadBitOffset, payload.PayloadBitLength);
         }
     }
 
@@ -386,14 +386,14 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     {
         await foreach (OutgoingPacketPayload payload in StreamOutgoingAZVoiceData(token))
         {
-            yield return new OutgoingPacketFrame((int)payload.EPacketId, payload.Data, payload.DataBitLength);
+            yield return new OutgoingPacketFrame((int)payload.RakNetPacketId, payload.Data, payload.DataBitLength);
         }
     }
 
     private static bool TryCreateIncoming220(IncomingPacketArgs args, out IncomingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
-        if (args.EPacketId != (int)EPacketId.ArizonaCef || args.DataBitLength < Packet220PayloadBitOffset)
+        if (args.RakNetPacketId != (int)RakNetPacketId.ArizonaCef || args.DataBitLength < Packet220PayloadBitOffset)
         {
             return false;
         }
@@ -403,7 +403,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             byte subId = ArizonaPacket.ReadSubId220(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet220PayloadBitOffset, args.DataBitLength - Packet220PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, Packet220PayloadBitOffset, args.DataBitLength - Packet220PayloadBitOffset);
             return true;
         }
     }
@@ -411,7 +411,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     private static bool TryCreateIncoming221(IncomingPacketArgs args, out IncomingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
-        if (args.EPacketId != (int)EPacketId.ArizonaCefEx || args.DataBitLength < Packet221PayloadBitOffset)
+        if (args.RakNetPacketId != (int)RakNetPacketId.ArizonaCefEx || args.DataBitLength < Packet221PayloadBitOffset)
         {
             return false;
         }
@@ -421,7 +421,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             ushort subId = ArizonaPacket.ReadSubId221(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet221PayloadBitOffset, args.DataBitLength - Packet221PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, Packet221PayloadBitOffset, args.DataBitLength - Packet221PayloadBitOffset);
             return true;
         }
     }
@@ -429,7 +429,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     private static bool TryCreateOutgoing220(OutgoingPacketArgs args, out OutgoingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
-        if (args.EPacketId != (int)EPacketId.ArizonaCef || args.DataBitLength < Packet220PayloadBitOffset)
+        if (args.RakNetPacketId != (int)RakNetPacketId.ArizonaCef || args.DataBitLength < Packet220PayloadBitOffset)
         {
             return false;
         }
@@ -439,7 +439,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             byte subId = ArizonaPacket.ReadSubId220(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet220PayloadBitOffset, args.DataBitLength - Packet220PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, Packet220PayloadBitOffset, args.DataBitLength - Packet220PayloadBitOffset);
             return true;
         }
     }
@@ -447,7 +447,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
     private static bool TryCreateOutgoing221(OutgoingPacketArgs args, out OutgoingArizonaPacketArgs packetArgs)
     {
         packetArgs = default;
-        if (args.EPacketId != (int)EPacketId.ArizonaCefEx || args.DataBitLength < Packet221PayloadBitOffset)
+        if (args.RakNetPacketId != (int)RakNetPacketId.ArizonaCefEx || args.DataBitLength < Packet221PayloadBitOffset)
         {
             return false;
         }
@@ -457,7 +457,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             ushort subId = ArizonaPacket.ReadSubId221(ref reader);
-            packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet221PayloadBitOffset, args.DataBitLength - Packet221PayloadBitOffset);
+            packetArgs = new(args.RakNetPacketId, subId, args.DataPtr, Packet221PayloadBitOffset, args.DataBitLength - Packet221PayloadBitOffset);
             return true;
         }
     }

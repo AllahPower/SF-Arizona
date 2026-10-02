@@ -20,7 +20,7 @@ public enum ServerChatKind
 public record ChatEntry(EntryType Type, string? Text, string? Prefix, uint TextColor, uint PrefixColor);
 
 /// <summary>Immutable chat entry produced by the server (chat or client message RPC).</summary>
-public record ServerChatEntry(ServerChatKind Kind, ERpcId ERpcId, ChatEntry Entry)
+public record ServerChatEntry(ServerChatKind Kind, SampRpcId SampRpcId, ChatEntry Entry)
 {
     public EntryType Type => Entry.Type;
     public string? Text => Entry.Text;

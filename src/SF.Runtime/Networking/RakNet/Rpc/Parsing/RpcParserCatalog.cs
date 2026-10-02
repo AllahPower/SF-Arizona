@@ -10,7 +10,7 @@ public static partial class RpcParserCatalog
         return registry;
     }
 
-    private static void RegisterIncoming<TPayload>(RpcParserRegistry registry, ERpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, string? name = null)
+    private static void RegisterIncoming<TPayload>(RpcParserRegistry registry, SampRpcId rpcId, Func<IncomingRpcArgs, TPayload> parser, string? name = null)
     {
         string rpcName = name ?? rpcId.ToString();
         registry.Register(new DelegateIncomingRpcParser<IncomingRpc<TPayload>>(
@@ -19,7 +19,7 @@ public static partial class RpcParserCatalog
             name: rpcName));
     }
 
-    private static void RegisterOutgoing<TPayload>(RpcParserRegistry registry, ERpcId rpcId, Func<OutgoingRpcArgs, TPayload> parser, string? name = null)
+    private static void RegisterOutgoing<TPayload>(RpcParserRegistry registry, SampRpcId rpcId, Func<OutgoingRpcArgs, TPayload> parser, string? name = null)
     {
         string rpcName = name ?? rpcId.ToString();
         registry.Register(new DelegateOutgoingRpcParser<OutgoingRpc<TPayload>>(

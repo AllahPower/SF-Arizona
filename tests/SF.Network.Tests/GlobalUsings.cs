@@ -1,3 +1,3 @@
-global using SFSharp.Abstractions.Interop.RakNet;
-global using SFSharp.Abstractions.Interop.RakNet.BitStream;
+global using SFSharp.Abstractions.Network.Protocol;
+global using SFSharp.Abstractions.Network.Protocol.BitStream;
 global using SFSharp.Abstractions.Network;

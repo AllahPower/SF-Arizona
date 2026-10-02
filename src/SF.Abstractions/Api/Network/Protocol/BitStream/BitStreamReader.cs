@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SFSharp.Abstractions.Interop.RakNet.BitStream;
+namespace SFSharp.Abstractions.Network.Protocol.BitStream;
 
 /// <summary>
 /// Managed RakNet-compatible bitstream reader. Mirrors <see cref="BitStreamWriter"/> for the

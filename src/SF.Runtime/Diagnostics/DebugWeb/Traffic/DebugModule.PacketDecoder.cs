@@ -6,55 +6,55 @@ public partial class DebugModule
     {
         if (SF.RpcParsers.TryParseIncoming(args, out RpcParseResult result) && result.Rpc is IParsedIncomingRpc rpc)
         {
-            return (rpc.Name, $"rpcId={args.ERpcId} {rpc.Detail}", rpc.Detail);
+            return (rpc.Name, $"rpcId={args.SampRpcId} {rpc.Detail}", rpc.Detail);
         }
 
-        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
-        return (name, $"rpcId={args.ERpcId}", null);
+        string? name = Enum.IsDefined((SampRpcId)args.SampRpcId) ? ((SampRpcId)args.SampRpcId).ToString() : null;
+        return (name, $"rpcId={args.SampRpcId}", null);
     }
 
     private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingRpc(OutgoingRpcArgs args)
     {
         if (SF.RpcParsers.TryParseOutgoing(args, out RpcParseResult result) && result.Rpc is IParsedOutgoingRpc rpc)
         {
-            return (rpc.Name, $"rpcId={args.ERpcId} {rpc.Detail}", rpc.Detail);
+            return (rpc.Name, $"rpcId={args.SampRpcId} {rpc.Detail}", rpc.Detail);
         }
 
-        string? name = Enum.IsDefined((ERpcId)args.ERpcId) ? ((ERpcId)args.ERpcId).ToString() : null;
-        return (name, $"rpcId={args.ERpcId}", null);
+        string? name = Enum.IsDefined((SampRpcId)args.SampRpcId) ? ((SampRpcId)args.SampRpcId).ToString() : null;
+        return (name, $"rpcId={args.SampRpcId}", null);
     }
 
     private static (string? Name, string? Detail, string? Parsed) DecodeIncomingPacket(IncomingPacketArgs args)
     {
         if (SF.PacketParsers.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)
         {
-            (string? name, string? detail) = FormatParsedPacket(packet, args.EPacketId);
+            (string? name, string? detail) = FormatParsedPacket(packet, args.RakNetPacketId);
             return (name, detail, packet.Detail);
         }
 
-        (string? fn, string? fd) = FormatPacketParseFailure(args.EPacketId, result, TryReadArizonaSubId(args));
+        (string? fn, string? fd) = FormatPacketParseFailure(args.RakNetPacketId, result, TryReadArizonaSubId(args));
         return (fn, fd, null);
     }
 
     private static (string? Name, string? Detail, string? Parsed) DecodeIncomingAZVoiceControl(IncomingArizonaPacketArgs args)
     {
-        if (SF.PacketParsers.Registry.TryGetIncomingTransportParser(EPacketId.AZVoice, args.SubId, out IIncomingArizonaPacketParser? parser)
+        if (SF.PacketParsers.Registry.TryGetIncomingTransportParser(RakNetPacketId.AZVoice, args.SubId, out IIncomingArizonaPacketParser? parser)
             && parser is not null
             && parser.TryParse(args, out PacketParseResult result)
             && result.Packet is IParsedIncomingPacket packet)
         {
-            (string? name, string? detail) = FormatParsedPacket(packet, args.EPacketId);
+            (string? name, string? detail) = FormatParsedPacket(packet, args.RakNetPacketId);
             return (name, detail, packet.Detail);
         }
 
-        string? fallbackName = Enum.IsDefined((EAZVoice)args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
+        string? fallbackName = Enum.IsDefined((AZVoiceMessageId)args.SubId) ? ((AZVoiceMessageId)args.SubId).ToString() : null;
         string hex = HexDump(args.DataPtr, args.PayloadBitOffset + args.PayloadBitLength);
         return ($"AZVoice:{fallbackName}", $"subId={args.SubId} hex={hex}", hex);
     }
 
     private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingAZVoiceControl(OutgoingArizonaPacketArgs args)
     {
-        string? fallbackName = Enum.IsDefined((EAZVoice)args.SubId) ? ((EAZVoice)args.SubId).ToString() : null;
+        string? fallbackName = Enum.IsDefined((AZVoiceMessageId)args.SubId) ? ((AZVoiceMessageId)args.SubId).ToString() : null;
         string hex = HexDump(args.DataPtr, args.PayloadBitOffset + args.PayloadBitLength);
         return ($"AZVoice:{fallbackName}", $"subId={args.SubId} hex={hex}", hex);
     }
@@ -74,11 +74,11 @@ public partial class DebugModule
     {
         if (SF.PacketParsers.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
         {
-            (string? name, string? detail) = FormatParsedPacket(packet, args.EPacketId);
+            (string? name, string? detail) = FormatParsedPacket(packet, args.RakNetPacketId);
             return (name, detail, packet.Detail);
         }
 
-        (string? fn, string? fd) = FormatPacketParseFailure(args.EPacketId, result, TryReadArizonaSubId(args));
+        (string? fn, string? fd) = FormatPacketParseFailure(args.RakNetPacketId, result, TryReadArizonaSubId(args));
         return (fn, fd, null);
     }
 
@@ -86,11 +86,11 @@ public partial class DebugModule
     {
         if (packet is IParsedArizonaPacket arizonaPacket)
         {
-            EPacketId packetId = (EPacketId)rawPacketId;
+            RakNetPacketId packetId = (RakNetPacketId)rawPacketId;
             string transport = packetId switch
             {
-                EPacketId.ArizonaCefEx => "Arizona221",
-                EPacketId.AZVoice => "AZVoice",
+                RakNetPacketId.ArizonaCefEx => "Arizona221",
+                RakNetPacketId.AZVoice => "AZVoice",
                 _ => "Arizona220",
             };
             string name = $"{transport}:{packet.Name}";
@@ -107,14 +107,14 @@ public partial class DebugModule
         string baseDetail = result.ErrorMessage is { Length: > 0 } errorMessage
             ? $"error={errorMessage}"
             : $"reason={result.FailureReason}";
-        string? fallbackName = Enum.IsDefined((EPacketId)rawPacketId) ? ((EPacketId)rawPacketId).ToString() : null;
+        string? fallbackName = Enum.IsDefined((RakNetPacketId)rawPacketId) ? ((RakNetPacketId)rawPacketId).ToString() : null;
         if (arizonaSubId is int subId)
         {
-            EPacketId packetId = (EPacketId)rawPacketId;
+            RakNetPacketId packetId = (RakNetPacketId)rawPacketId;
             string transport = packetId switch
             {
-                EPacketId.ArizonaCefEx => "Arizona221",
-                EPacketId.AZVoice => "AZVoice",
+                RakNetPacketId.ArizonaCefEx => "Arizona221",
+                RakNetPacketId.AZVoice => "AZVoice",
                 _ => "Arizona220",
             };
             return ($"{transport}:{fallbackName}", $"subId={subId} {baseDetail}");
@@ -124,17 +124,17 @@ public partial class DebugModule
 
     private static int? TryReadArizonaSubId(IncomingPacketArgs args)
     {
-        EPacketId packetId = (EPacketId)args.EPacketId;
-        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx or EPacketId.AZVoice)) return null;
+        RakNetPacketId packetId = (RakNetPacketId)args.RakNetPacketId;
+        if (packetId is not (RakNetPacketId.ArizonaCef or RakNetPacketId.ArizonaCefEx or RakNetPacketId.AZVoice)) return null;
         try
         {
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            if (packetId == EPacketId.AZVoice)
+            if (packetId == RakNetPacketId.AZVoice)
             {
                 return AZVoiceTransport.TryReadIncomingControlId(args, out byte rpcId) ? rpcId : null;
             }
-            return packetId == EPacketId.ArizonaCefEx
+            return packetId == RakNetPacketId.ArizonaCefEx
                 ? ArizonaPacket.ReadSubId221(ref reader)
                 : ArizonaPacket.ReadSubId220(ref reader);
         }
@@ -143,15 +143,15 @@ public partial class DebugModule
 
     private static int? TryReadArizonaSubId(OutgoingPacketArgs args)
     {
-        EPacketId packetId = (EPacketId)args.EPacketId;
-        if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx or EPacketId.AZVoice)) return null;
+        RakNetPacketId packetId = (RakNetPacketId)args.RakNetPacketId;
+        if (packetId is not (RakNetPacketId.ArizonaCef or RakNetPacketId.ArizonaCefEx or RakNetPacketId.AZVoice)) return null;
         try
         {
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
-            if (packetId == EPacketId.AZVoice)
+            if (packetId == RakNetPacketId.AZVoice)
                 return null;
-            return packetId == EPacketId.ArizonaCefEx
+            return packetId == RakNetPacketId.ArizonaCefEx
                 ? ArizonaPacket.ReadSubId221(ref reader)
                 : ArizonaPacket.ReadSubId220(ref reader);
         }

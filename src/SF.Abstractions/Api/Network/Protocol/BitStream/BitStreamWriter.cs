@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SFSharp.Abstractions.Interop.RakNet.BitStream;
+namespace SFSharp.Abstractions.Network.Protocol.BitStream;
 
 /// <summary>
 /// Managed RakNet-compatible bitstream writer. Builds a <c>byte[]</c> payload whose layout matches

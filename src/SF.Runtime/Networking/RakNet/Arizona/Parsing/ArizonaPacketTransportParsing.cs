@@ -4,27 +4,27 @@ internal delegate TPayload ArizonaReaderParser<TPayload>(ref SampBitStreamReader
 
 internal static class ArizonaPacketTransportParsing
 {
-    public static IncomingSubPacket<TPayload> ParseIncoming220<TPayload>(IncomingArizonaPacketArgs args, EArizona subId, string packetName, ArizonaReaderParser<TPayload> parser)
+    public static IncomingSubPacket<TPayload> ParseIncoming220<TPayload>(IncomingArizonaPacketArgs args, ArizonaPacket220Id subId, string packetName, ArizonaReaderParser<TPayload> parser)
     {
         SampBitStreamReader reader = args.CreateReader();
-        return new IncomingSubPacket<TPayload>(EPacketId.ArizonaCef, (int)subId, packetName, parser(ref reader));
+        return new IncomingSubPacket<TPayload>(RakNetPacketId.ArizonaCef, (int)subId, packetName, parser(ref reader));
     }
 
-    public static OutgoingSubPacket<TPayload> ParseOutgoing220<TPayload>(OutgoingArizonaPacketArgs args, EArizona subId, string packetName, ArizonaReaderParser<TPayload> parser)
+    public static OutgoingSubPacket<TPayload> ParseOutgoing220<TPayload>(OutgoingArizonaPacketArgs args, ArizonaPacket220Id subId, string packetName, ArizonaReaderParser<TPayload> parser)
     {
         SampBitStreamReader reader = args.CreateReader();
-        return new OutgoingSubPacket<TPayload>(EPacketId.ArizonaCef, (int)subId, packetName, parser(ref reader));
+        return new OutgoingSubPacket<TPayload>(RakNetPacketId.ArizonaCef, (int)subId, packetName, parser(ref reader));
     }
 
-    public static IncomingSubPacket<TPayload> ParseIncoming221<TPayload>(IncomingArizonaPacketArgs args, EArizonaEx subId, ArizonaReaderParser<TPayload> parser)
+    public static IncomingSubPacket<TPayload> ParseIncoming221<TPayload>(IncomingArizonaPacketArgs args, ArizonaPacket221Id subId, ArizonaReaderParser<TPayload> parser)
     {
         SampBitStreamReader reader = args.CreateReader();
-        return new IncomingSubPacket<TPayload>(EPacketId.ArizonaCefEx, (int)subId, subId.ToString(), parser(ref reader));
+        return new IncomingSubPacket<TPayload>(RakNetPacketId.ArizonaCefEx, (int)subId, subId.ToString(), parser(ref reader));
     }
 
-    public static OutgoingSubPacket<TPayload> ParseOutgoing221<TPayload>(OutgoingArizonaPacketArgs args, EArizonaEx subId, ArizonaReaderParser<TPayload> parser)
+    public static OutgoingSubPacket<TPayload> ParseOutgoing221<TPayload>(OutgoingArizonaPacketArgs args, ArizonaPacket221Id subId, ArizonaReaderParser<TPayload> parser)
     {
         SampBitStreamReader reader = args.CreateReader();
-        return new OutgoingSubPacket<TPayload>(EPacketId.ArizonaCefEx, (int)subId, subId.ToString(), parser(ref reader));
+        return new OutgoingSubPacket<TPayload>(RakNetPacketId.ArizonaCefEx, (int)subId, subId.ToString(), parser(ref reader));
     }
 }

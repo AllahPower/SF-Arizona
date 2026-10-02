@@ -1,6 +1,6 @@
 namespace SFSharp.Runtime.Interop.RakNet.Incoming;
 
-public readonly record struct IncomingRpcArgs(int ERpcId, nint DataPtr, int DataBitOffset, int DataBitLength)
+public readonly record struct IncomingRpcArgs(int SampRpcId, nint DataPtr, int DataBitOffset, int DataBitLength)
 {
     public unsafe SampBitStreamReader CreateReader()
     {

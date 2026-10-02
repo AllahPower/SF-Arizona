@@ -275,13 +275,13 @@ public static class SFBootstrap
         // further in), while the close entry it detours itself must stay untouched.
         HookManager.CDialogShow.AddSubHook(SF.Dialog);
         _ = RpcHandlers.Subscribe(
-            ERpcId.ShowDialog,
+            SampRpcId.ShowDialog,
             args => SF.Dialog.ObserveIncomingShowDialog(SampRpc.ParseShowDialog(args)));
         _ = OutgoingRpcFilters.Add(
-            (int)ERpcId.DialogResponse,
+            (int)SampRpcId.DialogResponse,
             (dataPtr, bitLength) => SF.Dialog.TryConsumeOwnDialogResponse(dataPtr, bitLength));
         _ = OutgoingRpcHandlers.Subscribe(
-            ERpcId.DialogResponse,
+            SampRpcId.DialogResponse,
             args => SF.Dialog.ObserveOutgoingDialogResponse(SampRpc.ParseDialogResponse(args)));
         HookManager.CChatAddEntry.AddSubHook(SF.Chat);
         HookManager.CInputCommandSend.AddSubHook(SF.Chat);

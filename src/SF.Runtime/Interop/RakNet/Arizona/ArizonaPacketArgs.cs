@@ -1,6 +1,6 @@
 namespace SFSharp.Runtime.Interop.RakNet.Arizona;
 
-public readonly record struct IncomingArizonaPacketArgs(int EPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
+public readonly record struct IncomingArizonaPacketArgs(int RakNetPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
 {
     public unsafe SampBitStreamReader CreateReader()
     {
@@ -8,7 +8,7 @@ public readonly record struct IncomingArizonaPacketArgs(int EPacketId, int SubId
     }
 }
 
-public readonly record struct OutgoingArizonaPacketArgs(int EPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
+public readonly record struct OutgoingArizonaPacketArgs(int RakNetPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
 {
     public unsafe SampBitStreamReader CreateReader()
     {

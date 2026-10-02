@@ -19,7 +19,7 @@ public readonly record struct RpcParseResult(
         return false;
     }
 
-    public static RpcParseResult Unsupported(ERpcId rpcId)
+    public static RpcParseResult Unsupported(SampRpcId rpcId)
     {
         return new(false, null, rpcId.ToString(), PacketParseFailureReason.Unsupported);
     }

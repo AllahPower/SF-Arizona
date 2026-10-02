@@ -1,5 +1,5 @@
 using System.Buffers.Binary;
-using SFSharp.Abstractions.Interop.RakNet;
+using SFSharp.Abstractions.Network.Protocol;
 
 namespace SFSharp.Abstractions.Network;
 
@@ -20,7 +20,7 @@ public readonly record struct RakNetTimestampEnvelope(uint Timestamp, byte Packe
         if (data.Length < HeaderByteLength
             || dataBitLength < HeaderByteLength * 8
             || dataBitLength > (long)data.Length * 8
-            || data[0] != (byte)EPacketId.Timestamp)
+            || data[0] != (byte)RakNetPacketId.Timestamp)
         {
             return false;
         }

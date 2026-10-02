@@ -1,4 +1,4 @@
-namespace SFSharp.Abstractions.Interop.RakNet;
+namespace SFSharp.Abstractions.Network.Protocol;
 
 /// <summary>
 /// Known non-RPC RakNet and SA:MP packet identifiers.
@@ -9,7 +9,7 @@ namespace SFSharp.Abstractions.Interop.RakNet;
 /// Assert: reference lists are based on https://github.com/Brunoo16/samp-packet-list/wiki/Packet-List
 /// Assert: internal transport notes are based on https://github.com/Brunoo16/samp-packet-list/wiki/Internal-Packet-List
 /// </remarks>
-public enum EPacketId : byte
+public enum RakNetPacketId : byte
 {
     #region incoming (server -> client)
 

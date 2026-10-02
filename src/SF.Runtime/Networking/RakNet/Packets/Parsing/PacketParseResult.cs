@@ -7,7 +7,7 @@ public readonly record struct PacketParseResult(
     PacketParseFailureReason FailureReason,
     string? ErrorMessage = null)
 {
-    public static PacketParseResult Unsupported(EPacketId packetId)
+    public static PacketParseResult Unsupported(RakNetPacketId packetId)
     {
         return new PacketParseResult(false, null, packetId.ToString(), PacketParseFailureReason.Unsupported);
     }

@@ -44,14 +44,14 @@ internal static class AZVoiceTransport
             return false;
         }
 
-        packetArgs = new(args.EPacketId, controlId, args.DataPtr, ControlPayloadBitOffset, args.DataBitLength - ControlPayloadBitOffset);
+        packetArgs = new(args.RakNetPacketId, controlId, args.DataPtr, ControlPayloadBitOffset, args.DataBitLength - ControlPayloadBitOffset);
         return true;
     }
 
     public static bool TryReadIncomingControlId(IncomingPacketArgs args, out byte controlId)
     {
         controlId = default;
-        if (args.EPacketId != (int)EPacketId.AZVoice || args.DataBitLength < ControlPayloadBitOffset)
+        if (args.RakNetPacketId != (int)RakNetPacketId.AZVoice || args.DataBitLength < ControlPayloadBitOffset)
         {
             return false;
         }
@@ -61,7 +61,7 @@ internal static class AZVoiceTransport
             SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             byte value = reader.ReadUInt8();
-            if (!Enum.IsDefined(typeof(EAZVoice), value))
+            if (!Enum.IsDefined(typeof(AZVoiceMessageId), value))
             {
                 return false;
             }
@@ -79,7 +79,7 @@ internal static class AZVoiceTransport
     public static bool TryParseIncomingVoiceData(IncomingPacketArgs args, out AzvVoiceData data)
     {
         data = default;
-        if (args.EPacketId != (int)EPacketId.AZVoice || args.DataBitLength < MinimumVoiceFrameBits)
+        if (args.RakNetPacketId != (int)RakNetPacketId.AZVoice || args.DataBitLength < MinimumVoiceFrameBits)
         {
             return false;
         }
