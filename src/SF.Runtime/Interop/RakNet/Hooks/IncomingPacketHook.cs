@@ -9,9 +9,13 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
     internal unsafe delegate nint ReceiveNative(nint thisPtr);
 
     private static IncomingPacketHook? _instance;
+    private readonly NetworkFilters _filters;
+    private readonly NetworkDispatcher _dispatcher;
 
-    public IncomingPacketHook()
+    internal IncomingPacketHook(NetworkFilters filters, NetworkDispatcher dispatcher)
     {
+        _filters = filters;
+        _dispatcher = dispatcher;
         _instance = this;
         nint targetAddress = ModuleResolver.ResolveVTableFunction(
             "samp.dll",
@@ -39,14 +43,14 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
             {
                 int packetId = data[0];
 
-                if (SFBootstrap.IncomingPacketFilters.HasFilters &&
-                    SFBootstrap.IncomingPacketFilters.ShouldCancel(packetId, data, bitSize))
+                if (_instance!._filters.IncomingPacket.HasFilters &&
+                    _instance!._filters.IncomingPacket.ShouldCancel(packetId, data, bitSize))
                 {
                     CNetGame.GetRakClient()->DeallocatePacket((CRakNetPacket*)packetPtr);
                     return 0;
                 }
 
-                if (SFBootstrap.IncomingPacketHandlers.HasSubscribers(packetId))
+                if (_instance!._dispatcher.IncomingPacketHandlers.HasSubscribers(packetId))
                 {
                     int dataByteLength = (bitSize + 7) / 8;
                     byte[] packet = new byte[dataByteLength];
@@ -55,7 +59,7 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
                         Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
                     }
 
-                    SFBootstrap.EnqueueIncomingPacket(packetId, packet, bitSize);
+                    _instance!._dispatcher.EnqueueIncomingPacket(packetId, packet, bitSize);
                 }
             }
         }

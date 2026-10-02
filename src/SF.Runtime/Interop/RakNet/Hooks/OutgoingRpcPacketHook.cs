@@ -19,9 +19,13 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
     private const int BitStreamData = 12;
 
     private static OutgoingRpcPacketHook? _instance;
+    private readonly NetworkFilters _filters;
+    private readonly NetworkDispatcher _dispatcher;
 
-    public OutgoingRpcPacketHook()
+    internal OutgoingRpcPacketHook(NetworkFilters filters, NetworkDispatcher dispatcher)
     {
+        _filters = filters;
+        _dispatcher = dispatcher;
         _instance = this;
         InstallHook(
             ModuleResolver.GetProcAddress("samp.dll", SampOffsets.RpcRuntime.SendRpcBitStream),
@@ -51,14 +55,14 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
                 int dataBitLength = *(int*)(bitStream + BitStreamNumberOfBitsUsed);
                 byte* data = *(byte**)(bitStream + BitStreamData);
 
-                if (SFBootstrap.OutgoingRpcFilters.HasFilters &&
+                if (_instance!._filters.OutgoingRpc.HasFilters &&
                     data != null &&
-                    SFBootstrap.OutgoingRpcFilters.ShouldCancel(rpcId, data, dataBitLength))
+                    _instance!._filters.OutgoingRpc.ShouldCancel(rpcId, data, dataBitLength))
                 {
                     return true;
                 }
 
-                if (SFBootstrap.OutgoingRpcHandlers.HasSubscribers(rpcId))
+                if (_instance!._dispatcher.OutgoingRpcHandlers.HasSubscribers(rpcId))
                 {
                     int dataByteLength = (dataBitLength + 7) / 8;
                     byte[] packet = new byte[dataByteLength];
@@ -70,7 +74,7 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
                         }
                     }
 
-                    SFBootstrap.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
+                    _instance!._dispatcher.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
                 }
             }
         }

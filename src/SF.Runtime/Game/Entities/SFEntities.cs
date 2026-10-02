@@ -6,13 +6,13 @@ namespace SFSharp.Runtime.Game.Entities;
 /// <see cref="ISFEntities"/> over the GTA engine pools. SA-MP ids are mapped through the SA-MP wrappers'
 /// game pointers and the SA-MP pools' <c>Find</c>/<c>GetId</c>. Main thread only.
 /// </summary>
-public sealed unsafe partial class SFEntities : ISFEntities
+public sealed unsafe partial class SFEntities(SFPlayers players, SFVehicles vehicles, SFGamePools pools) : ISFEntities
 {
     private static bool SampPoolsReady => CNetGame.TryGetPools(out _);
 
     public bool TryGetLocalPlayer(out SFEntityRef entity)
     {
-        return TryCreateRef(SFEntityKind.Ped, SF.Players.Local.Ped?.GamePedPointer ?? 0, out entity);
+        return TryCreateRef(SFEntityKind.Ped, players.Local.Ped?.GamePedPointer ?? 0, out entity);
     }
 
     public bool TryGetPlayer(ushort playerId, out SFEntityRef entity)
@@ -22,25 +22,25 @@ public sealed unsafe partial class SFEntities : ISFEntities
             return TryGetLocalPlayer(out entity);
         }
 
-        nint gamePed = SF.Players.TryGetRemote(playerId, out SFRemotePlayer player) ? player.Ped?.GamePedPointer ?? 0 : 0;
+        nint gamePed = players.TryGetRemote(playerId, out SFRemotePlayer player) ? player.Ped?.GamePedPointer ?? 0 : 0;
         return TryCreateRef(SFEntityKind.Ped, gamePed, out entity);
     }
 
     public bool TryGetVehicle(ushort vehicleId, out SFEntityRef entity)
     {
-        nint gameVehicle = SF.Vehicles.TryGet(vehicleId, out SFVehicle vehicle) ? vehicle.GameVehiclePointer : 0;
+        nint gameVehicle = vehicles.TryGet(vehicleId, out SFVehicle vehicle) ? vehicle.GameVehiclePointer : 0;
         return TryCreateRef(SFEntityKind.Vehicle, gameVehicle, out entity);
     }
 
     public bool TryGetObject(ushort objectId, out SFEntityRef entity)
     {
-        nint gameObject = SF.Pools.Objects.TryGet(objectId, out SFObject obj) ? obj.GamePointer : 0;
+        nint gameObject = pools.Objects.TryGet(objectId, out SFObject obj) ? obj.GamePointer : 0;
         return TryCreateRef(SFEntityKind.Object, gameObject, out entity);
     }
 
     public bool TryGetActor(ushort actorId, out SFEntityRef entity)
     {
-        nint gamePed = SF.Pools.Actors.TryGet(actorId, out SFActor actor) ? actor.GamePedPointer : 0;
+        nint gamePed = pools.Actors.TryGet(actorId, out SFActor actor) ? actor.GamePedPointer : 0;
         return TryCreateRef(SFEntityKind.Ped, gamePed, out entity);
     }
 
@@ -53,7 +53,7 @@ public sealed unsafe partial class SFEntities : ISFEntities
             return false;
         }
 
-        if ((nint)native == (SF.Players.Local.Ped?.GamePedPointer ?? 0))
+        if ((nint)native == (players.Local.Ped?.GamePedPointer ?? 0))
         {
             playerId = CPlayerPool.Instance.LocalPlayerId;
             return true;

@@ -2,24 +2,23 @@ namespace SFSharp.Runtime.Ui;
 
 public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
 {
-    private record CommandRegistration(string Name, Action<string?> Callback) : IDisposable
+    private sealed record CommandRegistration(Dictionary<string, CommandRegistration> Owner, string Name, Action<string?> Callback) : IDisposable
     {
         public void OnCommand(string? args) => Callback(args);
 
         public void Dispose()
         {
             SFLog.Debug($"UnregisterChatCommand name={Name}");
-            _taskSourcesByCommand.Remove(Name);
+            Owner.Remove(Name);
         }
     }
 
-    private static Dictionary<string, CommandRegistration> _taskSourcesByCommand = new();
-    private static string? _lastCommand = null;
+    private readonly Dictionary<string, CommandRegistration> _taskSourcesByCommand = new();
 
     public IDisposable RegisterChatCommand(string command, Action<string?> commandCallback)
     {
         SFLog.Debug($"RegisterChatCommand name={command}");
-        var registration = new CommandRegistration(command, commandCallback);
+        var registration = new CommandRegistration(_taskSourcesByCommand, command, commandCallback);
         _taskSourcesByCommand.Add(command, registration);
         return registration;
     }
@@ -38,18 +37,13 @@ public partial class SFChat : ISubHook<CInputCommandSendArgs, bool>
 
         if (_taskSourcesByCommand.TryGetValue(commandName, out CommandRegistration? registration))
         {
-            _lastCommand = commandName;
             try
             {
                 registration.OnCommand(commandArgs);
             }
             catch (Exception ex)
             {
-                SFBootstrap.ProcessException(ex);
-            }
-            finally
-            {
-                _lastCommand = null;
+                exceptions.Report(ex);
             }
 
             return true;

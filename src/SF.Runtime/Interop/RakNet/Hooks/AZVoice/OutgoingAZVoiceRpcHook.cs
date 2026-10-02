@@ -58,11 +58,13 @@ internal unsafe class OutgoingAZVoiceRpcHook : NativeHook<nint, int, OutgoingAZV
     private static bool _resolved;
 
     private static OutgoingAZVoiceRpcHook? _instance;
+    private readonly NetworkDispatcher _dispatcher;
 
     public static bool IsAvailable => ResolveTargetAddress() && _senderAddress != 0;
 
-    public OutgoingAZVoiceRpcHook()
+    internal OutgoingAZVoiceRpcHook(NetworkDispatcher dispatcher)
     {
+        _dispatcher = dispatcher;
         if (!ResolveTargetAddress() || _senderAddress == 0)
         {
             throw new InvalidOperationException("AZVoice outgoing RPC hook target could not be resolved.");
@@ -83,7 +85,7 @@ internal unsafe class OutgoingAZVoiceRpcHook : NativeHook<nint, int, OutgoingAZV
         // outgoing AZVoice control channel so it surfaces in the DebugWeb dashboard
         // (SF.Arizona.SubscribeOutgoingAZVoice), mirroring the incoming control path.
         int sub = subOp & 0xFF;
-        if (SFBootstrap.OutgoingAZVoiceControlHandlers.HasSubscribers(sub))
+        if (_instance!._dispatcher.OutgoingAZVoiceControlHandlers.HasSubscribers(sub))
         {
             byte[] bodyBytes = ReadBody(body);
             byte[] packet = new byte[2 + bodyBytes.Length];
@@ -91,7 +93,7 @@ internal unsafe class OutgoingAZVoiceRpcHook : NativeHook<nint, int, OutgoingAZV
             packet[1] = (byte)sub;
             bodyBytes.CopyTo(packet, 2);
 
-            SFBootstrap.EnqueueOutgoingAZVoiceControl(sub, packet, packet.Length * 8);
+            _instance!._dispatcher.EnqueueOutgoingAZVoiceControl(sub, packet, packet.Length * 8);
         }
 
         return _instance.OriginalFunction(thisPtr, subOp, body);

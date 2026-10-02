@@ -2,7 +2,12 @@ namespace SFSharp.Runtime.Game.Players;
 
 public partial class SFPlayers : ISFPlayers
 {
-    public SFLocalPlayer Local { get; } = new();
+    public SFPlayers()
+    {
+        Local = new SFLocalPlayer(this);
+    }
+
+    public SFLocalPlayer Local { get; }
 
     public ushort LocalPlayerId => CPlayerPool.Instance.LocalPlayerId;
     public string? LocalPlayerName => CPlayerPool.Instance.GetLocalPlayerName();

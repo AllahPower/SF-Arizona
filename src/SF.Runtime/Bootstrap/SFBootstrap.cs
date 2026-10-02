@@ -8,8 +8,7 @@ namespace SFSharp.Runtime.Bootstrap;
 
 public static class SFBootstrap
 {
-    private static SFSynchronizationContext? _sc;
-    private static readonly NetworkDispatcher _dispatcher = new();
+    private static SFRuntime? _runtime;
     private static string? _hostDirectory;
     private static int _resolverInstalled;
 
@@ -21,7 +20,9 @@ public static class SFBootstrap
     /// </summary>
     public static string HostDirectory => _hostDirectory ?? AppContext.BaseDirectory;
 
-    public static bool HasMainThreadDispatcher => _sc is not null;
+    internal static SFRuntime Runtime => _runtime ?? throw new InvalidOperationException("The runtime starts on the first WinMainLoop tick.");
+
+    public static bool HasMainThreadDispatcher => _runtime is not null;
 
     private static void InstallHostAssemblyResolver()
     {
@@ -66,22 +67,9 @@ public static class SFBootstrap
         };
     }
 
-    public static RpcHandlerManager RpcHandlers => _dispatcher.IncomingRpcHandlers;
-    public static OutgoingRpcManager OutgoingRpcHandlers => _dispatcher.OutgoingRpcHandlers;
-    public static IncomingPacketManager IncomingPacketHandlers => _dispatcher.IncomingPacketHandlers;
-    public static OutgoingPacketManager OutgoingPacketHandlers => _dispatcher.OutgoingPacketHandlers;
-    public static IncomingAZVoiceControlManager IncomingAZVoiceControlHandlers => _dispatcher.IncomingAZVoiceControlHandlers;
-    public static IncomingAZVoiceDataManager IncomingAZVoiceDataHandlers => _dispatcher.IncomingAZVoiceDataHandlers;
-    public static OutgoingAZVoiceControlManager OutgoingAZVoiceControlHandlers => _dispatcher.OutgoingAZVoiceControlHandlers;
-
-    public static NetworkFilterRegistry OutgoingPacketFilters { get; } = new();
-    public static NetworkFilterRegistry OutgoingRpcFilters { get; } = new();
-    public static NetworkFilterRegistry IncomingPacketFilters { get; } = new();
-    public static NetworkFilterRegistry IncomingRpcFilters { get; } = new();
-
     public static void PostToMainThread(Action action)
     {
-        _sc?.Post(x => ((Action)x!)(), action);
+        _runtime?.MainThread.Post(action);
     }
 
     /// <summary>
@@ -93,92 +81,31 @@ public static class SFBootstrap
     /// </summary>
     public static void PumpMainThreadQueue()
     {
-        _sc?.ProcLoop();
+        _runtime?.MainThread.Pump();
     }
 
-    public static void ProcessException(Exception ex)
-    {
-        SFLog.Error(ex, "Unhandled library exception");
+    public static void ProcessException(Exception ex) => (_runtime?.Exceptions ?? new ExceptionReporter()).Report(ex);
 
-        try
-        {
-            CChat.Instance.AddEntry(EntryType.Chat, $"{ex.GetType()}: {ex.Message}", null, 0xFFFFFFFF, 0);
-        }
-        catch (Exception chatEx)
-        {
-            SFLog.Warn($"ProcessException fallback skipped chat output: {chatEx.GetType().Name}: {chatEx.Message}");
-        }
-    }
-
-    public static void ObserveTask(Task task, string source)
-    {
-        ArgumentNullException.ThrowIfNull(task);
-        ArgumentException.ThrowIfNullOrWhiteSpace(source);
-
-        task.ContinueWith(static (completed, state) =>
-        {
-            string taskSource = (string)state!;
-            if (completed.IsFaulted && completed.Exception is not null)
-            {
-                SFLog.Error(completed.Exception.GetBaseException(), $"Unhandled task exception from {taskSource}");
-                ProcessException(completed.Exception.GetBaseException());
-            }
-        }, source, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
-    }
-
-    public static void EnqueueIncomingRpc(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)
-    {
-        _dispatcher.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
-    }
-
-    public static void EnqueueOutgoingRpc(int rpcId, byte[] packet, int dataBitLength)
-    {
-        _dispatcher.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
-    }
-
-    public static void EnqueueIncomingPacket(int packetId, byte[] data, int dataBitLength)
-    {
-        _dispatcher.EnqueueIncomingPacket(packetId, data, dataBitLength);
-    }
-
-    public static void EnqueueOutgoingPacket(int packetId, byte[] data, int dataBitLength)
-    {
-        _dispatcher.EnqueueOutgoingPacket(packetId, data, dataBitLength);
-    }
-
-    public static void EnqueueIncomingAZVoiceControl(int subId, byte[] data, int dataBitLength)
-    {
-        _dispatcher.EnqueueIncomingAZVoiceControl(subId, data, dataBitLength);
-    }
-
-    public static void EnqueueIncomingAZVoiceData(byte[] data, int dataBitLength)
-    {
-        _dispatcher.EnqueueIncomingAZVoiceData(data, dataBitLength);
-    }
-
-    public static void EnqueueOutgoingAZVoiceControl(int subId, byte[] data, int dataBitLength)
-    {
-        _dispatcher.EnqueueOutgoingAZVoiceControl(subId, data, dataBitLength);
-    }
+    public static void ObserveTask(Task task, string source) => (_runtime?.Exceptions ?? new ExceptionReporter()).Observe(task, source);
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]
     public static void WinMainLoop() => WinMainLoopCore(Program.Main);
 
     public static void WinMainLoopCore(Action main)
     {
-        if (_sc is null)
+        if (_runtime is null)
         {
             SFLog.Debug("WinMainLoopCore first entry");
             InstallHostAssemblyResolver();
-            _sc = new SFSynchronizationContext();
-            SynchronizationContext.SetSynchronizationContext(_sc);
-            SFMain(main);
+            _runtime = new SFRuntime();
+            SynchronizationContext.SetSynchronizationContext(_runtime.Context);
+            SFMain(_runtime, main);
         }
 
-        _sc.ProcLoop();
+        _runtime.MainThread.Pump();
     }
 
-    private static async void SFMain(Action main)
+    private static async void SFMain(SFRuntime runtime, Action main)
     {
         try
         {
@@ -192,27 +119,28 @@ public static class SFBootstrap
 
             ValidateEnvironment();
 
-            _ = HookManager.IncomingRpcPacket;
+            runtime.InstallEarlyHooks();
             SFLog.Debug("IncomingRpc hook installed (pre-CNetGame).");
 
             await WhenCNetGameLoads(baseAddress);
             SFLog.Debug("CNetGame is ready");
 
-            _dispatcher.Reset();
-            SF.Chat.RegisterRpcBindings(_dispatcher.IncomingRpcHandlers);
-            _dispatcher.IncomingRpcHandlers.StartAll();
+            runtime.CreateServices();
+            SFHost host = runtime.Host;
+            host.ChatImpl.RegisterRpcBindings(runtime.Dispatcher.IncomingRpcHandlers);
+            runtime.Dispatcher.IncomingRpcHandlers.StartAll();
 
-            InstallNetworkHooks();
-            InstallSubHooks();
+            InstallNetworkHooks(runtime.Hooks);
+            InstallSubHooks(runtime, host);
 
-            SF.Keyboard.StartLoop();
+            host.KeyboardImpl.StartLoop();
             SFLog.Debug("Keyboard loop started");
 
-            PostToMainThread(main);
+            runtime.MainThread.Post(main);
         }
         catch (Exception ex)
         {
-            ProcessException(ex);
+            runtime.Exceptions.Report(ex);
         }
     }
 
@@ -254,40 +182,40 @@ public static class SFBootstrap
         }
     }
 
-    private static void InstallNetworkHooks()
+    private static void InstallNetworkHooks(HookRegistry hooks)
     {
-        _ = HookManager.OutgoingRpcPacket;
-        _ = HookManager.OutgoingPacket;
-        _ = HookManager.IncomingPacket;
+        _ = hooks.OutgoingRpcPacket;
+        _ = hooks.OutgoingPacket;
+        _ = hooks.IncomingPacket;
         SFLog.Debug("Network hooks installed: OutgoingRpc, OutgoingPacket, IncomingPacket.");
 
-        if (HookManager.IncomingAZVoicePacket is not null)
+        if (hooks.IncomingAZVoicePacket is not null)
             SFLog.Debug("AZVoice incoming packet hook installed.");
 
-        if (HookManager.IncomingAZVoiceRpc is not null)
+        if (hooks.IncomingAZVoiceRpc is not null)
             SFLog.Debug("AZVoice incoming RPC hook installed.");
 
-        if (HookManager.OutgoingAZVoiceRpc is not null)
+        if (hooks.OutgoingAZVoiceRpc is not null)
             SFLog.Debug("AZVoice outgoing RPC hook installed.");
     }
 
-    private static void InstallSubHooks()
+    private static void InstallSubHooks(SFRuntime runtime, SFHost host)
     {
         // Only CDialog::Show is hooked. Its entry is free (the Arizona client hooks 0x40 bytes
         // further in), while the close entry it detours itself must stay untouched.
-        HookManager.CDialogShow.AddSubHook(SF.Dialog);
-        _ = RpcHandlers.Subscribe(
+        runtime.Hooks.CDialogShow.AddSubHook(host.DialogImpl);
+        _ = runtime.Dispatcher.IncomingRpcHandlers.Subscribe(
             SampRpcId.ShowDialog,
-            args => SF.Dialog.ObserveIncomingShowDialog(SampRpc.ParseShowDialog(args)));
-        _ = OutgoingRpcFilters.Add(
+            args => host.DialogImpl.ObserveIncomingShowDialog(SampRpc.ParseShowDialog(args)));
+        _ = runtime.Filters.OutgoingRpc.Add(
             (int)SampRpcId.DialogResponse,
-            (dataPtr, bitLength) => SF.Dialog.TryConsumeOwnDialogResponse(dataPtr, bitLength));
-        _ = OutgoingRpcHandlers.Subscribe(
+            (dataPtr, bitLength) => host.DialogImpl.TryConsumeOwnDialogResponse(dataPtr, bitLength));
+        _ = runtime.Dispatcher.OutgoingRpcHandlers.Subscribe(
             SampRpcId.DialogResponse,
-            args => SF.Dialog.ObserveOutgoingDialogResponse(SampRpc.ParseDialogResponse(args)));
-        HookManager.CChatAddEntry.AddSubHook(SF.Chat);
-        HookManager.CInputCommandSend.AddSubHook(SF.Chat);
-        HookManager.UpdateScoresPingsIps.AddSubHook(SF.Players);
+            args => host.DialogImpl.ObserveOutgoingDialogResponse(SampRpc.ParseDialogResponse(args)));
+        runtime.Hooks.CChatAddEntry.AddSubHook(host.ChatImpl);
+        runtime.Hooks.CInputCommandSend.AddSubHook(host.ChatImpl);
+        runtime.Hooks.UpdateScoresPingsIps.AddSubHook(host.PlayersImpl);
         SFLog.Debug("Sub-hooks registered: DialogShow, ShowDialogRpc, DialogResponseRpc, Chat, Input, Scoreboard.");
     }
 

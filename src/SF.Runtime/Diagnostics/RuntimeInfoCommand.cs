@@ -45,7 +45,7 @@ internal static unsafe class RuntimeInfoCommand
         AppendStatus(text, "AZVoice.asi", azVoiceLoaded && IncomingAZVoicePacketHook.IsAvailable,
             !azVoiceLoaded ? "not loaded" : IncomingAZVoicePacketHook.IsAvailable ? "loaded, hooked" : "loaded, hook target not found");
         string gameState = CNetGame.TryGetInstance(out CNetGame* netGame) ? netGame->State.ToString() : "no CNetGame";
-        AppendLine(text, "Network", $"game state {gameState}, server traffic {(IncomingRpcPacketHook.HasServerPlayerId ? "seen" : "not seen")}");
+        AppendLine(text, "Network", $"game state {gameState}, server traffic {(SFBootstrap.Runtime.Hooks.IncomingRpcPacket.HasServerPlayerId ? "seen" : "not seen")}");
 
         AppendSection(text, "Modules");
         SFModuleInfo[] modules = [.. SF.Instance.Modules.GetAll()];

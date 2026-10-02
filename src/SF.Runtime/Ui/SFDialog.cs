@@ -8,20 +8,20 @@ using DialogResultArgs = (SFDialogButton Button, int SelectedItemIndex, string? 
 /// deliberately left alone: the client detours the close entry itself, and its CEF path is the only
 /// thing that still draws dialogs. Completion comes from outgoing RPC 62.
 /// </summary>
-public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
+public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter exceptions) : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
 {
     private const int InitialDialogId = 0x5346;
     private const int AppearTimeoutMs = 5000;
     private const int ResponseGraceMs = 750;
 
-    public static string OkCaption = "OK";
-    public static string CancelCaption = "Cancel";
+    private const string OkCaption = "OK";
+    private const string CancelCaption = "Cancel";
 
     private const int NoDialogId = -1;
 
-    private static TaskCompletionSource<DialogResultArgs>? _tcs;
-    private static volatile int _activeDialogId = NoDialogId;
-    private static int _nextDialogId = InitialDialogId;
+    private TaskCompletionSource<DialogResultArgs>? _tcs;
+    private volatile int _activeDialogId = NoDialogId;
+    private int _nextDialogId = InitialDialogId;
 
     /// <summary>Last dialog the server pushed through RPC 61, or <c>null</c> if none was seen yet.</summary>
     public ShowDialogRpc? LastServerDialog { get; private set; }
@@ -46,7 +46,7 @@ public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
         // and the caller can never learn which row was picked. The response is intercepted and
         // cancelled in TryConsumeOwnDialogResponse, so it never reaches the server.
         CDialog.Instance.Show(dialogId, style, title, text, okButton, cancelButton, true);
-        SFBootstrap.ObserveTask(WatchNativeDialog(dialogId, tcs), $"{nameof(SFDialog)}.{nameof(WatchNativeDialog)}");
+        exceptions.Observe(WatchNativeDialog(dialogId, tcs), $"{nameof(SFDialog)}.{nameof(WatchNativeDialog)}");
         return tcs.Task;
     }
 
@@ -112,11 +112,11 @@ public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
         }
 
         SFLog.Debug($"Dialog response rpc claimed id={response.DialogId} button={response.Button} list={response.ListboxId} input={response.Input ?? "<null>"}");
-        SFBootstrap.PostToMainThread(() => SetResult(((SFDialogButton)response.Button, response.ListboxId, response.Input)));
+        mainThread.Post(() => SetResult(((SFDialogButton)response.Button, response.ListboxId, response.Input)));
         return true;
     }
 
-    private static int AllocateDialogId()
+    private int AllocateDialogId()
     {
         _nextDialogId++;
         if (_nextDialogId > short.MaxValue)
@@ -127,7 +127,7 @@ public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
         return _nextDialogId;
     }
 
-    private static void AbandonPendingDialog()
+    private void AbandonPendingDialog()
     {
         if (_tcs is null)
         {
@@ -138,7 +138,7 @@ public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
         SetResult((SFDialogButton.None, -1, null));
     }
 
-    private static void SetResult(DialogResultArgs result)
+    private void SetResult(DialogResultArgs result)
     {
         if (_tcs is null)
         {
@@ -156,7 +156,7 @@ public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
     /// Completes the dialog when it disappears without producing a DialogResponse RPC (ESC, or a
     /// client that closes it on its own). Runs on the main thread, one poll per pumped frame.
     /// </summary>
-    private static async Task WatchNativeDialog(int dialogId, TaskCompletionSource<DialogResultArgs> tcs)
+    private async Task WatchNativeDialog(int dialogId, TaskCompletionSource<DialogResultArgs> tcs)
     {
         long deadline = Environment.TickCount64 + AppearTimeoutMs;
         while (!tcs.Task.IsCompleted && !IsNativeDialogActive(dialogId))
@@ -196,7 +196,7 @@ public class SFDialog : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
         CompleteIfCurrent(tcs, (SFDialogButton.None, selectedIndex, null));
     }
 
-    private static void CompleteIfCurrent(TaskCompletionSource<DialogResultArgs> tcs, DialogResultArgs result)
+    private void CompleteIfCurrent(TaskCompletionSource<DialogResultArgs> tcs, DialogResultArgs result)
     {
         if (!ReferenceEquals(_tcs, tcs))
         {

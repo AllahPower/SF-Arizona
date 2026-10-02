@@ -4,7 +4,7 @@ namespace SFSharp.Runtime.Networking.RakNet;
 
 // Manages thread-safe network dispatch pipeline: hook thread -> ConcurrentQueue -> main thread batched dispatch
 // Uses a single unified queue to preserve global capture order across all event types.
-internal sealed class NetworkDispatcher
+public sealed class NetworkDispatcher(MainThreadDispatcher mainThread)
 {
     private const int MaxDispatchPerTick = 24;
 
@@ -40,13 +40,13 @@ internal sealed class NetworkDispatcher
     private readonly ConcurrentQueue<NetworkEvent> _pendingEvents = new();
     private int _dispatchScheduled;
 
-    private RpcHandlerManager _incomingRpcHandlers = new();
-    private OutgoingRpcManager _outgoingRpcHandlers = new();
-    private IncomingPacketManager _incomingPacketHandlers = new();
-    private OutgoingPacketManager _outgoingPacketHandlers = new();
-    private IncomingAZVoiceControlManager _incomingAZVoiceControlHandlers = new();
-    private IncomingAZVoiceDataManager _incomingAZVoiceDataHandlers = new();
-    private OutgoingAZVoiceControlManager _outgoingAZVoiceControlHandlers = new();
+    private readonly RpcHandlerManager _incomingRpcHandlers = new();
+    private readonly OutgoingRpcManager _outgoingRpcHandlers = new();
+    private readonly IncomingPacketManager _incomingPacketHandlers = new();
+    private readonly OutgoingPacketManager _outgoingPacketHandlers = new();
+    private readonly IncomingAZVoiceControlManager _incomingAZVoiceControlHandlers = new();
+    private readonly IncomingAZVoiceDataManager _incomingAZVoiceDataHandlers = new();
+    private readonly OutgoingAZVoiceControlManager _outgoingAZVoiceControlHandlers = new();
 
     public RpcHandlerManager IncomingRpcHandlers => _incomingRpcHandlers;
     public OutgoingRpcManager OutgoingRpcHandlers => _outgoingRpcHandlers;
@@ -55,17 +55,6 @@ internal sealed class NetworkDispatcher
     public IncomingAZVoiceControlManager IncomingAZVoiceControlHandlers => _incomingAZVoiceControlHandlers;
     public IncomingAZVoiceDataManager IncomingAZVoiceDataHandlers => _incomingAZVoiceDataHandlers;
     public OutgoingAZVoiceControlManager OutgoingAZVoiceControlHandlers => _outgoingAZVoiceControlHandlers;
-
-    public void Reset()
-    {
-        _incomingRpcHandlers = new RpcHandlerManager();
-        _outgoingRpcHandlers = new OutgoingRpcManager();
-        _incomingPacketHandlers = new IncomingPacketManager();
-        _outgoingPacketHandlers = new OutgoingPacketManager();
-        _incomingAZVoiceControlHandlers = new IncomingAZVoiceControlManager();
-        _incomingAZVoiceDataHandlers = new IncomingAZVoiceDataManager();
-        _outgoingAZVoiceControlHandlers = new OutgoingAZVoiceControlManager();
-    }
 
     public void EnqueueIncomingRpc(int rpcId, byte[] packet, int payloadBitOffset, int payloadBitLength)
     {
@@ -113,7 +102,7 @@ internal sealed class NetworkDispatcher
     {
         if (Interlocked.CompareExchange(ref _dispatchScheduled, 1, 0) == 0)
         {
-            SFBootstrap.PostToMainThread(ProcessBatch);
+            mainThread.Post(ProcessBatch);
         }
     }
 
@@ -154,12 +143,12 @@ internal sealed class NetworkDispatcher
             Interlocked.Exchange(ref _dispatchScheduled, 0);
             if (!_pendingEvents.IsEmpty && Interlocked.CompareExchange(ref _dispatchScheduled, 1, 0) == 0)
             {
-                SFBootstrap.PostToMainThread(ProcessBatch);
+                mainThread.Post(ProcessBatch);
             }
 
             return;
         }
 
-        SFBootstrap.PostToMainThread(ProcessBatch);
+        mainThread.Post(ProcessBatch);
     }
 }

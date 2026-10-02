@@ -69,7 +69,7 @@ public abstract class HookBase<TArgs, TResult>
         }
         catch (Exception e)
         {
-            SFBootstrap.ProcessException(e);
+            HookRuntime.ReportException(e);
             return InvokeOriginalFunction(args);
         }
         finally
@@ -82,6 +82,12 @@ public abstract class HookBase<TArgs, TResult>
 public static class HookRuntime
 {
     public static HookEngine Engine { get; } = new();
+
+    /// <summary>
+    /// Receives exceptions thrown by sub-hooks inside native callbacks, which have no caller to propagate to.
+    /// The composition root points it at the runtime's exception reporter.
+    /// </summary>
+    public static Action<Exception> ReportException { get; set; } = static ex => SFLog.Error(ex, "Unhandled hook exception");
 }
 
 public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TResult>, IDisposable

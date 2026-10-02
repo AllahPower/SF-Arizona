@@ -19,24 +19,28 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
 
     private const byte IdTimestamp = 40;
     private static IncomingRpcPacketHook? _instance;
+    private readonly NetworkFilters _filters;
+    private readonly NetworkDispatcher _dispatcher;
 
     /// <summary>
     /// The RakPeer instance pointer, captured from HandleRpcPacket's thisPtr.
     /// Used by SFNetwork.SimulateIncomingPacket to write to the internal packet queue.
     /// </summary>
-    internal static nint RakPeerInstance { get; private set; }
+    internal nint RakPeerInstance { get; private set; }
 
     /// <summary>
     /// The server's RakNet PlayerID, captured from the first incoming RPC.
     /// Required for SimulateIncomingPacket so the synthetic packet is dispatched
     /// as server-originated rather than dropped by downstream filters.
     /// </summary>
-    internal static RakNetPlayerId ServerPlayerId { get; private set; }
+    internal RakNetPlayerId ServerPlayerId { get; private set; }
 
-    internal static bool HasServerPlayerId { get; private set; }
+    internal bool HasServerPlayerId { get; private set; }
 
-    public IncomingRpcPacketHook()
+    internal IncomingRpcPacketHook(NetworkFilters filters, NetworkDispatcher dispatcher)
     {
+        _filters = filters;
+        _dispatcher = dispatcher;
         _instance = this;
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.RpcRuntime.HandleRpcPacket), new IncomingRpcPacketNative(HookProc));
     }
@@ -48,19 +52,19 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
             throw new UnreachableException();
         }
 
-        RakPeerInstance = thisPtr;
-        ServerPlayerId = playerId;
-        HasServerPlayerId = true;
+        _instance.RakPeerInstance = thisPtr;
+        _instance.ServerPlayerId = playerId;
+        _instance.HasServerPlayerId = true;
 
         if (TryExtractRpc(data, length, out int rpcId, out int payloadBitOffset, out int payloadBitLength))
         {
-            if (SFBootstrap.IncomingRpcFilters.HasFilters &&
-                SFBootstrap.IncomingRpcFilters.ShouldCancel(rpcId, data, length * 8))
+            if (_instance!._filters.IncomingRpc.HasFilters &&
+                _instance!._filters.IncomingRpc.ShouldCancel(rpcId, data, length * 8))
             {
                 return false;
             }
 
-            if (SFBootstrap.RpcHandlers.HasSubscribers(rpcId))
+            if (_instance!._dispatcher.IncomingRpcHandlers.HasSubscribers(rpcId))
             {
                 byte[] packet = new byte[length];
                 fixed (byte* dst = packet)
@@ -68,7 +72,7 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
                     Buffer.MemoryCopy(data, dst, length, length);
                 }
 
-                SFBootstrap.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
+                _instance!._dispatcher.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
             }
         }
 
@@ -111,7 +115,7 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
         }
 
         rpcId = rpcByte;
-        bool hasConsumers = SFBootstrap.RpcHandlers.HasSubscribers(rpcId) || SFBootstrap.IncomingRpcFilters.HasFilters;
+        bool hasConsumers = _instance!._dispatcher.IncomingRpcHandlers.HasSubscribers(rpcId) || _instance!._filters.IncomingRpc.HasFilters;
         if (!hasConsumers)
         {
             return false;

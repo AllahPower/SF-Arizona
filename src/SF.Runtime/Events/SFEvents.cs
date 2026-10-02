@@ -2,6 +2,13 @@ namespace SFSharp.Runtime.Events;
 
 public sealed partial class SFEvents : ISFEvents
 {
+    private readonly SFEventFactory _factory;
+
+    internal SFEvents(SFEventFactory factory)
+    {
+        _factory = factory;
+    }
+
     private readonly Lock _initSync = new();
     private readonly Dictionary<Type, object> _incomingRpcChannels = new();
     private readonly Dictionary<Type, object> _outgoingRpcChannels = new();
@@ -17,7 +24,7 @@ public sealed partial class SFEvents : ISFEvents
                 return (SFEventChannel<TRpc>)channel;
             }
 
-            SFEventChannel<TRpc> created = SFEventFactory.FromParsedIncomingRpc<TRpc>();
+            SFEventChannel<TRpc> created = _factory.FromParsedIncomingRpc<TRpc>();
             _incomingRpcChannels[typeof(TRpc)] = created;
             return created;
         }
@@ -32,7 +39,7 @@ public sealed partial class SFEvents : ISFEvents
                 return (SFEventChannel<TRpc>)channel;
             }
 
-            SFEventChannel<TRpc> created = SFEventFactory.FromParsedOutgoingRpc<TRpc>();
+            SFEventChannel<TRpc> created = _factory.FromParsedOutgoingRpc<TRpc>();
             _outgoingRpcChannels[typeof(TRpc)] = created;
             return created;
         }
@@ -47,7 +54,7 @@ public sealed partial class SFEvents : ISFEvents
                 return (SFEventChannel<TPacket>)channel;
             }
 
-            SFEventChannel<TPacket> created = SFEventFactory.FromParsedIncomingPacket<TPacket>();
+            SFEventChannel<TPacket> created = _factory.FromParsedIncomingPacket<TPacket>();
             _incomingPacketChannels[typeof(TPacket)] = created;
             return created;
         }
@@ -62,7 +69,7 @@ public sealed partial class SFEvents : ISFEvents
                 return (SFEventChannel<TPacket>)channel;
             }
 
-            SFEventChannel<TPacket> created = SFEventFactory.FromParsedOutgoingPacket<TPacket>();
+            SFEventChannel<TPacket> created = _factory.FromParsedOutgoingPacket<TPacket>();
             _outgoingPacketChannels[typeof(TPacket)] = created;
             return created;
         }

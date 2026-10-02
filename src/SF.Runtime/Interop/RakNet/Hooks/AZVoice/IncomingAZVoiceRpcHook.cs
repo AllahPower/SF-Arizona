@@ -61,11 +61,13 @@ internal unsafe class IncomingAZVoiceRpcHook : NativeHook<nint, int, IncomingAZV
     private static bool _resolved;
 
     private static IncomingAZVoiceRpcHook? _instance;
+    private readonly NetworkDispatcher _dispatcher;
 
     public static bool IsAvailable => ResolveTargetAddress() && _dispatcherAddress != 0;
 
-    public IncomingAZVoiceRpcHook()
+    internal IncomingAZVoiceRpcHook(NetworkDispatcher dispatcher)
     {
+        _dispatcher = dispatcher;
         if (!ResolveTargetAddress() || _dispatcherAddress == 0)
         {
             throw new InvalidOperationException("AZVoice incoming RPC hook target could not be resolved.");
@@ -117,9 +119,9 @@ internal unsafe class IncomingAZVoiceRpcHook : NativeHook<nint, int, IncomingAZV
             Buffer.MemoryCopy(payloadPtr, dst, payloadBytes, payloadBytes);
         }
 
-        if (payloadBytes >= 1 && SFBootstrap.IncomingAZVoiceControlHandlers.HasSubscribers(packet[1]))
+        if (payloadBytes >= 1 && _instance!._dispatcher.IncomingAZVoiceControlHandlers.HasSubscribers(packet[1]))
         {
-            SFBootstrap.EnqueueIncomingAZVoiceControl(packet[1], packet, payloadBits + 8);
+            _instance!._dispatcher.EnqueueIncomingAZVoiceControl(packet[1], packet, payloadBits + 8);
         }
     }
 

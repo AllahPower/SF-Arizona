@@ -2,12 +2,12 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp.Runtime.Networking;
 
-public sealed unsafe class SFRpc : ISFRpc
+public sealed unsafe class SFRpc(NetworkFilters filters, NetworkDispatcher dispatcher) : ISFRpc
 {
     public IDisposable RegisterIncomingFilter(int rpcId, SFRpcFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.IncomingRpcFilters.Add(rpcId, (dataPtr, bitLength) =>
+        return filters.IncomingRpc.Add(rpcId, (dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(rpcId, span, bitLength);
@@ -17,7 +17,7 @@ public sealed unsafe class SFRpc : ISFRpc
     public IDisposable RegisterIncomingFilter(SFRpcFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.IncomingRpcFilters.Add((id, dataPtr, bitLength) =>
+        return filters.IncomingRpc.Add((id, dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(id, span, bitLength);
@@ -27,7 +27,7 @@ public sealed unsafe class SFRpc : ISFRpc
     public IDisposable RegisterOutgoingFilter(int rpcId, SFRpcFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.OutgoingRpcFilters.Add(rpcId, (dataPtr, bitLength) =>
+        return filters.OutgoingRpc.Add(rpcId, (dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(rpcId, span, bitLength);
@@ -37,15 +37,15 @@ public sealed unsafe class SFRpc : ISFRpc
     public IDisposable RegisterOutgoingFilter(SFRpcFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.OutgoingRpcFilters.Add((id, dataPtr, bitLength) =>
+        return filters.OutgoingRpc.Add((id, dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(id, span, bitLength);
         });
     }
 
-    public RpcHandlerManager Handlers => SFBootstrap.RpcHandlers;
-    public OutgoingRpcManager OutgoingHandlers => SFBootstrap.OutgoingRpcHandlers;
+    public RpcHandlerManager Handlers => dispatcher.IncomingRpcHandlers;
+    public OutgoingRpcManager OutgoingHandlers => dispatcher.OutgoingRpcHandlers;
 
     // - Incoming RPC (server -> client) -
 
@@ -156,21 +156,21 @@ public sealed unsafe class SFRpc : ISFRpc
 
     public IDisposable RegisterOutgoingFilter(SampRpcId rpcId, Func<nint, int, bool> filter)
     {
-        return SFBootstrap.OutgoingRpcFilters.Add((int)rpcId, filter);
+        return filters.OutgoingRpc.Add((int)rpcId, filter);
     }
 
     public IDisposable RegisterOutgoingFilter(Func<int, nint, int, bool> filter)
     {
-        return SFBootstrap.OutgoingRpcFilters.Add(filter);
+        return filters.OutgoingRpc.Add(filter);
     }
 
     public IDisposable RegisterIncomingFilter(SampRpcId rpcId, Func<nint, int, bool> filter)
     {
-        return SFBootstrap.IncomingRpcFilters.Add((int)rpcId, filter);
+        return filters.IncomingRpc.Add((int)rpcId, filter);
     }
 
     public IDisposable RegisterIncomingFilter(Func<int, nint, int, bool> filter)
     {
-        return SFBootstrap.IncomingRpcFilters.Add(filter);
+        return filters.IncomingRpc.Add(filter);
     }
 }

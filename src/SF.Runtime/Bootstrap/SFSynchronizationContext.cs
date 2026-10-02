@@ -3,13 +3,13 @@ using System.Runtime.ExceptionServices;
 
 namespace SFSharp.Runtime.Bootstrap;
 
-public class SFSynchronizationContext : SynchronizationContext
+public class SFSynchronizationContext(Action<Exception> reportException) : SynchronizationContext
 {
-    private static readonly Lock _queueLock = new();
+    private readonly Lock _queueLock = new();
 
-    private static Queue<WorkItem> _queue = new();
-    private static Queue<WorkItem> _lastQueue = new();
-    private static ConcurrentBag<SyncWorkItem> _syncPool = new();
+    private Queue<WorkItem> _queue = new();
+    private Queue<WorkItem> _lastQueue = new();
+    private readonly ConcurrentBag<SyncWorkItem> _syncPool = new();
 
     private readonly int _mainThreadId = Environment.CurrentManagedThreadId;
 
@@ -66,7 +66,7 @@ public class SFSynchronizationContext : SynchronizationContext
                 }
                 else
                 {
-                    SFBootstrap.ProcessException(ex);
+                    reportException(ex);
                 }
             }
             entry.Sync?.Gate.Set();

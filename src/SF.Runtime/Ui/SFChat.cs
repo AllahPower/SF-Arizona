@@ -1,6 +1,6 @@
 namespace SFSharp.Runtime.Ui;
 
-public partial class SFChat : ISFChat
+public partial class SFChat(ExceptionReporter exceptions) : ISFChat
 {
     public void Send(string message)
     {

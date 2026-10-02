@@ -2,11 +2,9 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp.Runtime.Networking;
 
-public sealed class SFRpcParsers : ISFRpcParsers
+public sealed class SFRpcParsers(RpcParserRegistry registry, SFRpc rpc) : ISFRpcParsers
 {
-    private static readonly Lazy<RpcParserRegistry> _registry = new(RpcParserCatalog.CreateDefaultRegistry);
-
-    public RpcParserRegistry Registry => _registry.Value;
+    public RpcParserRegistry Registry => registry;
 
     public bool TryParseIncoming(IncomingRpcArgs args, out RpcParseResult result)
     {
@@ -30,7 +28,7 @@ public sealed class SFRpcParsers : ISFRpcParsers
         foreach (RpcParserRegistry.IncomingRpcRoute route in routes)
         {
             IIncomingRpcParser parser = (IIncomingRpcParser)route.Parser;
-            group.Add(SF.Rpc.Subscribe(route.SampRpcId, args =>
+            group.Add(rpc.Subscribe(route.SampRpcId, args =>
             {
                 if (parser.TryParse(args, out RpcParseResult result) && TryExtractIncoming(result, out TRpc rpc))
                 {
@@ -55,7 +53,7 @@ public sealed class SFRpcParsers : ISFRpcParsers
         foreach (RpcParserRegistry.OutgoingRpcRoute route in routes)
         {
             IOutgoingRpcParser parser = (IOutgoingRpcParser)route.Parser;
-            group.Add(SF.Rpc.SubscribeOutgoing(route.SampRpcId, args =>
+            group.Add(rpc.SubscribeOutgoing(route.SampRpcId, args =>
             {
                 if (parser.TryParse(args, out RpcParseResult result) && TryExtractOutgoing(result, out TRpc rpc))
                 {

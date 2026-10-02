@@ -5,9 +5,9 @@ namespace SFSharp.Runtime.Ui;
 
 public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
 {
-    private static readonly List<ChannelWriter<ServerChatEntry>> _serverConsumerWriters = new();
-    private static readonly List<ChannelWriter<ChatEntry>> _localConsumerWriters = new();
-    private static int _suppressOwnLocalAddEntry;
+    private readonly List<ChannelWriter<ServerChatEntry>> _serverConsumerWriters = new();
+    private readonly List<ChannelWriter<ChatEntry>> _localConsumerWriters = new();
+    private int _suppressOwnLocalAddEntry;
     private bool _rpcBindingsRegistered;
 
     public void RegisterRpcBindings(RpcHandlerManager manager)
@@ -17,20 +17,20 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
             return;
         }
 
-        manager.Bind(SampRpcId.Chat, SampRpc.ParseChatMessage, static (payload, args) =>
+        manager.Bind(SampRpcId.Chat, SampRpc.ParseChatMessage, (payload, args) =>
         {
             // Chat prefixColor is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
             uint prefixColor = (payload.PrefixColor >> 8) | ((payload.PrefixColor & 0xFF) << 24);
             ChatEntry entry = new(EntryType.Chat, payload.Text, payload.Prefix, 0xFFFFFFFF, prefixColor);
-            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.Chat, SampRpcId.Chat, entry));
+            PublishServerChatEntry(new ServerChatEntry(ServerChatKind.Chat, SampRpcId.Chat, entry));
         }, name: "IncomingChatMessageRpc");
 
-        manager.Bind(SampRpcId.ClientMessage, SampRpc.ParseClientMessage, static (payload, args) =>
+        manager.Bind(SampRpcId.ClientMessage, SampRpc.ParseClientMessage, (payload, args) =>
         {
             // SendClientMessage color is 0xRRGGBBAA (PAWN), convert to 0xAARRGGBB (internal)
             uint color = (payload.Color >> 8) | ((payload.Color & 0xFF) << 24);
             ChatEntry entry = new(EntryType.Info, payload.Text, null, color, 0);
-            SF.Chat.PublishServerChatEntry(new ServerChatEntry(ServerChatKind.ClientMessage, SampRpcId.ClientMessage, entry));
+            PublishServerChatEntry(new ServerChatEntry(ServerChatKind.ClientMessage, SampRpcId.ClientMessage, entry));
         }, name: "IncomingClientMessageRpc");
 
         _rpcBindingsRegistered = true;
@@ -86,7 +86,7 @@ public unsafe partial class SFChat : ISubHook<CChatAddEntryArgs, NoRetValue>
         }
     }
 
-    internal static IDisposable SuppressOwnLocalAddEntry()
+    internal IDisposable SuppressOwnLocalAddEntry()
     {
         Interlocked.Increment(ref _suppressOwnLocalAddEntry);
         return new ActionOnDispose(() => Interlocked.Decrement(ref _suppressOwnLocalAddEntry));

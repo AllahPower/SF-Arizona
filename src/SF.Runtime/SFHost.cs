@@ -1,30 +1,45 @@
 namespace SFSharp.Runtime;
 
 /// <summary>
-/// Single source of truth for every runtime SF service singleton. Static <see cref="SF"/> and the
-/// plugin-facing <see cref="ISF"/> both delegate here so service identity is guaranteed.
+/// The game services behind <see cref="ISF"/>, created by <see cref="SFRuntime"/> once CNetGame is ready.
+/// Every service receives its dependencies through its constructor.
 /// </summary>
 internal sealed class SFHost : ISF
 {
-    public static readonly SFHost Shared = new();
+    public SFHost(SFRuntime runtime)
+    {
+        ChatImpl = new SFChat(runtime.Exceptions);
+        DialogImpl = new SFDialog(runtime.MainThread, runtime.Exceptions);
+        KeyboardImpl = new SFKeyboard(runtime.Exceptions);
+        PlayersImpl = new SFPlayers();
+        VehiclesImpl = new SFVehicles();
+        PoolsImpl = new SFGamePools(PlayersImpl, VehiclesImpl);
+        EntitiesImpl = new SFEntities(PlayersImpl, VehiclesImpl, PoolsImpl);
+        RpcImpl = new SFRpc(runtime.Filters, runtime.Dispatcher);
+        PacketsImpl = new SFPackets(runtime.Filters, runtime.Dispatcher);
+        ArizonaImpl = new SFArizonaPackets(PacketsImpl, runtime.Dispatcher);
+        RpcParsersImpl = new SFRpcParsers(RpcParserCatalog.CreateDefaultRegistry(), RpcImpl);
+        PacketParsersImpl = new SFPacketParsers(PacketParserCatalog.CreateDefaultRegistry(), PacketsImpl, ArizonaImpl);
+        CameraImpl = new SFCamera(PlayersImpl, RpcImpl);
+        EventsImpl = new SFEvents(new SFEventFactory(RpcImpl, RpcParsersImpl, PacketParsersImpl));
+        NetworkImpl = new SFNetwork(runtime.Hooks.IncomingRpcPacket);
+    }
 
-    private SFHost() { }
-
-    public SFChat ChatImpl { get; } = new();
-    public SFDialog DialogImpl { get; } = new();
-    public SFKeyboard KeyboardImpl { get; } = new();
-    public SFPlayers PlayersImpl { get; } = new();
-    public SFVehicles VehiclesImpl { get; } = new();
-    public SFGamePools PoolsImpl { get; } = new();
-    public SFEntities EntitiesImpl { get; } = new();
-    public SFRpc RpcImpl { get; } = new();
-    public SFPackets PacketsImpl { get; } = new();
-    public SFArizonaPackets ArizonaImpl { get; } = new();
-    public SFPacketParsers PacketParsersImpl { get; } = new();
-    public SFRpcParsers RpcParsersImpl { get; } = new();
-    public SFCamera CameraImpl { get; } = new();
-    public SFEvents EventsImpl { get; } = new();
-    public SFNetwork NetworkImpl { get; } = new();
+    public SFChat ChatImpl { get; }
+    public SFDialog DialogImpl { get; }
+    public SFKeyboard KeyboardImpl { get; }
+    public SFPlayers PlayersImpl { get; }
+    public SFVehicles VehiclesImpl { get; }
+    public SFGamePools PoolsImpl { get; }
+    public SFEntities EntitiesImpl { get; }
+    public SFRpc RpcImpl { get; }
+    public SFPackets PacketsImpl { get; }
+    public SFArizonaPackets ArizonaImpl { get; }
+    public SFPacketParsers PacketParsersImpl { get; }
+    public SFRpcParsers RpcParsersImpl { get; }
+    public SFCamera CameraImpl { get; }
+    public SFEvents EventsImpl { get; }
+    public SFNetwork NetworkImpl { get; }
     public SFModuleRuntime ModuleRuntime { get; } = new();
 
     public string UserFilesDirectory { get; } =

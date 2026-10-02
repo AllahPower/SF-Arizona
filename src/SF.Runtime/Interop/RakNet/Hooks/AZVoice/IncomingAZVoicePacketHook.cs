@@ -43,11 +43,13 @@ internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, Incoming
     private static bool _resolved;
 
     private static IncomingAZVoicePacketHook? _instance;
+    private readonly NetworkDispatcher _dispatcher;
 
     public static bool IsAvailable => ResolveTargetAddress() && _onReceivePacketAddress != 0;
 
-    public IncomingAZVoicePacketHook()
+    internal IncomingAZVoicePacketHook(NetworkDispatcher dispatcher)
     {
+        _dispatcher = dispatcher;
         if (!ResolveTargetAddress() || _onReceivePacketAddress == 0)
         {
             throw new InvalidOperationException("AZVoice incoming packet hook target could not be resolved.");
@@ -75,7 +77,7 @@ internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, Incoming
 
             if (TryGetNormalizedPacket(data, length, out byte packetId, out byte* normalizedData, out int normalizedLength))
             {
-                if (packetId == PacketIdAZVoice && SFBootstrap.IncomingAZVoiceDataHandlers.HasSubscribers())
+                if (packetId == PacketIdAZVoice && _instance!._dispatcher.IncomingAZVoiceDataHandlers.HasSubscribers())
                 {
                     normalizedBitSize = normalizedLength * 8;
                     normalizedPacketId = packetId;
@@ -94,7 +96,7 @@ internal unsafe class IncomingAZVoicePacketHook : NativeHook<nint, int, Incoming
         // and consumed by the plugin. Control RPCs continue through a different dispatcher.
         if (result == 0 && normalizedPacket is not null)
         {
-            SFBootstrap.EnqueueIncomingAZVoiceData(normalizedPacket, normalizedBitSize);
+            _instance!._dispatcher.EnqueueIncomingAZVoiceData(normalizedPacket, normalizedBitSize);
         }
 
         return result;

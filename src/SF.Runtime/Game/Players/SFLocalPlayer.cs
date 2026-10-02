@@ -2,8 +2,11 @@ namespace SFSharp.Runtime.Game.Players;
 
 public sealed unsafe class SFLocalPlayer : SFPlayer
 {
-    internal SFLocalPlayer()
+    private readonly SFPlayers _players;
+
+    internal SFLocalPlayer(SFPlayers players)
     {
+        _players = players;
     }
 
     public override ushort Id => CPlayerPool.Instance.LocalPlayerId;
@@ -25,7 +28,7 @@ public sealed unsafe class SFLocalPlayer : SFPlayer
 
     public byte CurrentWeapon => CLocalPlayer.Instance.CurrentWeapon;
     public byte SpecialAction => CLocalPlayer.Instance.GetSpecialAction();
-    public ushort? AimedPlayerId => SF.Players.GetAimedPlayerId();
+    public ushort? AimedPlayerId => _players.GetAimedPlayerId();
     public ushort AimedActorId => CLocalPlayer.Instance.AimedActorId;
     public SFVehicle? CurrentVehicle => Ped?.Vehicle;
     public ushort CurrentVehicleId => CLocalPlayer.Instance.CurrentVehicleId;

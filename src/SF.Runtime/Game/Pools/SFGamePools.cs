@@ -1,9 +1,9 @@
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed unsafe class SFGamePools : ISFGamePools
+public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) : ISFGamePools
 {
-    public SFPlayers Players => SF.Players;
-    public SFVehicles Vehicles => SF.Vehicles;
+    public SFPlayers Players => players;
+    public SFVehicles Vehicles => vehicles;
     public SFActors Actors { get; } = new();
     public SFObjects Objects { get; } = new();
     public SFPickups Pickups { get; } = new();

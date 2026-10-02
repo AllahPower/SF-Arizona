@@ -14,9 +14,13 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
         byte orderingChannel);
 
     private static OutgoingPacketHook? _instance;
+    private readonly NetworkFilters _filters;
+    private readonly NetworkDispatcher _dispatcher;
 
-    public OutgoingPacketHook()
+    internal OutgoingPacketHook(NetworkFilters filters, NetworkDispatcher dispatcher)
     {
+        _filters = filters;
+        _dispatcher = dispatcher;
         _instance = this;
         nint targetAddress = ModuleResolver.ResolveVTableFunction(
             "samp.dll",
@@ -47,13 +51,13 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
             {
                 int packetId = data[0];
 
-                if (SFBootstrap.OutgoingPacketFilters.HasFilters &&
-                    SFBootstrap.OutgoingPacketFilters.ShouldCancel(packetId, data, bitsUsed))
+                if (_instance!._filters.OutgoingPacket.HasFilters &&
+                    _instance!._filters.OutgoingPacket.ShouldCancel(packetId, data, bitsUsed))
                 {
                     return true;
                 }
 
-                if (SFBootstrap.OutgoingPacketHandlers.HasSubscribers(packetId))
+                if (_instance!._dispatcher.OutgoingPacketHandlers.HasSubscribers(packetId))
                 {
                     int dataByteLength = (bitsUsed + 7) / 8;
                     byte[] packet = new byte[dataByteLength];
@@ -62,7 +66,7 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
                         Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
                     }
 
-                    SFBootstrap.EnqueueOutgoingPacket(packetId, packet, bitsUsed);
+                    _instance!._dispatcher.EnqueueOutgoingPacket(packetId, packet, bitsUsed);
                 }
             }
         }

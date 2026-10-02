@@ -15,6 +15,13 @@ public delegate void BitStreamBuildAction(ref SampBitStreamWriter writer);
 /// </remarks>
 public sealed unsafe class SFNetwork : ISFNetwork
 {
+    private readonly IncomingRpcPacketHook _incomingRpcHook;
+
+    internal SFNetwork(IncomingRpcPacketHook incomingRpcHook)
+    {
+        _incomingRpcHook = incomingRpcHook;
+    }
+
     private const byte IdRpc = (byte)RakNetPacketId.Rpc;
 
     // Packet* __cdecl AllocPacket(unsigned int dataSize)
@@ -147,8 +154,8 @@ public sealed unsafe class SFNetwork : ISFNetwork
             return false;
         }
 
-        nint rakPeer = IncomingRpcPacketHook.RakPeerInstance;
-        if (rakPeer == 0 || !IncomingRpcPacketHook.HasServerPlayerId || !EmulationAvailable)
+        nint rakPeer = _incomingRpcHook.RakPeerInstance;
+        if (rakPeer == 0 || !_incomingRpcHook.HasServerPlayerId || !EmulationAvailable)
         {
             return false;
         }
@@ -170,7 +177,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
         packet->BitSize = data.Length * 8;
         packet->PlayerIndex = 0;
 
-        RakNetPlayerId serverId = IncomingRpcPacketHook.ServerPlayerId;
+        RakNetPlayerId serverId = _incomingRpcHook.ServerPlayerId;
         packet->PlayerId = new CRakNetPlayerId
         {
             BinaryAddress = serverId.BinaryAddress,

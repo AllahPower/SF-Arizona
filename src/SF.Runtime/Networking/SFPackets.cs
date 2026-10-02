@@ -2,12 +2,12 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp.Runtime.Networking;
 
-public sealed unsafe class SFPackets : ISFPackets
+public sealed unsafe class SFPackets(NetworkFilters filters, NetworkDispatcher dispatcher) : ISFPackets
 {
     public IDisposable RegisterIncomingFilter(int packetId, SFPacketFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.IncomingPacketFilters.Add(packetId, (dataPtr, bitLength) =>
+        return filters.IncomingPacket.Add(packetId, (dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(packetId, span, bitLength);
@@ -17,7 +17,7 @@ public sealed unsafe class SFPackets : ISFPackets
     public IDisposable RegisterIncomingFilter(SFPacketFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.IncomingPacketFilters.Add((id, dataPtr, bitLength) =>
+        return filters.IncomingPacket.Add((id, dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(id, span, bitLength);
@@ -27,7 +27,7 @@ public sealed unsafe class SFPackets : ISFPackets
     public IDisposable RegisterOutgoingFilter(int packetId, SFPacketFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.OutgoingPacketFilters.Add(packetId, (dataPtr, bitLength) =>
+        return filters.OutgoingPacket.Add(packetId, (dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(packetId, span, bitLength);
@@ -37,15 +37,15 @@ public sealed unsafe class SFPackets : ISFPackets
     public IDisposable RegisterOutgoingFilter(SFPacketFilterCallback filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        return SFBootstrap.OutgoingPacketFilters.Add((id, dataPtr, bitLength) =>
+        return filters.OutgoingPacket.Add((id, dataPtr, bitLength) =>
         {
             var span = new ReadOnlySpan<byte>((void*)dataPtr, (bitLength + 7) / 8);
             return filter(id, span, bitLength);
         });
     }
 
-    public IncomingPacketManager IncomingHandlers => SFBootstrap.IncomingPacketHandlers;
-    public OutgoingPacketManager OutgoingHandlers => SFBootstrap.OutgoingPacketHandlers;
+    public IncomingPacketManager IncomingHandlers => dispatcher.IncomingPacketHandlers;
+    public OutgoingPacketManager OutgoingHandlers => dispatcher.OutgoingPacketHandlers;
 
     // - Incoming packets (server -> client) -
 
@@ -146,12 +146,12 @@ public sealed unsafe class SFPackets : ISFPackets
 
     public IDisposable RegisterOutgoingFilter(RakNetPacketId packetId, Func<nint, int, bool> filter)
     {
-        return SFBootstrap.OutgoingPacketFilters.Add((int)packetId, filter);
+        return filters.OutgoingPacket.Add((int)packetId, filter);
     }
 
     public IDisposable RegisterOutgoingFilter(Func<int, nint, int, bool> filter)
     {
-        return SFBootstrap.OutgoingPacketFilters.Add(filter);
+        return filters.OutgoingPacket.Add(filter);
     }
 
     /// <remarks>
@@ -161,11 +161,11 @@ public sealed unsafe class SFPackets : ISFPackets
     /// </remarks>
     public IDisposable RegisterIncomingFilter(RakNetPacketId packetId, Func<nint, int, bool> filter)
     {
-        return SFBootstrap.IncomingPacketFilters.Add((int)packetId, filter);
+        return filters.IncomingPacket.Add((int)packetId, filter);
     }
 
     public IDisposable RegisterIncomingFilter(Func<int, nint, int, bool> filter)
     {
-        return SFBootstrap.IncomingPacketFilters.Add(filter);
+        return filters.IncomingPacket.Add(filter);
     }
 }

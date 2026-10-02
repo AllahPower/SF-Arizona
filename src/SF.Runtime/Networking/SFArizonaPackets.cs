@@ -2,14 +2,14 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp.Runtime.Networking;
 
-public sealed class SFArizonaPackets : ISFArizonaPackets
+public sealed class SFArizonaPackets(SFPackets packets, NetworkDispatcher dispatcher) : ISFArizonaPackets
 {
     private const int Packet220PayloadBitOffset = 16;
     private const int Packet221PayloadBitOffset = 24;
 
     public NetworkSubscription SubscribeIncoming(ArizonaPacket220Id subId, Action<IncomingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeIncoming(RakNetPacketId.ArizonaCef, args =>
+        return packets.SubscribeIncoming(RakNetPacketId.ArizonaCef, args =>
         {
             if (!TryCreateIncoming220(args, out IncomingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -32,7 +32,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeIncomingEx(ArizonaPacket221Id subId, Action<IncomingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeIncoming(RakNetPacketId.ArizonaCefEx, args =>
+        return packets.SubscribeIncoming(RakNetPacketId.ArizonaCefEx, args =>
         {
             if (!TryCreateIncoming221(args, out IncomingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -55,7 +55,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeOutgoing(ArizonaPacket220Id subId, Action<OutgoingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeOutgoing(RakNetPacketId.ArizonaCef, args =>
+        return packets.SubscribeOutgoing(RakNetPacketId.ArizonaCef, args =>
         {
             if (!TryCreateOutgoing220(args, out OutgoingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -78,7 +78,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeOutgoingEx(ArizonaPacket221Id subId, Action<OutgoingArizonaPacketArgs> handler)
     {
-        return SF.Packets.SubscribeOutgoing(RakNetPacketId.ArizonaCefEx, args =>
+        return packets.SubscribeOutgoing(RakNetPacketId.ArizonaCefEx, args =>
         {
             if (!TryCreateOutgoing221(args, out OutgoingArizonaPacketArgs packetArgs) || packetArgs.SubId != (int)subId)
             {
@@ -101,7 +101,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeIncomingAZVoice(AZVoiceMessageId subId, Action<IncomingArizonaPacketArgs> handler)
     {
-        return SFBootstrap.IncomingAZVoiceControlHandlers.Subscribe((int)subId, handler);
+        return dispatcher.IncomingAZVoiceControlHandlers.Subscribe((int)subId, handler);
     }
 
     public IDisposable SubscribeIncomingAZVoice(int subId, Action<IncomingArizonaPacketFrame> handler)
@@ -116,7 +116,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeOutgoingAZVoice(AZVoiceMessageId subId, Action<OutgoingArizonaPacketArgs> handler)
     {
-        return SFBootstrap.OutgoingAZVoiceControlHandlers.Subscribe((int)subId, handler);
+        return dispatcher.OutgoingAZVoiceControlHandlers.Subscribe((int)subId, handler);
     }
 
     public IDisposable SubscribeOutgoingAZVoice(int subId, Action<OutgoingArizonaPacketFrame> handler)
@@ -131,7 +131,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeIncomingAZVoiceData(Action<IncomingPacketArgs> handler)
     {
-        return SFBootstrap.IncomingAZVoiceDataHandlers.Subscribe(handler);
+        return dispatcher.IncomingAZVoiceDataHandlers.Subscribe(handler);
     }
 
     public IDisposable SubscribeIncomingAZVoiceData(Action<IncomingPacketFrame> handler)
@@ -142,7 +142,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
     public NetworkSubscription SubscribeOutgoingAZVoiceData(Action<OutgoingPacketArgs> handler)
     {
-        return SF.Packets.SubscribeOutgoing(RakNetPacketId.AZVoice, handler);
+        return packets.SubscribeOutgoing(RakNetPacketId.AZVoice, handler);
     }
 
     public IDisposable SubscribeOutgoingAZVoiceData(Action<OutgoingPacketFrame> handler)

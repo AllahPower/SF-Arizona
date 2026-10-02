@@ -1,33 +1,33 @@
 namespace SFSharp.Runtime;
 
 /// <summary>
-/// Thin static proxy over <see cref="SFHost.Shared"/> for host-internal callers. Every property
+/// Thin static proxy over <see cref="SFBootstrap.Runtime.Host"/> for host-internal callers. Every property
 /// returns the same singleton instance exposed through <see cref="ISF"/>, so there is a single
 /// source of truth for service identity.
 /// </summary>
 public static class SF
 {
-    public static ISF Instance => SFHost.Shared;
+    public static ISF Instance => SFBootstrap.Runtime.Host;
 
-    public static SFChat Chat => SFHost.Shared.ChatImpl;
-    public static SFDialog Dialog => SFHost.Shared.DialogImpl;
-    public static SFKeyboard Keyboard => SFHost.Shared.KeyboardImpl;
-    public static SFPlayers Players => SFHost.Shared.PlayersImpl;
-    public static SFVehicles Vehicles => SFHost.Shared.VehiclesImpl;
-    public static SFGamePools Pools => SFHost.Shared.PoolsImpl;
-    public static SFEntities Entities => SFHost.Shared.EntitiesImpl;
-    public static SFRpc Rpc => SFHost.Shared.RpcImpl;
-    public static SFPackets Packets => SFHost.Shared.PacketsImpl;
-    public static SFArizonaPackets Arizona => SFHost.Shared.ArizonaImpl;
-    public static SFPacketParsers PacketParsers => SFHost.Shared.PacketParsersImpl;
-    public static SFRpcParsers RpcParsers => SFHost.Shared.RpcParsersImpl;
-    public static SFCamera Camera => SFHost.Shared.CameraImpl;
-    public static SFEvents Events => SFHost.Shared.EventsImpl;
-    public static SFNetwork Network => SFHost.Shared.NetworkImpl;
+    public static SFChat Chat => SFBootstrap.Runtime.Host.ChatImpl;
+    public static SFDialog Dialog => SFBootstrap.Runtime.Host.DialogImpl;
+    public static SFKeyboard Keyboard => SFBootstrap.Runtime.Host.KeyboardImpl;
+    public static SFPlayers Players => SFBootstrap.Runtime.Host.PlayersImpl;
+    public static SFVehicles Vehicles => SFBootstrap.Runtime.Host.VehiclesImpl;
+    public static SFGamePools Pools => SFBootstrap.Runtime.Host.PoolsImpl;
+    public static SFEntities Entities => SFBootstrap.Runtime.Host.EntitiesImpl;
+    public static SFRpc Rpc => SFBootstrap.Runtime.Host.RpcImpl;
+    public static SFPackets Packets => SFBootstrap.Runtime.Host.PacketsImpl;
+    public static SFArizonaPackets Arizona => SFBootstrap.Runtime.Host.ArizonaImpl;
+    public static SFPacketParsers PacketParsers => SFBootstrap.Runtime.Host.PacketParsersImpl;
+    public static SFRpcParsers RpcParsers => SFBootstrap.Runtime.Host.RpcParsersImpl;
+    public static SFCamera Camera => SFBootstrap.Runtime.Host.CameraImpl;
+    public static SFEvents Events => SFBootstrap.Runtime.Host.EventsImpl;
+    public static SFNetwork Network => SFBootstrap.Runtime.Host.NetworkImpl;
 
-    public static SFModuleRuntime Modules => SFHost.Shared.ModuleRuntime;
+    public static SFModuleRuntime Modules => SFBootstrap.Runtime.Host.ModuleRuntime;
 
-    public static string UserFilesDirectory => SFHost.Shared.UserFilesDirectory;
+    public static string UserFilesDirectory => SFBootstrap.Runtime.Host.UserFilesDirectory;
 }
 
 /// <summary>

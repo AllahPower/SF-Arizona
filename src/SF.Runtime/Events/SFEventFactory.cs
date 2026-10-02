@@ -1,51 +1,51 @@
 namespace SFSharp.Runtime.Events;
 
-internal static class SFEventFactory
+internal sealed class SFEventFactory(SFRpc rpc, SFRpcParsers rpcParsers, SFPacketParsers packetParsers)
 {
-    public static SFEventChannel<TEvent> FromIncomingRpc<TEvent, TRpc>(
+    public SFEventChannel<TEvent> FromIncomingRpc<TEvent, TRpc>(
         SampRpcId rpcId,
         Func<IncomingRpcArgs, TRpc> parser,
         Func<TRpc, TEvent> map,
         string name)
     {
         return new SFEventChannel<TEvent>(publish =>
-            SF.Rpc.Bind(rpcId, parser, (rpc, _) => publish(map(rpc)), name: name));
+            rpc.Bind(rpcId, parser, (rpc, _) => publish(map(rpc)), name: name));
     }
 
-    public static SFEventChannel<TEvent> FromOutgoingRpc<TEvent>(
+    public SFEventChannel<TEvent> FromOutgoingRpc<TEvent>(
         SampRpcId rpcId,
         Func<OutgoingRpcArgs, TEvent> map)
     {
         return new SFEventChannel<TEvent>(publish =>
-            SF.Rpc.SubscribeOutgoing(rpcId, args => publish(map(args))));
+            rpc.SubscribeOutgoing(rpcId, args => publish(map(args))));
     }
 
-    public static SFEventChannel<TEvent> FromOutgoingRpc<TEvent, TRpc>(
+    public SFEventChannel<TEvent> FromOutgoingRpc<TEvent, TRpc>(
         SampRpcId rpcId,
         Func<OutgoingRpcArgs, TRpc> parser,
         Func<TRpc, TEvent> map)
     {
         return new SFEventChannel<TEvent>(publish =>
-            SF.Rpc.SubscribeOutgoing(rpcId, args => publish(map(parser(args)))));
+            rpc.SubscribeOutgoing(rpcId, args => publish(map(parser(args)))));
     }
 
-    public static SFEventChannel<TRpc> FromParsedIncomingRpc<TRpc>()
+    public SFEventChannel<TRpc> FromParsedIncomingRpc<TRpc>()
     {
-        return new SFEventChannel<TRpc>(publish => SF.RpcParsers.BindIncoming<TRpc>(publish));
+        return new SFEventChannel<TRpc>(publish => rpcParsers.BindIncoming<TRpc>(publish));
     }
 
-    public static SFEventChannel<TRpc> FromParsedOutgoingRpc<TRpc>()
+    public SFEventChannel<TRpc> FromParsedOutgoingRpc<TRpc>()
     {
-        return new SFEventChannel<TRpc>(publish => SF.RpcParsers.BindOutgoing<TRpc>(publish));
+        return new SFEventChannel<TRpc>(publish => rpcParsers.BindOutgoing<TRpc>(publish));
     }
 
-    public static SFEventChannel<TPacket> FromParsedIncomingPacket<TPacket>()
+    public SFEventChannel<TPacket> FromParsedIncomingPacket<TPacket>()
     {
-        return new SFEventChannel<TPacket>(publish => SF.PacketParsers.BindIncoming<TPacket>(publish));
+        return new SFEventChannel<TPacket>(publish => packetParsers.BindIncoming<TPacket>(publish));
     }
 
-    public static SFEventChannel<TPacket> FromParsedOutgoingPacket<TPacket>()
+    public SFEventChannel<TPacket> FromParsedOutgoingPacket<TPacket>()
     {
-        return new SFEventChannel<TPacket>(publish => SF.PacketParsers.BindOutgoing<TPacket>(publish));
+        return new SFEventChannel<TPacket>(publish => packetParsers.BindOutgoing<TPacket>(publish));
     }
 }

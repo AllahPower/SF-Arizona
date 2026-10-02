@@ -1,9 +1,9 @@
 namespace SFSharp.Runtime.Ui;
 
-public class SFKeyboard : ISFKeyboard
+public class SFKeyboard(ExceptionReporter exceptions) : ISFKeyboard
 {
-    private static byte[] _currentState = new byte[256];
-    private static byte[] _lastState = new byte[256];
+    private byte[] _currentState = new byte[256];
+    private byte[] _lastState = new byte[256];
 
     internal async void StartLoop()
     {
@@ -19,7 +19,7 @@ public class SFKeyboard : ISFKeyboard
         }
         catch (Exception ex)
         {
-            SFBootstrap.ProcessException(ex);
+            exceptions.Report(ex);
         }
     }
 
