@@ -27,7 +27,7 @@ dotnet build examples/CefEmitor/CefEmitor.Example.csproj -c Debug
 ```
 
 Output lands in `examples/CefEmitor/bin/Debug/cef-emitor/` with the plugin
-DLL, `module.json`, and `wwwroot/`.
+DLL, `manifest.json`, and `wwwroot/`.
 
 ## Install
 
@@ -36,7 +36,7 @@ Copy the output folder into the game's plugin root:
 ```
 <GameDir>/SF/modules/cef-emitor/
   SF.Example.CefEmitor.dll
-  module.json
+  manifest.json
   wwwroot/
     index.html
     style.css
