@@ -5,5 +5,8 @@
   "description": "Sample external plugin that registers a chat command and echoes text to chat and to the log.",
   "author": "SF-Arizona",
   "assembly": "SF.Example.CommandEcho.dll",
-  "enabledOnStart": true
+  "enabledOnStart": true,
+  "dependencies": {
+    "sf": { "min": "4.0.0", "max": "4.x", "target": "4.0.0" }
+  }
 }

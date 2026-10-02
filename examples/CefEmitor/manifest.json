@@ -5,5 +5,8 @@
   "description": "Hosts a local web UI that injects synthetic Arizona 220/17 InjectCode packets via ISFNetwork.SimulateIncomingPacket.",
   "author": "SF-Arizona",
   "assembly": "SF.Example.CefEmitor.dll",
-  "enabledOnStart": false
+  "enabledOnStart": false,
+  "dependencies": {
+    "sf": { "min": "4.0.0", "max": "4.x", "target": "4.0.0" }
+  }
 }

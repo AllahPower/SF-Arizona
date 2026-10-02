@@ -5,5 +5,8 @@
   "description": "Toggles the vorbisFile.asi AntiAFK flag via /sfafk by calling the setAntiAfk/isAntiAfk exports.",
   "author": "SF-Arizona",
   "assembly": "SF.Example.AntiAfkToggle.dll",
-  "enabledOnStart": true
+  "enabledOnStart": true,
+  "dependencies": {
+    "sf": { "min": "4.0.0", "max": "4.x", "target": "4.0.0" }
+  }
 }
