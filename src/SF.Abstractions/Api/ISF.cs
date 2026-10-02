@@ -2,8 +2,7 @@ namespace SFSharp.Abstractions;
 
 /// <summary>
 /// Root plugin-facing facade. The concrete implementation is owned by the host and exposed to
-/// every module through <see cref="IModuleContext.SF"/>. Host modules can still use the
-/// <c>SF</c> static class for in-proc access, the static class forwards to the same singleton.
+/// every module through <see cref="IModuleContext.SF"/> once SA-MP's CNetGame exists.
 /// </summary>
 public interface ISF
 {
@@ -57,6 +56,9 @@ public interface ISF
     /// see <see cref="ISFNetwork"/>.
     /// </summary>
     ISFNetwork Network { get; }
+
+    /// <summary>Game start-up stages, see <see cref="ISFGameLoading"/>.</summary>
+    ISFGameLoading Loading { get; }
 
     /// <summary>Resolved GTA San Andreas user files directory.</summary>
     string UserFilesDirectory { get; }

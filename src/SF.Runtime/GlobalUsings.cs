@@ -27,6 +27,7 @@ global using SFSharp.Runtime.Diagnostics.DebugWeb;
 global using SFSharp.Runtime.Diagnostics;
 global using SFSharp.Runtime.Events;
 global using SFSharp.Runtime.Game.Entities;
+global using SFSharp.Runtime.Game.Loading;
 global using SFSharp.Runtime.Game.Players;
 global using SFSharp.Runtime.Game.Pools;
 global using SFSharp.Runtime.Game.World;

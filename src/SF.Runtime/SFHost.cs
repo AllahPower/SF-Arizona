@@ -23,6 +23,7 @@ internal sealed class SFHost : ISF
         CameraImpl = new SFCamera(PlayersImpl, RpcImpl);
         EventsImpl = new SFEvents(new SFEventFactory(RpcImpl, RpcParsersImpl, PacketParsersImpl));
         NetworkImpl = new SFNetwork(runtime.Hooks.IncomingRpcPacket);
+        LoadingImpl = runtime.Loading;
     }
 
     public SFChat ChatImpl { get; }
@@ -40,6 +41,7 @@ internal sealed class SFHost : ISF
     public SFCamera CameraImpl { get; }
     public SFEvents EventsImpl { get; }
     public SFNetwork NetworkImpl { get; }
+    public SFGameLoading LoadingImpl { get; }
     public SFModuleRuntime ModuleRuntime { get; } = new();
 
     public string UserFilesDirectory { get; } =
@@ -61,4 +63,5 @@ internal sealed class SFHost : ISF
     ISFRpcParsers ISF.RpcParsers => RpcParsersImpl;
     ISFCamera ISF.Camera => CameraImpl;
     ISFNetwork ISF.Network => NetworkImpl;
+    ISFGameLoading ISF.Loading => LoadingImpl;
 }

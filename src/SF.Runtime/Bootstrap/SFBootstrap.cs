@@ -89,6 +89,9 @@ public static class SFBootstrap
             ProtocolDiagnostics.Logger = SFLoggerProvider.Instance.CreateLogger("Protocol");
             LogEnvironment();
 
+            runtime.InstallGameLoadHooks();
+            runtime.Loading.Reach(SFGameLoadStage.Startup);
+
             uint baseAddress = await GetSampDllBaseAddress();
             SFLog.Debug($"samp.dll loaded at 0x{baseAddress:X8}");
             SampBitStreamReader.NativeStringDecoder = new SampStringCompressorDecoder();
@@ -111,6 +114,8 @@ public static class SFBootstrap
 
             host.KeyboardImpl.StartLoop();
             SFLog.Debug("Keyboard loop started");
+
+            runtime.Loading.Reach(SFGameLoadStage.NetGameReady);
 
             runtime.MainThread.Post(() => main(runtime));
         }

@@ -7,6 +7,12 @@ public sealed class ExceptionReporter
     {
         SFLog.Error(ex, "Unhandled library exception");
 
+        // Early-loading exceptions can arrive before samp.dll is mapped, where resolving CChat would read a bogus address.
+        if (!ModuleResolver.IsModuleLoaded("samp.dll"))
+        {
+            return;
+        }
+
         try
         {
             CChat.Instance.AddEntry(EntryType.Chat, $"{ex.GetType()}: {ex.Message}", null, 0xFFFFFFFF, 0);

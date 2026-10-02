@@ -157,6 +157,19 @@ public static class GtaOffsets
         public const int ObjectDamage = 0x1A0D90;
     }
 
+    // Start-up sequence, verified in IDA on 2026-10-02 (same MD5): WinMain runs one gGameState step per
+    // PeekMessageA iteration; state 5 calls InitialiseCoreDataAfterRW, state 8 InitialiseGame -> CGame::Initialise,
+    // which calls Init1, LoadLevel(DEFAULT.DAT, GTA.DAT), Init2 and Init3. All four are cdecl and return bool in AL;
+    // Init1-3 take the level file name pushed by CGame::Initialise.
+    public static class GameLoadRva
+    {
+        public const int GameState = 0x88D4C0;
+        public const int InitialiseCoreDataAfterRW = 0x1BFA90;
+        public const int Init1 = 0x1BF840;
+        public const int Init2 = 0x1BA1A0;
+        public const int Init3 = 0x1BA400;
+    }
+
     public static class CPedDamageResponseCalculator
     {
         public const int Damager = 0x00;
