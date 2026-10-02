@@ -27,6 +27,7 @@ global using SFSharp.Runtime.Interop.Classes.Players;
 global using SFSharp.Runtime.Interop.Classes.Pools;
 global using SFSharp.Runtime.Interop.Classes.Vehicles;
 global using SFSharp.Runtime.Interop.Classes;
+global using SFSharp.Runtime.Interop.Engine;
 global using SFSharp.Runtime.Interop.Hooking.Hooks;
 global using SFSharp.Runtime.Interop.Hooking;
 global using SFSharp.Runtime.Interop.Native;

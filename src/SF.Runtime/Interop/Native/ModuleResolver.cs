@@ -7,6 +7,12 @@ public static unsafe class ModuleResolver
         return (nint)(Win32.GetModuleHandle(moduleName) + offset);
     }
 
+    /// <summary>Address of an RVA inside the game executable (the process main module).</summary>
+    public static nint GetGameAddress(int rva)
+    {
+        return (nint)Win32.GetModuleHandle(null) + rva;
+    }
+
     public static bool IsModuleLoaded(string moduleName)
     {
         return Win32.GetModuleHandle(moduleName) != 0;
