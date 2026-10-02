@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace SFSharp.Runtime.Interop.RakNet;
@@ -11,17 +10,19 @@ public unsafe ref struct SampBitStreamReader
 {
     private static readonly Encoding _stringEncoding;
     private static readonly HuffmanNode _stringCompressorRoot;
-    private static readonly delegate* unmanaged[Stdcall]<nint> _getStringCompressorInstance;
-    private static readonly delegate* unmanaged[Thiscall]<nint, byte*, int, SampBitStream*, ushort, byte> _stringCompressorDecodeString;
 
     static SampBitStreamReader()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         _stringEncoding = Encoding.GetEncoding(1251);
         _stringCompressorRoot = BuildHuffmanTree(s_englishCharacterFrequencies);
-        _getStringCompressorInstance = (delegate* unmanaged[Stdcall]<nint>)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.SampStringCompressor.Instance);
-        _stringCompressorDecodeString = (delegate* unmanaged[Thiscall]<nint, byte*, int, SampBitStream*, ushort, byte>)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.SampStringCompressor.DecodeString);
     }
+
+    /// <summary>
+    /// Game-side StringCompressor, set once by the host after samp.dll loads. Encoded strings are decoded by the
+    /// managed Huffman decoder when it is unset or fails.
+    /// </summary>
+    public static ISampStringDecoder? NativeStringDecoder { get; set; }
 
     private readonly byte* _data;
     private readonly int _startBitOffset;
@@ -327,81 +328,44 @@ public unsafe ref struct SampBitStreamReader
 
     private static bool TryDecodeNative(ReadOnlySpan<byte> encodedPayload, int maxCharsToWrite, out string text)
     {
-        nint instance = _getStringCompressorInstance();
-        if (instance == 0)
+        text = string.Empty;
+        if (NativeStringDecoder is not { } decoder)
         {
-            text = string.Empty;
             return false;
         }
 
         byte[] output = new byte[maxCharsToWrite];
+        int bitOffset = 0;
+        int length;
         fixed (byte* payloadPtr = encodedPayload)
-        fixed (byte* outputPtr = output)
         {
-            SampBitStream bitStream = new()
+            if (!decoder.TryDecode(payloadPtr, encodedPayload.Length * 8, ref bitOffset, output, out length))
             {
-                NumberOfBitsAllocated = encodedPayload.Length * 8,
-                NumberOfBitsUsed = encodedPayload.Length * 8,
-                ReadOffset = 0,
-                Data = payloadPtr
-            };
-
-            byte ok = _stringCompressorDecodeString(instance, outputPtr, maxCharsToWrite, &bitStream, 0);
-            if (ok == 0)
-            {
-                text = string.Empty;
                 return false;
             }
         }
 
-        int nullIndex = Array.IndexOf(output, (byte)0);
-        if (nullIndex < 0)
-        {
-            nullIndex = output.Length;
-        }
-
-        text = _stringEncoding.GetString(output, 0, nullIndex);
+        text = _stringEncoding.GetString(output, 0, length);
         return true;
     }
 
     private bool TryReadEncodedStringNative(int maxCharsToWrite, out string text)
     {
-        nint instance = _getStringCompressorInstance();
-        if (instance == 0)
+        text = string.Empty;
+        if (NativeStringDecoder is not { } decoder)
         {
-            text = string.Empty;
             return false;
         }
 
-        int nativeBufferChars = Math.Max(maxCharsToWrite, 0x1000);
-        byte[] output = new byte[nativeBufferChars];
-        SampBitStream bitStream = new()
+        byte[] output = new byte[Math.Max(maxCharsToWrite, 0x1000)];
+        int bitOffset = _offsetBits;
+        if (!decoder.TryDecode(_data, _endBitOffset, ref bitOffset, output, out int length))
         {
-            NumberOfBitsAllocated = _endBitOffset,
-            NumberOfBitsUsed = _endBitOffset,
-            ReadOffset = _offsetBits,
-            Data = _data
-        };
-
-        fixed (byte* outputPtr = output)
-        {
-            byte ok = _stringCompressorDecodeString(instance, outputPtr, nativeBufferChars, &bitStream, 0);
-            if (ok == 0)
-            {
-                text = string.Empty;
-                return false;
-            }
+            return false;
         }
 
-        _offsetBits = bitStream.ReadOffset;
-
-        int nullIndex = Array.IndexOf(output, (byte)0);
-        if (nullIndex < 0)
-        {
-            nullIndex = output.Length;
-        }
-
-        text = _stringEncoding.GetString(output, 0, nullIndex);
+        _offsetBits = bitOffset;
+        text = _stringEncoding.GetString(output, 0, length);
         return true;
     }
 
@@ -515,15 +479,6 @@ public unsafe ref struct SampBitStreamReader
         {
             output[byteCount - 1] >>= 8 - remainderBits;
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    private struct SampBitStream
-    {
-        public int NumberOfBitsAllocated;
-        public int NumberOfBitsUsed;
-        public int ReadOffset;
-        public byte* Data;
     }
 
     private sealed class HuffmanNode

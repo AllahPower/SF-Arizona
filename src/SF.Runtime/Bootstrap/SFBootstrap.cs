@@ -187,6 +187,7 @@ public static class SFBootstrap
 
             uint baseAddress = await GetSampDllBaseAddress();
             SFLog.Debug($"samp.dll loaded at 0x{baseAddress:X8}");
+            SampBitStreamReader.NativeStringDecoder = new SampStringCompressorDecoder();
 
             ValidateEnvironment();
 
