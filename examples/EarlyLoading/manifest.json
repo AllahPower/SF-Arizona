@@ -1,0 +1,12 @@
+{
+  "id": "example.early-loading",
+  "displayName": "Early Loading Example",
+  "version": "1.0.0",
+  "description": "Sample plugin with an early module that logs every game load stage and its timing.",
+  "author": "SF-Arizona",
+  "assembly": "SF.Example.EarlyLoading.dll",
+  "enabledOnStart": true,
+  "dependencies": {
+    "sf": { "min": "4.0.0", "max": "4.x", "target": "4.0.0" }
+  }
+}
