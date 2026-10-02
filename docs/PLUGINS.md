@@ -85,3 +85,50 @@ A plugin cannot be unloaded or reloaded while plugins that depend on it are load
 
 Plugin dependencies order whole plugins. Ordering between individual modules still comes from
 `[SFModule(Dependencies = [...])]`, which takes module ids.
+
+## Early loading
+
+Plugins are discovered on the first runtime tick, the first iteration of the GTA main loop, before the
+game loads its data. A plugin that needs to act during loading implements `ISFEarlyModule`
+(namespace `SFSharp.Abstractions.Modules`). Every such type is created once through its public
+parameterless constructor when the plugin loads. It needs no `[SFModule]` attribute, and a plugin may
+contain only early modules.
+
+```csharp
+public sealed class LoadTweaks : ISFEarlyModule
+{
+    public void OnGameLoading(ISFEarlyContext context)
+    {
+        context.Loading.Subscribe(SFGameLoadStage.BeforeInit1, () =>
+            context.Log.LogInformation("pools are created next, gGameState={State}", context.Loading.GameState));
+    }
+}
+```
+
+`context.Loading` reports the stages in this order:
+
+| Stage | When |
+| --- | --- |
+| `Startup` | First runtime tick, right after plugin discovery |
+| `BeforeCoreData` / `AfterCoreData` | Around `CGame::InitialiseCoreDataAfterRW` (handling, timecyc, popcycle, audio) |
+| `BeforeInit1` / `AfterInit1` | Around `CGame::Init1` (pools, world, model info); `DEFAULT.DAT` and `GTA.DAT` load after it |
+| `BeforeInit2` / `AfterInit2` | Around `CGame::Init2` (streaming, paths, peds, animations, scripts) |
+| `BeforeInit3` / `AfterInit3` | Around `CGame::Init3` (procedural interiors, shadows) |
+| `NetGameReady` | SA-MP CNetGame exists, `ISF` services are created and regular modules start |
+
+- `Subscribe(stage, handler)` runs the handler synchronously on the game thread, inside the GTA
+  function for `Before*`/`After*` stages. That is the only way to change memory before the function
+  runs. An exception is logged and the remaining handlers still run. Handlers slower than 100 ms are
+  logged.
+- `WhenStageAsync(stage)` completes once the stage is reached. Its continuation runs from the
+  main-thread queue, which is pumped only between GTA main-loop states. So `await` is not a way to act
+  inside a stage.
+- Stages only move forward. A handler for a stage that has already passed is never called. The same
+  applies to a stage whose hook was skipped: the log names a hook whose entry has an unknown prologue.
+- `ISF` and everything behind it (chat, entities, network) exist only from `NetGameReady`. Regular
+  `ISFModule` instances still start then, and `ISF.Loading` gives them the same stage information.
+- Subscriptions and objects passed to `RegisterDisposable` end when the plugin unloads. If the early
+  module implements `IDisposable`, it is disposed then.
+- An exception from the constructor or `OnGameLoading` fails the plugin load.
+- A plugin loaded later with `/sfs plugin-load` still gets `OnGameLoading`, but at its current stage,
+  usually `NetGameReady`.
