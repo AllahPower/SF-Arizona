@@ -1,5 +1,5 @@
 using System.Text;
-using SFSharp.Runtime.Interop.RakNet;
+using SFSharp.Protocol.BitStream;
 
 namespace SF.Network.Tests;
 

@@ -10,6 +10,7 @@ internal static class PluginSharedAssemblyPolicy
     private static readonly Dictionary<string, Assembly> Shared = new(StringComparer.OrdinalIgnoreCase)
     {
         ["SF.Abstractions"] = typeof(ISFModule).Assembly,
+        ["SF.Protocol"] = typeof(SampRpc).Assembly,
         ["Microsoft.Extensions.Logging.Abstractions"] = typeof(ILogger).Assembly,
         ["System.Text.Json"] = typeof(JsonSerializer).Assembly,
     };

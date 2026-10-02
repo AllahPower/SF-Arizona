@@ -7,7 +7,7 @@ function Assert-True([bool]$Condition, [string]$Message) {
     if (!$Condition) { throw $Message }
 }
 
-$expectedProjects = @('SF.Abstractions', 'SF.Runtime', 'SF.Native')
+$expectedProjects = @('SF.Abstractions', 'SF.Protocol', 'SF.Runtime', 'SF.Native')
 $tracked = & git -C $root ls-files --cached --others --exclude-standard src
 if ($LASTEXITCODE -ne 0) { throw 'Could not inspect source files.' }
 foreach ($path in $tracked) {
@@ -18,11 +18,16 @@ foreach ($path in $tracked) {
 }
 [xml]$runtime = Get-Content -LiteralPath "$root/src/SF.Runtime/SF.Runtime.csproj"
 [xml]$abstractions = Get-Content -LiteralPath "$root/src/SF.Abstractions/SF.Abstractions.csproj"
-$runtimeReferences = @($runtime.Project.ItemGroup.ProjectReference | Where-Object { $_ })
-Assert-True ($runtimeReferences.Count -eq 1 -and $runtimeReferences[0].Include -eq '..\SF.Abstractions\SF.Abstractions.csproj') 'Runtime must reference only Abstractions.'
+[xml]$protocol = Get-Content -LiteralPath "$root/src/SF.Protocol/SF.Protocol.csproj"
+$runtimeReferences = @($runtime.Project.ItemGroup.ProjectReference | Where-Object { $_ } | ForEach-Object Include | Sort-Object)
+Assert-True (($runtimeReferences -join ';') -eq '..\SF.Abstractions\SF.Abstractions.csproj;..\SF.Protocol\SF.Protocol.csproj') 'Runtime must reference only Abstractions and Protocol.'
+$protocolReferences = @($protocol.Project.ItemGroup.ProjectReference | Where-Object { $_ } | ForEach-Object Include)
+Assert-True ($protocolReferences.Count -eq 1 -and $protocolReferences[0] -eq '..\SF.Abstractions\SF.Abstractions.csproj') 'Protocol must reference only Abstractions.'
 Assert-True (@($abstractions.Project.ItemGroup.ProjectReference | Where-Object { $_ }).Count -eq 0) 'Abstractions must not reference implementations.'
-foreach ($source in Get-ChildItem -LiteralPath "$root/src/SF.Abstractions" -Filter '*.cs' -Recurse) {
-    Assert-True (!(Select-String -LiteralPath $source.FullName -Pattern '\bSFSharp\.Runtime\b|\[(?:DllImport|LibraryImport)\b' -Quiet)) "Implementation dependency in contracts: $($source.Name)"
+foreach ($project in 'SF.Abstractions', 'SF.Protocol') {
+    foreach ($source in Get-ChildItem -LiteralPath "$root/src/$project" -Filter '*.cs' -Recurse | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' }) {
+        Assert-True (!(Select-String -LiteralPath $source.FullName -Pattern '\bSFSharp\.Runtime\b|\[(?:DllImport|LibraryImport)\b|delegate\* unmanaged' -Quiet)) "Native or implementation dependency in $project`: $($source.Name)"
+    }
 }
 $native = Get-Content -LiteralPath "$root/src/SF.Native/src/runtime/hostfxr_bootstrap.cpp" -Raw
 Assert-True ($native.Contains('SFSharp.Runtime.Bootstrap.SFBootstrap, SF.Runtime')) 'Managed bootstrap identity changed.'
@@ -66,7 +71,7 @@ if ($Archive) {
     $zip = [IO.Compression.ZipFile]::OpenRead($archivePath)
     try {
         $entries = @($zip.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
-        foreach ($file in @('SF.asi', 'nethost.dll', 'SF/SF.Runtime.dll', 'SF/SF.Abstractions.dll', 'SF/SF.Runtime.runtimeconfig.json', 'SF/SF.Runtime.deps.json', 'SF/debug-web/wwwroot/index.html', 'INSTALL.md', 'build-info.json')) {
+        foreach ($file in @('SF.asi', 'nethost.dll', 'SF/SF.Runtime.dll', 'SF/SF.Abstractions.dll', 'SF/SF.Protocol.dll', 'SF/SF.Runtime.runtimeconfig.json', 'SF/SF.Runtime.deps.json', 'SF/debug-web/wwwroot/index.html', 'INSTALL.md', 'build-info.json')) {
             Assert-True ($file -in $entries) "Archive is missing $file"
         }
         foreach ($file in $entries) {

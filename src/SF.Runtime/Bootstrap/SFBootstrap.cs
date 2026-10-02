@@ -183,6 +183,7 @@ public static class SFBootstrap
         try
         {
             SFLog.Debug("SFMain started");
+            ProtocolDiagnostics.Logger = SFLoggerProvider.Instance.CreateLogger("Protocol");
             LogEnvironment();
 
             uint baseAddress = await GetSampDllBaseAddress();

@@ -13,7 +13,7 @@ if (!$Version) {
 if ($Version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') { throw 'Invalid archive version.' }
 $publish = "$root/artifacts/publish/$Configuration/win-x86/SF"
 $native = "$root/artifacts/native/$Configuration/win-x86"
-foreach ($file in @("$native/SF.asi", "$native/nethost.dll", "$publish/SF.Runtime.dll", "$publish/SF.Abstractions.dll", "$publish/SF.Runtime.runtimeconfig.json", "$publish/SF.Runtime.deps.json", "$publish/debug-web/wwwroot/index.html")) {
+foreach ($file in @("$native/SF.asi", "$native/nethost.dll", "$publish/SF.Runtime.dll", "$publish/SF.Abstractions.dll", "$publish/SF.Protocol.dll", "$publish/SF.Runtime.runtimeconfig.json", "$publish/SF.Runtime.deps.json", "$publish/debug-web/wwwroot/index.html")) {
     if (!(Test-Path -LiteralPath $file -PathType Leaf)) { throw "Required deployment file missing: $file" }
 }
 [xml]$versionFile = Get-Content -LiteralPath "$root/Version.props"

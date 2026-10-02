@@ -82,7 +82,7 @@ try {
 
     & dotnet publish $runtime -c $Configuration -r win-x86 --self-contained false --no-restore $versionArgument
     if ($LASTEXITCODE -ne 0) { throw 'Runtime publish failed.' }
-    Write-Output "BUILD PASS: SF.Native, SF.Runtime, SF.Abstractions and $($projects.Count - 1) examples; version=$Version"
+    Write-Output "BUILD PASS: SF.Native, SF.Runtime, SF.Abstractions, SF.Protocol and $($projects.Count - 1) examples; version=$Version"
 }
 finally {
     Pop-Location

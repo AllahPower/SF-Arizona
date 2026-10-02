@@ -42,6 +42,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SF.Abstractions\SF.Abstractions.csproj" />
+		<ProjectReference Include="..\SF.Protocol\SF.Protocol.csproj" />
 		<InternalsVisibleTo Include="SF.Network.Tests" />
 	</ItemGroup>
 

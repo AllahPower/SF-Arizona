@@ -5,5 +5,5 @@
     <BaseOutputPath>$(RepositoryRoot)artifacts\bin\$(MSBuildProjectName)\</BaseOutputPath>
     <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**</DefaultItemExcludes>
   </PropertyGroup>
-  <Import Project="Version.props" Condition="'$(MSBuildProjectName)' == 'SF.Runtime' Or '$(MSBuildProjectName)' == 'SF.Abstractions'" />
+  <Import Project="Version.props" Condition="'$(MSBuildProjectName)' == 'SF.Runtime' Or '$(MSBuildProjectName)' == 'SF.Abstractions' Or '$(MSBuildProjectName)' == 'SF.Protocol'" />
 </Project>

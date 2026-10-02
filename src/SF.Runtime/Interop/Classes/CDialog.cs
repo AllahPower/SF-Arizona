@@ -51,16 +51,6 @@ public unsafe ref struct CDialog
     }
 }
 
-public enum DialogStyle
-{
-    MsgBox = 0,
-    Input = 1,
-    List = 2,
-    Password = 3,
-    TabList = 4,
-    TabListHeaders = 5,
-}
-
 [StructLayout(LayoutKind.Explicit)]
 public unsafe struct CDXUTListBox
 {

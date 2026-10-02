@@ -1,7 +1,7 @@
 using System.Text;
-using SFSharp.Runtime.Networking.RakNet.Arizona;
-using SFSharp.Runtime.Networking.RakNet.Arizona.Models;
-using SFSharp.Runtime.Interop.RakNet;
+using SFSharp.Protocol.Arizona;
+using SFSharp.Protocol.Arizona.Models;
+using SFSharp.Protocol.BitStream;
 
 namespace SF.Network.Tests;
 

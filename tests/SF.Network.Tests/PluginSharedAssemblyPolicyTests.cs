@@ -19,6 +19,14 @@ public sealed class PluginSharedAssemblyPolicyTests
         Assert.Same(AssemblyLoadContext.Default, AssemblyLoadContext.GetLoadContext(resolved));
     }
 
+    [Fact]
+    public void ProtocolIsSharedAsTheInstanceTheHostUses()
+    {
+        Assert.True(PluginSharedAssemblyPolicy.IsShared("SF.Protocol"));
+        Assert.True(PluginSharedAssemblyPolicy.TryResolveLoadedAssembly("SF.Protocol", out Assembly? resolved));
+        Assert.Same(typeof(SFSharp.Protocol.Rpc.SampRpc).Assembly, resolved);
+    }
+
     [Theory]
     [InlineData("../SF.Abstractions")]
     [InlineData("Missing.Shared.Library")]
