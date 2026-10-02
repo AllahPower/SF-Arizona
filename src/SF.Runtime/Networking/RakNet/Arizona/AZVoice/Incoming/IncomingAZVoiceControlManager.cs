@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Networking.RakNet.Arizona.AZVoice.Incoming;
 
 public sealed class IncomingAZVoiceControlManager : IDisposable
 {

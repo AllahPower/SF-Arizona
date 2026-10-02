@@ -1,5 +1,5 @@
 using SFSharp.Abstractions.Modules;
-using SFSharp.Runtime.Modules;
+using SFSharp.Runtime.Modules.PluginLoading;
 using System.Reflection;
 using System.Runtime.Loader;
 

@@ -1,4 +1,4 @@
-using SFSharp.Runtime.Network.RakNet.Incoming;
+using SFSharp.Runtime.Interop.RakNet.Incoming;
 
 namespace SF.Network.Tests;
 

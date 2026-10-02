@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace SFSharp.Runtime.Network;
+namespace SFSharp.Runtime.Networking;
 
 public sealed class SFPacketParsers : ISFPacketParsers
 {

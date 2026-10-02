@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop.Classes.Entities;
+namespace SFSharp.Runtime.Interop.Classes.Actors;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x56, Pack = 1)]
 public unsafe struct CActor

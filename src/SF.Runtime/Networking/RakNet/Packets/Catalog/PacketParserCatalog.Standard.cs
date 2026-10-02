@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Packets;
+namespace SFSharp.Runtime.Networking.RakNet.Packets.Catalog;
 
 public static partial class PacketParserCatalog
 {

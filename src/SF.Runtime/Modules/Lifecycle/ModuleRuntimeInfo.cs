@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Lifecycle;
 
 /// <summary>
 /// Mutable per-module state owned by <see cref="SFModuleContainer"/>. Holds lifecycle flags,

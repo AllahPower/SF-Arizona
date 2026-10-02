@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Storage;
 
 public sealed class DefaultModuleStorageProvider : IModuleStorageProvider
 {

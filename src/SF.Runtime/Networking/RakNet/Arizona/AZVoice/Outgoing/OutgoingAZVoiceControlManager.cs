@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Networking.RakNet.Arizona.AZVoice.Outgoing;
 
 // Outgoing counterpart of IncomingAZVoiceControlManager: fans AZVoice control
 // messages the client emits (packet 252 sub-RPCs) out to per-subId subscribers.

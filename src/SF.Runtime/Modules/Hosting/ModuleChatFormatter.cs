@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Hosting;
 
 internal static class ModuleChatFormatter
 {

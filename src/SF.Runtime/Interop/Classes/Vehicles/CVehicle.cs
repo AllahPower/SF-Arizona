@@ -1,23 +1,23 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, int>;
-using unsafe EnableEngineDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, int, void>;
-using unsafe EnableSirenDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, byte, void>;
-using unsafe GetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, float>;
-using unsafe GetTrailerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, SFSharp.Runtime.Interop.Classes.Entities.CVehicle*>;
-using unsafe HasDriverDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, int>;
-using unsafe IsOccupiedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, int>;
-using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, byte, byte, void>;
-using unsafe SetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, float, void>;
-using unsafe SetInvulnerableDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, int, void>;
-using unsafe SetLicensePlateTextDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, byte*, void>;
-using unsafe SetLockedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, int, void>;
-using unsafe SetRotationDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, float, void>;
-using unsafe SirenEnabledDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, int>;
-using unsafe UpdateColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Entities.CVehicle*, void>;
+using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, int>;
+using unsafe EnableEngineDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, int, void>;
+using unsafe EnableSirenDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, byte, void>;
+using unsafe GetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, float>;
+using unsafe GetTrailerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*>;
+using unsafe HasDriverDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, int>;
+using unsafe IsOccupiedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, int>;
+using unsafe SetColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, byte, byte, void>;
+using unsafe SetHealthDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, float, void>;
+using unsafe SetInvulnerableDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, int, void>;
+using unsafe SetLicensePlateTextDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, byte*, void>;
+using unsafe SetLockedDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, int, void>;
+using unsafe SetRotationDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, float, void>;
+using unsafe SirenEnabledDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, int>;
+using unsafe UpdateColorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*, void>;
 
-namespace SFSharp.Runtime.Interop.Classes.Entities;
+namespace SFSharp.Runtime.Interop.Classes.Vehicles;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x80, Pack = 1)]
 public unsafe struct CVehicle

@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network;
+namespace SFSharp.Runtime.Networking;
 
 /// <summary>
 /// Builds a packet payload into a <see cref="BitStreamWriter"/> passed by reference.

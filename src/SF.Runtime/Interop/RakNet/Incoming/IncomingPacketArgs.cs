@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Incoming;
+namespace SFSharp.Runtime.Interop.RakNet.Incoming;
 
 public readonly record struct IncomingPacketArgs(int EPacketId, nint DataPtr, int DataBitLength)
 {

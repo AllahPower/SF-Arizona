@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Network.RakNet.Hooks;
+namespace SFSharp.Runtime.Interop.RakNet.Hooks;
 
 internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpcPacketHook.OutgoingRpcPacketNative>
 {

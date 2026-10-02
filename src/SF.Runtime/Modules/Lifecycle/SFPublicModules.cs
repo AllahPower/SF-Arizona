@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Lifecycle;
 
 internal sealed class SFPublicModules : ISFModules
 {

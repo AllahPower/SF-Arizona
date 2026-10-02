@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Rpc;
+namespace SFSharp.Runtime.Networking.RakNet.Rpc.Parsing;
 
 public static partial class RpcParserCatalog
 {

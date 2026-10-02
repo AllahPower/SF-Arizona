@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Packets;
+namespace SFSharp.Runtime.Networking.RakNet.Packets.Models;
 
 public record IncomingSubPacket<TPayload>(EPacketId EPacketId, int SubId, string Name, TPayload Payload) : IParsedIncomingPacket, IParsedArizonaPacket
 {

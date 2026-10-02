@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace SFSharp.Runtime.Interop.Classes;
+namespace SFSharp.Runtime.Interop.Classes.Arizona;
 
 using unsafe ArizonaChatAddEntryDelegate = delegate* unmanaged[Stdcall]<int, byte*, byte*, uint, uint, int>;
 // cdecl(_DWORD* output, int* pColor, byte** pText, byte* pFlags) -> _DWORD*

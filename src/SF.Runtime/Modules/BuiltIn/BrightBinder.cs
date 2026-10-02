@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.BuiltIn;
 
 [SFModule("brightbinder", "BrightBinder", Category = "Automation", Description = "Quick bind dialog runner with target-aware command templates.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 20)]
 public class BrightBinder : SFModuleBase

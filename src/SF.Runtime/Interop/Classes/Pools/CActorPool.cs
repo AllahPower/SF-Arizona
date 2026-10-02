@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, SFSharp.Runtime.Interop.Classes.Pools.ActorInfo*, int>;
 using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, ushort, int>;
 using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, ushort, int>;
-using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, SFSharp.Runtime.Interop.Classes.Entities.CPed*, ushort>;
+using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, SFSharp.Runtime.Interop.Classes.Peds.CPed*, ushort>;
 using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CActorPool*, ushort, nint>;
 
 namespace SFSharp.Runtime.Interop.Classes.Pools;

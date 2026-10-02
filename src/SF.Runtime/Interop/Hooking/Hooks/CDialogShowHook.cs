@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Interop.Hooking;
+namespace SFSharp.Runtime.Interop.Hooking.Hooks;
 
 /// <summary>
 /// Caller-owned native strings passed to <c>CDialog::Show</c>, kept alongside the decoded values so

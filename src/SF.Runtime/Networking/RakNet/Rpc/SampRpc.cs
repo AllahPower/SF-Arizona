@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Network.RakNet.Rpc;
+namespace SFSharp.Runtime.Networking.RakNet.Rpc;
 
 public static class SampRpc
 {

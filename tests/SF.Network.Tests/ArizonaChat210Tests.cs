@@ -1,6 +1,7 @@
 using System.Text;
-using SFSharp.Runtime.Network.RakNet.Arizona;
-using BitStreamReader = SFSharp.Runtime.Network.RakNet.BitStreamReader;
+using SFSharp.Runtime.Networking.RakNet.Arizona;
+using SFSharp.Runtime.Networking.RakNet.Arizona.Models;
+using BitStreamReader = SFSharp.Runtime.Interop.RakNet.BitStreamReader;
 
 namespace SF.Network.Tests;
 

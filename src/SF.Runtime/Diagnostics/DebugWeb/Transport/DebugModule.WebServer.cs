@@ -4,7 +4,7 @@ using Microsoft.Extensions.FileProviders;
 using System.Net.WebSockets;
 using System.Text.Json;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Diagnostics.DebugWeb;
 
 public partial class DebugModule
 {

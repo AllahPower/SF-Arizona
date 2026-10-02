@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Diagnostics.DebugWeb;
 
 public partial class DebugModule
 {

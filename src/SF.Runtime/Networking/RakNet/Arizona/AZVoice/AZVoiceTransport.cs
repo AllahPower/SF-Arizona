@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Networking.RakNet.Arizona.AZVoice;
 
 internal static class AZVoiceTransport
 {

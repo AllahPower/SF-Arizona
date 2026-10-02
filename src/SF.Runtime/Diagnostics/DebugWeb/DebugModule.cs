@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Channels;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Diagnostics.DebugWeb;
 
 [SFModule("debug-web", "DebugWeb",
     Category = "Debug",

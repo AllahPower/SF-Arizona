@@ -1,5 +1,5 @@
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.BuiltIn;
 
 [SFModule("dialog-scraper", "DialogScraper", Category = "Utility", Description = "Selects useful rows from active SA-MP dialogs.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 10)]
 public class DialogScraper : SFModuleBase

@@ -1,6 +1,6 @@
-using static SFSharp.Runtime.Modules.ModuleChatFormatter;
+using static SFSharp.Runtime.Modules.Hosting.ModuleChatFormatter;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Hosting;
 
 public partial class SFModuleContainer
 {

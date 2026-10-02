@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Hosting;
 
 /// <summary>
 /// Registers and runs SF modules. One container instance typically lives for the whole lifetime

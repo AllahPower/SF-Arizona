@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Hosting;
 
 /// <summary>
 /// Per-run facade passed to <see cref="ISFModule.RunAsync(ModuleContext)"/>. Bundles the

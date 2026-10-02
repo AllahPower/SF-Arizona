@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Interop.RakNet.Arizona;
 
 public readonly record struct IncomingArizonaPacketArgs(int EPacketId, int SubId, nint DataPtr, int PayloadBitOffset, int PayloadBitLength)
 {

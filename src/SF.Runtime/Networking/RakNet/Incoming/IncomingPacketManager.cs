@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Incoming;
+namespace SFSharp.Runtime.Networking.RakNet.Incoming;
 
 public sealed class IncomingPacketManager : IDisposable
 {

@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Hosting;
 
 /// <summary>
 /// Host-level manifest persisted at <c>&lt;UserDataRoot&gt;\host.json</c>. Stores the user's

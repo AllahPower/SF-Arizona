@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.PluginLoading;
 
 public enum PluginState
 {

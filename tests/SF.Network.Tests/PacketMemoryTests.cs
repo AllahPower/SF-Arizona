@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
-using SFSharp.Runtime.Network.RakNet.Incoming;
+using SFSharp.Runtime.Interop.RakNet.Incoming;
+using SFSharp.Runtime.Networking.RakNet.Incoming;
 
 namespace SF.Network.Tests;
 

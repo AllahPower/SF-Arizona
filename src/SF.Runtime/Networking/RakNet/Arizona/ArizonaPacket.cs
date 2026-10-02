@@ -1,7 +1,7 @@
 using System.Numerics;
 using System.Text;
 
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Networking.RakNet.Arizona;
 
 public static partial class ArizonaPacket
 {

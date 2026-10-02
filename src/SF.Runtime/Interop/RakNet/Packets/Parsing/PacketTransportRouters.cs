@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Packets;
+namespace SFSharp.Runtime.Interop.RakNet.Packets.Parsing;
 
 internal interface IIncomingPacketTransportRouter
 {

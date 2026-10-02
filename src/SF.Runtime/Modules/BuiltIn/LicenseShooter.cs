@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.BuiltIn;
 
 public enum LicenseType
 {

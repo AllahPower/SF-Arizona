@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Networking.RakNet.Arizona.Models;
 
 public readonly record struct ArzBotNametag(int Color, string Text);
 

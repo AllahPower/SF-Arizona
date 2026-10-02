@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Network.RakNet.Rpc;
+namespace SFSharp.Runtime.Networking.RakNet.Rpc;
 
 #region incoming (server -> client)
 

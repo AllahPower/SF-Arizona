@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.Hosting;
 
 /// <summary>
 /// Convenience wrappers around <see cref="SFEvents"/>, <see cref="SFPackets"/> and

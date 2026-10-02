@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Bootstrap;
 
 public static class Program
 {

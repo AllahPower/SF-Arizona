@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Diagnostics.DebugWeb.Models;
 
 public enum TrafficDirection { Incoming, Outgoing }
 public enum TrafficKind { Rpc, Packet }

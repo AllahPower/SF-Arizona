@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using unsafe ChangeInteriorDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int, void>;
 using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int>;
 using unsafe DoesExistDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int>;
-using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, SFSharp.Runtime.Interop.Classes.Entities.CVehicle*>;
+using unsafe GetDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, SFSharp.Runtime.Interop.Classes.Vehicles.CVehicle*>;
 using unsafe GetNearestDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort>;
 using unsafe ProcessDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, void>;
 using unsafe SetParamsDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CVehiclePool*, ushort, int, int, void>;

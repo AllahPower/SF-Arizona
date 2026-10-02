@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet;
+namespace SFSharp.Runtime.Networking.RakNet.Filtering;
 
 /// <summary>
 /// Thread-safe, lock-free-read filter registry for synchronous packet/RPC filtering on hook threads.

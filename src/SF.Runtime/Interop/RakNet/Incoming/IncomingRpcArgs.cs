@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Incoming;
+namespace SFSharp.Runtime.Interop.RakNet.Incoming;
 
 public readonly record struct IncomingRpcArgs(int ERpcId, nint DataPtr, int DataBitOffset, int DataBitLength)
 {

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Networking.RakNet.Arizona;
 
 public abstract record ArzChatMessageSegment;
 public sealed record ArzChatTextSegment(string Text, byte[] RawText) : ArzChatMessageSegment;

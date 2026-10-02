@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Modules.BuiltIn;
 
 [SFModule("rpc-debugger", "RpcDebugger", Category = "Debug", Description = "Captures incoming and outgoing RPC/packet traffic with lightweight decoding.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 60)]
 public class RpcDebugger : SFModuleBase

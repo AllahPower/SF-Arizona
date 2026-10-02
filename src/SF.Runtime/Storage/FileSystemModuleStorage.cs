@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Modules;
+namespace SFSharp.Runtime.Storage;
 
 public sealed class FileSystemModuleStorage : IModuleStorage
 {

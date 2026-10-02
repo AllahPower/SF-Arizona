@@ -1,4 +1,4 @@
-namespace SFSharp.Runtime.Network.RakNet.Outgoing;
+namespace SFSharp.Runtime.Networking.RakNet.Outgoing;
 
 public sealed class OutgoingRpcManager : IDisposable
 {

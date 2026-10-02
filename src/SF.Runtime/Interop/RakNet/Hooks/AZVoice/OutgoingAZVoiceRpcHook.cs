@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SFSharp.Runtime.Network.RakNet.Hooks;
+namespace SFSharp.Runtime.Interop.RakNet.Hooks.AZVoice;
 
 // Debug hook on AZVoice.asi control-RPC sender for outgoing packet 252.
 // Target: AzVoice_SendRpcToServer — it writes the sub-op byte and an optional body

@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SFSharp.Runtime.Network.RakNet.Arizona;
+namespace SFSharp.Runtime.Networking.RakNet.Arizona.Parsing;
 
 public static class AZVoiceParsers
 {
