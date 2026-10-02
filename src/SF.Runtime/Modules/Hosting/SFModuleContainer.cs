@@ -60,10 +60,17 @@ public sealed partial class SFModuleContainer
 
     internal bool IsRunLoopActive => _isRunLoopActive && !_isShuttingDown;
 
-    public SFModuleContainer()
+    private readonly SFHost _host;
+    private readonly MainThreadDispatcher _mainThread;
+
+    internal SFModuleContainer(SFHost host, MainThreadDispatcher mainThread)
     {
+        _host = host;
+        _mainThread = mainThread;
         PublishModuleCatalogSnapshot();
     }
+
+    internal MainThreadDispatcher MainThread => _mainThread;
 
     /// <summary>
     /// Registers a module type with the container. Must be called before
@@ -79,6 +86,13 @@ public sealed partial class SFModuleContainer
     public void RegisterModule<T>(bool? enabledOnStart = null) where T : ISFModule, new()
     {
         RegisterCore(ModuleDescriptor.FromType(typeof(T)), static () => new T(), enabledOnStart, ownerPluginId: null);
+    }
+
+    /// <summary>Registers a built-in module created by <paramref name="factory"/>, for modules that take host services in their constructor.</summary>
+    internal void RegisterModule<T>(Func<T> factory, bool? enabledOnStart = null) where T : ISFModule
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        RegisterCore(ModuleDescriptor.FromType(typeof(T)), () => factory(), enabledOnStart, ownerPluginId: null);
     }
 
     /// <summary>
@@ -216,7 +230,7 @@ public sealed partial class SFModuleContainer
 
             if (onMainThread)
             {
-                SFBootstrap.PumpMainThreadQueue();
+                _mainThread.Pump();
                 Thread.Sleep(10);
             }
             else
@@ -304,7 +318,7 @@ public sealed partial class SFModuleContainer
         _isRunLoopActive = true;
         ActivatePendingAutoStartModules();
 
-        using IDisposable commandRegistration = SF.Chat.RegisterChatCommand("sfs", OnCommand);
+        using IDisposable commandRegistration = _host.ChatImpl.RegisterChatCommand("sfs", OnCommand);
 
         try
         {
@@ -373,7 +387,7 @@ public sealed partial class SFModuleContainer
         registration.Runtime.PrepareForStart(registration.AutoStartEnabled);
         ISFModule module = registration.Factory();
         CancellationTokenSource cts = new();
-        ModuleContext context = new(registration.Descriptor, registration.Runtime, cts.Token);
+        ModuleContext context = new(registration.Descriptor, registration.Runtime, cts.Token, _host, _mainThread);
 
         SFLog.Info($"StartModule id={registration.Descriptor.Id} type={registration.Descriptor.ModuleType.Name} execution={registration.Descriptor.ExecutionModel}");
         Task task = registration.Descriptor.ExecutionModel switch
@@ -477,19 +491,19 @@ public sealed partial class SFModuleContainer
             SFLog.Info($"Module completed id={registration.Descriptor.Id} state={snapshot.State} stopReason={snapshot.LastStopReason}");
             if (snapshot.LastStopReason == ModuleStopReason.Faulted)
             {
-                SF.Chat.Add(ModuleChatFormatter.FormatChatAction("faulted", registration.Descriptor.DisplayName, "faulted", SFColors.Red));
+                _host.ChatImpl.Add(ModuleChatFormatter.FormatChatAction("faulted", registration.Descriptor.DisplayName, "faulted", SFColors.Red));
             }
             else
             {
-                SF.Chat.Add(ModuleChatFormatter.FormatChatAction("stopped", registration.Descriptor.DisplayName, snapshot.LastStopReason.ToString(), SFColors.Orange));
+                _host.ChatImpl.Add(ModuleChatFormatter.FormatChatAction("stopped", registration.Descriptor.DisplayName, snapshot.LastStopReason.ToString(), SFColors.Orange));
             }
         }
         catch (Exception ex)
         {
             SFLog.Error(ex.GetBaseException(), $"Module faulted id={registration.Descriptor.Id}");
             Exception baseException = ex.GetBaseException();
-            SF.Chat.Add(ModuleChatFormatter.FormatChatAction("faulted", registration.Descriptor.DisplayName, "exception", SFColors.Red));
-            SF.Chat.Add((SFColors.Rose | SFColors.White).Apply($"{baseException.GetType().Name}: {baseException.Message}"));
+            _host.ChatImpl.Add(ModuleChatFormatter.FormatChatAction("faulted", registration.Descriptor.DisplayName, "exception", SFColors.Red));
+            _host.ChatImpl.Add((SFColors.Rose | SFColors.White).Apply($"{baseException.GetType().Name}: {baseException.Message}"));
         }
         finally
         {
@@ -515,7 +529,7 @@ public sealed partial class SFModuleContainer
                 registration.AutoStartEnabled = false;
                 registration.Runtime.SetAutoStartEnabled(false);
                 SFLog.Error($"Circuit breaker tripped for module id={registration.Descriptor.Id}: too many faults in 60s, auto-restart disabled");
-                SF.Chat.Add(ModuleChatFormatter.FormatChatAction("disabled", registration.Descriptor.DisplayName, "too many faults, auto-restart off", SFColors.Red));
+                _host.ChatImpl.Add(ModuleChatFormatter.FormatChatAction("disabled", registration.Descriptor.DisplayName, "too many faults, auto-restart off", SFColors.Red));
                 PublishModuleCatalogSnapshot();
                 return;
             }

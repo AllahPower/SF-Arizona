@@ -2,9 +2,9 @@ namespace SFSharp.Runtime.Diagnostics.DebugWeb;
 
 public partial class DebugModule
 {
-    private static (string? Name, string? Detail, string? Parsed) DecodeIncomingRpc(IncomingRpcArgs args)
+    private (string? Name, string? Detail, string? Parsed) DecodeIncomingRpc(IncomingRpcArgs args)
     {
-        if (SF.RpcParsers.TryParseIncoming(args, out RpcParseResult result) && result.Rpc is IParsedIncomingRpc rpc)
+        if (_host.RpcParsersImpl.TryParseIncoming(args, out RpcParseResult result) && result.Rpc is IParsedIncomingRpc rpc)
         {
             return (rpc.Name, $"rpcId={args.SampRpcId} {rpc.Detail}", rpc.Detail);
         }
@@ -13,9 +13,9 @@ public partial class DebugModule
         return (name, $"rpcId={args.SampRpcId}", null);
     }
 
-    private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingRpc(OutgoingRpcArgs args)
+    private (string? Name, string? Detail, string? Parsed) DecodeOutgoingRpc(OutgoingRpcArgs args)
     {
-        if (SF.RpcParsers.TryParseOutgoing(args, out RpcParseResult result) && result.Rpc is IParsedOutgoingRpc rpc)
+        if (_host.RpcParsersImpl.TryParseOutgoing(args, out RpcParseResult result) && result.Rpc is IParsedOutgoingRpc rpc)
         {
             return (rpc.Name, $"rpcId={args.SampRpcId} {rpc.Detail}", rpc.Detail);
         }
@@ -24,9 +24,9 @@ public partial class DebugModule
         return (name, $"rpcId={args.SampRpcId}", null);
     }
 
-    private static (string? Name, string? Detail, string? Parsed) DecodeIncomingPacket(IncomingPacketArgs args)
+    private (string? Name, string? Detail, string? Parsed) DecodeIncomingPacket(IncomingPacketArgs args)
     {
-        if (SF.PacketParsers.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)
+        if (_host.PacketParsersImpl.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)
         {
             (string? name, string? detail) = FormatParsedPacket(packet, args.RakNetPacketId);
             return (name, detail, packet.Detail);
@@ -36,9 +36,9 @@ public partial class DebugModule
         return (fn, fd, null);
     }
 
-    private static (string? Name, string? Detail, string? Parsed) DecodeIncomingAZVoiceControl(IncomingArizonaPacketArgs args)
+    private (string? Name, string? Detail, string? Parsed) DecodeIncomingAZVoiceControl(IncomingArizonaPacketArgs args)
     {
-        if (SF.PacketParsers.Registry.TryGetIncomingTransportParser(RakNetPacketId.AZVoice, args.SubId, out IIncomingArizonaPacketParser? parser)
+        if (_host.PacketParsersImpl.Registry.TryGetIncomingTransportParser(RakNetPacketId.AZVoice, args.SubId, out IIncomingArizonaPacketParser? parser)
             && parser is not null
             && parser.TryParse(args, out PacketParseResult result)
             && result.Packet is IParsedIncomingPacket packet)
@@ -70,9 +70,9 @@ public partial class DebugModule
         return Convert.ToHexString(new ReadOnlySpan<byte>((void*)dataPtr, length));
     }
 
-    private static (string? Name, string? Detail, string? Parsed) DecodeOutgoingPacket(OutgoingPacketArgs args)
+    private (string? Name, string? Detail, string? Parsed) DecodeOutgoingPacket(OutgoingPacketArgs args)
     {
-        if (SF.PacketParsers.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
+        if (_host.PacketParsersImpl.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
         {
             (string? name, string? detail) = FormatParsedPacket(packet, args.RakNetPacketId);
             return (name, detail, packet.Detail);

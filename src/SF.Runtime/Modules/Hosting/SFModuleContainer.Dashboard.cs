@@ -56,7 +56,7 @@ public partial class SFModuleContainer
 
             if (segments.Length < 2)
             {
-                SF.Chat.Add(FormatUsage());
+                _host.ChatImpl.Add(FormatUsage());
                 return;
             }
 
@@ -64,7 +64,7 @@ public partial class SFModuleContainer
             ModuleRegistration? registration = ResolveModule(query);
             if (registration is null)
             {
-                SF.Chat.Add($"{Paint(SFColors.Rose, "Module not found")}: {Paint(SFColors.White | SFColors.Ice, query)}");
+                _host.ChatImpl.Add($"{Paint(SFColors.Rose, "Module not found")}: {Paint(SFColors.White | SFColors.Ice, query)}");
                 return;
             }
 
@@ -78,36 +78,36 @@ public partial class SFModuleContainer
                     if (TryStartModule(registration, out string? startFailure))
                     {
                         ActivatePendingAutoStartModules();
-                        SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, "requested", SFColors.Green));
+                        _host.ChatImpl.Add(FormatChatAction("start", registration.Descriptor.DisplayName, "requested", SFColors.Green));
                     }
                     else if (!string.IsNullOrWhiteSpace(startFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, startFailure, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("start", registration.Descriptor.DisplayName, startFailure, SFColors.Red));
                         EmitStartDependencyHints(registration);
                     }
                     break;
                 case "stop":
                     if (TryStopModule(registration, ModuleStopReason.UserRequested, out string? stopFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, "requested", SFColors.Orange));
+                        _host.ChatImpl.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, "requested", SFColors.Orange));
                     }
                     else if (!string.IsNullOrWhiteSpace(stopFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, stopFailure, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, stopFailure, SFColors.Red));
                     }
                     break;
                 case "restart":
                     if (TryRestartModule(registration, out string? restartFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, "requested", SFColors.Yellow));
+                        _host.ChatImpl.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, "requested", SFColors.Yellow));
                     }
                     else if (!string.IsNullOrWhiteSpace(restartFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, restartFailure, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, restartFailure, SFColors.Red));
                     }
                     break;
                 default:
-                    SF.Chat.Add(FormatUsage());
+                    _host.ChatImpl.Add(FormatUsage());
                     break;
             }
         }
@@ -123,7 +123,7 @@ public partial class SFModuleContainer
         {
             if (!_registrationsById.TryGetValue(depId, out ModuleRegistration? dep))
             {
-                SF.Chat.Add($"  {Paint(SFColors.Slate, "dep")} {Paint(SFColors.Cyan | SFColors.Blue, depId)} {Paint(SFColors.Rose, "is not installed")}");
+                _host.ChatImpl.Add($"  {Paint(SFColors.Slate, "dep")} {Paint(SFColors.Cyan | SFColors.Blue, depId)} {Paint(SFColors.Rose, "is not installed")}");
                 continue;
             }
 
@@ -132,7 +132,7 @@ public partial class SFModuleContainer
                 continue;
             }
 
-            SF.Chat.Add($"  {Paint(SFColors.Slate, "run")} {Paint(SFColors.White | SFColors.Ice, $"/sfs start {depId}")} {Paint(SFColors.Slate, "first")}");
+            _host.ChatImpl.Add($"  {Paint(SFColors.Slate, "run")} {Paint(SFColors.White | SFColors.Ice, $"/sfs start {depId}")} {Paint(SFColors.Slate, "first")}");
         }
     }
 
@@ -140,7 +140,7 @@ public partial class SFModuleContainer
     {
         foreach (string line in FormatHelpLines())
         {
-            SF.Chat.Add(line);
+            _host.ChatImpl.Add(line);
         }
     }
 
@@ -148,8 +148,8 @@ public partial class SFModuleContainer
     {
         if (_registrations.Count == 0)
         {
-            SF.Chat.Add(FormatHeader("Modules", "0"));
-            SF.Chat.Add(FormatTip("No modules registered."));
+            _host.ChatImpl.Add(FormatHeader("Modules", "0"));
+            _host.ChatImpl.Add(FormatTip("No modules registered."));
             return;
         }
 
@@ -162,7 +162,7 @@ public partial class SFModuleContainer
             .ToList();
 
         int runningCount = _runningModules.Count;
-        SF.Chat.Add(FormatHeader("Modules", $"{runningCount}/{_registrations.Count} running \u00b7 page {page}/{totalPages}"));
+        _host.ChatImpl.Add(FormatHeader("Modules", $"{runningCount}/{_registrations.Count} running \u00b7 page {page}/{totalPages}"));
 
         string sep = FormatSeparator();
         foreach (ModuleRegistration registration in pageItems)
@@ -183,12 +183,12 @@ public partial class SFModuleContainer
                 sep,
                 FormatLoad(snapshot.EstimatedLoadPercent),
                 pluginBadge);
-            SF.Chat.Add(line);
+            _host.ChatImpl.Add(line);
         }
 
         if (totalPages > 1)
         {
-            SF.Chat.Add(FormatTip($"next page: /sfs status {Math.Min(page + 1, totalPages)}"));
+            _host.ChatImpl.Add(FormatTip($"next page: /sfs status {Math.Min(page + 1, totalPages)}"));
         }
     }
 
@@ -199,7 +199,7 @@ public partial class SFModuleContainer
             string[] items = _registrations.Select(BuildDashboardLine).ToArray();
             SFColor titleColor = SFColors.Yellow | SFColors.Sand;
             SFColor headerColor = SFColors.Cyan | SFColors.Blue;
-            var result = await SF.Dialog.ShowList(
+            var result = await _host.DialogImpl.ShowList(
                 titleColor.Apply("SF Modules"),
                 items,
                 $"{headerColor.Apply("Module")}\t{headerColor.Apply("State")}\t{headerColor.Apply("Exec")}\t{headerColor.Apply("Uptime")}\t{headerColor.Apply("Load")}\t{headerColor.Apply("Last activity")}");
@@ -294,7 +294,7 @@ public partial class SFModuleContainer
 
             SFColor detailTitleColor = SFColors.Yellow | SFColors.Orange;
             SFColor detailHeaderColor = SFColors.Cyan | SFColors.Ice;
-            var result = await SF.Dialog.ShowList(
+            var result = await _host.DialogImpl.ShowList(
                 detailTitleColor.Apply(registration.Descriptor.DisplayName),
                 items,
                 $"{detailHeaderColor.Apply("Field")}\t{detailHeaderColor.Apply("Value")}");
@@ -312,21 +312,21 @@ public partial class SFModuleContainer
                     }
                     else if (!string.IsNullOrWhiteSpace(startFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("start", registration.Descriptor.DisplayName, startFailure, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("start", registration.Descriptor.DisplayName, startFailure, SFColors.Red));
                     }
                     break;
                 case int index when index == stopIndex:
                     if (!TryStopModule(registration, ModuleStopReason.UserRequested, out string? stopFailure) &&
                         !string.IsNullOrWhiteSpace(stopFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, stopFailure, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("stop", registration.Descriptor.DisplayName, stopFailure, SFColors.Red));
                     }
                     break;
                 case int index when index == restartIndex:
                     if (!TryRestartModule(registration, out string? restartFailure) &&
                         !string.IsNullOrWhiteSpace(restartFailure))
                     {
-                        SF.Chat.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, restartFailure, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("restart", registration.Descriptor.DisplayName, restartFailure, SFColors.Red));
                     }
                     break;
                 case int index when index == autoStartIndex:
@@ -359,20 +359,20 @@ public partial class SFModuleContainer
     {
         if (_pluginLoader is null)
         {
-            SF.Chat.Add(FormatHeader("Plugins"));
-            SF.Chat.Add(FormatTip("Plugin loader is not attached."));
+            _host.ChatImpl.Add(FormatHeader("Plugins"));
+            _host.ChatImpl.Add(FormatTip("Plugin loader is not attached."));
             return;
         }
 
         IReadOnlyCollection<PluginRuntimeSnapshot> plugins = _pluginLoader.LoadedPlugins;
         if (plugins.Count == 0)
         {
-            SF.Chat.Add(FormatHeader("Plugins", "0"));
-            SF.Chat.Add(FormatTip("No plugins loaded."));
+            _host.ChatImpl.Add(FormatHeader("Plugins", "0"));
+            _host.ChatImpl.Add(FormatTip("No plugins loaded."));
             return;
         }
 
-        SF.Chat.Add(FormatHeader("Plugins", plugins.Count.ToString()));
+        _host.ChatImpl.Add(FormatHeader("Plugins", plugins.Count.ToString()));
         string sep = FormatSeparator();
         foreach (PluginRuntimeSnapshot plugin in plugins.OrderBy(static plugin => plugin.PluginId, StringComparer.OrdinalIgnoreCase))
         {
@@ -401,27 +401,27 @@ public partial class SFModuleContainer
                 line += sep + Paint(SFColors.Rose, plugin.LastUnloadFailureReason.ToString());
             }
 
-            SF.Chat.Add(line);
+            _host.ChatImpl.Add(line);
             foreach (string warning in plugin.Warnings)
             {
-                SF.Chat.Add("    " + Paint(SFColors.Orange, warning));
+                _host.ChatImpl.Add("    " + Paint(SFColors.Orange, warning));
             }
         }
 
-        SF.Chat.Add(FormatTip("manage: /sfs plugin-reload <id>  \u00b7  /sfs plugin-unload <id>"));
+        _host.ChatImpl.Add(FormatTip("manage: /sfs plugin-reload <id>  \u00b7  /sfs plugin-unload <id>"));
     }
 
     private void HandlePluginCommand(string verb, string[] segments)
     {
         if (_pluginLoader is null)
         {
-            SF.Chat.Add(Paint(SFColors.Rose, "Plugin loader is not attached."));
+            _host.ChatImpl.Add(Paint(SFColors.Rose, "Plugin loader is not attached."));
             return;
         }
 
         if (segments.Length < 2)
         {
-            SF.Chat.Add(Paint(SFColors.Rose, "Usage: /sfs ") + Paint(SFColors.White, $"{verb} <id|manifest-path>"));
+            _host.ChatImpl.Add(Paint(SFColors.Rose, "Usage: /sfs ") + Paint(SFColors.White, $"{verb} <id|manifest-path>"));
             return;
         }
 
@@ -444,11 +444,11 @@ public partial class SFModuleContainer
                     PluginLoadResult result = _pluginLoader.LoadFromManifest(manifestPath);
                     if (result.Success)
                     {
-                        SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId!, $"{result.RegisteredModuleCount} module(s)", SFColors.Green));
+                        _host.ChatImpl.Add(FormatChatAction("plugin-load", result.PluginId!, $"{result.RegisteredModuleCount} module(s)", SFColors.Green));
                     }
                     else
                     {
-                        SF.Chat.Add(FormatChatAction("plugin-load", result.PluginId ?? target, result.Message, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("plugin-load", result.PluginId ?? target, result.Message, SFColors.Red));
                     }
 
                     break;
@@ -459,11 +459,11 @@ public partial class SFModuleContainer
                     PluginUnloadResult result = _pluginLoader.Unload(target);
                     if (result.Success)
                     {
-                        SF.Chat.Add(FormatChatAction("plugin-unload", target, "done", SFColors.Orange));
+                        _host.ChatImpl.Add(FormatChatAction("plugin-unload", target, "done", SFColors.Orange));
                     }
                     else
                     {
-                        SF.Chat.Add(FormatChatAction("plugin-unload", target, result.Message, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("plugin-unload", target, result.Message, SFColors.Red));
                     }
 
                     break;
@@ -474,11 +474,11 @@ public partial class SFModuleContainer
                     PluginReloadResult result = _pluginLoader.Reload(target);
                     if (result.Success)
                     {
-                        SF.Chat.Add(FormatChatAction("plugin-reload", target, "done", SFColors.Yellow));
+                        _host.ChatImpl.Add(FormatChatAction("plugin-reload", target, "done", SFColors.Yellow));
                     }
                     else
                     {
-                        SF.Chat.Add(FormatChatAction("plugin-reload", target, result.Message, SFColors.Red));
+                        _host.ChatImpl.Add(FormatChatAction("plugin-reload", target, result.Message, SFColors.Red));
                     }
 
                     break;
@@ -498,7 +498,7 @@ public partial class SFModuleContainer
             PluginUnloadResult result = _pluginLoader.Unload(pluginId);
             SFColor accent = result.Success ? SFColors.Orange : SFColors.Red;
             string tail = result.Success ? "done" : result.Message;
-            SF.Chat.Add(FormatChatAction("plugin-unload", pluginId, tail, accent));
+            _host.ChatImpl.Add(FormatChatAction("plugin-unload", pluginId, tail, accent));
         };
     }
 
@@ -514,7 +514,7 @@ public partial class SFModuleContainer
             PluginReloadResult result = _pluginLoader.Reload(pluginId);
             SFColor accent = result.Success ? SFColors.Yellow : SFColors.Red;
             string tail = result.Success ? "done" : result.Message;
-            SF.Chat.Add(FormatChatAction("plugin-reload", pluginId, tail, accent));
+            _host.ChatImpl.Add(FormatChatAction("plugin-reload", pluginId, tail, accent));
         };
     }
 
@@ -531,7 +531,7 @@ public partial class SFModuleContainer
         // first. Executing inline would still be inside the completed-but-cached async state
         // machines of the dialog call chain, which pin plugin-owned Type references and
         // prevent the plugin's AssemblyLoadContext from being collected.
-        SFBootstrap.PostToMainThread(operation);
+        _mainThread.Post(operation);
     }
 
     private static string BuildDashboardLine(ModuleRegistration registration)

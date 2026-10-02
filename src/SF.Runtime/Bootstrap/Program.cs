@@ -2,7 +2,7 @@ namespace SFSharp.Runtime.Bootstrap;
 
 public static class Program
 {
-    public static async void Main()
+    internal static async void Main(SFRuntime runtime)
     {
         try
         {
@@ -10,12 +10,13 @@ public static class Program
 
             SFHostManifest.Instance.Load();
 
-            SF.Chat.Add($"{{00FF00}}{RuntimeBuildInfo.ProductName} {{FFFFFF}}v{RuntimeBuildInfo.DisplayVersion}");
-            SF.Chat.Add("{95FF4F}github.com/AllahPower/SF-Arizona | by AllahPower");
+            SFHost host = runtime.Host;
+            host.ChatImpl.Add($"{{00FF00}}{RuntimeBuildInfo.ProductName} {{FFFFFF}}v{RuntimeBuildInfo.DisplayVersion}");
+            host.ChatImpl.Add("{95FF4F}github.com/AllahPower/SF-Arizona | by AllahPower");
 
-            var container = new SFModuleContainer();
-            container.RegisterModule<RpcDebugger>();
-            container.RegisterModule<DebugModule>();
+            var container = new SFModuleContainer(host, runtime.MainThread);
+            container.RegisterModule(() => new RpcDebugger(host));
+            container.RegisterModule(() => new DebugModule(host, runtime.MainThread, runtime.Exceptions));
 
             PluginLoader pluginLoader = new(container);
             container.PluginLoader = pluginLoader;
@@ -24,14 +25,14 @@ public static class Program
 
             SFHostManifest.Instance.FlushSync();
 
-            using IDisposable runtimeInfoCommand = RuntimeInfoCommand.Register(pluginLoader);
+            using IDisposable runtimeInfoCommand = RuntimeInfoCommand.Register(runtime, pluginLoader);
 
             SFLog.Info("Program.Main entering module container run loop");
             await container.Run();
         }
         catch (Exception ex)
         {
-            SFBootstrap.ProcessException(ex);
+            runtime.Exceptions.Report(ex);
         }
     }
 }

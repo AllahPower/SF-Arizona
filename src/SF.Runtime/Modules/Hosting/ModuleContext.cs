@@ -23,14 +23,18 @@ public sealed class ModuleContext : IModuleContext
     private IModuleStorage? _userData;
     private IModuleConfig? _config;
     private ILogger? _log;
+    private readonly SFHost _host;
+    private readonly MainThreadDispatcher _mainThread;
 
     /// <summary>
     /// Constructed by the container only. External code obtains contexts through
     /// <see cref="ISFModule.RunAsync(ModuleContext)"/>.
     /// </summary>
-    internal ModuleContext(ModuleDescriptor descriptor, ModuleRuntimeInfo runtime, CancellationToken cancellationToken)
+    internal ModuleContext(ModuleDescriptor descriptor, ModuleRuntimeInfo runtime, CancellationToken cancellationToken, SFHost host, MainThreadDispatcher mainThread)
     {
         Descriptor = descriptor;
+        _host = host;
+        _mainThread = mainThread;
         _runtime = runtime;
         _telemetry = new ModuleTelemetry(runtime);
         CancellationToken = cancellationToken;
@@ -43,7 +47,7 @@ public sealed class ModuleContext : IModuleContext
     public ModuleDescriptor Descriptor { get; }
 
     /// <inheritdoc />
-    public ISF SF => SFSharp.Runtime.SF.Instance;
+    public ISF SF => _host;
 
     /// <summary>
     /// Cancelled when the container shuts down or the user issues <c>/sfs stop</c>. Also the token
@@ -56,15 +60,15 @@ public sealed class ModuleContext : IModuleContext
 
     /// <summary>
     /// Read/write access to the module's asset folder next to <c>gta_sa.exe</c>. Resolved lazily
-    /// through <see cref="SF.Modules"/>'s <see cref="IModuleStorageProvider"/>.
+    /// through the host <see cref="IModuleStorageProvider"/>.
     /// </summary>
-    public IModuleStorage Assets => _assets ??= global::SFSharp.Runtime.SF.Modules.Storage.GetAssets(Descriptor);
+    public IModuleStorage Assets => _assets ??= _host.ModuleRuntime.Storage.GetAssets(Descriptor);
 
     /// <summary>Read/write access to the module's user data folder under <c>My Documents</c>.</summary>
-    public IModuleStorage UserData => _userData ??= global::SFSharp.Runtime.SF.Modules.Storage.GetUserData(Descriptor);
+    public IModuleStorage UserData => _userData ??= _host.ModuleRuntime.Storage.GetUserData(Descriptor);
 
     /// <summary>Typed configuration backed by a JSON file inside <see cref="UserData"/>.</summary>
-    public IModuleConfig Config => _config ??= global::SFSharp.Runtime.SF.Modules.Storage.GetConfig(Descriptor);
+    public IModuleConfig Config => _config ??= _host.ModuleRuntime.Storage.GetConfig(Descriptor);
 
     /// <summary>
     /// Records a heartbeat tick. Intended to be called every loop iteration or whenever the module
@@ -177,7 +181,7 @@ public sealed class ModuleContext : IModuleContext
         }
 
         TaskCompletionSource tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        SFBootstrap.PostToMainThread(() =>
+        _mainThread.Post(() =>
         {
             _runtime.RecordActivity("switch-main-thread");
             tcs.SetResult();

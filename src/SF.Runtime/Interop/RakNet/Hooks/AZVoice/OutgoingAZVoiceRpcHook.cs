@@ -83,7 +83,7 @@ internal unsafe class OutgoingAZVoiceRpcHook : NativeHook<nint, int, OutgoingAZV
 
         // Reconstruct the control message as [252][subOp][body] and feed it to the
         // outgoing AZVoice control channel so it surfaces in the DebugWeb dashboard
-        // (SF.Arizona.SubscribeOutgoingAZVoice), mirroring the incoming control path.
+        // (SFArizonaPackets.SubscribeOutgoingAZVoice), mirroring the incoming control path.
         int sub = subOp & 0xFF;
         if (_instance!._dispatcher.OutgoingAZVoiceControlHandlers.HasSubscribers(sub))
         {

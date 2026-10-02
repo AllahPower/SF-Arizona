@@ -61,10 +61,10 @@ public partial class DebugModule
         await SendRawAsync(client, json);
     }
 
-    private static Task<WorldSnapshotDto> CaptureWorldSnapshotOnMainThreadAsync(WorldViewState request)
+    private Task<WorldSnapshotDto> CaptureWorldSnapshotOnMainThreadAsync(WorldViewState request)
     {
         TaskCompletionSource<WorldSnapshotDto> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        SFBootstrap.PostToMainThread(() =>
+        _mainThread.Post(() =>
         {
             try
             {
@@ -78,12 +78,12 @@ public partial class DebugModule
         return tcs.Task;
     }
 
-    private static WorldSnapshotDto CaptureWorldSnapshot(WorldViewState request)
+    private WorldSnapshotDto CaptureWorldSnapshot(WorldViewState request)
     {
         string activeSection = NormalizeWorldSectionKey(request.Section);
         string? normalizedSearch = NormalizeWorldQueryText(request.SearchText);
-        SFGamePools pools = SF.Pools;
-        SFLocalPlayer localPlayer = SF.Players.Local;
+        SFGamePools pools = _host.PoolsImpl;
+        SFLocalPlayer localPlayer = _host.PlayersImpl.Local;
 
         string status = pools.IsAvailable
             ? pools.IsInitialized ? "live" : "not-initialized"
@@ -105,12 +105,12 @@ public partial class DebugModule
             Actors: activeSection == WorldSectionKeys.Actors ? CreateActorRows(normalizedSearch) : []);
     }
 
-    private static WorldOverviewDto CreateWorldOverview(SFGamePools pools)
+    private WorldOverviewDto CreateWorldOverview(SFGamePools pools)
     {
         return new WorldOverviewDto(
         [
-            new("players", "Players", SF.Players.GetConnectedCount(), SampOffsets.CPlayerPool.MaxPlayers),
-            new("vehicles", "Vehicles", SF.Vehicles.Count, SampOffsets.CVehiclePool.MaxVehicles),
+            new("players", "Players", _host.PlayersImpl.GetConnectedCount(), SampOffsets.CPlayerPool.MaxPlayers),
+            new("vehicles", "Vehicles", _host.VehiclesImpl.Count, SampOffsets.CVehiclePool.MaxVehicles),
             new("objects", "Objects", pools.Objects.Count, SampOffsets.CObjectPool.MaxObjects),
             new("pickups", "Pickups", pools.Pickups.Count, SampOffsets.CPickupPool.MaxPickups),
             new("labels", "Labels", pools.Labels.EnumerateIds().Count(), SampOffsets.CLabelPool.MaxLabels),
@@ -134,17 +134,17 @@ public partial class DebugModule
             VehicleId: localPlayer.CurrentVehicleId == ushort.MaxValue ? null : localPlayer.CurrentVehicleId);
     }
 
-    private static WorldPlayerRowDto[] CreatePlayerRows(string? search, bool streamZoneOnly)
+    private WorldPlayerRowDto[] CreatePlayerRows(string? search, bool streamZoneOnly)
     {
         List<WorldPlayerRowDto> rows = [];
-        foreach (SFPlayerSnapshot playerSnapshot in SF.Players.EnumeratePlayers())
+        foreach (SFPlayerSnapshot playerSnapshot in _host.PlayersImpl.EnumeratePlayers())
         {
             if (!MatchesWorldQuery(search, playerSnapshot.Id, playerSnapshot.Name))
             {
                 continue;
             }
 
-            SFPlayer player = playerSnapshot.IsLocal ? SF.Players.Local : SF.Players.GetRemote(playerSnapshot.Id);
+            SFPlayer player = playerSnapshot.IsLocal ? _host.PlayersImpl.Local : _host.PlayersImpl.GetRemote(playerSnapshot.Id);
             SFPed? ped = player.Ped;
             bool isStreamed = ped is not null && ped.ExistsInGame;
             if (streamZoneOnly && !playerSnapshot.IsLocal && !isStreamed)
@@ -174,9 +174,9 @@ public partial class DebugModule
         return [.. rows];
     }
 
-    private static WorldVehicleRowDto[] CreateVehicleRows(string? search)
+    private WorldVehicleRowDto[] CreateVehicleRows(string? search)
     {
-        return [.. SF.Vehicles.Enumerate().Select(vehicle => new WorldVehicleRowDto(
+        return [.. _host.VehiclesImpl.Enumerate().Select(vehicle => new WorldVehicleRowDto(
             Id: vehicle.Id ?? ushort.MaxValue,
             Model: vehicle.ModelIndex,
             Health: Sanitize(vehicle.Health),
@@ -189,9 +189,9 @@ public partial class DebugModule
             .Where(vehicle => MatchesWorldQuery(search, vehicle.Id, vehicle.Model))];
     }
 
-    private static WorldObjectRowDto[] CreateObjectRows(string? search)
+    private WorldObjectRowDto[] CreateObjectRows(string? search)
     {
-        return [.. SF.Pools.Objects.Enumerate().Select(worldObject => new WorldObjectRowDto(
+        return [.. _host.PoolsImpl.Objects.Enumerate().Select(worldObject => new WorldObjectRowDto(
             Id: worldObject.Id,
             Model: worldObject.Model,
             Position: ToWorldVec3(worldObject.Position),
@@ -203,10 +203,10 @@ public partial class DebugModule
             .Where(worldObject => MatchesWorldQuery(search, worldObject.Id, worldObject.Model))];
     }
 
-    private static WorldPickupRowDto[] CreatePickupRows(string? search)
+    private WorldPickupRowDto[] CreatePickupRows(string? search)
     {
-        Vector3 localPosition = SF.Players.Local.Position ?? Vector3.Zero;
-        return [.. SF.Pools.Pickups.Enumerate().Select(pickup => new WorldPickupRowDto(
+        Vector3 localPosition = _host.PlayersImpl.Local.Position ?? Vector3.Zero;
+        return [.. _host.PoolsImpl.Pickups.Enumerate().Select(pickup => new WorldPickupRowDto(
             Index: pickup.Index,
             ServerId: pickup.ServerId,
             Model: pickup.Model,
@@ -217,12 +217,12 @@ public partial class DebugModule
             .Where(pickup => MatchesWorldQuery(search, pickup.Index, pickup.ServerId, pickup.Model))];
     }
 
-    private static WorldLabelRowDto[] CreateLabelRows(string? search)
+    private WorldLabelRowDto[] CreateLabelRows(string? search)
     {
         List<WorldLabelRowDto> rows = [];
-        foreach (ushort labelId in SF.Pools.Labels.EnumerateIds())
+        foreach (ushort labelId in _host.PoolsImpl.Labels.EnumerateIds())
         {
-            if (!SF.Pools.Labels.TryGetSnapshot(labelId, out SFLabelSnapshot label))
+            if (!_host.PoolsImpl.Labels.TryGetSnapshot(labelId, out SFLabelSnapshot label))
             {
                 continue;
             }
@@ -240,12 +240,12 @@ public partial class DebugModule
         return [.. rows.Where(label => MatchesWorldQuery(search, label.Id, label.Text))];
     }
 
-    private static WorldTextDrawRowDto[] CreateTextDrawRows(string? search)
+    private WorldTextDrawRowDto[] CreateTextDrawRows(string? search)
     {
         List<WorldTextDrawRowDto> rows = [];
-        foreach (ushort textDrawId in SF.Pools.TextDraws.EnumerateIds())
+        foreach (ushort textDrawId in _host.PoolsImpl.TextDraws.EnumerateIds())
         {
-            if (!SF.Pools.TextDraws.TryGetSnapshot(textDrawId, out SFTextDrawSnapshot textDraw))
+            if (!_host.PoolsImpl.TextDraws.TryGetSnapshot(textDrawId, out SFTextDrawSnapshot textDraw))
             {
                 continue;
             }
@@ -268,9 +268,9 @@ public partial class DebugModule
         return pools.TextDraws.EnumerateIds().Count();
     }
 
-    private static WorldGangZoneRowDto[] CreateGangZoneRows(string? search)
+    private WorldGangZoneRowDto[] CreateGangZoneRows(string? search)
     {
-        return [.. SF.Pools.GangZones.Enumerate().Select(zone => new WorldGangZoneRowDto(
+        return [.. _host.PoolsImpl.GangZones.Enumerate().Select(zone => new WorldGangZoneRowDto(
             Id: zone.Id,
             MinX: Sanitize(zone.Rect.Left),
             MinY: Sanitize(zone.Rect.Top),
@@ -282,9 +282,9 @@ public partial class DebugModule
             .Where(zone => MatchesWorldQuery(search, zone.Id))];
     }
 
-    private static WorldActorRowDto[] CreateActorRows(string? search)
+    private WorldActorRowDto[] CreateActorRows(string? search)
     {
-        return [.. SF.Pools.Actors.Enumerate().Select(actor => new WorldActorRowDto(
+        return [.. _host.PoolsImpl.Actors.Enumerate().Select(actor => new WorldActorRowDto(
             Id: actor.Id,
             Health: Sanitize(actor.Health),
             Position: ToWorldVec3(actor.Position),

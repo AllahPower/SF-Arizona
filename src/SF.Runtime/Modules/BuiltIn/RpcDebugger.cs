@@ -5,6 +5,13 @@ namespace SFSharp.Runtime.Modules.BuiltIn;
 [SFModule("rpc-debugger", "RpcDebugger", Category = "Debug", Description = "Captures incoming and outgoing RPC/packet traffic with lightweight decoding.", ExecutionModel = ModuleExecutionModel.MainThread, Order = 60)]
 public class RpcDebugger : SFModuleBase
 {
+    private readonly SFHost _host;
+
+    internal RpcDebugger(SFHost host)
+    {
+        _host = host;
+    }
+
     private const int MaxEntries = 200;
     private const int EntriesPerPage = 20;
 
@@ -52,14 +59,14 @@ public class RpcDebugger : SFModuleBase
         {
             foreach (SampRpcId rpcId in Enum.GetValues<SampRpcId>())
             {
-                subscriptions.Add(Context.RegisterDisposable(SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
-                subscriptions.Add(Context.RegisterDisposable(SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
+                subscriptions.Add(Context.RegisterDisposable(_host.RpcImpl.Subscribe(rpcId, args => OnIncomingRpc(args))));
+                subscriptions.Add(Context.RegisterDisposable(_host.RpcImpl.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
             }
 
             foreach (RakNetPacketId packetId in Enum.GetValues<RakNetPacketId>())
             {
-                subscriptions.Add(Context.RegisterDisposable(SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
-                subscriptions.Add(Context.RegisterDisposable(SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
+                subscriptions.Add(Context.RegisterDisposable(_host.PacketsImpl.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
+                subscriptions.Add(Context.RegisterDisposable(_host.PacketsImpl.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
             }
 
             Context.SetDetail("subscriptions", subscriptions.Count.ToString());
@@ -141,9 +148,9 @@ public class RpcDebugger : SFModuleBase
         Context.Heartbeat($"pkt-out:{args.RakNetPacketId}");
     }
 
-    private static (string? Name, string? Detail) DecodeIncomingPacket(IncomingPacketArgs args)
+    private (string? Name, string? Detail) DecodeIncomingPacket(IncomingPacketArgs args)
     {
-        if (SF.PacketParsers.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)
+        if (_host.PacketParsersImpl.TryParseIncoming(args, out PacketParseResult result) && result.Packet is IParsedIncomingPacket packet)
         {
             return FormatParsedPacket(packet, args.RakNetPacketId);
         }
@@ -151,9 +158,9 @@ public class RpcDebugger : SFModuleBase
         return FormatPacketParseFailure(args.RakNetPacketId, result, TryReadArizonaSubId(args));
     }
 
-    private static (string? Name, string? Detail) DecodeOutgoingPacket(OutgoingPacketArgs args)
+    private (string? Name, string? Detail) DecodeOutgoingPacket(OutgoingPacketArgs args)
     {
-        if (SF.PacketParsers.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
+        if (_host.PacketParsersImpl.TryParseOutgoing(args, out PacketParseResult result) && result.Packet is IParsedOutgoingPacket packet)
         {
             return FormatParsedPacket(packet, args.RakNetPacketId);
         }
@@ -257,7 +264,7 @@ public class RpcDebugger : SFModuleBase
         {
             _captureEnabled = true;
             UpdateRuntimeFlags();
-            SF.Chat.Add("RpcDebugger: capture enabled.");
+            _host.ChatImpl.Add("RpcDebugger: capture enabled.");
             return;
         }
 
@@ -265,7 +272,7 @@ public class RpcDebugger : SFModuleBase
         {
             _captureEnabled = false;
             UpdateRuntimeFlags();
-            SF.Chat.Add("RpcDebugger: capture disabled.");
+            _host.ChatImpl.Add("RpcDebugger: capture disabled.");
             return;
         }
 
@@ -273,7 +280,7 @@ public class RpcDebugger : SFModuleBase
         {
             ClearCounters();
             UpdateRuntimeFlags();
-            SF.Chat.Add("RpcDebugger: log cleared.");
+            _host.ChatImpl.Add("RpcDebugger: log cleared.");
             return;
         }
 
@@ -312,7 +319,7 @@ public class RpcDebugger : SFModuleBase
         string rpcFilter = Toggle(_captureRpc);
         string pktFilter = Toggle(_capturePackets);
 
-        var result = await SF.Dialog.ShowList(
+        var result = await _host.DialogImpl.ShowList(
             TitleColor.Apply("Network Debugger"),
             new[]
             {
@@ -344,7 +351,7 @@ public class RpcDebugger : SFModuleBase
             case 2:
                 _captureEnabled = !_captureEnabled;
                 UpdateRuntimeFlags();
-                SF.Chat.Add($"RpcDebugger: capture {(_captureEnabled ? "enabled" : "disabled")}.");
+                _host.ChatImpl.Add($"RpcDebugger: capture {(_captureEnabled ? "enabled" : "disabled")}.");
                 await ShowMainMenu();
                 break;
             case 3:
@@ -369,7 +376,7 @@ public class RpcDebugger : SFModuleBase
                 break;
             case 7:
                 ClearCounters();
-                SF.Chat.Add("RpcDebugger: log cleared.");
+                _host.ChatImpl.Add("RpcDebugger: log cleared.");
                 await ShowMainMenu();
                 break;
         }
@@ -424,7 +431,7 @@ public class RpcDebugger : SFModuleBase
             }
         }
 
-        var result = await SF.Dialog.ShowList(
+        var result = await _host.DialogImpl.ShowList(
             TitleColor.Apply($"Network Log [Page {page + 1}/{totalPages}]"),
             items,
             $"{HeaderColor.Apply("Dir")}\t{HeaderColor.Apply("Type")}\t{HeaderColor.Apply("ID")}\t{HeaderColor.Apply("Name")}\t{HeaderColor.Apply("Size")}\t{HeaderColor.Apply("Time")}"
@@ -475,7 +482,7 @@ public class RpcDebugger : SFModuleBase
             Paint(SFColors.White | SFColors.Ice, entry.Detail ?? "(no decoded data)")
         });
 
-        await SF.Dialog.ShowMessage(TitleColor.Apply($"{kind} {entry.Id} Detail"), text);
+        await _host.DialogImpl.ShowMessage(TitleColor.Apply($"{kind} {entry.Id} Detail"), text);
         await ShowLog(returnPage);
     }
 
@@ -526,7 +533,7 @@ public class RpcDebugger : SFModuleBase
         int inPkt = Volatile.Read(ref _totalIncomingPacket);
         int outPkt = Volatile.Read(ref _totalOutgoingPacket);
 
-        await SF.Dialog.ShowList(
+        await _host.DialogImpl.ShowList(
             TitleColor.Apply($"Network Stats (RPC: {inRpc + outRpc} / PKT: {inPkt + outPkt})"),
             items,
             $"{HeaderColor.Apply("Type")}\t{HeaderColor.Apply("ID")}\t{HeaderColor.Apply("Name")}\t{HeaderColor.Apply("IN")}\t{HeaderColor.Apply("OUT")}\t{HeaderColor.Apply("Size")}"

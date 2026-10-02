@@ -20,9 +20,6 @@ public static class SFBootstrap
     /// </summary>
     public static string HostDirectory => _hostDirectory ?? AppContext.BaseDirectory;
 
-    internal static SFRuntime Runtime => _runtime ?? throw new InvalidOperationException("The runtime starts on the first WinMainLoop tick.");
-
-    public static bool HasMainThreadDispatcher => _runtime is not null;
 
     private static void InstallHostAssemblyResolver()
     {
@@ -67,31 +64,10 @@ public static class SFBootstrap
         };
     }
 
-    public static void PostToMainThread(Action action)
-    {
-        _runtime?.MainThread.Post(action);
-    }
-
-    /// <summary>
-    /// Drains queued <see cref="SFSynchronizationContext"/> continuations once. Intended for
-    /// main-thread code that has to wait for async work whose continuations are routed back to
-    /// the main thread (e.g. plugin unload waiting on cancelled modules to finish).
-    /// Must only be called from the main thread — callers typically guard with
-    /// <c>SynchronizationContext.Current is SFSynchronizationContext</c>.
-    /// </summary>
-    public static void PumpMainThreadQueue()
-    {
-        _runtime?.MainThread.Pump();
-    }
-
-    public static void ProcessException(Exception ex) => (_runtime?.Exceptions ?? new ExceptionReporter()).Report(ex);
-
-    public static void ObserveTask(Task task, string source) => (_runtime?.Exceptions ?? new ExceptionReporter()).Observe(task, source);
-
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)], EntryPoint = "WinMainLoop")]
     public static void WinMainLoop() => WinMainLoopCore(Program.Main);
 
-    public static void WinMainLoopCore(Action main)
+    internal static void WinMainLoopCore(Action<SFRuntime> main)
     {
         if (_runtime is null)
         {
@@ -105,7 +81,7 @@ public static class SFBootstrap
         _runtime.MainThread.Pump();
     }
 
-    private static async void SFMain(SFRuntime runtime, Action main)
+    private static async void SFMain(SFRuntime runtime, Action<SFRuntime> main)
     {
         try
         {
@@ -136,7 +112,7 @@ public static class SFBootstrap
             host.KeyboardImpl.StartLoop();
             SFLog.Debug("Keyboard loop started");
 
-            runtime.MainThread.Post(main);
+            runtime.MainThread.Post(() => main(runtime));
         }
         catch (Exception ex)
         {

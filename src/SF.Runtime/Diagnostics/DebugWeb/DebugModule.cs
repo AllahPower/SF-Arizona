@@ -16,6 +16,17 @@ namespace SFSharp.Runtime.Diagnostics.DebugWeb;
     Order = 70)]
 public partial class DebugModule : SFModuleBase
 {
+    private readonly SFHost _host;
+    private readonly MainThreadDispatcher _mainThread;
+    private readonly ExceptionReporter _exceptions;
+
+    internal DebugModule(SFHost host, MainThreadDispatcher mainThread, ExceptionReporter exceptions)
+    {
+        _host = host;
+        _mainThread = mainThread;
+        _exceptions = exceptions;
+    }
+
     private const int WebPort = 7777;
     private const int ServerBufferSize = 200;
     private const int BroadcastIntervalMs = 50;
@@ -67,7 +78,7 @@ public partial class DebugModule : SFModuleBase
             Context.SetDetail("status", "missing web assets");
             Context.SetDetail("path", missingTarget);
             Log.LogWarning("DebugWeb assets are missing: {Path}", missingTarget);
-            SF.Chat.Add($"{{FF6B6B}}DebugWeb: {{FFFFFF}}missing web assets: {missingTarget}");
+            _host.ChatImpl.Add($"{{FF6B6B}}DebugWeb: {{FFFFFF}}missing web assets: {missingTarget}");
             return;
         }
 
@@ -94,7 +105,7 @@ public partial class DebugModule : SFModuleBase
             MapEndpoints(app);
 
             Log.LogInformation("Starting web server on http://localhost:{Port}/", WebPort);
-            SF.Chat.Add($"{{58A6FF}}DebugWeb: {{FFFFFF}}http://localhost:{WebPort}/");
+            _host.ChatImpl.Add($"{{58A6FF}}DebugWeb: {{FFFFFF}}http://localhost:{WebPort}/");
 
             await app.StartAsync(cancellationToken);
 
@@ -117,9 +128,9 @@ public partial class DebugModule : SFModuleBase
         foreach (SampRpcId rpcId in Enum.GetValues<SampRpcId>())
         {
             subs.Add(Context.RegisterDisposable(
-                SF.Rpc.Subscribe(rpcId, args => OnIncomingRpc(args))));
+                _host.RpcImpl.Subscribe(rpcId, args => OnIncomingRpc(args))));
             subs.Add(Context.RegisterDisposable(
-                SF.Rpc.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
+                _host.RpcImpl.SubscribeOutgoing(rpcId, args => OnOutgoingRpc(args))));
         }
 
         foreach (RakNetPacketId packetId in Enum.GetValues<RakNetPacketId>())
@@ -130,23 +141,23 @@ public partial class DebugModule : SFModuleBase
             }
 
             subs.Add(Context.RegisterDisposable(
-                SF.Packets.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
+                _host.PacketsImpl.SubscribeIncoming(packetId, args => OnIncomingPacket(args))));
             subs.Add(Context.RegisterDisposable(
-                SF.Packets.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
+                _host.PacketsImpl.SubscribeOutgoing(packetId, args => OnOutgoingPacket(args))));
         }
 
         foreach (AZVoiceMessageId subId in Enum.GetValues<AZVoiceMessageId>())
         {
             subs.Add(Context.RegisterDisposable(
-                SF.Arizona.SubscribeIncomingAZVoice(subId, args => OnIncomingAZVoiceControl(args))));
+                _host.ArizonaImpl.SubscribeIncomingAZVoice(subId, args => OnIncomingAZVoiceControl(args))));
             subs.Add(Context.RegisterDisposable(
-                SF.Arizona.SubscribeOutgoingAZVoice(subId, args => OnOutgoingAZVoiceControl(args))));
+                _host.ArizonaImpl.SubscribeOutgoingAZVoice(subId, args => OnOutgoingAZVoiceControl(args))));
         }
 
         subs.Add(Context.RegisterDisposable(
-            SF.Arizona.SubscribeIncomingAZVoiceData(args => OnIncomingPacket(args))));
+            _host.ArizonaImpl.SubscribeIncomingAZVoiceData(args => OnIncomingPacket(args))));
         subs.Add(Context.RegisterDisposable(
-            SF.Arizona.SubscribeOutgoingAZVoiceData(args => OnOutgoingPacket(args))));
+            _host.ArizonaImpl.SubscribeOutgoingAZVoiceData(args => OnOutgoingPacket(args))));
     }
 
     private void OnIncomingAZVoiceControl(IncomingArizonaPacketArgs args)
@@ -275,7 +286,7 @@ public partial class DebugModule : SFModuleBase
     private void BroadcastJson<T>(T value, JsonTypeInfo<T> typeInfo)
     {
         var json = JsonSerializer.SerializeToUtf8Bytes(value, typeInfo);
-        SFBootstrap.ObserveTask(BroadcastRawAsync(json), "DebugWeb.BroadcastRawAsync");
+        _exceptions.Observe(BroadcastRawAsync(json), "DebugWeb.BroadcastRawAsync");
     }
 
     private void UpdateDetails()

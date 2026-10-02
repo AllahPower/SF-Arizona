@@ -14,18 +14,19 @@ internal static unsafe class RuntimeInfoCommand
     private const string Bad = "{FF6B6B}";
     private const string Section = "{58A6FF}";
 
-    public static IDisposable Register(PluginLoader pluginLoader)
+    public static IDisposable Register(SFRuntime runtime, PluginLoader pluginLoader)
     {
         ArgumentNullException.ThrowIfNull(pluginLoader);
 
-        return SF.Chat.RegisterChatCommand(CommandName, _ =>
+        SFHost host = runtime.Host;
+        return host.ChatImpl.RegisterChatCommand(CommandName, _ =>
         {
             SFLog.Debug("Debug command /sfd executed");
-            SFBootstrap.ObserveTask(SF.Dialog.ShowMessage($"{RuntimeBuildInfo.ProductName} diagnostics", Build(pluginLoader)), "/sfd dialog");
+            runtime.Exceptions.Observe(host.DialogImpl.ShowMessage($"{RuntimeBuildInfo.ProductName} diagnostics", Build(runtime, pluginLoader)), "/sfd dialog");
         });
     }
 
-    private static string Build(PluginLoader pluginLoader)
+    private static string Build(SFRuntime runtime, PluginLoader pluginLoader)
     {
         StringBuilder text = new();
 
@@ -45,10 +46,10 @@ internal static unsafe class RuntimeInfoCommand
         AppendStatus(text, "AZVoice.asi", azVoiceLoaded && IncomingAZVoicePacketHook.IsAvailable,
             !azVoiceLoaded ? "not loaded" : IncomingAZVoicePacketHook.IsAvailable ? "loaded, hooked" : "loaded, hook target not found");
         string gameState = CNetGame.TryGetInstance(out CNetGame* netGame) ? netGame->State.ToString() : "no CNetGame";
-        AppendLine(text, "Network", $"game state {gameState}, server traffic {(SFBootstrap.Runtime.Hooks.IncomingRpcPacket.HasServerPlayerId ? "seen" : "not seen")}");
+        AppendLine(text, "Network", $"game state {gameState}, server traffic {(runtime.Hooks.IncomingRpcPacket.HasServerPlayerId ? "seen" : "not seen")}");
 
         AppendSection(text, "Modules");
-        SFModuleInfo[] modules = [.. SF.Instance.Modules.GetAll()];
+        SFModuleInfo[] modules = [.. ((ISF)runtime.Host).Modules.GetAll()];
         int running = modules.Count(static module => module.State == ModuleLifecycleState.Running);
         int faulted = modules.Count(static module => module.State == ModuleLifecycleState.Faulted);
         int pluginModules = modules.Count(static module => module.IsPluginModule);
@@ -59,7 +60,7 @@ internal static unsafe class RuntimeInfoCommand
         string pluginList = string.Join(", ", plugins.Select(static plugin =>
             $"{plugin.PluginId} {plugin.Version}{(plugin.Warnings.Count == 0 ? string.Empty : " (!)")}"));
         AppendStatus(text, "Plugins", pluginsWithWarnings == 0, plugins.Count == 0 ? "none" : $"{plugins.Count}: {pluginList}");
-        bool debugWebRunning = SF.Instance.Modules.TryGet("debug-web", out SFModuleInfo debugWeb) && debugWeb.State == ModuleLifecycleState.Running;
+        bool debugWebRunning = ((ISF)runtime.Host).Modules.TryGet("debug-web", out SFModuleInfo debugWeb) && debugWeb.State == ModuleLifecycleState.Running;
         AppendLine(text, "DebugWeb", debugWebRunning ? "http://localhost:7777/" : "stopped");
 
         AppendSection(text, "Process");

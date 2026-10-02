@@ -566,17 +566,17 @@ public sealed class PluginLoader
         }
     }
 
-    private static T ExecuteOnContainerThread<T>(Func<T> action)
+    private T ExecuteOnContainerThread<T>(Func<T> action)
     {
         ArgumentNullException.ThrowIfNull(action);
 
-        if (SynchronizationContext.Current is SFSynchronizationContext || !SFBootstrap.HasMainThreadDispatcher)
+        if (SynchronizationContext.Current is SFSynchronizationContext)
         {
             return action();
         }
 
         TaskCompletionSource<T> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        SFBootstrap.PostToMainThread(() =>
+        _container.MainThread.Post(() =>
         {
             try
             {
@@ -611,7 +611,7 @@ public sealed class PluginLoader
     {
         if (SynchronizationContext.Current is SFSynchronizationContext)
         {
-            SFBootstrap.PumpMainThreadQueue();
+            _container.MainThread.Pump();
         }
 
         WeakReference loadContextRef = plugin.LoadContextRef;
