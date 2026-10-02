@@ -31,7 +31,10 @@ public interface ISFEntities
     /// <summary>Every live entity of one kind, including those without a SA-MP id.</summary>
     IReadOnlyList<SFEntityRef> Enumerate(SFEntityKind kind);
 
-    /// <summary>Moves the entity through the game's own <c>Teleport</c>, which also handles peds in vehicles.</summary>
+    /// <summary>
+    /// Moves the entity through the game's own virtual <c>Teleport</c>. Returns false for a ped sitting in a
+    /// vehicle: <c>CPed::Teleport</c> moves only the ped and leaves its vehicle state untouched, so teleport the vehicle.
+    /// </summary>
     bool Teleport(SFEntityRef entity, Vector3 position);
 
     /// <summary>Sets the heading in degrees; see <see cref="SFEntitySnapshot.Heading"/>.</summary>

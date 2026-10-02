@@ -174,7 +174,7 @@ public sealed unsafe partial class SFEntities : ISFEntities
     public bool Teleport(SFEntityRef entity, Vector3 position)
     {
         GtaEntity* native = Resolve(entity);
-        if (native is null)
+        if (native is null || (entity.Kind == SFEntityKind.Ped && ((GtaPed*)native)->IsInVehicle))
         {
             return false;
         }
