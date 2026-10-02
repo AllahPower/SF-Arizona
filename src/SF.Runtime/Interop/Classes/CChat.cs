@@ -28,14 +28,9 @@ public unsafe ref struct CChat
     private static readonly AddChatMessageDelegate _addChatMessage = (AddChatMessageDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CChat.AddChatMessage);
     private static readonly AddMessageDelegate _addMessage = (AddMessageDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CChat.AddMessage);
 
-    // Arizona replaces the visible chat pipeline with _chat.asi ScreenChat.
-    // When it is available, routing AddEntry through _chat.asi is both more correct and cheaper than
-    // calling samp.dll first and letting Arizona reprocess the message through its own hooks/runtime.
+    // Arizona's _chat.asi patches this samp.dll entry itself, so messages still reach its chat UI.
     public void AddEntry(EntryType type, string? text, string? prefix, uint textColor, uint prefixColor)
     {
-        if (CArizonaChat.TryAddEntry(type, text, prefix, textColor, prefixColor))
-            return;
-
         CChat* instance = RequireInstance();
         using AnsiString textAnsi = AnsiString.Encode(text);
         using AnsiString prefixAnsi = AnsiString.Encode(prefix);

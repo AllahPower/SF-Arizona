@@ -19,7 +19,6 @@ internal sealed class SFHost : ISF
     public SFRpc RpcImpl { get; } = new();
     public SFPackets PacketsImpl { get; } = new();
     public SFArizonaPackets ArizonaImpl { get; } = new();
-    public SFArizonaChat ArizonaChatImpl { get; } = new();
     public SFPacketParsers PacketParsersImpl { get; } = new();
     public SFRpcParsers RpcParsersImpl { get; } = new();
     public SFCamera CameraImpl { get; } = new();
@@ -41,7 +40,6 @@ internal sealed class SFHost : ISF
     ISFRpc ISF.Rpc => RpcImpl;
     ISFPackets ISF.Packets => PacketsImpl;
     ISFArizonaPackets ISF.Arizona => ArizonaImpl;
-    ISFArizonaChat ISF.ArizonaChat => ArizonaChatImpl;
     ISFPacketParsers ISF.PacketParsers => PacketParsersImpl;
     ISFRpcParsers ISF.RpcParsers => RpcParsersImpl;
     ISFCamera ISF.Camera => CameraImpl;

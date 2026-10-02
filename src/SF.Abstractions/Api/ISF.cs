@@ -40,9 +40,6 @@ public interface ISF
     /// <summary>Arizona packet transport facade backed by copied payload frames.</summary>
     ISFArizonaPackets Arizona { get; }
 
-    /// <summary>Arizona chat room facade for user-owned dynamic rooms.</summary>
-    ISFArizonaChat ArizonaChat { get; }
-
     /// <summary>Typed parsed packet facade, including Arizona packet routes.</summary>
     ISFPacketParsers PacketParsers { get; }
 

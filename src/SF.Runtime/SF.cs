@@ -18,7 +18,6 @@ public static class SF
     public static SFRpc Rpc => SFHost.Shared.RpcImpl;
     public static SFPackets Packets => SFHost.Shared.PacketsImpl;
     public static SFArizonaPackets Arizona => SFHost.Shared.ArizonaImpl;
-    public static SFArizonaChat ArizonaChat => SFHost.Shared.ArizonaChatImpl;
     public static SFPacketParsers PacketParsers => SFHost.Shared.PacketParsersImpl;
     public static SFRpcParsers RpcParsers => SFHost.Shared.RpcParsersImpl;
     public static SFCamera Camera => SFHost.Shared.CameraImpl;

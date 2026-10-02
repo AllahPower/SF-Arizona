@@ -177,7 +177,7 @@ public enum EArizona : byte
     SetBulletTracersIndexedPreset = 35,
 
     // Assert: u8 chat_id, string8 icon, i32 color, string8 chat_name, u8 flags.
-    // Assert: _chat.asi extends this into UpsertDynamicRoom where flags bit 0 means visible.
+    // Assert: _chat.asi creates or updates a server room; flags bit 0 makes the room exclusive, so its messages skip the default room.
     // Assert: color transform is `(color >> 8) | 0xFF000000`.
     SetChatGroup = 36,
 

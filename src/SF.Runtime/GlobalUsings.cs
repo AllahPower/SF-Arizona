@@ -18,7 +18,6 @@ global using SFSharp.Runtime.Game.Players;
 global using SFSharp.Runtime.Game.Pools;
 global using SFSharp.Runtime.Game.World;
 global using SFSharp.Runtime.Interop.Classes.Actors;
-global using SFSharp.Runtime.Interop.Classes.Arizona;
 global using SFSharp.Runtime.Interop.Classes.Entities;
 global using SFSharp.Runtime.Interop.Classes.Game;
 global using SFSharp.Runtime.Interop.Classes.Networking;

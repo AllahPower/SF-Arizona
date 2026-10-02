@@ -236,18 +236,7 @@ public static class SFBootstrap
         else
             SFLog.Warn($"Unsupported SAMPFUNCS version: {sf.VersionString ?? "unknown"} (EP=0x{sf.EntryPointRva:X}). SFSharp targets v5.5.0 rel.22.");
 
-        // _chat.asi
-        if (ModuleResolver.IsModuleLoaded("_chat.asi"))
-        {
-            if (CArizonaChat.IsAvailable)
-                SFLog.Info("_chat.asi detected, Arizona chat interop available.");
-            else
-                SFLog.Warn("_chat.asi loaded but chat functions could not be resolved — patterns may have changed.");
-        }
-        else
-        {
-            SFLog.Info("_chat.asi not loaded, Arizona chat features disabled.");
-        }
+        SFLog.Info(ModuleResolver.IsModuleLoaded("_chat.asi") ? "_chat.asi detected." : "_chat.asi not loaded.");
 
         // AZVoice.asi
         if (ModuleResolver.IsModuleLoaded("AZVoice.asi"))
