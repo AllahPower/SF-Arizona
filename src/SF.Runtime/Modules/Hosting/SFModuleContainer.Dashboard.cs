@@ -394,7 +394,7 @@ public partial class SFModuleContainer
                 sep,
                 Paint(SFColors.Sand, plugin.DisplayName),
                 sep,
-                Paint(SFColors.Slate, $"{plugin.RegisteredModuleCount} module(s)"));
+                Paint(SFColors.Slate, plugin.EarlyModuleCount == 0 ? $"{plugin.RegisteredModuleCount} module(s)" : $"{plugin.RegisteredModuleCount} module(s), {plugin.EarlyModuleCount} early"));
 
             if (plugin.LastUnloadFailureReason != PluginUnloadFailureReason.None && !string.IsNullOrWhiteSpace(plugin.LastUnloadFailureMessage))
             {

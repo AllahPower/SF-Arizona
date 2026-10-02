@@ -2,7 +2,7 @@ namespace SFSharp.Runtime.Bootstrap;
 
 /// <summary>
 /// Composition root. The core (exception reporting, main-thread queue, network filters and dispatcher, game load
-/// stages) exists from the first <c>WinMainLoop</c> tick; samp hooks are installed once samp.dll is loaded and the game services
+/// stages, module container and plugin loader) exists from the first <c>WinMainLoop</c> tick; samp hooks are installed once samp.dll is loaded and the game services
 /// (<see cref="Host"/>) are created once CNetGame is ready, because native wrappers resolve samp.dll on first use.
 /// </summary>
 internal sealed class SFRuntime
@@ -19,6 +19,9 @@ internal sealed class SFRuntime
         Filters = new NetworkFilters();
         Dispatcher = new NetworkDispatcher(MainThread);
         Loading = new SFGameLoading(Exceptions.Report, static () => GameLoadHooks.GameState);
+        Modules = new SFModuleContainer(this, MainThread);
+        Plugins = new PluginLoader(Modules, Loading);
+        Modules.PluginLoader = Plugins;
         HookRuntime.ReportException = Exceptions.Report;
     }
 
@@ -28,6 +31,8 @@ internal sealed class SFRuntime
     public NetworkFilters Filters { get; }
     public NetworkDispatcher Dispatcher { get; }
     public SFGameLoading Loading { get; }
+    public SFModuleContainer Modules { get; }
+    public PluginLoader Plugins { get; }
 
     public HookRegistry Hooks => _hooks ?? throw new InvalidOperationException("Hooks are installed after samp.dll loads.");
     public SFHost Host => _host ?? throw new InvalidOperationException("Game services are created after CNetGame is ready.");

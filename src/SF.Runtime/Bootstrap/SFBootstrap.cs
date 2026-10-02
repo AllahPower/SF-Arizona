@@ -90,6 +90,15 @@ public static class SFBootstrap
             LogEnvironment();
 
             runtime.InstallGameLoadHooks();
+            try
+            {
+                Program.LoadModules(runtime);
+            }
+            catch (Exception ex)
+            {
+                runtime.Exceptions.Report(ex);
+            }
+
             runtime.Loading.Reach(SFGameLoadStage.Startup);
 
             uint baseAddress = await GetSampDllBaseAddress();

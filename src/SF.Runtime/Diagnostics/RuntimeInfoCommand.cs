@@ -47,6 +47,7 @@ internal static unsafe class RuntimeInfoCommand
             !azVoiceLoaded ? "not loaded" : IncomingAZVoicePacketHook.IsAvailable ? "loaded, hooked" : "loaded, hook target not found");
         string gameState = CNetGame.TryGetInstance(out CNetGame* netGame) ? netGame->State.ToString() : "no CNetGame";
         AppendLine(text, "Network", $"game state {gameState}, server traffic {(runtime.Hooks.IncomingRpcPacket.HasServerPlayerId ? "seen" : "not seen")}");
+        AppendLine(text, "Load stage", $"{runtime.Loading.Stage}, gGameState {runtime.Loading.GameState}");
 
         AppendSection(text, "Modules");
         SFModuleInfo[] modules = [.. ((ISF)runtime.Host).Modules.GetAll()];
@@ -60,6 +61,7 @@ internal static unsafe class RuntimeInfoCommand
         string pluginList = string.Join(", ", plugins.Select(static plugin =>
             $"{plugin.PluginId} {plugin.Version}{(plugin.Warnings.Count == 0 ? string.Empty : " (!)")}"));
         AppendStatus(text, "Plugins", pluginsWithWarnings == 0, plugins.Count == 0 ? "none" : $"{plugins.Count}: {pluginList}");
+        AppendLine(text, "Early modules", plugins.Sum(static plugin => plugin.EarlyModuleCount).ToString());
         bool debugWebRunning = ((ISF)runtime.Host).Modules.TryGet("debug-web", out SFModuleInfo debugWeb) && debugWeb.State == ModuleLifecycleState.Running;
         AppendLine(text, "DebugWeb", debugWebRunning ? "http://localhost:7777/" : "stopped");
 

@@ -46,7 +46,7 @@ public sealed partial class SFModuleContainer
     private bool _isRunLoopActive;
 
     /// <summary>
-    /// Attached plugin loader, if any. Set by <c>Program.Main</c> after the loader is constructed.
+    /// Attached plugin loader, if any. Set by <see cref="SFRuntime"/> when the loader is constructed.
     /// Used by the <c>/sfs</c> dashboard to expose <c>plugin-load</c>/<c>plugin-unload</c>/<c>plugin-reload</c>.
     /// </summary>
     public PluginLoader? PluginLoader
@@ -60,12 +60,16 @@ public sealed partial class SFModuleContainer
 
     internal bool IsRunLoopActive => _isRunLoopActive && !_isShuttingDown;
 
-    private readonly SFHost _host;
+    private readonly SFRuntime _runtime;
+
+    // The container exists from the first tick to register plugin modules; modules start and the dashboard
+    // runs only after Run, which is called once CNetGame and the host services exist.
+    private SFHost _host => _runtime.Host;
     private readonly MainThreadDispatcher _mainThread;
 
-    internal SFModuleContainer(SFHost host, MainThreadDispatcher mainThread)
+    internal SFModuleContainer(SFRuntime runtime, MainThreadDispatcher mainThread)
     {
-        _host = host;
+        _runtime = runtime;
         _mainThread = mainThread;
         PublishModuleCatalogSnapshot();
     }

@@ -17,6 +17,7 @@ public enum PluginLoadFailureReason
     TypeEnumerationFailed,
     NoModulesFound,
     ModuleRegistrationFailed,
+    EarlyModuleFailed,
     MissingManagedDependency,
     MissingNativeDependency,
     DependencyMissing,
@@ -102,5 +103,6 @@ public sealed record PluginRuntimeSnapshot(
     IReadOnlyList<string> Warnings,
     PluginState State,
     int RegisteredModuleCount,
+    int EarlyModuleCount,
     PluginUnloadFailureReason LastUnloadFailureReason,
     string? LastUnloadFailureMessage);

@@ -8,7 +8,8 @@ namespace SFSharp.Runtime.Modules.PluginLoading;
 /// Discovers, loads, unloads and hot-reloads third-party plugins from
 /// <c>&lt;GameDir&gt;\SF\modules\*\manifest.json</c>. Each plugin is isolated inside its own
 /// collectible <see cref="PluginLoadContext"/> and registers every type decorated with
-/// <see cref="SFModuleAttribute"/> with the passed <see cref="SFModuleContainer"/>.
+/// <see cref="SFModuleAttribute"/> with the passed <see cref="SFModuleContainer"/>, and starts its
+/// <see cref="ISFEarlyModule"/> implementations immediately so they can follow the game load stages.
 /// </summary>
 /// <remarks>
 /// Dynamic assembly loading is not supported under NativeAOT. On AOT builds
@@ -24,22 +25,25 @@ public sealed class PluginLoader
     private static readonly TimeSpan UnloadStopTimeout = TimeSpan.FromSeconds(5);
 
     private readonly SFModuleContainer _container;
+    private readonly ISFGameLoading _loading;
     private readonly string _pluginsRoot;
     private readonly SemanticVersion _hostVersion;
     private readonly PluginManifestResolver _manifestResolver = new();
     private readonly Dictionary<string, LoadedPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _sync = new();
 
-    public PluginLoader(SFModuleContainer container)
-        : this(container, Path.Combine(SFPaths.AssetsRoot, "modules"))
+    public PluginLoader(SFModuleContainer container, ISFGameLoading loading)
+        : this(container, loading, Path.Combine(SFPaths.AssetsRoot, "modules"))
     {
     }
 
-    public PluginLoader(SFModuleContainer container, string pluginsRoot)
+    public PluginLoader(SFModuleContainer container, ISFGameLoading loading, string pluginsRoot)
     {
         ArgumentNullException.ThrowIfNull(container);
+        ArgumentNullException.ThrowIfNull(loading);
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginsRoot);
         _container = container;
+        _loading = loading;
         _pluginsRoot = pluginsRoot;
         _hostVersion = ResolveHostVersion();
     }
@@ -228,6 +232,7 @@ public sealed class PluginLoader
         }
 
         Type[] moduleTypes;
+        Type[] earlyModuleTypes;
         try
         {
             Type[] allTypes = assembly.GetTypes();
@@ -256,6 +261,7 @@ public sealed class PluginLoader
             moduleTypes = allTypes
                 .Where(type => !type.IsAbstract && !type.IsInterface && type.Assembly == assembly && typeof(ISFModule).IsAssignableFrom(type) && type.GetCustomAttribute<SFModuleAttribute>() is not null)
                 .ToArray();
+            earlyModuleTypes = EarlyModuleHost.FindTypes(allTypes, assembly);
         }
         catch (ReflectionTypeLoadException ex)
         {
@@ -273,9 +279,9 @@ public sealed class PluginLoader
             return failure;
         }
 
-        if (moduleTypes.Length == 0)
+        if (moduleTypes.Length == 0 && earlyModuleTypes.Length == 0)
         {
-            string message = $"Plugin '{manifest.PluginId}' assembly has no types decorated with [SFModule].";
+            string message = $"Plugin '{manifest.PluginId}' assembly has no types decorated with [SFModule] and no ISFEarlyModule implementations.";
             SFLog.Warn($"PluginLoader[{manifest.PluginId}]: {message}");
             BeginDetachedFailedLoadCleanup(context, manifest.PluginId);
             return PluginLoadResult.FromFailure(PluginLoadFailureReason.NoModulesFound, message, manifest.PluginId, manifest);
@@ -308,6 +314,31 @@ public sealed class PluginLoader
                 manifest);
         }
 
+        EarlyModuleHost? earlyModules = null;
+        if (earlyModuleTypes.Length != 0)
+        {
+            try
+            {
+                earlyModules = EarlyModuleHost.Start(manifest.PluginId, earlyModuleTypes, _loading);
+            }
+            catch (Exception ex)
+            {
+                SFLog.Error(ex, $"PluginLoader[{manifest.PluginId}]: early module failed, rolling back");
+                string[] registeredIds = [.. registered.Select(static descriptor => descriptor.Id)];
+                if (!_container.TryUnregisterModules(registeredIds, out string[] rollbackFailures) && rollbackFailures.Length != 0)
+                {
+                    SFLog.Error($"PluginLoader[{manifest.PluginId}]: rollback failed for ids=[{string.Join(',', rollbackFailures)}]");
+                }
+
+                BeginDetachedFailedLoadCleanup(context, manifest.PluginId);
+                return PluginLoadResult.FromFailure(
+                    PluginLoadFailureReason.EarlyModuleFailed,
+                    $"Plugin '{manifest.PluginId}' early module failed: {ex.GetBaseException().Message}",
+                    manifest.PluginId,
+                    manifest);
+            }
+        }
+
         LoadedPlugin record = new()
         {
             Manifest = manifest,
@@ -315,6 +346,7 @@ public sealed class PluginLoader
             RegisteredModuleIds = [.. registered.Select(static descriptor => descriptor.Id)],
             LoadContextRef = new WeakReference(context),
             Warnings = planned.Warnings,
+            EarlyModules = earlyModules,
         };
 
         lock (_sync)
@@ -328,7 +360,7 @@ public sealed class PluginLoader
             SFLog.Debug($"PluginLoader[{manifest.PluginId}]: activated {started} pending auto-start module(s) after load");
         }
 
-        SFLog.Info($"PluginLoader[{manifest.PluginId}]: loaded {registered.Count} module(s)");
+        SFLog.Info($"PluginLoader[{manifest.PluginId}]: loaded {registered.Count} module(s), {record.EarlyModuleCount} early module(s)");
         return PluginLoadResult.FromSuccess(manifest, registered.Count);
     }
 
@@ -420,6 +452,9 @@ public sealed class PluginLoader
                 PluginUnloadFailureReason.ModuleUnregisterFailed,
                 $"Plugin '{pluginId}' failed to unregister module ids: {string.Join(", ", failedIds)}");
         }
+
+        activePlugin.EarlyModules?.Dispose();
+        activePlugin.EarlyModules = null;
 
         if (!TryDetachAndUnloadContext(activePlugin, pluginId))
         {
