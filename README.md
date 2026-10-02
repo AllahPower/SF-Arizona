@@ -95,12 +95,13 @@ Install ASP.NET Core Runtime .NET 10 **x86** and extract the archive beside `gta
 ```text
 src/
   SF.Abstractions/  # plugin-visible contracts and managed bitstreams
+  SF.Protocol/      # plugin-visible SA-MP/Arizona packet and RPC models and parsers, no native code
   SF.Runtime/
     Bootstrap/     # initialization, composition and main-thread dispatch
     Ui/            # chat, dialogs, keyboard and UI facades
     Game/          # entities, players, pools and world facades
     Events/        # typed event streams
-    Networking/    # managed dispatch, filters, catalogs, models and parsers
+    Networking/    # managed dispatch, filters and handler registration
     Modules/       # Hosting, Lifecycle, PluginLoading and BuiltIn
     Storage/       # module config/storage implementations
     Diagnostics/   # logging and DebugWeb with static assets

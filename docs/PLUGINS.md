@@ -13,6 +13,14 @@ and `System.Text.Json`, plus every library installed directly in `SF/`.
 <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
 ```
 
+Plugins that consume parsed traffic, such as `context.SF.Events.OnIncomingRpc<SetPlayerPosRpc>(...)` or the
+sync, Arizona 220/221 and AZVoice models, also reference the built `SF.Protocol.dll` the same way (namespaces
+`SFSharp.Protocol.*`). The host shares the instance it uses itself, so model types match on both sides:
+
+```xml
+<Reference Include="SF.Protocol" HintPath="$(SFProtocolPath)" Private="false" />
+```
+
 ## manifest.json
 
 ```json
