@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "sf_native/log.hpp"
@@ -11,9 +12,45 @@ namespace
 	FARPROC* g_iatEntry = nullptr;
 	volatile LONG g_tickReentrancy = 0;
 	sf::hooks::TickCallback g_tickCallback = nullptr;
+	HANDLE g_bootstrapFinished = nullptr;
+	bool g_firstCallHandled = false;
+	constexpr DWORD kBootstrapWaitTimeoutMs = 10000;
+
+	// Runs on the game thread only, so the flag needs no synchronization.
+	void WaitForBootstrapOnce()
+	{
+		if (g_firstCallHandled)
+		{
+			return;
+		}
+
+		g_firstCallHandled = true;
+		if (g_bootstrapFinished == nullptr)
+		{
+			return;
+		}
+
+		ULONGLONG started = GetTickCount64();
+		DWORD result = WaitForSingleObject(g_bootstrapFinished, kBootstrapWaitTimeoutMs);
+		char message[128];
+		_snprintf_s(message, sizeof(message), _TRUNCATE,
+			result == WAIT_OBJECT_0 ? "first game tick waited %llu ms for the managed bootstrap" : "first game tick stopped waiting for the managed bootstrap after %llu ms",
+			GetTickCount64() - started);
+		if (result == WAIT_OBJECT_0)
+		{
+			sf::log::Info(message);
+		}
+		else
+		{
+			sf::log::Error(message);
+		}
+
+		// The event is deliberately never closed: after a timeout the bootstrap thread may still signal it.
+	}
 
 	BOOL WINAPI HookedPeekMessageA(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 	{
+		WaitForBootstrapOnce();
 		sf::hooks::TickCallback tick = g_tickCallback;
 		if (tick != nullptr && InterlockedCompareExchange(&g_tickReentrancy, 1, 0) == 0)
 		{
@@ -89,6 +126,14 @@ namespace sf::hooks
 		g_tickCallback = callback;
 	}
 
+	void SignalBootstrapFinished()
+	{
+		if (g_bootstrapFinished != nullptr)
+		{
+			SetEvent(g_bootstrapFinished);
+		}
+	}
+
 	bool InstallPeekMessageHook()
 	{
 		HMODULE exeModule = GetModuleHandleA(nullptr);
@@ -106,6 +151,11 @@ namespace sf::hooks
 		}
 
 		g_originalPeekMessageA = reinterpret_cast<BOOL(WINAPI*)(LPMSG, HWND, UINT, UINT, UINT)>(*g_iatEntry);
+		g_bootstrapFinished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+		if (g_bootstrapFinished == nullptr)
+		{
+			sf::log::Error("CreateEvent(bootstrap) failed, first tick will not wait for the runtime");
+		}
 
 		DWORD oldProtect = 0;
 		if (!VirtualProtect(g_iatEntry, sizeof(FARPROC), PAGE_READWRITE, &oldProtect))

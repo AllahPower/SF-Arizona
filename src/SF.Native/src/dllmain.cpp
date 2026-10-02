@@ -36,7 +36,7 @@ namespace
 		return swprintf(outPath, outCount, L"%s\\%s", baseDir, relativePath) >= 0;
 	}
 
-	DWORD WINAPI BootstrapThreadProc(LPVOID)
+	DWORD RunBootstrap()
 	{
 		sf::log::Info("bootstrap worker thread started");
 
@@ -82,6 +82,13 @@ namespace
 		sf::log::Info("managed bootstrap complete");
 		return 0;
 	}
+
+	DWORD WINAPI BootstrapThreadProc(LPVOID)
+	{
+		DWORD result = RunBootstrap();
+		sf::hooks::SignalBootstrapFinished();
+		return result;
+	}
 }
 
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
@@ -109,6 +116,7 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 		if (threadHandle == nullptr)
 		{
 			sf::log::Error("CreateThread(Bootstrap) failed");
+			sf::hooks::SignalBootstrapFinished();
 			return TRUE;
 		}
 
