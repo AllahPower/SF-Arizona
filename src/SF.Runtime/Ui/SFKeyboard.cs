@@ -23,28 +23,28 @@ public class SFKeyboard : ISFKeyboard
         }
     }
 
-    private static bool IsKeyDownCore(VK key, byte[] state)
+    private static bool IsKeyDownCore(VirtualKey key, byte[] state)
     {
         return (state[(int)key] & 0x80) != 0;
     }
 
-    public bool IsKeyDown(VK key)
+    public bool IsKeyDown(VirtualKey key)
     {
         return IsKeyDownCore(key, _currentState);
     }
 
     public bool IsKeyDown(byte virtualKeyCode)
     {
-        return IsKeyDown((VK)virtualKeyCode);
+        return IsKeyDown((VirtualKey)virtualKeyCode);
     }
 
-    public bool IsKeyPressed(VK key)
+    public bool IsKeyPressed(VirtualKey key)
     {
         return IsKeyDownCore(key, _currentState) && !IsKeyDownCore(key, _lastState);
     }
 
     public bool IsKeyPressed(byte virtualKeyCode)
     {
-        return IsKeyPressed((VK)virtualKeyCode);
+        return IsKeyPressed((VirtualKey)virtualKeyCode);
     }
 }

@@ -23,12 +23,12 @@ public class BrightBinder : SFModuleBase
                     Context.IncrementCounter("dialogs.auto");
                     await ShowDialog("default", aimedPlayerId);
                 }
-                if (sf.Keyboard.IsKeyPressed((byte)VK.XBUTTON1))
+                if (sf.Keyboard.IsKeyPressed((byte)VirtualKey.XBUTTON1))
                 {
                     Context.IncrementCounter("dialogs.manual");
                     await ShowDialog("default", null);
                 }
-                if (sf.Keyboard.IsKeyPressed((byte)VK.XBUTTON2))
+                if (sf.Keyboard.IsKeyPressed((byte)VirtualKey.XBUTTON2))
                 {
                     bbEnabled = !bbEnabled;
                     Context.SetDetail("quickbind", bbEnabled ? "enabled" : "disabled");

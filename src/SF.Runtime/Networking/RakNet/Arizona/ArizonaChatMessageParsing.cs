@@ -18,7 +18,7 @@ public readonly record struct ArzLinkedChatSend(byte Reserved, ArzLinkedChatSegm
 
 internal static class ArizonaChatMessageParsing
 {
-    public static ArzChatMessageSegment[] ParseIncoming(ref BitStreamReader reader, Encoding encoding, out byte? unsupportedKind)
+    public static ArzChatMessageSegment[] ParseIncoming(ref SampBitStreamReader reader, Encoding encoding, out byte? unsupportedKind)
     {
         unsupportedKind = null;
         int count = reader.ReadUInt8();
@@ -41,7 +41,7 @@ internal static class ArizonaChatMessageParsing
         return segments;
     }
 
-    public static ArzLinkedChatSend ParseOutgoing(ref BitStreamReader reader, Encoding encoding)
+    public static ArzLinkedChatSend ParseOutgoing(ref SampBitStreamReader reader, Encoding encoding)
     {
         byte reserved = reader.ReadUInt8();
         int count = reader.ReadUInt8();
@@ -61,13 +61,13 @@ internal static class ArizonaChatMessageParsing
         return new ArzLinkedChatSend(reserved, segments);
     }
 
-    private static ArzChatTextSegment ReadText(ref BitStreamReader reader, Encoding encoding)
+    private static ArzChatTextSegment ReadText(ref SampBitStreamReader reader, Encoding encoding)
     {
         byte[] bytes = reader.ReadBytes(reader.ReadUInt16()).ToArray();
         return new ArzChatTextSegment(encoding.GetString(bytes), bytes);
     }
 
-    private static ArzChatItemSegment ReadItem(ref BitStreamReader reader, Encoding encoding)
+    private static ArzChatItemSegment ReadItem(ref SampBitStreamReader reader, Encoding encoding)
     {
         ushort itemId = reader.ReadUInt16();
         int count = reader.ReadUInt8();
@@ -82,6 +82,6 @@ internal static class ArizonaChatMessageParsing
         return new ArzChatItemSegment(itemId, fields);
     }
 
-    private static string ReadString16(ref BitStreamReader reader, Encoding encoding) =>
+    private static string ReadString16(ref SampBitStreamReader reader, Encoding encoding) =>
         encoding.GetString(reader.ReadBytes(reader.ReadUInt16()));
 }

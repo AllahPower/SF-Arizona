@@ -2,8 +2,8 @@ namespace SFSharp.Runtime.Interop.RakNet.Outgoing;
 
 public readonly record struct OutgoingRpcArgs(int ERpcId, nint DataPtr, int DataBitLength)
 {
-    public unsafe BitStreamReader CreateReader()
+    public unsafe SampBitStreamReader CreateReader()
     {
-        return new BitStreamReader((byte*)DataPtr, 0, DataBitLength);
+        return new SampBitStreamReader((byte*)DataPtr, 0, DataBitLength);
     }
 }

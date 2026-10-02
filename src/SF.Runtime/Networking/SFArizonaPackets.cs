@@ -400,7 +400,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             byte subId = ArizonaPacket.ReadSubId220(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet220PayloadBitOffset, args.DataBitLength - Packet220PayloadBitOffset);
@@ -418,7 +418,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             ushort subId = ArizonaPacket.ReadSubId221(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet221PayloadBitOffset, args.DataBitLength - Packet221PayloadBitOffset);
@@ -436,7 +436,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             byte subId = ArizonaPacket.ReadSubId220(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet220PayloadBitOffset, args.DataBitLength - Packet220PayloadBitOffset);
@@ -454,7 +454,7 @@ public sealed class SFArizonaPackets : ISFArizonaPackets
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             ushort subId = ArizonaPacket.ReadSubId221(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, Packet221PayloadBitOffset, args.DataBitLength - Packet221PayloadBitOffset);

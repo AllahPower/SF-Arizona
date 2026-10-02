@@ -6,14 +6,14 @@ public static class AZVoiceParsers
 {
     private const int MaxVoicePayloadRoundedBits = 0x1007;
 
-    private static void AlignToByte(ref BitStreamReader r)
+    private static void AlignToByte(ref SampBitStreamReader r)
     {
         int rem = r.OffsetBits % 8;
         if (rem != 0)
             r.SkipBits(8 - rem);
     }
 
-    private static string ReadAzvString16(ref BitStreamReader r)
+    private static string ReadAzvString16(ref SampBitStreamReader r)
     {
         ushort length = r.ReadUInt16();
         return length == 0
@@ -21,13 +21,13 @@ public static class AZVoiceParsers
             : r.ReadFixedString(length);
     }
 
-    private static float ReadNormFloat16(ref BitStreamReader r)
+    private static float ReadNormFloat16(ref SampBitStreamReader r)
     {
         ushort raw = r.ReadUInt16();
         return raw / 32767.5f - 1.0f;
     }
 
-    private static Vector3 ReadScaledVector3(ref BitStreamReader r)
+    private static Vector3 ReadScaledVector3(ref SampBitStreamReader r)
     {
         float scale = r.ReadFloat();
         if (scale == 0.0f)
@@ -38,7 +38,7 @@ public static class AZVoiceParsers
         return new Vector3(x, y, z);
     }
 
-    private static AzvCreateFullStreamPlaybackEntry ReadCreateFullStreamPlaybackEntry(ref BitStreamReader r)
+    private static AzvCreateFullStreamPlaybackEntry ReadCreateFullStreamPlaybackEntry(ref SampBitStreamReader r)
     {
         bool hasInlineSource = r.ReadBitBool();
         string? sourceName = null;
@@ -83,7 +83,7 @@ public static class AZVoiceParsers
             playbackPositionMs);
     }
 
-    private static AzvCreateFullStreamAction ReadCreateFullStreamAction(ref BitStreamReader r)
+    private static AzvCreateFullStreamAction ReadCreateFullStreamAction(ref SampBitStreamReader r)
     {
         var actionType = (EAzvCreateFullStreamActionType)r.ReadUInt8();
         Vector4? parameters = actionType switch
@@ -102,7 +102,7 @@ public static class AZVoiceParsers
 
     #region incoming (server -> client)
 
-    public static AzvPluginInit ParsePluginInit(ref BitStreamReader r)
+    public static AzvPluginInit ParsePluginInit(ref SampBitStreamReader r)
     {
         uint version = r.ReadUInt32();
         ushort streamCount = r.ReadUInt16();
@@ -118,29 +118,29 @@ public static class AZVoiceParsers
         return new AzvPluginInit(version, streams);
     }
 
-    public static AzvCreateStaticAudioStream ParseCreateStaticAudioStream(ref BitStreamReader r)
+    public static AzvCreateStaticAudioStream ParseCreateStaticAudioStream(ref SampBitStreamReader r)
     {
         byte channelKey = r.ReadUInt8();
         string name = ReadAzvString16(ref r);
         return new AzvCreateStaticAudioStream(channelKey, name);
     }
 
-    public static AzvDeleteStream ParseDeleteStream(ref BitStreamReader r)
+    public static AzvDeleteStream ParseDeleteStream(ref SampBitStreamReader r)
     {
         return new AzvDeleteStream(r.ReadUInt8());
     }
 
-    public static AzvResetStreams ParseResetStreams(ref BitStreamReader r)
+    public static AzvResetStreams ParseResetStreams(ref SampBitStreamReader r)
     {
         return new AzvResetStreams();
     }
 
-    public static AzvSetStreamParameter ParseSetStreamParameter(ref BitStreamReader r)
+    public static AzvSetStreamParameter ParseSetStreamParameter(ref SampBitStreamReader r)
     {
         return new AzvSetStreamParameter(r.ReadUInt32());
     }
 
-    public static AzvCreateFullStream ParseCreateFullStream(ref BitStreamReader r)
+    public static AzvCreateFullStream ParseCreateFullStream(ref SampBitStreamReader r)
     {
         ushort streamId = r.ReadUInt16();
         string name = ReadAzvString16(ref r);
@@ -197,43 +197,43 @@ public static class AZVoiceParsers
             actions);
     }
 
-    public static AzvDeleteStreamByChannel ParseDeleteStreamByChannel(ref BitStreamReader r)
+    public static AzvDeleteStreamByChannel ParseDeleteStreamByChannel(ref SampBitStreamReader r)
     {
         return new AzvDeleteStreamByChannel(r.ReadUInt16());
     }
 
-    public static AzvSetStreamChannel ParseSetStreamChannel(ref BitStreamReader r)
+    public static AzvSetStreamChannel ParseSetStreamChannel(ref SampBitStreamReader r)
     {
         ushort streamId = r.ReadUInt16();
         ushort channelId = r.ReadUInt16();
         return new AzvSetStreamChannel(streamId, channelId);
     }
 
-    public static AzvResumeStream ParseResumeStream(ref BitStreamReader r)
+    public static AzvResumeStream ParseResumeStream(ref SampBitStreamReader r)
     {
         return new AzvResumeStream(r.ReadUInt16());
     }
 
-    public static AzvSetStreamPlaybackPosition ParseSetStreamPlaybackPosition(ref BitStreamReader r)
+    public static AzvSetStreamPlaybackPosition ParseSetStreamPlaybackPosition(ref SampBitStreamReader r)
     {
         ushort streamId = r.ReadUInt16();
         uint timestamp = r.ReadUInt32();
         return new AzvSetStreamPlaybackPosition(streamId, timestamp);
     }
 
-    public static AzvSetStreamPlaybackPosition2 ParseSetStreamPlaybackPosition2(ref BitStreamReader r)
+    public static AzvSetStreamPlaybackPosition2 ParseSetStreamPlaybackPosition2(ref SampBitStreamReader r)
     {
         ushort streamId = r.ReadUInt16();
         uint timestamp = r.ReadUInt32();
         return new AzvSetStreamPlaybackPosition2(streamId, timestamp);
     }
 
-    public static AzvPauseStream ParsePauseStream(ref BitStreamReader r)
+    public static AzvPauseStream ParsePauseStream(ref SampBitStreamReader r)
     {
         return new AzvPauseStream(r.ReadUInt16());
     }
 
-    public static AzvUpdateStreamEffect ParseUpdateStreamEffect(ref BitStreamReader r)
+    public static AzvUpdateStreamEffect ParseUpdateStreamEffect(ref SampBitStreamReader r)
     {
         ushort streamId = r.ReadUInt16();
         bool hasInlineSource = r.ReadBitBool();
@@ -268,19 +268,19 @@ public static class AZVoiceParsers
             allowOverlap);
     }
 
-    public static AzvStopStreamPlayback ParseStopStreamPlayback(ref BitStreamReader r)
+    public static AzvStopStreamPlayback ParseStopStreamPlayback(ref SampBitStreamReader r)
     {
         return new AzvStopStreamPlayback(r.ReadUInt16());
     }
 
-    public static AzvSetStreamTransient ParseSetStreamTransient(ref BitStreamReader r)
+    public static AzvSetStreamTransient ParseSetStreamTransient(ref SampBitStreamReader r)
     {
         ushort targetId = r.ReadUInt16();
         bool isTransient = r.ReadBitBool();
         return new AzvSetStreamTransient(targetId, isTransient);
     }
 
-    public static AzvUpdateStreamSource ParseUpdateStreamSource(ref BitStreamReader r)
+    public static AzvUpdateStreamSource ParseUpdateStreamSource(ref SampBitStreamReader r)
     {
         ushort channelId = r.ReadUInt16();
         string name = ReadAzvString16(ref r);
@@ -288,17 +288,17 @@ public static class AZVoiceParsers
         return new AzvUpdateStreamSource(channelId, name, hasUrl);
     }
 
-    public static AzvDestroyStreamObject ParseDestroyStreamObject(ref BitStreamReader r)
+    public static AzvDestroyStreamObject ParseDestroyStreamObject(ref SampBitStreamReader r)
     {
         return new AzvDestroyStreamObject(r.ReadUInt16());
     }
 
-    public static AzvDisconnect ParseDisconnect(ref BitStreamReader r)
+    public static AzvDisconnect ParseDisconnect(ref SampBitStreamReader r)
     {
         return new AzvDisconnect();
     }
 
-    public static AzvSetReadyFlag ParseSetReadyFlag(ref BitStreamReader r)
+    public static AzvSetReadyFlag ParseSetReadyFlag(ref SampBitStreamReader r)
     {
         return new AzvSetReadyFlag();
     }
@@ -307,7 +307,7 @@ public static class AZVoiceParsers
 
     #region multiplexed / raw AZVoice data packets
 
-    public static AzvVoiceData ParseVoiceData(ref BitStreamReader r)
+    public static AzvVoiceData ParseVoiceData(ref SampBitStreamReader r)
     {
         ushort senderId = r.ReadUInt16();
         ushort packetNumber = r.ReadUInt16();
@@ -325,7 +325,7 @@ public static class AZVoiceParsers
         return new AzvVoiceData(senderId, packetNumber, streamIds, opusData);
     }
 
-    public static AzvOutgoingVoiceData ParseOutgoingVoiceData(ref BitStreamReader r)
+    public static AzvOutgoingVoiceData ParseOutgoingVoiceData(ref SampBitStreamReader r)
     {
         ushort packetNumber = r.ReadUInt16();
         byte streamId = r.ReadUInt8();

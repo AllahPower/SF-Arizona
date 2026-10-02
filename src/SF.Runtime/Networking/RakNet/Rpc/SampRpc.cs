@@ -10,7 +10,7 @@ public static class SampRpc
 
     public static SetPlayerNameRpc ParseSetPlayerName(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort playerId = r.ReadUInt16();
         string name = r.ReadStringUInt8Length();
         bool success = r.ReadBool8();
@@ -19,31 +19,31 @@ public static class SampRpc
 
     public static SetPlayerPosRpc ParseSetPlayerPos(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r));
     }
 
     public static SetPlayerPosFindZRpc ParseSetPlayerPosFindZ(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r));
     }
 
     public static SetPlayerHealthRpc ParseSetPlayerHealth(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadFloat());
     }
 
     public static TogglePlayerControllableRpc ParseTogglePlayerControllable(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool());
     }
 
     public static PlaySoundRpc ParsePlaySound(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         int soundId = r.ReadInt32();
         Vector3 pos = ReadVector3(ref r);
         return new(soundId, pos);
@@ -51,19 +51,19 @@ public static class SampRpc
 
     public static SetWorldBoundsRpc ParseSetWorldBounds(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadFloat(), r.ReadFloat(), r.ReadFloat(), r.ReadFloat());
     }
 
     public static GivePlayerMoneyRpc ParseGivePlayerMoney(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static SetPlayerFacingAngleRpc ParseSetPlayerFacingAngle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadFloat());
     }
 
@@ -79,13 +79,13 @@ public static class SampRpc
 
     public static GivePlayerWeaponRpc ParseGivePlayerWeapon(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), r.ReadInt32());
     }
 
     public static SetVehicleParamsExRpc ParseSetVehicleParamsEx(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort vehicleId = r.ReadUInt16();
         VehicleParamsExStatusRpc parameters = new(
             r.ReadUInt8(),
@@ -108,19 +108,19 @@ public static class SampRpc
 
     public static SetPlayerTimeRpc ParseSetPlayerTime(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8(), r.ReadUInt8());
     }
 
     public static ToggleClockRpc ParseToggleClock(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool());
     }
 
     public static WorldPlayerAddRpc ParseWorldPlayerAdd(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort pid = r.ReadUInt16();
         byte team = r.ReadUInt8();
         int model = r.ReadInt32();
@@ -133,25 +133,25 @@ public static class SampRpc
 
     public static SetShopNameRpc ParseSetShopName(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadFixedString(32));
     }
 
     public static SetPlayerSkillLevelRpc ParseSetPlayerSkillLevel(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadInt32(), r.ReadUInt16());
     }
 
     public static SetPlayerDrunkLevelRpc ParseSetPlayerDrunkLevel(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static Create3DTextLabelRpc ParseCreate3DTextLabel(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort id = r.ReadUInt16();
         int color = r.ReadInt32();
         Vector3 pos = ReadVector3(ref r);
@@ -170,7 +170,7 @@ public static class SampRpc
 
     public static SetRaceCheckpointRpc ParseSetRaceCheckpoint(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         byte type = r.ReadUInt8();
         Vector3 cur = ReadVector3(ref r);
         Vector3 next = ReadVector3(ref r);
@@ -190,7 +190,7 @@ public static class SampRpc
 
     public static PlayAudioStreamRpc ParsePlayAudioStream(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         string url = r.ReadStringUInt8Length();
         Vector3 pos = ReadVector3(ref r);
         float radius = r.ReadFloat();
@@ -205,13 +205,13 @@ public static class SampRpc
 
     public static RemoveBuildingForPlayerRpc ParseRemoveBuildingForPlayer(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), ReadVector3(ref r), r.ReadFloat());
     }
 
     public static CreateObjectRpc ParseCreateObject(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort objectId = r.ReadUInt16();
         int modelId = r.ReadInt32();
         Vector3 position = ReadVector3(ref r);
@@ -272,31 +272,31 @@ public static class SampRpc
 
     public static SetObjectPosRpc ParseSetObjectPos(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), ReadVector3(ref r));
     }
 
     public static SetObjectRotRpc ParseSetObjectRot(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), ReadVector3(ref r));
     }
 
     public static DestroyObjectRpc ParseDestroyObject(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static DeathMessageRpc ParseDeathMessage(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static SetPlayerMapIconRpc ParseSetPlayerMapIcon(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         byte iconId = r.ReadUInt8();
         Vector3 pos = ReadVector3(ref r);
         byte type = r.ReadUInt8();
@@ -307,19 +307,19 @@ public static class SampRpc
 
     public static RemoveVehicleComponentRpc ParseRemoveVehicleComponent(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt16());
     }
 
     public static Destroy3DTextLabelRpc ParseDestroy3DTextLabel(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static ChatBubbleRpc ParseChatBubble(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort pid = r.ReadUInt16();
         int color = r.ReadInt32();
         float dist = r.ReadFloat();
@@ -330,13 +330,13 @@ public static class SampRpc
 
     public static UpdateTimeRpc ParseUpdateTime(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static ShowDialogRpc ParseShowDialog(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort dialogId = r.ReadUInt16();
         DialogStyle style = (DialogStyle)r.ReadUInt8();
         string title = r.ReadStringUInt8Length();
@@ -348,31 +348,31 @@ public static class SampRpc
 
     public static DestroyPickupRpc ParseDestroyPickup(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static LinkVehicleToInteriorRpc ParseLinkVehicleToInterior(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static SetPlayerArmourRpc ParseSetPlayerArmour(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadFloat());
     }
 
     public static SetPlayerArmedWeaponRpc ParseSetPlayerArmedWeapon(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static SetSpawnInfoRpc ParseSetSpawnInfo(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         byte team = r.ReadUInt8();
         int skin = r.ReadInt32();
         byte unused = r.ReadUInt8();
@@ -385,13 +385,13 @@ public static class SampRpc
 
     public static SetPlayerTeamRpc ParseSetPlayerTeam(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static PutPlayerInVehicleRpc ParsePutPlayerInVehicle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
@@ -402,13 +402,13 @@ public static class SampRpc
 
     public static SetPlayerColorRpc ParseSetPlayerColor(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadInt32());
     }
 
     public static DisplayGameTextRpc ParseDisplayGameText(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         int style = r.ReadInt32();
         int time = r.ReadInt32();
         string text = r.ReadStringUInt32Length();
@@ -422,7 +422,7 @@ public static class SampRpc
 
     public static AttachObjectToPlayerRpc ParseAttachObjectToPlayer(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort objId = r.ReadUInt16();
         ushort pid = r.ReadUInt16();
         Vector3 offsets = ReadVector3(ref r);
@@ -432,7 +432,7 @@ public static class SampRpc
 
     public static InitMenuRpc ParseInitMenu(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         byte menuId = r.ReadUInt8();
         bool twoColumns = r.ReadBool32();
         string title = r.ReadFixedString(32);
@@ -469,37 +469,37 @@ public static class SampRpc
 
     public static ShowMenuRpc ParseShowMenu(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static HideMenuRpc ParseHideMenu(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static CreateExplosionRpc ParseCreateExplosion(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r), r.ReadInt32(), r.ReadFloat());
     }
 
     public static ShowPlayerNameTagRpc ParseShowPlayerNameTag(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadBool8());
     }
 
     public static AttachCameraToObjectRpc ParseAttachCameraToObject(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static InterpolateCameraRpc ParseInterpolateCamera(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         bool setPos = r.ReadBitBool();
         Vector3 from = ReadVector3(ref r);
         Vector3 dest = ReadVector3(ref r);
@@ -510,7 +510,7 @@ public static class SampRpc
 
     public static SetObjectMaterialRpc ParseSetObjectMaterial(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort objectId = r.ReadUInt16();
         ObjectMaterialType materialType = (ObjectMaterialType)r.ReadUInt8();
         ObjectMaterialRpc material = materialType switch
@@ -529,13 +529,13 @@ public static class SampRpc
 
     public static GangZoneStopFlashRpc ParseGangZoneStopFlash(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static ApplyPlayerAnimationRpc ParseApplyPlayerAnimation(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort pid = r.ReadUInt16();
         string lib = r.ReadStringUInt8Length();
         string name = r.ReadStringUInt8Length();
@@ -550,43 +550,43 @@ public static class SampRpc
 
     public static ClearPlayerAnimationsRpc ParseClearPlayerAnimations(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static SetPlayerSpecialActionRpc ParseSetPlayerSpecialAction(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static SetPlayerFightingStyleRpc ParseSetPlayerFightingStyle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static SetPlayerVelocityRpc ParseSetPlayerVelocity(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r));
     }
 
     public static SetVehicleVelocityRpc ParseSetVehicleVelocity(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBool8(), ReadVector3(ref r));
     }
 
     public static SetPlayerDrunkVisualsRpc ParseSetPlayerDrunkVisuals(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static ClientMessageRpc ParseClientMessage(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         uint color = r.ReadUInt32();
         string text = r.ReadStringUInt32Length();
         return new(color, text);
@@ -594,25 +594,25 @@ public static class SampRpc
 
     public static SetWorldTimeRpc ParseSetWorldTime(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static CreatePickupRpc ParseCreatePickup(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), ReadVector3(ref r));
     }
 
     public static SetVehicleTiresRpc ParseSetVehicleTires(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static MoveObjectRpc ParseMoveObject(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort objId = r.ReadUInt16();
         Vector3 from = ReadVector3(ref r);
         Vector3 dest = ReadVector3(ref r);
@@ -623,25 +623,25 @@ public static class SampRpc
 
     public static EnableStuntBonusRpc ParseEnableStuntBonus(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool());
     }
 
     public static TextDrawSetStringRpc ParseTextDrawSetString(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadStringUInt16Length());
     }
 
     public static SetCheckpointRpc ParseSetCheckpoint(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r), r.ReadFloat());
     }
 
     public static CreateGangZoneRpc ParseCreateGangZone(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort id = r.ReadUInt16();
         float sx = r.ReadFloat(); float sy = r.ReadFloat();
         float ex = r.ReadFloat(); float ey = r.ReadFloat();
@@ -651,13 +651,13 @@ public static class SampRpc
 
     public static ToggleWidescreenRpc ParseToggleWidescreen(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBool8());
     }
 
     public static PlayCrimeReportRpc ParsePlayCrimeReport(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort suspect = r.ReadUInt16();
         int inVehicle = r.ReadInt32();
         int model = r.ReadInt32();
@@ -669,61 +669,61 @@ public static class SampRpc
 
     public static GangZoneDestroyRpc ParseGangZoneDestroy(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static GangZoneFlashRpc ParseGangZoneFlash(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadInt32());
     }
 
     public static StopObjectRpc ParseStopObject(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static SetNumberPlateRpc ParseSetNumberPlate(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadStringUInt8Length());
     }
 
     public static TogglePlayerSpectatingRpc ParseTogglePlayerSpectating(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static PlayerSpectatePlayerRpc ParsePlayerSpectatePlayer(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static PlayerSpectateVehicleRpc ParsePlayerSpectateVehicle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static ConnectionRejectedRpc ParseConnectionRejected(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static SetPlayerWantedLevelRpc ParseSetPlayerWantedLevel(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static ShowTextDrawRpc ParseShowTextDraw(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort textDrawId = r.ReadUInt16();
         ShowTextDrawDataRpc textDraw = new()
         {
@@ -757,13 +757,13 @@ public static class SampRpc
 
     public static HideTextDrawRpc ParseHideTextDraw(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static ServerJoinRpc ParseServerJoin(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort pid = r.ReadUInt16();
         int color = r.ReadInt32();
         bool isNpc = r.ReadBool8();
@@ -773,13 +773,13 @@ public static class SampRpc
 
     public static ServerQuitRpc ParseServerQuit(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static InitGameRpc ParseInitGame(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         bool zoneNames = r.ReadBitBool();
         bool useCJWalk = r.ReadBitBool();
         bool allowWeapons = r.ReadBitBool();
@@ -854,91 +854,91 @@ public static class SampRpc
 
     public static RemovePlayerMapIconRpc ParseRemovePlayerMapIcon(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static SetPlayerAmmoRpc ParseSetPlayerAmmo(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8(), r.ReadUInt16());
     }
 
     public static SetGravityRpc ParseSetGravity(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadFloat());
     }
 
     public static SetVehicleHealthRpc ParseSetVehicleHealth(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadFloat());
     }
 
     public static AttachTrailerToVehicleRpc ParseAttachTrailerToVehicle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt16());
     }
 
     public static DetachTrailerFromVehicleRpc ParseDetachTrailerFromVehicle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static SetPlayerDrunkHandlingRpc ParseSetPlayerDrunkHandling(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static SetWeatherRpc ParseSetWeather(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static SetPlayerSkinRpc ParseSetPlayerSkin(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), r.ReadInt32());
     }
 
     public static SetPlayerInteriorRpc ParseSetPlayerInterior(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static SetPlayerCameraPosRpc ParseSetPlayerCameraPos(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r));
     }
 
     public static SetPlayerCameraLookAtRpc ParseSetPlayerCameraLookAt(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r), r.ReadUInt8());
     }
 
     public static SetVehiclePosRpc ParseSetVehiclePos(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), ReadVector3(ref r));
     }
 
     public static SetVehicleZAngleRpc ParseSetVehicleZAngle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadFloat());
     }
 
     public static SetVehicleParamsForPlayerRpc ParseSetVehicleParamsForPlayer(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadBool8(), r.ReadBool8());
     }
 
@@ -949,13 +949,13 @@ public static class SampRpc
 
     public static WorldPlayerRemoveRpc ParseWorldPlayerRemove(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static WorldVehicleAddRpc ParseWorldVehicleAdd(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort vehicleId = r.ReadUInt16();
         WorldVehicleInfoRpc data = new()
         {
@@ -986,37 +986,37 @@ public static class SampRpc
 
     public static WorldVehicleRemoveRpc ParseWorldVehicleRemove(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static WorldPlayerDeathRpc ParseWorldPlayerDeath(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static DisableVehicleCollisionsRpc ParseDisableVehicleCollisions(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool());
     }
 
     public static SetPlayerObjectNoCameraColRpc ParseSetPlayerObjectNoCameraCol(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static ToggleCameraTargetRpc ParseToggleCameraTarget(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool());
     }
 
     public static CreateActorRpc ParseCreateActor(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort id = r.ReadUInt16();
         int skin = r.ReadInt32();
         Vector3 pos = ReadVector3(ref r);
@@ -1027,13 +1027,13 @@ public static class SampRpc
 
     public static DestroyActorRpc ParseDestroyActor(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static ApplyActorAnimationRpc ParseApplyActorAnimation(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         ushort actorId = r.ReadUInt16();
         string lib = r.ReadStringUInt8Length();
         string name = r.ReadStringUInt8Length();
@@ -1048,25 +1048,25 @@ public static class SampRpc
 
     public static ClearActorAnimationRpc ParseClearActorAnimation(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static SetActorFacingAngleRpc ParseSetActorFacingAngle(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadFloat());
     }
 
     public static SetActorPosRpc ParseSetActorPos(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), ReadVector3(ref r));
     }
 
     public static SetActorHealthRpc ParseSetActorHealth(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadFloat());
     }
 
@@ -1076,7 +1076,7 @@ public static class SampRpc
 
     public static ChatMessageRpc ParseChatMessage(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         string prefix = r.ReadStringUInt8Length();
         uint prefixColor = r.ReadUInt32();
         string text = r.ReadStringUInt32Length();
@@ -1085,43 +1085,43 @@ public static class SampRpc
 
     public static EnterVehicleRpc ParseEnterVehicleIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt16(), r.ReadBool8());
     }
 
     public static ExitVehicleRpc ParseExitVehicleIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt16());
     }
 
     public static ClickTextDrawIncomingRpc ParseClickTextDrawIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool(), r.ReadInt32());
     }
 
     public static ScmEventIncomingRpc ParseScmEventIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32());
     }
 
     public static ClientCheckIncomingRpc ParseClientCheckIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8(), r.ReadInt32(), r.ReadUInt16(), r.ReadUInt16());
     }
 
     public static UpdateVehicleDamageStatusRpc ParseUpdateVehicleDamageStatusIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadInt32(), r.ReadInt32(), r.ReadUInt8(), r.ReadUInt8());
     }
 
     public static UpdateScoresAndPingsRpc ParseUpdateScoresAndPings(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         Dictionary<ushort, ScorePingRpc> players = [];
         while (r.RemainingBits >= 80)
         {
@@ -1137,19 +1137,19 @@ public static class SampRpc
 
     public static EditAttachedObjectIncomingRpc ParseEditAttachedObjectIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static EditObjectIncomingRpc ParseEditObjectIncoming(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool(), r.ReadUInt16());
     }
 
     public static RequestClassResponseRpc ParseRequestClassResponse(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         bool canSpawn = r.ReadBool8();
         byte team = r.ReadUInt8();
         int skin = r.ReadInt32();
@@ -1163,19 +1163,19 @@ public static class SampRpc
 
     public static RequestSpawnResponseRpc ParseRequestSpawnResponse(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBool8());
     }
 
     public static DestroyWeaponPickupRpc ParseDestroyWeaponPickup(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static SetPlayerAttachedObjectRpc ParseSetPlayerAttachedObject(IncomingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         PlayerAttachedObjectInfoRpc attachedObject = new()
         {
             ModelId = 0,
@@ -1229,13 +1229,13 @@ public static class SampRpc
 
     public static ClickPlayerRpc ParseClickPlayer(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8());
     }
 
     public static ClientJoinRpc ParseClientJoin(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         int ver = r.ReadInt32();
         byte mod = r.ReadUInt8();
         string nick = r.ReadStringUInt8Length();
@@ -1248,13 +1248,13 @@ public static class SampRpc
 
     public static SendEnterVehicleRpc ParseSendEnterVehicle(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadBool8());
     }
 
     public static SendCommandRpc ParseSendCommand(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadStringUInt32Length());
     }
 
@@ -1265,56 +1265,56 @@ public static class SampRpc
 
     public static DeathNotificationRpc ParseDeathNotification(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8(), r.ReadUInt16());
     }
 
     public static DialogResponseRpc ParseDialogResponse(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt8(), r.ReadUInt16(), r.ReadStringUInt8Length());
     }
 
     public static SendClickTextDrawRpc ParseSendClickTextDraw(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static ScmEventOutgoingRpc ParseScmEventOutgoing(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32());
     }
 
     public static SendChatRpc ParseSendChat(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadStringUInt8Length());
     }
 
     public static ClientCheckResponseRpc ParseClientCheckResponse(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8(), r.ReadInt32(), r.ReadUInt8());
     }
 
     public static SendVehicleDamageStatusRpc ParseSendVehicleDamageStatus(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadInt32(), r.ReadInt32(), r.ReadUInt8(), r.ReadUInt8());
     }
 
     public static GiveTakeDamageRpc ParseGiveTakeDamage(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         bool take = r.ReadBitBool();
         return new(take, r.ReadUInt16(), r.ReadFloat(), r.ReadInt32(), r.ReadInt32());
     }
 
     public static EditAttachedObjectOutgoingRpc ParseEditAttachedObjectOutgoing(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         int response = r.ReadInt32();
         int index = r.ReadInt32();
         int model = r.ReadInt32();
@@ -1329,7 +1329,7 @@ public static class SampRpc
 
     public static EditObjectOutgoingRpc ParseEditObjectOutgoing(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         bool playerObj = r.ReadBitBool();
         ushort objId = r.ReadUInt16();
         int response = r.ReadInt32();
@@ -1340,25 +1340,25 @@ public static class SampRpc
 
     public static SendExitVehicleRpc ParseSendExitVehicle(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static SetInteriorIdRpc ParseSetInteriorId(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
     public static MapMarkerRpc ParseMapMarker(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(ReadVector3(ref r));
     }
 
     public static SendRequestClassRpc ParseSendRequestClass(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
@@ -1369,13 +1369,13 @@ public static class SampRpc
 
     public static PickedUpPickupRpc ParsePickedUpPickup(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32());
     }
 
     public static MenuSelectRpc ParseMenuSelect(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt8());
     }
 
@@ -1386,31 +1386,31 @@ public static class SampRpc
 
     public static VehicleDestroyedRpc ParseVehicleDestroyed(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
     public static NpcJoinRpc ParseNpcJoin(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), r.ReadUInt8(), r.ReadStringUInt8Length(), r.ReadInt32());
     }
 
     public static CameraTargetUpdateRpc ParseCameraTargetUpdate(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16(), r.ReadUInt16(), r.ReadUInt16(), r.ReadUInt16());
     }
 
     public static GiveActorDamageRpc ParseGiveActorDamage(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadBitBool(), r.ReadUInt16(), r.ReadFloat(), r.ReadInt32(), r.ReadInt32());
     }
 
     public static SelectObjectOutgoingRpc ParseSelectObjectOutgoing(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), r.ReadUInt16(), r.ReadInt32(), ReadVector3(ref r));
     }
 
@@ -1421,7 +1421,7 @@ public static class SampRpc
 
     public static ScriptCashRpc ParseScriptCash(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadInt32(), r.ReadInt32());
     }
 
@@ -1432,7 +1432,7 @@ public static class SampRpc
 
     public static WeaponPickupDestroyRpc ParseWeaponPickupDestroy(OutgoingRpcArgs args)
     {
-        BitStreamReader r = args.CreateReader();
+        SampBitStreamReader r = args.CreateReader();
         return new(r.ReadUInt16());
     }
 
@@ -1469,7 +1469,7 @@ public static class SampRpc
         return score;
     }
 
-    private static MenuColumnRpc ReadMenuColumn(ref BitStreamReader reader, float width)
+    private static MenuColumnRpc ReadMenuColumn(ref SampBitStreamReader reader, float width)
     {
         string title = reader.ReadFixedString(32);
         int rowCount = reader.ReadUInt8();
@@ -1487,7 +1487,7 @@ public static class SampRpc
         };
     }
 
-    private static ObjectMaterialTextureRpc ReadObjectMaterialTexture(ref BitStreamReader reader)
+    private static ObjectMaterialTextureRpc ReadObjectMaterialTexture(ref SampBitStreamReader reader)
     {
         return new ObjectMaterialTextureRpc
         {
@@ -1500,7 +1500,7 @@ public static class SampRpc
         };
     }
 
-    private static ObjectMaterialTextRpc ReadObjectMaterialText(ref BitStreamReader reader)
+    private static ObjectMaterialTextRpc ReadObjectMaterialText(ref SampBitStreamReader reader)
     {
         return new ObjectMaterialTextRpc
         {
@@ -1517,7 +1517,7 @@ public static class SampRpc
         };
     }
 
-    private static byte[] ReadUInt8Array(ref BitStreamReader reader, int count)
+    private static byte[] ReadUInt8Array(ref SampBitStreamReader reader, int count)
     {
         byte[] values = new byte[count];
         for (int i = 0; i < count; i++)
@@ -1528,12 +1528,12 @@ public static class SampRpc
         return values;
     }
 
-    private static Vector2 ReadVector2(ref BitStreamReader reader)
+    private static Vector2 ReadVector2(ref SampBitStreamReader reader)
     {
         return new Vector2(reader.ReadFloat(), reader.ReadFloat());
     }
 
-    private static Vector3 ReadVector3(ref BitStreamReader reader)
+    private static Vector3 ReadVector3(ref SampBitStreamReader reader)
     {
         return new Vector3(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
     }

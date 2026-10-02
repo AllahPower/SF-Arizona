@@ -72,7 +72,7 @@ internal sealed class Arizona220PacketTransportRouter : IIncomingPacketTransport
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId220(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
@@ -90,7 +90,7 @@ internal sealed class Arizona220PacketTransportRouter : IIncomingPacketTransport
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId220(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
@@ -157,7 +157,7 @@ internal sealed class Arizona221PacketTransportRouter : IIncomingPacketTransport
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId221(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);
@@ -175,7 +175,7 @@ internal sealed class Arizona221PacketTransportRouter : IIncomingPacketTransport
 
         unsafe
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             int subId = ArizonaPacket.ReadSubId221(ref reader);
             packetArgs = new(args.EPacketId, subId, args.DataPtr, PayloadBitOffset, args.DataBitLength - PayloadBitOffset);

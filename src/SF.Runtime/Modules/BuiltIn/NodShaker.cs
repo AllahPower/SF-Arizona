@@ -11,13 +11,13 @@ public class NodShaker : SFModuleBase
         {
             using (IDisposable _ = Context.TrackLoop("keyboard-poll"))
             {
-                if (sf.Keyboard.IsKeyPressed((byte)VK.ADD))
+                if (sf.Keyboard.IsKeyPressed((byte)VirtualKey.ADD))
                 {
                     sf.Chat.Send("+");
                     Context.IncrementCounter("plus.sent");
                 }
 
-                if (sf.Keyboard.IsKeyPressed((byte)VK.SUBTRACT))
+                if (sf.Keyboard.IsKeyPressed((byte)VirtualKey.SUBTRACT))
                 {
                     sf.Chat.Send("-");
                     Context.IncrementCounter("minus.sent");

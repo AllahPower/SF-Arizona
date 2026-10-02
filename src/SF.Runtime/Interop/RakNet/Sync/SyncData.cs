@@ -56,12 +56,12 @@ internal static class SampSyncCodec
     private const float QuaternionScale = 1.0f / 65535.0f;
     private const float VectorComponentScale = 2.0f / 65535.0f;
 
-    public static ushort ReadOptionalUInt16(ref BitStreamReader r)
+    public static ushort ReadOptionalUInt16(ref SampBitStreamReader r)
     {
         return r.ReadBitBool() ? r.ReadUInt16() : (ushort)0;
     }
 
-    public static uint ReadOptionalUInt32(ref BitStreamReader r)
+    public static uint ReadOptionalUInt32(ref SampBitStreamReader r)
     {
         return r.ReadBitBool() ? r.ReadUInt32() : 0u;
     }
@@ -87,7 +87,7 @@ internal static class SampSyncCodec
         return (byte)(nibble * 7);
     }
 
-    public static (float W, float X, float Y, float Z) ReadCompressedQuaternion(ref BitStreamReader r)
+    public static (float W, float X, float Y, float Z) ReadCompressedQuaternion(ref SampBitStreamReader r)
     {
         bool wPositive = r.ReadBitBool();
         bool xPositive = r.ReadBitBool();
@@ -132,7 +132,7 @@ internal static class SampSyncCodec
         return (w, x, y, z);
     }
 
-    public static Vector3 ReadCompressedVector(ref BitStreamReader r)
+    public static Vector3 ReadCompressedVector(ref SampBitStreamReader r)
     {
         float magnitude = r.ReadFloat();
         if (magnitude <= 0.00001f)
@@ -177,7 +177,7 @@ public readonly record struct OnfootSyncData(
     public byte WeaponExtraBits => (byte)(WeaponByteRaw >> 6);
     public bool IsSurfing => HasSurfingData && SurfingVehicleId != ushort.MaxValue;
 
-    public static OnfootSyncData Parse(ref BitStreamReader r)
+    public static OnfootSyncData Parse(ref SampBitStreamReader r)
     {
         ushort lr = SampSyncCodec.ReadOptionalUInt16(ref r);
         ushort ud = SampSyncCodec.ReadOptionalUInt16(ref r);
@@ -263,7 +263,7 @@ public readonly record struct OutgoingOnfootSyncData(
     public byte WeaponId => (byte)(WeaponByteRaw & 0x3F);
     public byte SpecialKey => (byte)(WeaponByteRaw >> 6);
 
-    public static OutgoingOnfootSyncData Parse(ref BitStreamReader r)
+    public static OutgoingOnfootSyncData Parse(ref SampBitStreamReader r)
     {
         return new OutgoingOnfootSyncData(
             r.ReadUInt16(),
@@ -322,7 +322,7 @@ public readonly record struct IncarSyncData(
     public Quaternion Rotation => new Quaternion(QuatX, QuatY, QuatZ, QuatW);
     public byte WeaponExtraBits => (byte)(WeaponByteRaw >> 6);
 
-    public static IncarSyncData Parse(ref BitStreamReader r)
+    public static IncarSyncData Parse(ref SampBitStreamReader r)
     {
         ushort vehicleId = r.ReadUInt16();
         ushort lr = r.ReadUInt16();
@@ -408,7 +408,7 @@ public readonly record struct OutgoingIncarSyncData(
     public byte WeaponId => (byte)(WeaponByteRaw & 0x3F);
     public byte SpecialKey => (byte)(WeaponByteRaw >> 6);
 
-    public static OutgoingIncarSyncData Parse(ref BitStreamReader r)
+    public static OutgoingIncarSyncData Parse(ref SampBitStreamReader r)
     {
         return new OutgoingIncarSyncData(
             r.ReadUInt16(),
@@ -448,7 +448,7 @@ public readonly record struct AimSyncData(
     byte WeaponState,
     byte AspectRatio)
 {
-    public static AimSyncData Parse(ref BitStreamReader r)
+    public static AimSyncData Parse(ref SampBitStreamReader r)
     {
         byte mode = r.ReadUInt8();
         Vector3 front = new Vector3(r.ReadFloat(), r.ReadFloat(), r.ReadFloat());
@@ -477,7 +477,7 @@ public readonly record struct BulletSyncData(
     Vector3 Center,
     byte WeaponId)
 {
-    public static BulletSyncData Parse(ref BitStreamReader r)
+    public static BulletSyncData Parse(ref SampBitStreamReader r)
     {
         byte type = r.ReadUInt8();
         ushort id = r.ReadUInt16();
@@ -512,7 +512,7 @@ public readonly record struct PassengerSyncData(
 {
     public SampKeys Keys => SampKeys.Parse(KeysRaw);
 
-    public static PassengerSyncData Parse(ref BitStreamReader r)
+    public static PassengerSyncData Parse(ref SampBitStreamReader r)
     {
         ushort vehId = r.ReadUInt16();
         byte seatByte = r.ReadUInt8();
@@ -549,7 +549,7 @@ public readonly record struct UnoccupiedSyncData(
     Vector3 TurnSpeed,
     float VehicleHealth)
 {
-    public static UnoccupiedSyncData Parse(ref BitStreamReader r)
+    public static UnoccupiedSyncData Parse(ref SampBitStreamReader r)
     {
         ushort vehId = r.ReadUInt16();
         byte seat = r.ReadUInt8();
@@ -580,7 +580,7 @@ public readonly record struct TrailerSyncData(
     Vector3 MoveSpeed,
     Vector3 TurnSpeed)
 {
-    public static TrailerSyncData Parse(ref BitStreamReader r)
+    public static TrailerSyncData Parse(ref SampBitStreamReader r)
     {
         ushort id = r.ReadUInt16();
         Vector3 pos = new Vector3(r.ReadFloat(), r.ReadFloat(), r.ReadFloat());
@@ -609,7 +609,7 @@ public readonly record struct SpectatorSyncData(
 {
     public SampKeys Keys => SampKeys.Parse(KeysRaw);
 
-    public static SpectatorSyncData Parse(ref BitStreamReader r)
+    public static SpectatorSyncData Parse(ref SampBitStreamReader r)
     {
         ushort lr = r.ReadUInt16();
         ushort ud = r.ReadUInt16();
@@ -628,7 +628,7 @@ public readonly record struct SpectatorSyncData(
 
 public readonly record struct WeaponSlot(byte Id, byte Unknown1, ushort Ammo)
 {
-    public static WeaponSlot Parse(ref BitStreamReader r)
+    public static WeaponSlot Parse(ref SampBitStreamReader r)
     {
         byte id = r.ReadUInt8();
         byte unk = r.ReadUInt8();
@@ -642,7 +642,7 @@ public readonly record struct WeaponsSyncData(
     ushort TargetActorId,
     WeaponSlot[] Slots)
 {
-    public static WeaponsSyncData Parse(ref BitStreamReader r)
+    public static WeaponsSyncData Parse(ref SampBitStreamReader r)
     {
         ushort target = r.ReadUInt16();
         ushort actor = r.ReadUInt16();
@@ -665,7 +665,7 @@ public readonly record struct WeaponsSyncData(
 
 public readonly record struct StatsSyncData(int Money, int DrunkLevel)
 {
-    public static StatsSyncData Parse(ref BitStreamReader r)
+    public static StatsSyncData Parse(ref SampBitStreamReader r)
     {
         int money = r.ReadInt32();
         int drunk = r.ReadInt32();
@@ -690,7 +690,7 @@ public readonly record struct PlayerMarker(ushort PlayerId, bool Active, Vector3
 
 public readonly record struct MarkersSyncData(int PlayerCount, PlayerMarker[] Markers)
 {
-    public static MarkersSyncData Parse(ref BitStreamReader r)
+    public static MarkersSyncData Parse(ref SampBitStreamReader r)
     {
         int count = r.ReadInt32();
         List<PlayerMarker> markers = new List<PlayerMarker>();

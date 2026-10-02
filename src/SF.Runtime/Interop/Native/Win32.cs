@@ -12,14 +12,14 @@ public static unsafe partial class Win32
     internal static partial uint GetModuleHandle([MarshalAs(UnmanagedType.LPWStr)] string? lpModuleName);
 
     [LibraryImport("kernel32.dll")]
-    internal static partial uint VirtualAlloc(uint lpAddress, uint dwSize, MEM flAllocationType, PAGE flProtect);
+    internal static partial uint VirtualAlloc(uint lpAddress, uint dwSize, MemoryAllocationType flAllocationType, MemoryProtection flProtect);
 
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static partial bool VirtualProtect(uint lpAddress, uint dwSize, PAGE flNewProtect, out PAGE lpflOldProtect);
+    internal static partial bool VirtualProtect(uint lpAddress, uint dwSize, MemoryProtection flNewProtect, out MemoryProtection lpflOldProtect);
 
     [LibraryImport("kernel32.dll")]
-    internal static partial void VirtualFree(uint lpAddress, uint dwSize, MEM dwFreeType);
+    internal static partial void VirtualFree(uint lpAddress, uint dwSize, MemoryAllocationType dwFreeType);
 
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

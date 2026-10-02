@@ -4,13 +4,13 @@ public static partial class ArizonaPacket
 {
     // ---- Internal Arizona runtime custom packet helpers/parsers ----
 
-    private static string ReadPacketNumericString(ref BitStreamReader reader)
+    private static string ReadPacketNumericString(ref SampBitStreamReader reader)
     {
         uint value = reader.ReadUInt32();
         return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private static string ReadPacketString(ref BitStreamReader reader)
+    private static string ReadPacketString(ref SampBitStreamReader reader)
     {
         ushort length = reader.ReadUInt16();
         byte encodedFlag = reader.ReadUInt8();
@@ -33,7 +33,7 @@ public static partial class ArizonaPacket
         return reader.ReadFixedString(length);
     }
 
-    private static string ReadPacketMaybeEncodedString(ref BitStreamReader reader)
+    private static string ReadPacketMaybeEncodedString(ref SampBitStreamReader reader)
     {
         ushort length = reader.ReadUInt16();
         byte encodedFlag = reader.ReadUInt8();
@@ -51,7 +51,7 @@ public static partial class ArizonaPacket
         return reader.ReadFixedString(length);
     }
 
-    public static ArzSimpleCreate ParseSimpleCreate(ref BitStreamReader reader)
+    public static ArzSimpleCreate ParseSimpleCreate(ref SampBitStreamReader reader)
     {
         uint width = reader.ReadUInt32();
         uint height = reader.ReadUInt32();
@@ -64,7 +64,7 @@ public static partial class ArizonaPacket
         return new(width, height, x, y, primaryText, secondaryText, extraInt, extraFloat);
     }
 
-    public static ArzCreateScaled ParseCreateScaled(ref BitStreamReader reader)
+    public static ArzCreateScaled ParseCreateScaled(ref SampBitStreamReader reader)
     {
         uint width = reader.ReadUInt32();
         uint height = reader.ReadUInt32();
@@ -78,7 +78,7 @@ public static partial class ArizonaPacket
         return new(width, height, x, y, primaryText, secondaryText, scale, extraInt, extraFloat);
     }
 
-    public static ArzObjectCreate ParseObjectCreate(ref BitStreamReader reader)
+    public static ArzObjectCreate ParseObjectCreate(ref SampBitStreamReader reader)
     {
         uint width = reader.ReadUInt32();
         uint height = reader.ReadUInt32();
@@ -94,7 +94,7 @@ public static partial class ArizonaPacket
         return new(width, height, x, y, primaryText, secondaryText, short0, short1, floatValue, extraInt, extraFloat);
     }
 
-    public static ArzInsideObjectCreate ParseInsideObjectCreate(ref BitStreamReader reader)
+    public static ArzInsideObjectCreate ParseInsideObjectCreate(ref SampBitStreamReader reader)
     {
         uint width = reader.ReadUInt32();
         uint height = reader.ReadUInt32();
@@ -112,12 +112,12 @@ public static partial class ArizonaPacket
         return new(width, height, x, y, primaryText, secondaryText, short0, short1, floatValue, value4, value5, extraInt, extraFloat);
     }
 
-    public static ArzClose ParseClose(ref BitStreamReader reader)
+    public static ArzClose ParseClose(ref SampBitStreamReader reader)
     {
         return new(ReadPacketNumericString(ref reader));
     }
 
-    public static ArzMove ParseMove(ref BitStreamReader reader)
+    public static ArzMove ParseMove(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         uint value0 = reader.ReadUInt32();
@@ -125,14 +125,14 @@ public static partial class ArizonaPacket
         return new(browserId, value0, value1);
     }
 
-    public static ArzChangeUrl ParseChangeUrl(ref BitStreamReader reader)
+    public static ArzChangeUrl ParseChangeUrl(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         string url = ReadPacketMaybeEncodedString(ref reader);
         return new(browserId, url);
     }
 
-    public static ArzInjectCode ParseInjectCode(ref BitStreamReader reader)
+    public static ArzInjectCode ParseInjectCode(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         string code = ReadPacketMaybeEncodedString(ref reader);
@@ -140,31 +140,31 @@ public static partial class ArizonaPacket
         return new(browserId, code, requestId);
     }
 
-    public static ArzSendMessage ParseSendMessage(ref BitStreamReader reader)
+    public static ArzSendMessage ParseSendMessage(ref SampBitStreamReader reader)
     {
         string text = ReadPacketMaybeEncodedString(ref reader);
         uint value = reader.ReadUInt32();
         return new(text, value);
     }
 
-    public static ArzToggleScreen ParseToggleScreen(ref BitStreamReader reader)
+    public static ArzToggleScreen ParseToggleScreen(ref SampBitStreamReader reader)
     {
         return new(ReadPacketNumericString(ref reader));
     }
 
-    public static ArzRequestClientViewport ParseRequestClientViewport(ref BitStreamReader reader)
+    public static ArzRequestClientViewport ParseRequestClientViewport(ref SampBitStreamReader reader)
     {
         return new();
     }
 
-    public static ArzStatePair ParseStatePair(ref BitStreamReader reader)
+    public static ArzStatePair ParseStatePair(ref SampBitStreamReader reader)
     {
         uint value0 = reader.ReadUInt32();
         uint value1 = reader.ReadUInt32();
         return new(value0, value1);
     }
 
-    public static ArzModuleReadRequest ParseModuleReadRequest(ref BitStreamReader reader)
+    public static ArzModuleReadRequest ParseModuleReadRequest(ref SampBitStreamReader reader)
     {
         uint moduleOffset = reader.ReadUInt32();
         byte moduleNameLength = reader.ReadUInt8();
@@ -173,12 +173,12 @@ public static partial class ArizonaPacket
         return new(moduleOffset, moduleName, size);
     }
 
-    public static ArzToggleShow ParseToggleShow(ref BitStreamReader reader)
+    public static ArzToggleShow ParseToggleShow(ref SampBitStreamReader reader)
     {
         return new(ReadPacketNumericString(ref reader));
     }
 
-    public static ArzBrowserClick ParseBrowserClick(ref BitStreamReader reader)
+    public static ArzBrowserClick ParseBrowserClick(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         uint value0 = reader.ReadUInt32();
@@ -187,19 +187,19 @@ public static partial class ArizonaPacket
         return new(browserId, value0, value1, value2);
     }
 
-    public static ArzGetBrowserControlState ParseGetBrowserControlState(ref BitStreamReader reader)
+    public static ArzGetBrowserControlState ParseGetBrowserControlState(ref SampBitStreamReader reader)
     {
         return new(ReadPacketNumericString(ref reader));
     }
 
-    public static ArzSetBrowserControlState ParseSetBrowserControlState(ref BitStreamReader reader)
+    public static ArzSetBrowserControlState ParseSetBrowserControlState(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         bool state = reader.ReadBitBool();
         return new(browserId, state);
     }
 
-    public static ArzResize ParseResize(ref BitStreamReader reader)
+    public static ArzResize ParseResize(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         uint width = reader.ReadUInt32();
@@ -207,7 +207,7 @@ public static partial class ArizonaPacket
         return new(browserId, width, height);
     }
 
-    public static ArzAddObject ParseAddObject(ref BitStreamReader reader)
+    public static ArzAddObject ParseAddObject(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         uint value0 = reader.ReadUInt32();
@@ -215,7 +215,7 @@ public static partial class ArizonaPacket
         return new(browserId, value0, value1);
     }
 
-    public static ArzRemoveObject ParseRemoveObject(ref BitStreamReader reader)
+    public static ArzRemoveObject ParseRemoveObject(ref SampBitStreamReader reader)
     {
         string browserId = ReadPacketNumericString(ref reader);
         uint value0 = reader.ReadUInt32();
@@ -223,7 +223,7 @@ public static partial class ArizonaPacket
         return new(browserId, value0, value1);
     }
 
-    public static ArzSetPlayerAnimGroups ParseSetPlayerAnimGroups(ref BitStreamReader r)
+    public static ArzSetPlayerAnimGroups ParseSetPlayerAnimGroups(ref SampBitStreamReader r)
     {
         ushort playerId = r.ReadUInt16();
         List<ArzPlayerAnimGroupBatch> batches = [];
@@ -262,7 +262,7 @@ public static partial class ArizonaPacket
         return new(playerId, [.. batches]);
     }
 
-    public static ArzScaleRadarMapIcon ParseScaleRadarMapIconsRaw(ref BitStreamReader reader)
+    public static ArzScaleRadarMapIcon ParseScaleRadarMapIconsRaw(ref SampBitStreamReader reader)
     {
         byte radarIconId = reader.ReadUInt8();
         float scaleX = reader.RemainingBits >= 32 ? reader.ReadFloat() : 1.0f;
@@ -270,7 +270,7 @@ public static partial class ArizonaPacket
         return new(radarIconId, scaleX, scaleY);
     }
 
-    public static ArzGangZonePoly ParseGangZonePolyRaw(ref BitStreamReader reader)
+    public static ArzGangZonePoly ParseGangZonePolyRaw(ref SampBitStreamReader reader)
     {
         byte zoneId = reader.ReadUInt8();
         uint pointWordCount = reader.ReadUInt32();
@@ -301,13 +301,13 @@ public static partial class ArizonaPacket
     // ============================================================================
 
     // extract sub-id from a Packet 220 bitstream (after skipping the packet id byte)
-    public static byte ReadSubId220(ref BitStreamReader reader)
+    public static byte ReadSubId220(ref SampBitStreamReader reader)
     {
         return reader.ReadUInt8();
     }
 
     // extract sub-id from a Packet 221 bitstream (after skipping the packet id byte)
-    public static ushort ReadSubId221(ref BitStreamReader reader)
+    public static ushort ReadSubId221(ref SampBitStreamReader reader)
     {
         return reader.ReadUInt16();
     }

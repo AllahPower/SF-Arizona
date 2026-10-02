@@ -1,6 +1,6 @@
 namespace SFSharp.Runtime.Interop.Native;
 
-public enum VK : byte
+public enum VirtualKey : byte
 {
     LBUTTON = 0x01,
     RBUTTON = 0x02,

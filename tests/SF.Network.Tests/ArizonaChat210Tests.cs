@@ -1,7 +1,7 @@
 using System.Text;
 using SFSharp.Runtime.Networking.RakNet.Arizona;
 using SFSharp.Runtime.Networking.RakNet.Arizona.Models;
-using BitStreamReader = SFSharp.Runtime.Interop.RakNet.BitStreamReader;
+using SFSharp.Runtime.Interop.RakNet;
 
 namespace SF.Network.Tests;
 
@@ -22,7 +22,7 @@ public sealed class ArizonaChat210Tests
         ];
         fixed (byte* bytes = data)
         {
-            BitStreamReader reader = new(bytes, 0, data.Length * 8);
+            SampBitStreamReader reader = new(bytes, 0, data.Length * 8);
             ArzChatMessageRelay chat = ArizonaPacket.ParseChatMessageRelay(ref reader);
             Assert.Equal((byte)7, chat.SenderSlot);
             Assert.Equal(0xFF112233u, chat.ArgbColor);
@@ -44,7 +44,7 @@ public sealed class ArizonaChat210Tests
         byte[] data = [0, 4, 3, 3, 0, (byte)'/', (byte)'b', (byte)' ', 0, 2, 0, (byte)'h', (byte)'i', 1, 2, 0x34, 0x12, 2, 0x56, 0x04];
         fixed (byte* bytes = data)
         {
-            BitStreamReader reader = new(bytes, 0, data.Length * 8);
+            SampBitStreamReader reader = new(bytes, 0, data.Length * 8);
             ArzLinkedChatSend chat = ArizonaPacket.ParseLinkedChatSend(ref reader);
             Assert.Equal((byte)0, chat.Reserved);
             Assert.Equal("/b ", Assert.IsType<ArzLinkedChatCommandSegment>(chat.Segments[0]).Command);
@@ -61,7 +61,7 @@ public sealed class ArizonaChat210Tests
         byte[] data = [0, 0, 0, 0, 0, 2, 0, 1, 0, (byte)'A', 3, 0xFF];
         fixed (byte* bytes = data)
         {
-            BitStreamReader reader = new(bytes, 0, data.Length * 8);
+            SampBitStreamReader reader = new(bytes, 0, data.Length * 8);
             ArzChatMessageRelay chat = ArizonaPacket.ParseChatMessageRelay(ref reader);
             Assert.Single(chat.Segments);
             Assert.Equal((byte)3, chat.UnsupportedSegmentKind);
@@ -75,7 +75,7 @@ public sealed class ArizonaChat210Tests
         byte[] data = [0, 0, 0, 0, 0, 1, 0, 1, 0, 0xE9];
         fixed (byte* bytes = data)
         {
-            BitStreamReader reader = new(bytes, 0, data.Length * 8);
+            SampBitStreamReader reader = new(bytes, 0, data.Length * 8);
             ArzChatMessageRelay chat = ArizonaPacket.ParseChatMessageRelay(ref reader, Encoding.GetEncoding(1252));
             Assert.Equal("é", Assert.IsType<ArzChatTextSegment>(chat.Segments[0]).Text);
         }

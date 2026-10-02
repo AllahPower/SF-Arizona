@@ -1,6 +1,6 @@
 namespace SFSharp.Runtime.Interop.Native;
 
-internal enum MEM : uint
+internal enum MemoryAllocationType : uint
 {
     COMMIT = 0x00001000,
     RESERVE = 0x00002000,

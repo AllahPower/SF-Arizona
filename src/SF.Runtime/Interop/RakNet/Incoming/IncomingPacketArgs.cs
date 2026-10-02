@@ -4,8 +4,8 @@ public readonly record struct IncomingPacketArgs(int EPacketId, nint DataPtr, in
 {
     public int DataByteLength => (DataBitLength + 7) / 8;
 
-    public unsafe BitStreamReader CreateReader()
+    public unsafe SampBitStreamReader CreateReader()
     {
-        return new BitStreamReader((byte*)DataPtr, 0, DataBitLength);
+        return new SampBitStreamReader((byte*)DataPtr, 0, DataBitLength);
     }
 }

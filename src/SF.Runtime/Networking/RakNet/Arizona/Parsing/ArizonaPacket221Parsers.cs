@@ -7,7 +7,7 @@ public static partial class ArizonaPacket
 
     #region outgoing (client -> server)
 
-    public static ArzSendBotOnfootSync ParseSendBotOnfootSync(ref BitStreamReader r)
+    public static ArzSendBotOnfootSync ParseSendBotOnfootSync(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         Vector3 pos = ReadVec3(ref r);
@@ -18,7 +18,7 @@ public static partial class ArizonaPacket
         return new(botId, pos, heading);
     }
 
-    public static ArzSendBotDamage ParseSendBotDamage(ref BitStreamReader r)
+    public static ArzSendBotDamage ParseSendBotDamage(ref SampBitStreamReader r)
     {
         bool giveOrTake = r.ReadBitBool();
         ushort botId = r.ReadUInt16();
@@ -34,7 +34,7 @@ public static partial class ArizonaPacket
 
     #region incoming (server -> client)
 
-    public static ArzBotStreamIn ParseBotStreamIn(ref BitStreamReader r)
+    public static ArzBotStreamIn ParseBotStreamIn(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         short modelId = r.ReadInt16();
@@ -66,12 +66,12 @@ public static partial class ArizonaPacket
             unknownTail);
     }
 
-    public static ArzBotStreamOut ParseBotStreamOut(ref BitStreamReader r)
+    public static ArzBotStreamOut ParseBotStreamOut(ref SampBitStreamReader r)
     {
         return new(r.ReadUInt16());
     }
 
-    public static ArzBotOnfootSync ParseBotOnfootSync(ref BitStreamReader r)
+    public static ArzBotOnfootSync ParseBotOnfootSync(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         uint unknown1Raw = r.ReadUInt32();
@@ -84,7 +84,7 @@ public static partial class ArizonaPacket
         return new(botId, unknown1Raw, padding, health, maxHealth, armour, maxArmour, unknown2);
     }
 
-    public static ArzSetBotColor ParseSetBotColor(ref BitStreamReader r)
+    public static ArzSetBotColor ParseSetBotColor(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         uint color = r.ReadUInt32();
@@ -92,21 +92,21 @@ public static partial class ArizonaPacket
         return new(botId, color, unknown0);
     }
 
-    public static ArzSetBotFightStyle ParseSetBotFightStyle(ref BitStreamReader r)
+    public static ArzSetBotFightStyle ParseSetBotFightStyle(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         byte fightStyle = r.ReadUInt8();
         return new(botId, fightStyle);
     }
 
-    public static ArzSetBotInvulnerable ParseSetBotInvulnerable(ref BitStreamReader r)
+    public static ArzSetBotInvulnerable ParseSetBotInvulnerable(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         bool invuln = r.ReadBitBool();
         return new(botId, invuln);
     }
 
-    public static ArzSetBotName ParseSetBotName(ref BitStreamReader r)
+    public static ArzSetBotName ParseSetBotName(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         string name = r.ReadStringUInt32Length();
@@ -114,7 +114,7 @@ public static partial class ArizonaPacket
         return new(botId, name, unknown0);
     }
 
-    public static ArzSetBotSkin ParseSetBotSkin(ref BitStreamReader r)
+    public static ArzSetBotSkin ParseSetBotSkin(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -122,7 +122,7 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, skinId);
     }
 
-    public static ArzSetBotWeapon ParseSetBotWeapon(ref BitStreamReader r)
+    public static ArzSetBotWeapon ParseSetBotWeapon(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -131,14 +131,14 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, weaponId, unknown1);
     }
 
-    public static ArzSetBotPos ParseSetBotPos(ref BitStreamReader r)
+    public static ArzSetBotPos ParseSetBotPos(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         Vector3 pos = ReadVec3(ref r);
         return new(botId, pos);
     }
 
-    public static ArzMoveBotToPos ParseMoveBotToPos(ref BitStreamReader r)
+    public static ArzMoveBotToPos ParseMoveBotToPos(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         Vector3 pos = ReadVec3(ref r);
@@ -147,7 +147,7 @@ public static partial class ArizonaPacket
         return new(botId, pos, unknown0, unknown1);
     }
 
-    public static ArzShootBotAtPos ParseShootBotAtPos(ref BitStreamReader r)
+    public static ArzShootBotAtPos ParseShootBotAtPos(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -155,7 +155,7 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, targetPosition);
     }
 
-    public static ArzApplyBotAnimation ParseApplyBotAnimation(ref BitStreamReader r)
+    public static ArzApplyBotAnimation ParseApplyBotAnimation(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         string animLib = r.ReadStringUInt32Length();
@@ -169,14 +169,14 @@ public static partial class ArizonaPacket
         return new(botId, animLib, animName, blendDelta, loop, lockX, lockY, freeze, durationMs);
     }
 
-    public static ArzClearBotAction ParseClearBotAction(ref BitStreamReader r)
+    public static ArzClearBotAction ParseClearBotAction(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
         return new(botId, unknown0);
     }
 
-    public static ArzShootBotAtPlayer ParseShootBotAtPlayer(ref BitStreamReader r)
+    public static ArzShootBotAtPlayer ParseShootBotAtPlayer(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -184,7 +184,7 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, playerId);
     }
 
-    public static ArzBotAttackPlayer ParseBotAttackPlayer(ref BitStreamReader r)
+    public static ArzBotAttackPlayer ParseBotAttackPlayer(ref SampBitStreamReader r)
     {
         r.ReadUInt16();
         ushort botId = r.ReadUInt16();
@@ -193,7 +193,7 @@ public static partial class ArizonaPacket
         return new(botId, targetPlayerId, attackArgument);
     }
 
-    public static ArzBotEnterVehicle ParseBotEnterVehicle(ref BitStreamReader r)
+    public static ArzBotEnterVehicle ParseBotEnterVehicle(ref SampBitStreamReader r)
     {
         r.ReadUInt16();
         ushort botId = r.ReadUInt16();
@@ -203,7 +203,7 @@ public static partial class ArizonaPacket
         return new(botId, vehicleId, seatId, enterVehicleArgument);
     }
 
-    public static ArzBotPassengerSync ParseBotPassengerSync(ref BitStreamReader r)
+    public static ArzBotPassengerSync ParseBotPassengerSync(ref SampBitStreamReader r)
     {
         r.ReadUInt16();
         ushort botId = r.ReadUInt16();
@@ -213,7 +213,7 @@ public static partial class ArizonaPacket
         return new(botId, vehicleId, packedSeatState, passengerState);
     }
 
-    public static ArzBotDriveSync ParseBotDriveSync(ref BitStreamReader r)
+    public static ArzBotDriveSync ParseBotDriveSync(ref SampBitStreamReader r)
     {
         r.ReadUInt16();
         ushort botId = r.ReadUInt16();
@@ -223,13 +223,13 @@ public static partial class ArizonaPacket
         return new(botId, vehicleId, driveState0, driveState1);
     }
 
-    public static ArzBotExitVehicle ParseBotExitVehicle(ref BitStreamReader r)
+    public static ArzBotExitVehicle ParseBotExitVehicle(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         return new(botId);
     }
 
-    public static ArzBotChatBubble ParseBotChatBubble(ref BitStreamReader r)
+    public static ArzBotChatBubble ParseBotChatBubble(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         string text = r.ReadStringUInt32Length();
@@ -239,7 +239,7 @@ public static partial class ArizonaPacket
         return new(botId, text, color, dist, duration);
     }
 
-    public static ArzSetBotAttachedObject ParseSetBotAttachedObject(ref BitStreamReader r)
+    public static ArzSetBotAttachedObject ParseSetBotAttachedObject(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort slot = r.ReadUInt16();
@@ -253,14 +253,14 @@ public static partial class ArizonaPacket
         return new(botId, slot, modelId, boneId, offset, rotation, scale, c1, c2);
     }
 
-    public static ArzRemoveBotAttachedObject ParseRemoveBotAttachedObject(ref BitStreamReader r)
+    public static ArzRemoveBotAttachedObject ParseRemoveBotAttachedObject(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort slot = r.ReadUInt16();
         return new(botId, slot);
     }
 
-    public static ArzSetBotAngle ParseSetBotAngle(ref BitStreamReader r)
+    public static ArzSetBotAngle ParseSetBotAngle(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -268,14 +268,14 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, angle);
     }
 
-    public static ArzStopBotAction ParseStopBotAction(ref BitStreamReader r)
+    public static ArzStopBotAction ParseStopBotAction(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
         return new(botId, unknown0);
     }
 
-    public static ArzShootBotAtBot ParseShootBotAtBot(ref BitStreamReader r)
+    public static ArzShootBotAtBot ParseShootBotAtBot(ref SampBitStreamReader r)
     {
         ushort shooter = r.ReadUInt16();
         ushort target = r.ReadUInt16();
@@ -283,7 +283,7 @@ public static partial class ArizonaPacket
         return new(shooter, target, unknown0);
     }
 
-    public static ArzSetBotAnimationGroup ParseSetBotAnimationGroup(ref BitStreamReader r)
+    public static ArzSetBotAnimationGroup ParseSetBotAnimationGroup(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -291,7 +291,7 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, groupName);
     }
 
-    public static ArzBotAttackPed ParseBotAttackPed(ref BitStreamReader r)
+    public static ArzBotAttackPed ParseBotAttackPed(ref SampBitStreamReader r)
     {
         r.ReadUInt16();
         ushort botId = r.ReadUInt16();
@@ -300,14 +300,14 @@ public static partial class ArizonaPacket
         return new(botId, targetBotId, attackArgument);
     }
 
-    public static ArzTogglePedCollision ParseTogglePedCollision(ref BitStreamReader r)
+    public static ArzTogglePedCollision ParseTogglePedCollision(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         bool state = r.ReadUInt8() != 0;
         return new(botId, state);
     }
 
-    public static ArzSetBotAttachedSimpleObject ParseSetBotAttachedSimpleObject(ref BitStreamReader r)
+    public static ArzSetBotAttachedSimpleObject ParseSetBotAttachedSimpleObject(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort slot = r.ReadUInt16();
@@ -322,7 +322,7 @@ public static partial class ArizonaPacket
         return new(botId, slot, modelId, boneId, offset, rotation, scale, c1, c2, unknown0);
     }
 
-    public static ArzRemoveBotAttachedSimpleObject ParseRemoveBotAttachedSimpleObject(ref BitStreamReader r)
+    public static ArzRemoveBotAttachedSimpleObject ParseRemoveBotAttachedSimpleObject(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort slot = r.ReadUInt16();
@@ -330,7 +330,7 @@ public static partial class ArizonaPacket
         return new(botId, slot, unknown0);
     }
 
-    public static ArzSetBotHealth ParseSetBotHealth(ref BitStreamReader r)
+    public static ArzSetBotHealth ParseSetBotHealth(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -340,7 +340,7 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, status, currentValue, trailingValue);
     }
 
-    public static ArzSetBotArmour ParseSetBotArmour(ref BitStreamReader r)
+    public static ArzSetBotArmour ParseSetBotArmour(ref SampBitStreamReader r)
     {
         ushort botId = r.ReadUInt16();
         ushort unknown0 = r.ReadUInt16();
@@ -350,7 +350,7 @@ public static partial class ArizonaPacket
         return new(botId, unknown0, status, currentValue, trailingValue);
     }
 
-    public static ArzSetBotOnfootSyncRate ParseSetBotOnfootSyncRate(ref BitStreamReader r)
+    public static ArzSetBotOnfootSyncRate ParseSetBotOnfootSyncRate(ref SampBitStreamReader r)
     {
         ushort rate = r.ReadUInt16();
         return new(rate);

@@ -207,7 +207,7 @@ public class RpcDebugger : SFModuleBase
 
         try
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             return packetId == EPacketId.ArizonaCef
                 ? ArizonaPacket.ReadSubId220(ref reader)
@@ -229,7 +229,7 @@ public class RpcDebugger : SFModuleBase
 
         try
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             return packetId == EPacketId.ArizonaCef
                 ? ArizonaPacket.ReadSubId220(ref reader)

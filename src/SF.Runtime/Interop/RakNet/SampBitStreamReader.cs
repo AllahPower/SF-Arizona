@@ -7,14 +7,14 @@ namespace SFSharp.Runtime.Interop.RakNet;
 /// Managed reader over raw RPC bitstream data.
 /// Supports arbitrary payload bit offsets so incoming RPC detours can avoid bit realignment.
 /// </summary>
-public unsafe ref struct BitStreamReader
+public unsafe ref struct SampBitStreamReader
 {
     private static readonly Encoding _stringEncoding;
     private static readonly HuffmanNode _stringCompressorRoot;
     private static readonly delegate* unmanaged[Stdcall]<nint> _getStringCompressorInstance;
     private static readonly delegate* unmanaged[Thiscall]<nint, byte*, int, SampBitStream*, ushort, byte> _stringCompressorDecodeString;
 
-    static BitStreamReader()
+    static SampBitStreamReader()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         _stringEncoding = Encoding.GetEncoding(1251);
@@ -28,7 +28,7 @@ public unsafe ref struct BitStreamReader
     private readonly int _endBitOffset;
     private int _offsetBits;
 
-    public BitStreamReader(byte* data, int startBitOffset, int lengthBits)
+    public SampBitStreamReader(byte* data, int startBitOffset, int lengthBits)
     {
         _data = data;
         _startBitOffset = startBitOffset;

@@ -1,9 +1,9 @@
 namespace SFSharp.Runtime.Networking;
 
 /// <summary>
-/// Builds a packet payload into a <see cref="BitStreamWriter"/> passed by reference.
+/// Builds a packet payload into a <see cref="SampBitStreamWriter"/> passed by reference.
 /// </summary>
-public delegate void BitStreamBuildAction(ref BitStreamWriter writer);
+public delegate void BitStreamBuildAction(ref SampBitStreamWriter writer);
 
 /// <summary>
 /// High-level facade over the RakNet client: sends packets/RPCs and injects synthetic
@@ -59,7 +59,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
     {
         ArgumentNullException.ThrowIfNull(build);
 
-        BitStreamWriter writer = new();
+        SampBitStreamWriter writer = new();
         build(ref writer);
         return SendPacket(writer.AsSpan(), priority, reliability, orderingChannel);
     }
@@ -103,7 +103,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
     {
         ArgumentNullException.ThrowIfNull(build);
 
-        BitStreamWriter writer = new();
+        SampBitStreamWriter writer = new();
         build(ref writer);
         return SendRpc(rpcId, writer.AsSpan(), writer.BitLength, priority, reliability, orderingChannel, shiftTimestamp);
     }
@@ -189,7 +189,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
     {
         ArgumentNullException.ThrowIfNull(build);
 
-        BitStreamWriter writer = new();
+        SampBitStreamWriter writer = new();
         build(ref writer);
         return SimulateIncomingPacket(writer.AsSpan());
     }
@@ -213,7 +213,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
             return false;
         }
 
-        BitStreamWriter writer = new(2 + sizeof(uint) + payloadByteLength);
+        SampBitStreamWriter writer = new(2 + sizeof(uint) + payloadByteLength);
         writer.WriteUInt8(IdRpc);
         writer.WriteUInt8((byte)rpcId);
         writer.WriteCompressedUInt32((uint)payloadBitLength);
@@ -232,7 +232,7 @@ public sealed unsafe class SFNetwork : ISFNetwork
     {
         ArgumentNullException.ThrowIfNull(build);
 
-        BitStreamWriter payload = new();
+        SampBitStreamWriter payload = new();
         build(ref payload);
         return SimulateIncomingRpc(rpcId, payload.AsSpan(), payload.BitLength);
     }

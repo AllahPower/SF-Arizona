@@ -128,7 +128,7 @@ public partial class DebugModule
         if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx or EPacketId.AZVoice)) return null;
         try
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             if (packetId == EPacketId.AZVoice)
             {
@@ -147,7 +147,7 @@ public partial class DebugModule
         if (packetId is not (EPacketId.ArizonaCef or EPacketId.ArizonaCefEx or EPacketId.AZVoice)) return null;
         try
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             if (packetId == EPacketId.AZVoice)
                 return null;

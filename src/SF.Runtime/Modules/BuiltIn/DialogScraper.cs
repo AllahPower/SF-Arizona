@@ -11,7 +11,7 @@ public class DialogScraper : SFModuleBase
         {
             using (IDisposable _ = Context.TrackLoop("dialog-poll"))
             {
-                if (sf.Keyboard.IsKeyPressed((byte)VK.NUMPAD0))
+                if (sf.Keyboard.IsKeyPressed((byte)VirtualKey.NUMPAD0))
                 {
                     RunCore();
                 }

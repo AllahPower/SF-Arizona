@@ -58,7 +58,7 @@ internal static class AZVoiceTransport
 
         try
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
             byte value = reader.ReadUInt8();
             if (!Enum.IsDefined(typeof(EAZVoice), value))
@@ -86,7 +86,7 @@ internal static class AZVoiceTransport
 
         try
         {
-            BitStreamReader reader = args.CreateReader();
+            SampBitStreamReader reader = args.CreateReader();
             reader.SkipBytes(1);
 
             ushort senderId = reader.ReadUInt16();

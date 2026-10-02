@@ -3,19 +3,19 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.Hooking.Hooks;
 
-using unsafe CDialogCloseSfDirect = delegate* unmanaged[Cdecl]<int, int>;
+using unsafe CDialogCloseSampfuncsDirect = delegate* unmanaged[Cdecl]<int, int>;
 
-internal unsafe class CDialogCloseHook_SF : NativeHook<CDialogCloseArgs, NoRetValue, CDialogCloseHook_SF.CDialogCloseSfNative>, IDisposable
+internal unsafe class CDialogCloseSampfuncsHook : NativeHook<CDialogCloseArgs, NoRetValue, CDialogCloseSampfuncsHook.CDialogCloseSampfuncsNative>, IDisposable
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate int CDialogCloseSfNative(int dialogButton);
+    internal delegate int CDialogCloseSampfuncsNative(int dialogButton);
 
-    private static CDialogCloseHook_SF? _instance;
+    private static CDialogCloseSampfuncsHook? _instance;
 
-    public CDialogCloseHook_SF()
+    public CDialogCloseSampfuncsHook()
     {
         _instance = this;
-        InstallHook(ModuleResolver.GetProcAddress("sampfuncs.asi", SampOffsets.SampFuncs.CDialogClose), new CDialogCloseSfNative(HookProc));
+        InstallHook(ModuleResolver.GetProcAddress("sampfuncs.asi", SampOffsets.SampFuncs.CDialogClose), new CDialogCloseSampfuncsNative(HookProc));
     }
 
     private static int HookProc(int dialogButton)
@@ -32,7 +32,7 @@ internal unsafe class CDialogCloseHook_SF : NativeHook<CDialogCloseArgs, NoRetVa
     protected override NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
     {
         using var _ = SuppressHook();
-        ((CDialogCloseSfDirect)TargetAddress)(args.DialogButton);
+        ((CDialogCloseSampfuncsDirect)TargetAddress)(args.DialogButton);
         return default;
     }
 

@@ -3,14 +3,14 @@ using System.Text;
 namespace SFSharp.Runtime.Interop.RakNet;
 
 /// <summary>
-/// Managed bitstream writer, mirrors BitStreamReader.
+/// Managed bitstream writer, mirrors SampBitStreamReader.
 /// Builds a byte[] payload for sending via RakNet.
 /// </summary>
-public ref struct BitStreamWriter
+public ref struct SampBitStreamWriter
 {
     private static readonly Encoding _stringEncoding;
 
-    static BitStreamWriter()
+    static SampBitStreamWriter()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         _stringEncoding = Encoding.GetEncoding(1251);
@@ -19,9 +19,9 @@ public ref struct BitStreamWriter
     private byte[] _buffer;
     private int _bitsUsed;
 
-    public BitStreamWriter() : this(256) { }
+    public SampBitStreamWriter() : this(256) { }
 
-    public BitStreamWriter(int initialCapacityBytes)
+    public SampBitStreamWriter(int initialCapacityBytes)
     {
         _buffer = new byte[Math.Max(initialCapacityBytes, 16)];
         _bitsUsed = 0;

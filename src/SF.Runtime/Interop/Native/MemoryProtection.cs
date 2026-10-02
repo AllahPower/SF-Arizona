@@ -1,6 +1,6 @@
 namespace SFSharp.Runtime.Interop.Native;
 
-internal enum PAGE : uint
+internal enum MemoryProtection : uint
 {
     EXECUTE = 0x10,
     EXECUTE_READ = 0x20,
