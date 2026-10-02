@@ -14,11 +14,6 @@ public static class Program
             SF.Chat.Add("{95FF4F}github.com/AllahPower/SF-Arizona | by AllahPower");
 
             var container = new SFModuleContainer();
-            container.RegisterModule<DialogScraper>();
-            container.RegisterModule<BrightBinder>();
-            container.RegisterModule<LicenseShooter>();
-            container.RegisterModule<NodShaker>();
-            container.RegisterModule<ChatViolationMonitor>();
             container.RegisterModule<RpcDebugger>();
             container.RegisterModule<DebugModule>();
 
