@@ -6,7 +6,7 @@ namespace SFSharp.Runtime.Game.Entities;
 /// <see cref="ISFEntities"/> over the GTA engine pools. SA-MP ids are mapped through the SA-MP wrappers'
 /// game pointers and the SA-MP pools' <c>Find</c>/<c>GetId</c>. Main thread only.
 /// </summary>
-public sealed unsafe class SFEntities : ISFEntities
+public sealed unsafe partial class SFEntities : ISFEntities
 {
     private static bool SampPoolsReady => CNetGame.TryGetPools(out _);
 

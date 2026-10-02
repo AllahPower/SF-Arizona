@@ -46,6 +46,7 @@ public static class SampOffsets
         public const int Get = 0x1110;
         public const int DoesExist = 0x1140;
         public const int UpdateCount = 0x1E260;
+        public const int Create = 0x1E930;
         public const int Delete = 0x1E330;
         public const int ChangeInterior = 0x1E3B0;
         public const int SetParams = 0x1E3E0;
@@ -308,6 +309,8 @@ public static class SampOffsets
         public const int GetColorAsArgb = 0x15C10;
         public const int GetStatus = 0x15DB0;
         public const int DoesExist = 0x1080;
+        public const int Spawn = 0x16A90;
+        public const int Remove = 0x16E70;
     }
 
     public static class CVehicle
@@ -348,6 +351,8 @@ public static class SampOffsets
         public const int GetLocalPlayer = 0x1A30;
         public const int GetCount = 0x13670;
         public const int Find = 0x13570;
+        public const int Create = 0x13E80;
+        public const int Delete = 0x13CB0;
         public const int GetLocalPlayerName = 0xA170;
         public const int GetName = 0x16F00;
         public const int GetScore = 0x6E0E0;

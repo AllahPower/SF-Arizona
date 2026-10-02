@@ -43,4 +43,17 @@ public interface ISFEntities
 
     /// <summary>Sets ped armour; returns false for vehicles and objects.</summary>
     bool SetArmour(SFEntityRef entity, float armour);
+
+    /// <summary>
+    /// SA-MP pool changes of players, vehicles, objects and actors. The first subscription installs the
+    /// pool hooks, so subscribe from the main thread. Register the result with
+    /// <see cref="IModuleContext.RegisterDisposable"/> so it is released when the module stops.
+    /// </summary>
+    IDisposable OnSampEntityChanged(Action<SFSampEntityEvent> handler);
+
+    /// <summary>
+    /// Damage to peds, vehicles and objects before the engine applies it. The first subscription installs
+    /// the damage hooks, so subscribe from the main thread.
+    /// </summary>
+    IDisposable OnDamage(Action<SFDamageEvent> handler);
 }
