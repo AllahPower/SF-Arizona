@@ -45,7 +45,7 @@ sync, Arizona 220/221 and AZVoice models, also reference the built `SF.Protocol.
 | `id` | yes | `[A-Za-z0-9][A-Za-z0-9._-]{0,127}`. `sf` is reserved for the host. |
 | `version` | yes | SemVer 2.0 version of the plugin, checked by plugins that depend on it. |
 | `assembly` | yes | Relative path to the plugin assembly inside the plugin folder. |
-| `enabledOnStart` | no | Overrides `[SFModule(DefaultEnabled)]` for every module of the plugin. |
+| `enabledOnStart` | no | Default for every module of the plugin; overrides `[SFModule(DefaultEnabled)]`, but a choice saved through `/sfs` takes precedence. |
 | `dependencies` | no | Supported versions of the host (`sf`) and of other plugins, keyed by plugin id. |
 
 ## Dependency versions
