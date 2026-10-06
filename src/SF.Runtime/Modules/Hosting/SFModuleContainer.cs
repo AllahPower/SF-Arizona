@@ -136,7 +136,7 @@ public sealed partial class SFModuleContainer
         }
 
         bool? storedIntent = SFHostManifest.Instance.TryGetEnabled(descriptor.Id);
-        bool autoStartEnabled = enabledOnStart ?? storedIntent ?? descriptor.DefaultEnabled;
+        bool autoStartEnabled = ResolveAutoStartEnabled(storedIntent, enabledOnStart, descriptor.DefaultEnabled);
         ModuleRegistration registration = new(descriptor, factory, autoStartEnabled, ownerPluginId);
         _registrations.Add(registration);
         _registrations.Sort((left, right) =>
@@ -150,6 +150,9 @@ public sealed partial class SFModuleContainer
         UpdateDependencyStatus(registration);
         PublishModuleCatalogSnapshot();
     }
+
+    internal static bool ResolveAutoStartEnabled(bool? storedIntent, bool? enabledOnStart, bool defaultEnabled)
+        => storedIntent ?? enabledOnStart ?? defaultEnabled;
 
     /// <summary>
     /// Removes a registration after its run has ended. If the module is still running the call
