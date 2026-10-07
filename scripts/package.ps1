@@ -22,6 +22,13 @@ $actual = [Diagnostics.FileVersionInfo]::GetVersionInfo("$publish/SF.Runtime.dll
 if ($actual.FileVersion -ne $expectedNumericVersion -or ($actual.ProductVersion -split '\+')[0] -ne $Version) {
     throw "Published runtime version does not match $Version; build before packaging."
 }
+$commit = & git -C $root rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw 'Could not resolve build commit.' }
+# The base version stays constant between builds, so only the embedded commit exposes a stale publish directory.
+$publishedCommit = ($actual.ProductVersion -split '\+', 2)[1]
+if ($publishedCommit -ne $commit) {
+    throw "Published runtime was built from commit '$publishedCommit', but HEAD is '$commit'; run build.ps1 before packaging."
+}
 $stagingRoot = [IO.Path]::GetFullPath("$root/artifacts/staging")
 $stage = Join-Path $stagingRoot ([guid]::NewGuid().ToString('N'))
 $releases = "$root/artifacts/releases"
@@ -31,8 +38,6 @@ try {
     Get-ChildItem -LiteralPath $publish -Force | Copy-Item -Destination "$stage/SF" -Recurse
     Get-ChildItem -LiteralPath $stage -File -Filter '*.pdb' -Recurse | Remove-Item
     Copy-Item -LiteralPath "$root/docs/INSTALL.md" -Destination $stage
-    $commit = & git -C $root rev-parse HEAD
-    if ($LASTEXITCODE -ne 0) { throw 'Could not resolve build commit.' }
     @{ version = $Version; commit = $commit; architecture = 'win-x86'; selfContained = $false } |
         ConvertTo-Json | Set-Content -LiteralPath "$stage/build-info.json" -Encoding utf8
     $archive = "$releases/SF-Arizona-$Version-win-x86.zip"
