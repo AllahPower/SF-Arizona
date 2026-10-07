@@ -4,8 +4,9 @@ A plugin is a folder in `<GTA>/SF/modules/<folder>/` with a `manifest.json` and 
 The loader scans every folder on startup; `/sfs plugin-load <folder>` loads one later.
 
 Plugins compile against the built `SF.Abstractions.dll`, never against SF-Arizona sources, and must not
-ship their own copy of it: the host shares `SF.Abstractions`, `Microsoft.Extensions.Logging.Abstractions`
-and `System.Text.Json`, plus every library installed directly in `SF/`.
+ship their own copy of it: the host always shares `SF.Abstractions`, `SF.Protocol`,
+`Microsoft.Extensions.Logging.Abstractions` and `System.Text.Json`. Other libraries come from the plugin
+folder first; see [Assembly resolution](#assembly-resolution).
 
 ```xml
 <Reference Include="SF.Abstractions" HintPath="$(SFAbstractionsPath)" Private="false" />
@@ -31,12 +32,13 @@ sync, Arizona 220/221 and AZVoice models, also reference the built `SF.Protocol.
   "description": "Optional text.",
   "author": "Optional",
   "website": "Optional",
-  "assembly": "ArizonaChat.dll",
+  "assembly": "ArizonaChat.Plugin.dll",
   "enabledOnStart": true,
   "dependencies": {
     "sf":    { "min": "4.0.0", "max": "4.x", "target": "4.0.0" },
     "sf.ui": { "min": "0.3.0-alpha.2", "max": "0.3.x" }
-  }
+  },
+  "sharedAssemblies": ["ArizonaChat"]
 }
 ```
 
@@ -47,6 +49,7 @@ sync, Arizona 220/221 and AZVoice models, also reference the built `SF.Protocol.
 | `assembly` | yes | Relative path to the plugin assembly inside the plugin folder. |
 | `enabledOnStart` | no | Default for every module of the plugin; overrides `[SFModule(DefaultEnabled)]`, but a choice saved through `/sfs` takes precedence. |
 | `dependencies` | no | Supported versions of the host (`sf`) and of other plugins, keyed by plugin id. |
+| `sharedAssemblies` | no | Simple names of assemblies in the plugin folder shared with dependent plugins; see [Shared assemblies](#shared-assemblies). |
 
 ## Dependency versions
 
@@ -85,6 +88,48 @@ A plugin cannot be unloaded or reloaded while plugins that depend on it are load
 
 Plugin dependencies order whole plugins. Ordering between individual modules still comes from
 `[SFModule(Dependencies = [...])]`, which takes module ids.
+
+## Assembly resolution
+
+Each plugin runs in its own collectible load context. An assembly it references is resolved in this order:
+
+1. Host contracts (`SF.Abstractions`, `SF.Protocol`, `Microsoft.Extensions.Logging.Abstractions`,
+   `System.Text.Json`): always the host's instance.
+2. Shared assemblies exported by the plugin itself or by a plugin listed in its `dependencies`.
+3. The plugin folder. A private copy always wins over a library in `SF/`.
+4. An assembly exported by a plugin that is **not** a dependency: the load fails with a message naming the
+   plugin to declare. Without this check the result would depend on which plugin happened to load first.
+5. Libraries installed beside the host in `SF/`, such as `MinHook.NET`, loaded into the Default context.
+
+Only the host installs files directly in `SF/`. Add-ons install everything under `SF/modules/<folder>/`.
+
+## Shared assemblies
+
+A plugin that offers an API to other plugins, such as `sf.ui`, lists the assemblies that must have one
+identity across plugins:
+
+```json
+{
+  "id": "sf.ui",
+  "assembly": "SF.UI.Plugin.dll",
+  "sharedAssemblies": ["SF.UI", "SF.UI.ImGui", "ImGui.NET"]
+}
+```
+
+- Each name is an assembly file `<name>.dll` directly in the plugin folder. The plugin assembly itself and
+  the host contracts cannot be listed.
+- On first use the assembly is loaded from that folder into the Default context and **stays loaded until
+  the game exits**, including after the exporting plugin is unloaded or reloaded. This keeps static state,
+  native hooks and native libraries of an API alive while its implementation plugin is reloaded.
+  Replacing a shared assembly therefore requires a game restart; a changed file is reported as a warning.
+- Dependents reference the shared assemblies without copying them (`Private="false"`) and declare the
+  exporter in `dependencies`. Visibility is not transitive: a plugin that uses `ImGui.NET` from `sf.ui`
+  declares `sf.ui` itself.
+- One assembly name has one exporter. A second plugin exporting the same name is rejected, and so is a
+  plugin whose shared assembly also exists in `SF/`: delete the old copy from `SF/` and restart the game.
+- Assemblies that shared assemblies reference resolve from the same list, then from `SF/`. A manifest
+  whose shared assembly references another assembly of the plugin folder that is not listed is rejected
+  on load, because the Default context cannot see the plugin folder.
 
 ## Early loading
 
