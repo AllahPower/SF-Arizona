@@ -26,24 +26,27 @@ public sealed class PluginLoader
 
     private readonly SFModuleContainer _container;
     private readonly ISFGameLoading _loading;
+    private readonly SharedAssemblyRegistry _sharedAssemblies;
     private readonly string _pluginsRoot;
     private readonly SemanticVersion _hostVersion;
     private readonly PluginManifestResolver _manifestResolver = new();
     private readonly Dictionary<string, LoadedPlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _sync = new();
 
-    public PluginLoader(SFModuleContainer container, ISFGameLoading loading)
-        : this(container, loading, Path.Combine(SFPaths.AssetsRoot, "modules"))
+    internal PluginLoader(SFModuleContainer container, ISFGameLoading loading, SharedAssemblyRegistry sharedAssemblies)
+        : this(container, loading, sharedAssemblies, Path.Combine(SFPaths.AssetsRoot, "modules"))
     {
     }
 
-    public PluginLoader(SFModuleContainer container, ISFGameLoading loading, string pluginsRoot)
+    internal PluginLoader(SFModuleContainer container, ISFGameLoading loading, SharedAssemblyRegistry sharedAssemblies, string pluginsRoot)
     {
         ArgumentNullException.ThrowIfNull(container);
         ArgumentNullException.ThrowIfNull(loading);
+        ArgumentNullException.ThrowIfNull(sharedAssemblies);
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginsRoot);
         _container = container;
         _loading = loading;
+        _sharedAssemblies = sharedAssemblies;
         _pluginsRoot = pluginsRoot;
         _hostVersion = ResolveHostVersion();
     }
@@ -216,7 +219,23 @@ public sealed class PluginLoader
             }
         }
 
-        PluginLoadContext context = new(manifest.PluginId, manifest.AssemblyPath);
+        if (manifest.SharedAssemblyPaths.Count != 0)
+        {
+            List<string> exportWarnings = [];
+            if (!_sharedAssemblies.TryRegister(manifest.PluginId, manifest.SharedAssemblyPaths, exportWarnings, out string? exportError))
+            {
+                string message = $"Plugin '{manifest.PluginId}' cannot export its shared assemblies: {exportError}.";
+                SFLog.Error($"PluginLoader[{manifest.PluginId}]: {message}");
+                return PluginLoadResult.FromFailure(PluginLoadFailureReason.SharedAssemblyConflict, message, manifest.PluginId, manifest);
+            }
+
+            foreach (string warning in exportWarnings)
+            {
+                SFLog.Warn($"PluginLoader[{manifest.PluginId}]: {warning}");
+            }
+        }
+
+        PluginLoadContext context = new(manifest, _sharedAssemblies);
         Assembly assembly;
         try
         {
@@ -380,7 +399,7 @@ public sealed class PluginLoader
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginId);
 
         LoadedPlugin? plugin;
-        bool finalizeDetachedUnload = false;
+        PluginState previousState;
         lock (_sync)
         {
             if (!_plugins.TryGetValue(pluginId, out plugin))
@@ -390,78 +409,82 @@ public sealed class PluginLoader
                 return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.PluginNotLoaded, message, pluginId);
             }
 
-            if (plugin.State == PluginState.UnloadFailed)
-            {
-                finalizeDetachedUnload = true;
-            }
-            else if (plugin.State != PluginState.Loaded)
+            if (plugin.State == PluginState.Unloading)
             {
                 string message = $"Plugin '{pluginId}' is in state {plugin.State} and cannot be unloaded.";
                 SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
                 return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.PluginBusy, message, pluginId);
             }
-            else if (_plugins.Values.Where(other => other.State != PluginState.UnloadFailed && other.Manifest.DependsOn(pluginId))
-                         .Select(static other => other.PluginId).ToArray() is { Length: > 0 } dependents)
+
+            if (plugin.IsActive
+                && _plugins.Values.Where(other => other.IsActive && other.Manifest.DependsOn(pluginId))
+                       .Select(static other => other.PluginId).ToArray() is { Length: > 0 } dependents)
             {
                 string message = $"Plugin '{pluginId}' cannot be unloaded while dependent plugins are loaded: {string.Join(", ", dependents)}. Unload them first.";
                 SFLog.Warn($"PluginLoader[{pluginId}]: {message}");
                 return PluginUnloadResult.FromFailure(PluginUnloadFailureReason.DependentPluginsLoaded, message, pluginId);
             }
-            else
+
+            previousState = plugin.State;
+            plugin.State = PluginState.Unloading;
+            plugin.LastUnloadFailureReason = PluginUnloadFailureReason.None;
+            plugin.LastUnloadFailureMessage = null;
+        }
+
+        LoadedPlugin activePlugin = plugin;
+        if (activePlugin.UnloadProgress < PluginUnloadProgress.ModulesUnregistered)
+        {
+            string[] moduleIds = [.. activePlugin.RegisteredModuleIds];
+            string[] blockingDependents = _container.GetRunningDependentModuleIds(moduleIds, excludedModuleIds: moduleIds);
+            if (blockingDependents.Length != 0)
             {
-                plugin.State = PluginState.Unloading;
-                plugin.LastUnloadFailureReason = PluginUnloadFailureReason.None;
-                plugin.LastUnloadFailureMessage = null;
+                // Nothing was stopped yet, so the plugin stays in the state it had before this request.
+                return RecordUnloadFailure(
+                    activePlugin,
+                    PluginUnloadFailureReason.ModuleStillRunning,
+                    $"Plugin '{pluginId}' cannot be unloaded while dependent modules are running: {string.Join(", ", blockingDependents)}",
+                    previousState);
             }
-        }
 
-        LoadedPlugin activePlugin = plugin!;
-        if (finalizeDetachedUnload)
-        {
-            return FinalizeDetachedUnload(activePlugin);
-        }
+            SFLog.Info($"PluginLoader[{pluginId}]: unloading {moduleIds.Length} module(s)");
+            foreach (string moduleId in moduleIds)
+            {
+                _container.RequestStopModule(moduleId, ModuleStopReason.PluginUnload);
+            }
 
-        string[] moduleIds = [.. activePlugin.RegisteredModuleIds];
-        string[] blockingDependents = _container.GetRunningDependentModuleIds(moduleIds, excludedModuleIds: moduleIds);
-        if (blockingDependents.Length != 0)
-        {
-            return RecordUnloadFailure(
-                activePlugin,
-                PluginUnloadFailureReason.ModuleStillRunning,
-                $"Plugin '{pluginId}' cannot be unloaded while dependent modules are running: {string.Join(", ", blockingDependents)}");
-        }
+            if (!_container.TryWaitForModulesStopped(moduleIds, UnloadStopTimeout, out string[] stillRunning))
+            {
+                return RecordUnloadFailure(
+                    activePlugin,
+                    PluginUnloadFailureReason.ModuleStopTimeout,
+                    $"Plugin '{pluginId}' failed to stop all modules within {UnloadStopTimeout.TotalSeconds:0}s. Still running: {string.Join(", ", stillRunning)}");
+            }
 
-        SFLog.Info($"PluginLoader[{pluginId}]: unloading {moduleIds.Length} module(s)");
-        foreach (string moduleId in moduleIds)
-        {
-            _container.RequestStopModule(moduleId, ModuleStopReason.PluginUnload);
-        }
+            if (!_container.TryUnregisterModules(moduleIds, out string[] failedIds))
+            {
+                return RecordUnloadFailure(
+                    activePlugin,
+                    PluginUnloadFailureReason.ModuleUnregisterFailed,
+                    $"Plugin '{pluginId}' failed to unregister module ids: {string.Join(", ", failedIds)}");
+            }
 
-        if (!_container.TryWaitForModulesStopped(moduleIds, UnloadStopTimeout, out string[] stillRunning))
-        {
-            return RecordUnloadFailure(
-                activePlugin,
-                PluginUnloadFailureReason.ModuleStopTimeout,
-                $"Plugin '{pluginId}' failed to stop all modules within {UnloadStopTimeout.TotalSeconds:0}s. Still running: {string.Join(", ", stillRunning)}");
-        }
-
-        if (!_container.TryUnregisterModules(moduleIds, out string[] failedIds))
-        {
-            return RecordUnloadFailure(
-                activePlugin,
-                PluginUnloadFailureReason.ModuleUnregisterFailed,
-                $"Plugin '{pluginId}' failed to unregister module ids: {string.Join(", ", failedIds)}");
+            activePlugin.UnloadProgress = PluginUnloadProgress.ModulesUnregistered;
         }
 
         activePlugin.EarlyModules?.Dispose();
         activePlugin.EarlyModules = null;
 
-        if (!TryDetachAndUnloadContext(activePlugin, pluginId))
+        if (activePlugin.UnloadProgress < PluginUnloadProgress.ContextUnloaded)
         {
-            return RecordUnloadFailure(
-                activePlugin,
-                PluginUnloadFailureReason.AssemblyLoadContextUnloadFailed,
-                $"Plugin '{pluginId}' failed to invoke AssemblyLoadContext.Unload().");
+            if (!TryUnloadPluginContext(activePlugin, pluginId))
+            {
+                return RecordUnloadFailure(
+                    activePlugin,
+                    PluginUnloadFailureReason.AssemblyLoadContextUnloadFailed,
+                    $"Plugin '{pluginId}' failed to invoke AssemblyLoadContext.Unload().");
+            }
+
+            activePlugin.UnloadProgress = PluginUnloadProgress.ContextUnloaded;
         }
 
         return FinalizeDetachedUnload(activePlugin);
@@ -570,15 +593,22 @@ public sealed class PluginLoader
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static bool TryDetachAndUnloadContext(LoadedPlugin plugin, string pluginId)
+    private static bool TryUnloadPluginContext(LoadedPlugin plugin, string pluginId)
     {
-        PluginLoadContext? context = plugin.DetachLoadContext();
+        PluginLoadContext? context = plugin.LoadContext;
         if (context is null)
         {
             return true;
         }
 
-        return TryUnloadContext(context, pluginId);
+        if (!TryUnloadContext(context, pluginId))
+        {
+            return false;
+        }
+
+        // Dropped only after Unload() succeeded, so a failed attempt can be retried with the same context.
+        plugin.LoadContext = null;
+        return true;
     }
 
     private static SemanticVersion ResolveHostVersion()
@@ -596,7 +626,7 @@ public sealed class PluginLoader
         lock (_sync)
         {
             return _plugins.Values
-                .Where(static plugin => plugin.State != PluginState.UnloadFailed)
+                .Where(static plugin => plugin.IsActive)
                 .ToDictionary(static plugin => plugin.PluginId, static plugin => plugin.Manifest.Version, StringComparer.OrdinalIgnoreCase);
         }
     }
@@ -626,13 +656,17 @@ public sealed class PluginLoader
         return tcs.Task.GetAwaiter().GetResult();
     }
 
-    private PluginUnloadResult RecordUnloadFailure(LoadedPlugin plugin, PluginUnloadFailureReason reason, string message)
+    private PluginUnloadResult RecordUnloadFailure(
+        LoadedPlugin plugin,
+        PluginUnloadFailureReason reason,
+        string message,
+        PluginState stateAfterFailure = PluginState.UnloadFailed)
     {
         lock (_sync)
         {
             if (_plugins.TryGetValue(plugin.PluginId, out LoadedPlugin? current) && ReferenceEquals(current, plugin))
             {
-                current.State = PluginState.UnloadFailed;
+                current.State = stateAfterFailure;
                 current.LastUnloadFailureReason = reason;
                 current.LastUnloadFailureMessage = message;
             }

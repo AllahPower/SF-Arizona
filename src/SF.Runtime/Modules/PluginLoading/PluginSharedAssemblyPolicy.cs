@@ -17,7 +17,7 @@ internal static class PluginSharedAssemblyPolicy
 
     public static bool IsShared(string assemblyName) => Shared.ContainsKey(assemblyName);
 
-    // Assemblies installed beside the host are shared process-wide; plugin-local dependencies remain collectible.
+    // Fallback for libraries the plugin does not ship itself: a copy in the plugin directory always wins.
     public static bool IsHostLibrary(AssemblyName requested)
     {
         string? name = requested.Name;
@@ -42,20 +42,9 @@ internal static class PluginSharedAssemblyPolicy
 
     public static IReadOnlyCollection<string> Names => Shared.Keys;
 
+    // Only the fixed contract set: scanning the AppDomain could bind the Default context to a collectible plugin assembly.
     public static bool TryResolveLoadedAssembly(string assemblyName, out Assembly? assembly)
-    {
-        if (Shared.TryGetValue(assemblyName, out assembly))
-        {
-            return true;
-        }
-
-        assembly = AppDomain.CurrentDomain.GetAssemblies()
-            .FirstOrDefault(candidate =>
-                !candidate.IsDynamic &&
-                string.Equals(candidate.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase));
-
-        return assembly is not null;
-    }
+        => Shared.TryGetValue(assemblyName, out assembly);
 
     public static string Describe(Assembly assembly)
     {

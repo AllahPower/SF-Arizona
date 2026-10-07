@@ -232,14 +232,33 @@ public sealed class PluginManifestResolverTests : IDisposable
     [InlineData("""{ "id": "sf", "version": "1.0.0", "assembly": "p.dll" }""", PluginManifestResolutionFailureReason.ReservedPluginId)]
     [InlineData("""{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "dependencies": { "p": {} } }""", PluginManifestResolutionFailureReason.InvalidDependency)]
     [InlineData("""{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "dependencies": { "ui": { "max": "next" } } }""", PluginManifestResolutionFailureReason.InvalidDependency)]
+    [InlineData("""{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "sharedAssemblies": ["../lib"] }""", PluginManifestResolutionFailureReason.InvalidSharedAssembly)]
+    [InlineData("""{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "sharedAssemblies": ["SF.Abstractions"] }""", PluginManifestResolutionFailureReason.InvalidSharedAssembly)]
+    [InlineData("""{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "sharedAssemblies": ["p"] }""", PluginManifestResolutionFailureReason.InvalidSharedAssembly)]
+    [InlineData("""{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "sharedAssemblies": ["Missing.Lib"] }""", PluginManifestResolutionFailureReason.InvalidSharedAssembly)]
+    [InlineData("""{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "sharedAssemblies": ["lib", "LIB"] }""", PluginManifestResolutionFailureReason.InvalidSharedAssembly)]
     public void RejectsInvalidManifests(string json, PluginManifestResolutionFailureReason expected)
     {
+        File.WriteAllBytes(Path.Combine(_root, "lib.dll"), []);
         string manifest = WritePlugin(typeof(PluginLoader).Assembly.Location, json);
 
         PluginManifestResolutionResult result = new PluginManifestResolver().Resolve(manifest);
 
         Assert.False(result.Success);
         Assert.Equal(expected, result.FailureReason);
+    }
+
+    [Fact]
+    public void ResolvesSharedAssembliesBesideThePluginAssembly()
+    {
+        File.Copy(typeof(SFSharp.Abstractions.Modules.ISFModule).Assembly.Location, Path.Combine(_root, "Lib.Shared.dll"));
+        string manifest = WritePlugin(typeof(PluginLoader).Assembly.Location,
+            """{ "id": "p", "version": "1.0.0", "assembly": "p.dll", "sharedAssemblies": [" Lib.Shared "] }""");
+
+        KeyValuePair<string, string> shared = Assert.Single(Resolve(manifest).SharedAssemblyPaths);
+
+        Assert.Equal("Lib.Shared", shared.Key);
+        Assert.Equal(Path.Combine(_root, "Lib.Shared.dll"), shared.Value, ignoreCase: true);
     }
 
     public void Dispose() => Directory.Delete(_root, recursive: true);

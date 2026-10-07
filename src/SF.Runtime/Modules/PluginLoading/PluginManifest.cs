@@ -37,6 +37,13 @@ public sealed class PluginManifest
     /// <summary>Keyed by plugin id, or by <see cref="HostDependencyId"/> for the host.</summary>
     [JsonPropertyName("dependencies")]
     public Dictionary<string, PluginDependencyManifest>? Dependencies { get; set; }
+
+    /// <summary>
+    /// Simple names of assemblies beside the plugin assembly that are loaded once into the Default context
+    /// and shared with the plugin itself and every plugin that depends on it. They stay loaded until the game exits.
+    /// </summary>
+    [JsonPropertyName("sharedAssemblies")]
+    public List<string>? SharedAssemblies { get; set; }
 }
 
 public sealed class PluginDependencyManifest
@@ -76,8 +83,26 @@ public sealed record ResolvedPluginManifest(
 {
     public string DisplayNameOrFallback => string.IsNullOrWhiteSpace(Metadata.DisplayName) ? PluginId : Metadata.DisplayName.Trim();
 
+    /// <summary>Exported assembly name to its full path inside <see cref="PluginRoot"/>.</summary>
+    public IReadOnlyDictionary<string, string> SharedAssemblyPaths { get; init; } = new Dictionary<string, string>();
+
     public bool DependsOn(string pluginId)
         => Dependencies.Any(dependency => !dependency.IsHost && string.Equals(dependency.Id, pluginId, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Plugins whose shared assemblies this plugin may bind to: itself and its direct plugin dependencies.</summary>
+    public IReadOnlySet<string> SharedAssemblyOwners()
+    {
+        HashSet<string> owners = new(StringComparer.OrdinalIgnoreCase) { PluginId };
+        foreach (ResolvedPluginDependency dependency in Dependencies)
+        {
+            if (!dependency.IsHost)
+            {
+                owners.Add(dependency.Id);
+            }
+        }
+
+        return owners;
+    }
 }
 
 /// <param name="IsInferred">True when bounds were filled from the SF.Abstractions version the plugin was compiled against.</param>
@@ -100,6 +125,7 @@ public enum PluginManifestResolutionFailureReason
     MissingVersion,
     InvalidVersion,
     InvalidDependency,
+    InvalidSharedAssembly,
     IoFailure,
 }
 
@@ -126,4 +152,9 @@ internal static partial class PluginManifestIdPolicy
     private static partial Regex ValidPluginIdRegex();
 
     public static bool IsValid(string value) => ValidPluginIdRegex().IsMatch(value);
+
+    [GeneratedRegex("^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$", RegexOptions.CultureInvariant)]
+    private static partial Regex ValidAssemblyNameRegex();
+
+    public static bool IsValidAssemblyName(string value) => ValidAssemblyNameRegex().IsMatch(value) && !value.EndsWith('.');
 }

@@ -14,6 +14,7 @@ internal sealed class LoadedPlugin
     public required IReadOnlyList<string> Warnings { get; init; }
     public EarlyModuleHost? EarlyModules { get; set; }
     public PluginState State { get; set; } = PluginState.Loaded;
+    public PluginUnloadProgress UnloadProgress { get; set; } = PluginUnloadProgress.None;
     public PluginUnloadFailureReason LastUnloadFailureReason { get; set; } = PluginUnloadFailureReason.None;
     public string? LastUnloadFailureMessage { get; set; }
 
@@ -23,12 +24,8 @@ internal sealed class LoadedPlugin
     public int RegisteredModuleCount => RegisteredModuleIds.Count;
     public int EarlyModuleCount => EarlyModules?.Count ?? 0;
 
-    public PluginLoadContext? DetachLoadContext()
-    {
-        PluginLoadContext? context = LoadContext;
-        LoadContext = null;
-        return context;
-    }
+    /// <summary>True while the plugin's modules or assemblies may still be used by other plugins.</summary>
+    public bool IsActive => UnloadProgress < PluginUnloadProgress.ContextUnloaded;
 
     public PluginRuntimeSnapshot CreateSnapshot() => new(
         PluginId,
@@ -40,4 +37,12 @@ internal sealed class LoadedPlugin
         EarlyModuleCount,
         LastUnloadFailureReason,
         LastUnloadFailureMessage);
+}
+
+/// <summary>Unload steps already completed, so a retried unload resumes instead of starting over.</summary>
+internal enum PluginUnloadProgress
+{
+    None,
+    ModulesUnregistered,
+    ContextUnloaded,
 }

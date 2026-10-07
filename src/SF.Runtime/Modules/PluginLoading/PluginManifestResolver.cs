@@ -118,6 +118,13 @@ internal sealed class PluginManifestResolver
                 $"Plugin manifest '{manifestPath}' has an invalid dependency: {dependencyError}.");
         }
 
+        if (!TryResolveSharedAssemblies(manifest, pluginRoot, assemblyPath, out Dictionary<string, string> sharedAssemblyPaths, out string? sharedError))
+        {
+            return PluginManifestResolutionResult.FromFailure(
+                PluginManifestResolutionFailureReason.InvalidSharedAssembly,
+                $"Plugin manifest '{manifestPath}' has an invalid shared assembly: {sharedError}.");
+        }
+
         PluginManifestMetadata metadata = new(
             Normalize(manifest.DisplayName),
             Normalize(manifest.Version),
@@ -135,9 +142,109 @@ internal sealed class PluginManifestResolver
             dependencies,
             warnings,
             metadata,
-            manifest);
+            manifest)
+        {
+            SharedAssemblyPaths = sharedAssemblyPaths,
+        };
 
         return PluginManifestResolutionResult.FromSuccess(resolved);
+    }
+
+    private static bool TryResolveSharedAssemblies(
+        PluginManifest manifest,
+        string pluginRoot,
+        string assemblyPath,
+        out Dictionary<string, string> paths,
+        out string? error)
+    {
+        paths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        error = null;
+        string pluginAssemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+
+        foreach (string? rawName in manifest.SharedAssemblies ?? [])
+        {
+            string name = rawName?.Trim() ?? string.Empty;
+            if (!PluginManifestIdPolicy.IsValidAssemblyName(name))
+            {
+                error = $"'{rawName}' is not a simple assembly name";
+                return false;
+            }
+
+            if (PluginSharedAssemblyPolicy.IsShared(name))
+            {
+                error = $"'{name}' is a host contract and is always shared by the host";
+                return false;
+            }
+
+            // The plugin assembly itself must stay in its collectible context so the plugin can be unloaded.
+            if (string.Equals(name, pluginAssemblyName, StringComparison.OrdinalIgnoreCase))
+            {
+                error = $"'{name}' is the plugin assembly itself";
+                return false;
+            }
+
+            string path = Path.Combine(pluginRoot, name + ".dll");
+            if (!File.Exists(path))
+            {
+                error = $"'{name}' was not found at '{path}'";
+                return false;
+            }
+
+            if (!paths.TryAdd(name, path))
+            {
+                error = $"'{name}' is listed more than once";
+                return false;
+            }
+        }
+
+        // Shared assemblies live in the Default context, which cannot see the plugin folder, so such a reference
+        // would otherwise fail only when another plugin first calls into it.
+        Dictionary<string, string> shared = paths;
+        foreach ((string name, string path) in shared)
+        {
+            if (!TryReadAssemblyReferences(path, out List<string> references))
+            {
+                error = $"'{name}' is not a readable managed assembly";
+                return false;
+            }
+
+            string? local = references.FirstOrDefault(reference => !shared.ContainsKey(reference)
+                && !PluginSharedAssemblyPolicy.IsShared(reference)
+                && File.Exists(Path.Combine(pluginRoot, reference + ".dll")));
+            if (local is not null)
+            {
+                error = $"'{name}' references '{local}' from the plugin folder, which is not shared; list '{local}' in sharedAssemblies too";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryReadAssemblyReferences(string path, out List<string> references)
+    {
+        references = [];
+        try
+        {
+            using FileStream stream = File.OpenRead(path);
+            using PEReader peReader = new(stream);
+            if (!peReader.HasMetadata)
+            {
+                return false;
+            }
+
+            MetadataReader reader = peReader.GetMetadataReader();
+            foreach (AssemblyReferenceHandle handle in reader.AssemblyReferences)
+            {
+                references.Add(reader.GetString(reader.GetAssemblyReference(handle).Name));
+            }
+
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or BadImageFormatException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private static bool TryResolveDependencies(

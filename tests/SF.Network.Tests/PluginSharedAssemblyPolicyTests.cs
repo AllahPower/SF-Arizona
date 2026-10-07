@@ -27,6 +27,15 @@ public sealed class PluginSharedAssemblyPolicyTests
         Assert.Same(typeof(SFSharp.Protocol.Rpc.SampRpc).Assembly, resolved);
     }
 
+    [Fact]
+    public void LoadedAssembliesOutsideTheContractSetAreNotShared()
+    {
+        string loaded = typeof(FactAttribute).Assembly.GetName().Name!;
+
+        Assert.False(PluginSharedAssemblyPolicy.TryResolveLoadedAssembly(loaded, out Assembly? resolved));
+        Assert.Null(resolved);
+    }
+
     [Theory]
     [InlineData("../SF.Abstractions")]
     [InlineData("Missing.Shared.Library")]

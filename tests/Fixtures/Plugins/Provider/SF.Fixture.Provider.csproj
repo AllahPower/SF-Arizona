@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <GenerateDependencyFile>true</GenerateDependencyFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../../../src/SF.Abstractions/SF.Abstractions.csproj" Private="false" />
+        <ProjectReference Include="../SharedLib/SF.Fixture.SharedLib.csproj" />
+    </ItemGroup>
+</Project>

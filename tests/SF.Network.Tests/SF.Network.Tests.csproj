@@ -18,5 +18,8 @@
     <ItemGroup>
         <ProjectReference Include="../../src/SF.Abstractions/SF.Abstractions.csproj" />
         <ProjectReference Include="../../src/SF.Runtime/SF.Runtime.csproj" />
+        <!-- Plugin fixtures are built but never referenced: the tests copy them into a plugins directory and load them through PluginLoader. -->
+        <ProjectReference Include="../Fixtures/Plugins/Provider/SF.Fixture.Provider.csproj" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="../Fixtures/Plugins/Consumer/SF.Fixture.Consumer.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>

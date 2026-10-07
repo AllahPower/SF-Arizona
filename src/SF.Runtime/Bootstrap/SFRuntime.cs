@@ -20,7 +20,8 @@ internal sealed class SFRuntime
         Dispatcher = new NetworkDispatcher(MainThread);
         Loading = new SFGameLoading(Exceptions.Report, static () => GameLoadHooks.GameState);
         Modules = new SFModuleContainer(this, MainThread);
-        Plugins = new PluginLoader(Modules, Loading);
+        SharedAssemblies = new SharedAssemblyRegistry();
+        Plugins = new PluginLoader(Modules, Loading, SharedAssemblies);
         Modules.PluginLoader = Plugins;
         HookRuntime.ReportException = Exceptions.Report;
     }
@@ -32,6 +33,7 @@ internal sealed class SFRuntime
     public NetworkDispatcher Dispatcher { get; }
     public SFGameLoading Loading { get; }
     public SFModuleContainer Modules { get; }
+    public SharedAssemblyRegistry SharedAssemblies { get; }
     public PluginLoader Plugins { get; }
 
     public HookRegistry Hooks => _hooks ?? throw new InvalidOperationException("Hooks are installed after samp.dll loads.");

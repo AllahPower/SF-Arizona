@@ -25,6 +25,7 @@ public enum PluginLoadFailureReason
     DependencyCycle,
     Busy,
     UnexpectedError,
+    SharedAssemblyConflict,
 }
 
 public enum PluginUnloadFailureReason
