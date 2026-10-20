@@ -99,3 +99,52 @@ These checks do not prove absence of every leak in the game. They cover the refe
 manager, payload and subscription implementations, not the native hook, native allocator or scheduled
 dispatcher/channel backlog. Slow consumers can still accumulate queued packets; in-game profiling
 is required for those paths. The tests also do not replace native transport/routing validation.
+
+## DebugWeb capture boundaries
+
+Packet capture uses the native SA-MP RakClient entries rather than the current `CNetGame` proxy
+vtable. Arizona and SAMPFUNCS wrap that interface. Capturing only the result of the outer
+`Receive` misses packets that a wrapper consumes or marks with ID 255 before returning.
+The native receive hook copies the packet before those wrappers process it. Incoming filters
+now also run before that processing; a cancelled packet is freed through the native receiver.
+
+Verified read-only against the running Arizona client on 2026-10-20: SA-MP R3-1,
+`samp.dll` file SHA-256 `087ed1d0c29b9a9f24443dacddbd3e0ddbc0eadc5673e83e8a9280e72e93dfe5`.
+These are RVAs in `samp.dll`, not absolute addresses from that session:
+
+| Entry | RVA | Evidence |
+| --- | --- | --- |
+| RakClient Send(BitStream) | `0x33BA0` | Native vtable slot 6, four stack arguments, delegates to RakPeer Send(BitStream) |
+| RakClient Send(data, length) | `0x33B50` | Native vtable slot 7, five stack arguments, independent of the BitStream overload |
+| RakClient Receive | `0x34AC0` | Native vtable slot 8, adjusts `this` and enters the RakClient receive implementation |
+| Outgoing RPC(BitStream) | `0x33EE0` | Existing hook, six stack arguments |
+| Incoming RPC handler | `0x3A6A0` | Existing hook remains installed |
+
+The live outer Receive called the SAMPFUNCS/SA-MP chain, processed custom packet 220 and
+wrote `0xFF` to a consumed packet's first byte. The existing hooks were still installed;
+their position in this chain was the problem. DebugWeb capture was disabled when inspected.
+The running process was not patched or replaced during this investigation.
+
+The native BitStream constructor at RVA `0x1F080`, reader at `0x1F270` and RakPeer send at
+`0x3BC90` establish the field layout: used bits at +0, allocated bits at +4, read offset at +8,
+data pointer at +12. Capture must copy only used bits. The previous +4 read copied capacity
+instead, which could expose an unused tail and report incorrect lengths.
+
+DebugWeb subscribes to all byte-valued packet/RPC IDs, including values absent from enums.
+Known parsers provide decoded details; an unknown ID still produces an entry. Optional native
+integrations own their separate observation sources outside the core. This observes logical RakNet packets exposed at these
+boundaries, not UDP ACKs, transport fragments or every private networking API of other modules.
+Packets cancelled by native filters do not reach the asynchronous subscribers.
+
+DebugWeb now lives in the separate example plugin described in [DEBUGWEB.md](DEBUGWEB.md).
+WebSocket traffic and initial snapshots share one asynchronous send lock.
+Contention waits rather than silently skipping a traffic batch. The bounded broadcast queue
+can still evict entries under sustained backpressure; `/api/stats` and the Packets sidebar
+expose `droppedBroadcastEntries`. The retained buffer defaults to 10000 entries and 32 MiB
+of original bytes, whichever limit is reached first. History eviction is reported separately.
+DebugWeb is a live inspector with snapshot export rather than a durable packet recorder.
+
+Native layout and valid-bit tests use an independent memory image with a larger capacity than
+payload length. WebSocket tests hold a send open while traffic queues behind it and
+verify cancellation does not release another send's lock. In-game verification with the rebuilt
+runtime is still required after restarting the game.

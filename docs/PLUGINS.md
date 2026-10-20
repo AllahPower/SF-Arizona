@@ -15,7 +15,7 @@ folder first; see [Assembly resolution](#assembly-resolution).
 ```
 
 Plugins that consume parsed traffic, such as `context.SF.Events.OnIncomingRpc<SetPlayerPosRpc>(...)` or the
-sync, Arizona 220/221 and AZVoice models, also reference the built `SF.Protocol.dll` the same way (namespaces
+standard SA-MP synchronization models, also reference the built `SF.Protocol.dll` the same way (namespaces
 `SFSharp.Protocol.*`). The host shares the instance it uses itself, so model types match on both sides:
 
 ```xml
@@ -26,19 +26,19 @@ sync, Arizona 220/221 and AZVoice models, also reference the built `SF.Protocol.
 
 ```json
 {
-  "id": "arizona-chat",
-  "displayName": "Arizona Chat",
+  "id": "example.tools",
+  "displayName": "Example Tools",
   "version": "1.0.0",
   "description": "Optional text.",
   "author": "Optional",
   "website": "Optional",
-  "assembly": "ArizonaChat.Plugin.dll",
+  "assembly": "Example.Tools.Plugin.dll",
   "enabledOnStart": true,
   "dependencies": {
     "sf":    { "min": "4.0.0", "max": "4.x", "target": "4.0.0" },
     "sf.ui": { "min": "0.3.0-alpha.2", "max": "0.3.x" }
   },
-  "sharedAssemblies": ["ArizonaChat"]
+  "sharedAssemblies": ["Example.Tools"]
 }
 ```
 
