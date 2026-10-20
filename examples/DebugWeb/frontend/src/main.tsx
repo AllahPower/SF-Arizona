@@ -1,5 +1,5 @@
 import { render } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import {
   api,
   matches,
@@ -34,7 +34,7 @@ function SettingsPanel({
     rpcIds: settings.rpcIds.join(", "),
     subIds: settings.subIds.join(", "),
   });
-  useEffect(() => setForm(settings), [settings]);
+  useLayoutEffect(() => setForm(settings), [settings]);
   return (
     <section class="settings-page">
       <span class="index-mark">03 / CONFIGURATION</span>
@@ -203,7 +203,7 @@ function App() {
   latest.current.limit = settings?.maxEntries ?? 10_000;
   latest.current.paused = paused;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     localStorage.setItem("sf.debug.page", JSON.stringify(page));
     localStorage.setItem("sf.debug.search", JSON.stringify(search));
     localStorage.setItem("sf.debug.routes", JSON.stringify(routeFilter));
