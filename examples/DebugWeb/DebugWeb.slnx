@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="DebugWeb.Example.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="../../tests/SF.DebugWeb.Tests/SF.DebugWeb.Tests.csproj" />
+  </Folder>
+</Solution>

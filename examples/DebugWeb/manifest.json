@@ -1,0 +1,10 @@
+{
+  "id": "example.debug-web",
+  "displayName": "DebugWeb",
+  "version": "1.0.0",
+  "description": "Local packet and RPC inspector with structured, raw and optional extension views.",
+  "author": "SF-Arizona",
+  "assembly": "SF.Example.DebugWeb.dll",
+  "enabledOnStart": false,
+  "dependencies": { "sf": { "min": "4.1.0", "max": "4.x", "target": "4.1.0" } }
+}

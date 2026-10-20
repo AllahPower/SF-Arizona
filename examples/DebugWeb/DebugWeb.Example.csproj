@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>SF.Example.DebugWeb</AssemblyName>
+    <RootNamespace>SFSharp.Examples.DebugWeb</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>$(RepositoryRoot)artifacts\examples\$(Configuration)\debug-web\</OutputPath>
+    <FrontendOutput>$(RepositoryRoot)artifacts\frontend\DebugWeb\</FrontendOutput>
+    <DefaultItemExcludes>$(DefaultItemExcludes);frontend\node_modules\**</DefaultItemExcludes>
+    <IsPackable>false</IsPackable>
+    <GenerateDependencyFile>true</GenerateDependencyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../src/SF.Abstractions/SF.Abstractions.csproj" Private="false" />
+    <ProjectReference Include="../../src/SF.Protocol/SF.Protocol.csproj" Private="false" />
+    <InternalsVisibleTo Include="SF.DebugWeb.Tests" />
+    <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <FrontendSource Include="frontend/src/**/*;frontend/public/**/*;frontend/index.html;frontend/package.json;frontend/package-lock.json;frontend/tsconfig.json;frontend/vite.config.ts" />
+  </ItemGroup>
+  <Target Name="RestoreDebugWebFrontend" BeforeTargets="BuildDebugWebFrontend"
+          Condition="'$(DesignTimeBuild)' != 'true'"
+          Inputs="frontend/package.json;frontend/package-lock.json" Outputs="frontend/node_modules/.package-lock.json">
+    <Exec WorkingDirectory="frontend" Command="npm ci --cache &quot;$(RepositoryRoot)artifacts/npm-cache&quot;" />
+  </Target>
+  <Target Name="BuildDebugWebFrontend" BeforeTargets="AssignTargetPaths"
+          Condition="'$(DesignTimeBuild)' != 'true'"
+          Inputs="@(FrontendSource)" Outputs="$(FrontendOutput)index.html">
+    <Exec WorkingDirectory="frontend" Command="npm run build" />
+  </Target>
+  <Target Name="IncludeDebugWebFrontend" BeforeTargets="AssignTargetPaths" DependsOnTargets="BuildDebugWebFrontend">
+    <ItemGroup>
+      <Content Include="$(FrontendOutput)**/*" />
+      <Content Update="$(FrontendOutput)**/*">
+        <Link>wwwroot\%(Content.RecursiveDir)%(Content.Filename)%(Content.Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+  <Target Name="RemoveStaleDebugWebAssets" AfterTargets="Build">
+    <ItemGroup>
+      <_StaleDebugWebAssets Include="$(OutputPath)wwwroot/assets/*" Exclude="@(Content->'$(OutputPath)%(Link)')" />
+    </ItemGroup>
+    <Delete Files="@(_StaleDebugWebAssets)" />
+  </Target>
+</Project>
