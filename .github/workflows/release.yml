@@ -35,6 +35,9 @@ jobs:
         id: version
         shell: pwsh
         run: ./scripts/release-version.ps1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Check structure and release rules
         shell: pwsh
         run: ./scripts/verify.ps1
@@ -44,6 +47,20 @@ jobs:
       - name: Test packet contracts
         shell: pwsh
         run: dotnet test tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
+      - name: Test DebugWeb plugin and frontend
+        shell: pwsh
+        run: |
+          dotnet test tests/SF.DebugWeb.Tests/SF.DebugWeb.Tests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'DebugWeb plugin tests failed' }
+          Push-Location examples/DebugWeb/frontend
+          try {
+            npm test
+            if ($LASTEXITCODE -ne 0) { throw 'DebugWeb frontend tests failed' }
+            npx playwright install chromium --only-shell
+            if ($LASTEXITCODE -ne 0) { throw 'DebugWeb browser installation failed' }
+            npm run test:e2e
+            if ($LASTEXITCODE -ne 0) { throw 'DebugWeb browser tests failed' }
+          } finally { Pop-Location }
       - name: Install x86 test runtimes
         shell: pwsh
         run: |
@@ -69,12 +86,17 @@ jobs:
       - name: Package and verify deployment archive
         shell: pwsh
         run: |
-          ./scripts/package.ps1 -Version '${{ steps.version.outputs.version }}'
+          ./scripts/package.ps1 -Version '${{ steps.version.outputs.version }}' -NoBuild
           ./scripts/verify.ps1 -Archive 'artifacts/releases/SF-Arizona-${{ steps.version.outputs.version }}-win-x86.zip'
+          ./scripts/package-debug-web.ps1 -NoBuild
+          $debugVersion = (Get-Content examples/DebugWeb/manifest.json -Raw | ConvertFrom-Json).version
+          ./scripts/verify.ps1 -DebugWebArchive "artifacts/releases/SF-DebugWeb-$debugVersion-win-x86.zip"
       - uses: actions/upload-artifact@v4
         with:
           name: SF-Arizona-${{ steps.version.outputs.version }}-win-x86
-          path: artifacts/releases/SF-Arizona-${{ steps.version.outputs.version }}-win-x86.zip*
+          path: |
+            artifacts/releases/SF-Arizona-${{ steps.version.outputs.version }}-win-x86.zip*
+            artifacts/releases/SF-DebugWeb-*-win-x86.zip*
           if-no-files-found: error
 
   release:

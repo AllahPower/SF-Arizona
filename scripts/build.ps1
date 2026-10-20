@@ -17,7 +17,9 @@ $versionArgument = "-p:Version=$Version"
 
 Push-Location $root
 try {
-    $projects = @($runtime) + @(Get-ChildItem -LiteralPath "$root/examples" -Filter '*.csproj' -Recurse | ForEach-Object FullName)
+    $projects = @($runtime) + @(Get-ChildItem -LiteralPath "$root/examples" -Filter '*.csproj' -Recurse |
+        Where-Object { $_.FullName -notmatch '[\\/]node_modules[\\/]' } |
+        ForEach-Object FullName)
     foreach ($project in $projects) {
         if (!$SkipRestore) {
             $restoreArguments = @('restore', $project)
@@ -80,6 +82,12 @@ try {
     $process.Dispose()
     if ($nativeExitCode -ne 0) { throw "Native build failed ($nativeExitCode)." }
 
+    $publishRoot = [IO.Path]::GetFullPath("$root/artifacts/publish/$Configuration/win-x86/SF")
+    $legacyDebugWeb = [IO.Path]::GetFullPath((Join-Path $publishRoot 'debug-web'))
+    if (!$legacyDebugWeb.StartsWith($publishRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Legacy debugger cleanup target is outside the Runtime publish directory.'
+    }
+    if (Test-Path -LiteralPath $legacyDebugWeb) { Remove-Item -LiteralPath $legacyDebugWeb -Recurse -Force }
     & dotnet publish $runtime -c $Configuration -r win-x86 --self-contained false --no-restore $versionArgument
     if ($LASTEXITCODE -ne 0) { throw 'Runtime publish failed.' }
     Write-Output "BUILD PASS: SF.Native, SF.Runtime, SF.Abstractions, SF.Protocol and $($projects.Count - 1) examples; version=$Version"

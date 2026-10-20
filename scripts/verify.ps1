@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$Archive)
+param([string]$Archive, [string]$DebugWebArchive)
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -24,6 +24,18 @@ Assert-True (($runtimeReferences -join ';') -eq '..\SF.Abstractions\SF.Abstracti
 $protocolReferences = @($protocol.Project.ItemGroup.ProjectReference | Where-Object { $_ } | ForEach-Object Include)
 Assert-True ($protocolReferences.Count -eq 1 -and $protocolReferences[0] -eq '..\SF.Abstractions\SF.Abstractions.csproj') 'Protocol must reference only Abstractions.'
 Assert-True (@($abstractions.Project.ItemGroup.ProjectReference | Where-Object { $_ }).Count -eq 0) 'Abstractions must not reference implementations.'
+[xml]$debugWeb = Get-Content -LiteralPath "$root/examples/DebugWeb/DebugWeb.Example.csproj"
+$debugReferences = @($debugWeb.Project.ItemGroup.ProjectReference | Where-Object { $_ } | ForEach-Object Include)
+Assert-True ($debugReferences.Count -eq 2 -and '../../src/SF.Abstractions/SF.Abstractions.csproj' -in $debugReferences -and '../../src/SF.Protocol/SF.Protocol.csproj' -in $debugReferences) 'DebugWeb must reference only host contracts and Protocol.'
+foreach ($source in Get-ChildItem -LiteralPath "$root/examples/DebugWeb" -Filter '*.cs' -Recurse | Where-Object { $_.FullName -notmatch '[\\/]node_modules[\\/]' }) {
+    Assert-True (!(Select-String -LiteralPath $source.FullName -Pattern '\bSFSharp\.Runtime\b|\[(?:DllImport|LibraryImport)\b|delegate\* unmanaged' -Quiet)) "Runtime/native dependency in DebugWeb: $($source.Name)"
+}
+Assert-True (!(Test-Path -LiteralPath "$root/src/SF.Runtime/Diagnostics/DebugWeb/DebugModule.cs")) 'DebugWeb must be an external plugin.'
+$clientSpecificSymbols = '\bSFSharp\.(?:Protocol|Abstractions)\.Arizona\b|\b(?:ISFArizonaPackets|ArizonaPacket220Id|ArizonaPacket221Id|AZVoiceMessageId|SampfuncsInfo|CDialogCloseSampfuncsHook)\b|AZVoice\.asi|sampfuncs\.asi'
+foreach ($source in Get-ChildItem -LiteralPath "$root/src" -Filter '*.cs' -Recurse | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' }) {
+    Assert-True (!(Select-String -LiteralPath $source.FullName -Pattern $clientSpecificSymbols -Quiet)) "Client-specific integration in the SA-MP core: $($source.FullName)"
+}
+Assert-True (!(Test-Path -LiteralPath "$root/examples/CefEmitor/CefEmitor.Example.csproj")) 'Client-specific CEF samples must not ship with the core.'
 foreach ($project in 'SF.Abstractions', 'SF.Protocol') {
     foreach ($source in Get-ChildItem -LiteralPath "$root/src/$project" -Filter '*.cs' -Recurse | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' }) {
         Assert-True (!(Select-String -LiteralPath $source.FullName -Pattern '\bSFSharp\.Runtime\b|\[(?:DllImport|LibraryImport)\b|delegate\* unmanaged' -Quiet)) "Native or implementation dependency in $project`: $($source.Name)"
@@ -71,10 +83,11 @@ if ($Archive) {
     $zip = [IO.Compression.ZipFile]::OpenRead($archivePath)
     try {
         $entries = @($zip.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
-        foreach ($file in @('SF.asi', 'nethost.dll', 'SF/SF.Runtime.dll', 'SF/SF.Abstractions.dll', 'SF/SF.Protocol.dll', 'SF/SF.Runtime.runtimeconfig.json', 'SF/SF.Runtime.deps.json', 'SF/debug-web/wwwroot/index.html', 'INSTALL.md', 'build-info.json')) {
+        foreach ($file in @('SF.asi', 'nethost.dll', 'SF/SF.Runtime.dll', 'SF/SF.Abstractions.dll', 'SF/SF.Protocol.dll', 'SF/SF.Runtime.runtimeconfig.json', 'SF/SF.Runtime.deps.json', 'INSTALL.md', 'build-info.json')) {
             Assert-True ($file -in $entries) "Archive is missing $file"
         }
         foreach ($file in $entries) {
+            Assert-True ($file -notmatch '^SF/(debug-web|modules/debug-web)/') "DebugWeb must be distributed as a separate plugin archive: $file"
             Assert-True ($file -notmatch '(^|/)(bin|obj|\.vs|examples)/|\.(pdb|user|log|bak)$|(^|/)sf-host\.json$') "Unexpected deployment entry: $file"
         }
         $reader = [IO.StreamReader]::new($zip.GetEntry('SF/SF.Runtime.runtimeconfig.json').Open())
@@ -85,6 +98,24 @@ if ($Archive) {
         $actualHash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
         Assert-True ($expectedHash -eq $actualHash) 'Archive checksum mismatch.'
         Write-Output "ARCHIVE PASS: $($entries.Count) entries; framework-dependent win-x86 layout and SHA256 verified"
+    }
+    finally { $zip.Dispose() }
+}
+
+if ($DebugWebArchive) {
+    $archivePath = [IO.Path]::GetFullPath((Join-Path $root $DebugWebArchive))
+    $zip = [IO.Compression.ZipFile]::OpenRead($archivePath)
+    try {
+        $entries = @($zip.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
+        foreach ($name in 'manifest.json', 'SF.Example.DebugWeb.dll', 'SF.Example.DebugWeb.deps.json', 'wwwroot/index.html') {
+            Assert-True ("SF/modules/debug-web/$name" -in $entries) "DebugWeb archive is missing $name"
+        }
+        foreach ($entry in $entries) {
+            Assert-True ($entry.StartsWith('SF/modules/debug-web/') -and $entry -notmatch 'node_modules|\.(pdb|tsx?|log)$|SF\.(Runtime|Abstractions|Protocol)\.dll$') "Unexpected DebugWeb archive file: $entry"
+        }
+        $expectedHash = ((Get-Content -LiteralPath "$archivePath.sha256" -Raw).Trim() -split '\s+')[0]
+        Assert-True ($expectedHash -eq (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()) 'DebugWeb checksum mismatch.'
+        Write-Output "DEBUGWEB ARCHIVE PASS: $($entries.Count) entries; plugin isolation and SHA256 verified"
     }
     finally { $zip.Dispose() }
 }

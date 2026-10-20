@@ -1,7 +1,10 @@
 [CmdletBinding()]
 param(
     [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release',
-    [string]$Version
+    [string]$Version,
+    [switch]$NoBuild,
+    [string[]]$RestoreSource = @(),
+    [switch]$SkipRestore
 )
 
 $ErrorActionPreference = 'Stop'
@@ -11,23 +14,27 @@ if (!$Version) {
     $Version = $versionFile.Project.PropertyGroup.SFBaseVersion
 }
 if ($Version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') { throw 'Invalid archive version.' }
+if (!$NoBuild) {
+    & "$PSScriptRoot/build.ps1" -Configuration $Configuration -Version $Version -RestoreSource $RestoreSource -SkipRestore:$SkipRestore
+}
 $publish = "$root/artifacts/publish/$Configuration/win-x86/SF"
 $native = "$root/artifacts/native/$Configuration/win-x86"
-foreach ($file in @("$native/SF.asi", "$native/nethost.dll", "$publish/SF.Runtime.dll", "$publish/SF.Abstractions.dll", "$publish/SF.Protocol.dll", "$publish/SF.Runtime.runtimeconfig.json", "$publish/SF.Runtime.deps.json", "$publish/debug-web/wwwroot/index.html")) {
+foreach ($file in @("$native/SF.asi", "$native/nethost.dll", "$publish/SF.Runtime.dll", "$publish/SF.Abstractions.dll", "$publish/SF.Protocol.dll", "$publish/SF.Runtime.runtimeconfig.json", "$publish/SF.Runtime.deps.json")) {
     if (!(Test-Path -LiteralPath $file -PathType Leaf)) { throw "Required deployment file missing: $file" }
 }
+if (Test-Path -LiteralPath "$publish/debug-web") { throw 'Legacy built-in DebugWeb assets remain; run package.ps1 without -NoBuild.' }
 [xml]$versionFile = Get-Content -LiteralPath "$root/Version.props"
 $expectedNumericVersion = "$($versionFile.Project.PropertyGroup.SFBaseVersion).0"
 $actual = [Diagnostics.FileVersionInfo]::GetVersionInfo("$publish/SF.Runtime.dll")
 if ($actual.FileVersion -ne $expectedNumericVersion -or ($actual.ProductVersion -split '\+')[0] -ne $Version) {
-    throw "Published runtime version does not match $Version; build before packaging."
+    throw "Published runtime version does not match $Version; run package.ps1 without -NoBuild."
 }
 $commit = & git -C $root rev-parse HEAD
 if ($LASTEXITCODE -ne 0) { throw 'Could not resolve build commit.' }
 # The base version stays constant between builds, so only the embedded commit exposes a stale publish directory.
 $publishedCommit = ($actual.ProductVersion -split '\+', 2)[1]
 if ($publishedCommit -ne $commit) {
-    throw "Published runtime was built from commit '$publishedCommit', but HEAD is '$commit'; run build.ps1 before packaging."
+    throw "Published runtime was built from commit '$publishedCommit', but HEAD is '$commit'; run package.ps1 without -NoBuild."
 }
 $stagingRoot = [IO.Path]::GetFullPath("$root/artifacts/staging")
 $stage = Join-Path $stagingRoot ([guid]::NewGuid().ToString('N'))
