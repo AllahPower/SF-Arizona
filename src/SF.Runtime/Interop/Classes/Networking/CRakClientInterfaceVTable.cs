@@ -11,8 +11,8 @@ public struct CRakClientInterfaceVTable
     public nint InitializeSecurity;
     public nint SetPassword;
     public nint HasPassword;
-    public nint SendData;
     public nint SendBitStream;
+    public nint SendData;
     public nint Receive;
     public nint DeallocatePacket;
     public nint PingServer;

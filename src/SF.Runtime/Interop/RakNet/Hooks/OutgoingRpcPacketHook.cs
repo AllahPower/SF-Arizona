@@ -15,9 +15,6 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
         byte orderingChannel,
         [MarshalAs(UnmanagedType.U1)] bool shiftTimestamp);
 
-    private const int BitStreamNumberOfBitsUsed = 4;
-    private const int BitStreamData = 12;
-
     private static OutgoingRpcPacketHook? _instance;
     private readonly NetworkFilters _filters;
     private readonly NetworkDispatcher _dispatcher;
@@ -52,8 +49,8 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
 
             if (rpcId >= 0)
             {
-                int dataBitLength = *(int*)(bitStream + BitStreamNumberOfBitsUsed);
-                byte* data = *(byte**)(bitStream + BitStreamData);
+                int dataBitLength = ((CRakNetBitStream*)bitStream)->NumberOfBitsUsed;
+                byte* data = ((CRakNetBitStream*)bitStream)->Data;
 
                 if (_instance!._filters.OutgoingRpc.HasFilters &&
                     data != null &&

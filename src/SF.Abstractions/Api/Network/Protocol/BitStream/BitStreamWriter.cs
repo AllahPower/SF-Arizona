@@ -18,7 +18,7 @@ namespace SFSharp.Abstractions.Network.Protocol.BitStream;
 public ref struct BitStreamWriter
 {
     /// <summary>
-    /// Single-byte encoding shared by all string writes. Arizona-RP and SA-MP traffic uses
+    /// Single-byte encoding shared by all string writes. SA-MP traffic uses
     /// Windows-1251 historically, so the provider is registered here to survive environments that
     /// ship trimmed ICU tables.
     /// </summary>

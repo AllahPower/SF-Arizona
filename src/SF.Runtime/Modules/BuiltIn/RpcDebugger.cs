@@ -155,7 +155,7 @@ public class RpcDebugger : SFModuleBase
             return FormatParsedPacket(packet, args.RakNetPacketId);
         }
 
-        return FormatPacketParseFailure(args.RakNetPacketId, result, TryReadArizonaSubId(args));
+        return FormatPacketParseFailure(args.RakNetPacketId, result);
     }
 
     private (string? Name, string? Detail) DecodeOutgoingPacket(OutgoingPacketArgs args)
@@ -165,87 +165,16 @@ public class RpcDebugger : SFModuleBase
             return FormatParsedPacket(packet, args.RakNetPacketId);
         }
 
-        return FormatPacketParseFailure(args.RakNetPacketId, result, TryReadArizonaSubId(args));
+        return FormatPacketParseFailure(args.RakNetPacketId, result);
     }
 
-    private static (string? Name, string? Detail) FormatParsedPacket(IParsedPacket packet, int rawPacketId)
+    private static (string? Name, string? Detail) FormatParsedPacket(IParsedPacket packet, int rawPacketId) => (packet.Name, packet.Detail);
+
+    private static (string? Name, string? Detail) FormatPacketParseFailure(int id, PacketParseResult result)
     {
-        if (packet is IParsedArizonaPacket arizonaPacket)
-        {
-            RakNetPacketId packetId = (RakNetPacketId)rawPacketId;
-            string transport = packetId == RakNetPacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
-            string name = $"{transport}:{packet.Name}";
-            string detail = packet.Detail is { Length: > 0 }
-                ? $"subId={arizonaPacket.SubId} {packet.Detail}"
-                : $"subId={arizonaPacket.SubId}";
-            return (name, detail);
-        }
-
-        return (packet.Name, packet.Detail);
-    }
-
-    private static (string? Name, string? Detail) FormatPacketParseFailure(int rawPacketId, PacketParseResult result, int? arizonaSubId)
-    {
-        PacketParseFailureReason reason = result.FailureReason;
-        string? fallbackName = Enum.IsDefined((RakNetPacketId)rawPacketId) ? ((RakNetPacketId)rawPacketId).ToString() : null;
-        if (arizonaSubId is int subId)
-        {
-            RakNetPacketId packetId = (RakNetPacketId)rawPacketId;
-            string transport = packetId == RakNetPacketId.ArizonaCefEx ? "Arizona221" : "Arizona220";
-            string? detail = reason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
-                ? $"subId={subId}"
-                : $"subId={subId} parse={reason}" + (string.IsNullOrWhiteSpace(result.ErrorMessage) ? string.Empty : $" error={result.ErrorMessage}");
-            return ($"{transport}:{fallbackName}", detail);
-        }
-
-        string? failure = reason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
-            ? null
-            : $"parse={reason}" + (string.IsNullOrWhiteSpace(result.ErrorMessage) ? string.Empty : $" error={result.ErrorMessage}");
-        return (fallbackName, failure);
-    }
-
-    private static int? TryReadArizonaSubId(IncomingPacketArgs args)
-    {
-        RakNetPacketId packetId = (RakNetPacketId)args.RakNetPacketId;
-        if (packetId is not (RakNetPacketId.ArizonaCef or RakNetPacketId.ArizonaCefEx))
-        {
-            return null;
-        }
-
-        try
-        {
-            SampBitStreamReader reader = args.CreateReader();
-            reader.SkipBytes(1);
-            return packetId == RakNetPacketId.ArizonaCef
-                ? ArizonaPacket.ReadSubId220(ref reader)
-                : ArizonaPacket.ReadSubId221(ref reader);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static int? TryReadArizonaSubId(OutgoingPacketArgs args)
-    {
-        RakNetPacketId packetId = (RakNetPacketId)args.RakNetPacketId;
-        if (packetId is not (RakNetPacketId.ArizonaCef or RakNetPacketId.ArizonaCefEx))
-        {
-            return null;
-        }
-
-        try
-        {
-            SampBitStreamReader reader = args.CreateReader();
-            reader.SkipBytes(1);
-            return packetId == RakNetPacketId.ArizonaCef
-                ? ArizonaPacket.ReadSubId220(ref reader)
-                : ArizonaPacket.ReadSubId221(ref reader);
-        }
-        catch
-        {
-            return null;
-        }
+        string? name = Enum.IsDefined((RakNetPacketId)id) ? ((RakNetPacketId)id).ToString() : null;
+        return (name, result.FailureReason is PacketParseFailureReason.Unsupported or PacketParseFailureReason.None
+            ? null : $"parse={result.FailureReason} error={result.ErrorMessage}");
     }
 
     private void Enqueue(NetLogEntry entry)

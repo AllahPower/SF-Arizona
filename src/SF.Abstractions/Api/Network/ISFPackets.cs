@@ -11,6 +11,11 @@ namespace SFSharp.Abstractions.Network;
 /// </remarks>
 public interface ISFPackets
 {
+    /// <summary>Registers an optional source of copied observations; it cannot send or inject traffic.</summary>
+    ISFPacketSource RegisterSource(string source);
+    /// <summary>Observers run on the publishing thread. Marshal to the game thread before using game APIs.</summary>
+    IDisposable ObserveSources(Action<SFPacketObservation> observer);
+
     /// <summary>Subscribes by original wire ID. Timestamp envelopes use ID 40; inspect the frame's timestamp and effective ID explicitly.</summary>
     IDisposable SubscribeIncoming(int packetId, Action<IncomingPacketFrame> handler);
     /// <summary>Streams by original wire ID without stripping ID_TIMESTAMP envelopes.</summary>

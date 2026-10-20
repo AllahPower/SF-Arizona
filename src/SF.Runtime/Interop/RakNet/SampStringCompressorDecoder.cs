@@ -42,8 +42,8 @@ internal sealed unsafe class SampStringCompressorDecoder : ISampStringDecoder
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct SampBitStream
     {
-        public int NumberOfBitsAllocated;
         public int NumberOfBitsUsed;
+        public int NumberOfBitsAllocated;
         public int ReadOffset;
         public byte* Data;
     }

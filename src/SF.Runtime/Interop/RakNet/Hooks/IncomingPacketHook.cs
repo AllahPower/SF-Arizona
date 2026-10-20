@@ -17,11 +17,7 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
         _filters = filters;
         _dispatcher = dispatcher;
         _instance = this;
-        nint targetAddress = ModuleResolver.ResolveVTableFunction(
-            "samp.dll",
-            SampOffsets.CNetGame.Instance,
-            SampOffsets.CNetGame.RakClient,
-            SampOffsets.RakClientVTable.Receive);
+        nint targetAddress = ModuleResolver.GetProcAddress("samp.dll", SampOffsets.RakClientRuntime.Receive);
         InstallHook(targetAddress, new ReceiveNative(HookProc));
     }
 
@@ -46,7 +42,7 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
                 if (_instance!._filters.IncomingPacket.HasFilters &&
                     _instance!._filters.IncomingPacket.ShouldCancel(packetId, data, bitSize))
                 {
-                    CNetGame.GetRakClient()->DeallocatePacket((CRakNetPacket*)packetPtr);
+                    ((CRakClientInterface*)thisPtr)->DeallocatePacket((CRakNetPacket*)packetPtr);
                     return 0;
                 }
 

@@ -17,23 +17,3 @@ public interface IOutgoingPacketParser
 
     bool TryParse(OutgoingPacketArgs args, out PacketParseResult result);
 }
-
-public interface IIncomingArizonaPacketParser
-{
-    RakNetPacketId RakNetPacketId { get; }
-    int SubId { get; }
-    Type ParsedType { get; }
-    string Name { get; }
-
-    bool TryParse(IncomingArizonaPacketArgs args, out PacketParseResult result);
-}
-
-public interface IOutgoingArizonaPacketParser
-{
-    RakNetPacketId RakNetPacketId { get; }
-    int SubId { get; }
-    Type ParsedType { get; }
-    string Name { get; }
-
-    bool TryParse(OutgoingArizonaPacketArgs args, out PacketParseResult result);
-}

@@ -377,11 +377,6 @@ public static class SampOffsets
         public const int GetWindowHandle = 0x2CF0;
     }
 
-    public static class SampFuncs
-    {
-        public const int CDialogClose = 0x91265;
-    }
-
     public static class CChat
     {
         public const int Instance = 0x26E8C8;
@@ -429,6 +424,14 @@ public static class SampOffsets
         public const int WriteUnlock = 0x38F00;
     }
 
+    public static class RakClientRuntime
+    {
+        // SA-MP 0.3.7 R3-1: native entries, before Arizona/SAMPFUNCS proxy processing.
+        public const int SendBitStream = 0x33BA0;
+        public const int SendData = 0x33B50;
+        public const int Receive = 0x34AC0;
+    }
+
     public static class RpcRuntime
     {
         public const int HandleRpcPacket = 0x3A6A0;
@@ -443,7 +446,7 @@ public static class SampOffsets
 
     public static class RakNetBitStream
     {
-        public const int NumberOfBitsUsed = 4;
+        public const int NumberOfBitsUsed = 0;
         public const int Data = 12;
     }
 

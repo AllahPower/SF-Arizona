@@ -38,9 +38,8 @@ internal unsafe class CDialogShowHook : NativeHook<CDialogShowHookArgs, NoRetVal
     private static CDialogShowHook? _instance;
 
     /// <summary>
-    /// Buffers allocated for strings a sub-hook replaced. The Arizona client forwards the pointers
-    /// it receives straight into cef/loader.dll without copying, so a replacement has to outlive the
-    /// call; each one is released when the next dialog is shown.
+    /// Replacement buffers remain owned by this hook until the next dialog or disposal;
+    /// unmodified strings keep their original caller-owned pointers.
     /// </summary>
     private static readonly nint[] _replacedStrings = new nint[4];
 

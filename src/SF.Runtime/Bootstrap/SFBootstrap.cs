@@ -145,54 +145,23 @@ public static class SFBootstrap
 
         SFLog.Info($"SA-MP detected: version={env.Version} EP=0x{env.EntryPointRva:X} SizeOfImage=0x{env.SizeOfImage:X} TimeDateStamp=0x{env.TimeDateStamp:X} SizeOfCode=0x{env.SizeOfCode:X}");
         if (!env.IsSupported)
-            SFLog.Warn($"Unsupported SA-MP version (EP=0x{env.EntryPointRva:X}). SFSharp targets 0.3.7-R3. Hooks and offsets may be incorrect.");
+            throw new NotSupportedException($"Unsupported SA-MP version (EP=0x{env.EntryPointRva:X}); only 0.3.7-R3-1 is supported. Hooks were not installed.");
 
-        // sampfuncs.asi
-        SampfuncsInfo sf = env.Sampfuncs;
-        if (!sf.IsLoaded)
-            SFLog.Warn("SAMPFUNCS not detected. sampfuncs.asi is not loaded — some features may be unavailable.");
-        else if (sf.IsSupported)
-            SFLog.Info($"SAMPFUNCS detected: {sf.VersionString} EP=0x{sf.EntryPointRva:X} SizeOfImage=0x{sf.SizeOfImage:X}");
-        else
-            SFLog.Warn($"Unsupported SAMPFUNCS version: {sf.VersionString ?? "unknown"} (EP=0x{sf.EntryPointRva:X}). SFSharp targets v5.5.0 rel.22.");
-
-        SFLog.Info(ModuleResolver.IsModuleLoaded("_chat.asi") ? "_chat.asi detected." : "_chat.asi not loaded.");
-
-        // AZVoice.asi
-        if (ModuleResolver.IsModuleLoaded("AZVoice.asi"))
-        {
-            if (IncomingAZVoicePacketHook.IsAvailable)
-                SFLog.Info("AZVoice.asi detected, hook target resolved.");
-            else
-                SFLog.Warn("AZVoice.asi loaded but hook pattern not found — voice packet capture will be unavailable.");
-        }
-        else
-        {
-            SFLog.Info("AZVoice.asi not loaded, voice features disabled.");
-        }
     }
 
     private static void InstallNetworkHooks(HookRegistry hooks)
     {
         _ = hooks.OutgoingRpcPacket;
         _ = hooks.OutgoingPacket;
+        _ = hooks.OutgoingDataPacket;
         _ = hooks.IncomingPacket;
-        SFLog.Debug("Network hooks installed: OutgoingRpc, OutgoingPacket, IncomingPacket.");
+        SFLog.Debug("Network hooks installed: OutgoingRpc, OutgoingPacket, OutgoingDataPacket, IncomingPacket.");
 
-        if (hooks.IncomingAZVoicePacket is not null)
-            SFLog.Debug("AZVoice incoming packet hook installed.");
-
-        if (hooks.IncomingAZVoiceRpc is not null)
-            SFLog.Debug("AZVoice incoming RPC hook installed.");
-
-        if (hooks.OutgoingAZVoiceRpc is not null)
-            SFLog.Debug("AZVoice outgoing RPC hook installed.");
     }
 
     private static void InstallSubHooks(SFRuntime runtime, SFHost host)
     {
-        // Only CDialog::Show is hooked. Its entry is free (the Arizona client hooks 0x40 bytes
-        // further in), while the close entry it detours itself must stay untouched.
+        // Observe standard SA-MP dialogs and consume host-owned responses.
         runtime.Hooks.CDialogShow.AddSubHook(host.DialogImpl);
         _ = runtime.Dispatcher.IncomingRpcHandlers.Subscribe(
             SampRpcId.ShowDialog,

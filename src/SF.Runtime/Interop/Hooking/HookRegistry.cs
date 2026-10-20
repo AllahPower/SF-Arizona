@@ -17,13 +17,8 @@ internal sealed class HookRegistry
 
     private OutgoingRpcPacketHook? _outgoingRpcPacket;
     private OutgoingPacketHook? _outgoingPacket;
+    private OutgoingDataPacketHook? _outgoingDataPacket;
     private IncomingPacketHook? _incomingPacket;
-    private IncomingAZVoicePacketHook? _incomingAZVoicePacket;
-    private IncomingAZVoiceRpcHook? _incomingAZVoiceRpc;
-    private OutgoingAZVoiceRpcHook? _outgoingAZVoiceRpc;
-    private bool _azVoiceHookChecked;
-    private bool _azVoiceRpcHookChecked;
-    private bool _azVoiceOutRpcHookChecked;
 
     public HookRegistry(NetworkFilters filters, NetworkDispatcher dispatcher)
     {
@@ -37,59 +32,10 @@ internal sealed class HookRegistry
     public IncomingRpcPacketHook IncomingRpcPacket { get; }
     public OutgoingRpcPacketHook OutgoingRpcPacket => _outgoingRpcPacket ??= new OutgoingRpcPacketHook(_filters, _dispatcher);
     public OutgoingPacketHook OutgoingPacket => _outgoingPacket ??= new OutgoingPacketHook(_filters, _dispatcher);
+    public OutgoingDataPacketHook OutgoingDataPacket => _outgoingDataPacket ??= new OutgoingDataPacketHook(_filters, _dispatcher);
     public IncomingPacketHook IncomingPacket => _incomingPacket ??= new IncomingPacketHook(_filters, _dispatcher);
 
-    public IncomingAZVoicePacketHook? IncomingAZVoicePacket
-    {
-        get
-        {
-            if (!_azVoiceHookChecked)
-            {
-                _azVoiceHookChecked = true;
-                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && IncomingAZVoicePacketHook.IsAvailable)
-                    _incomingAZVoicePacket = new IncomingAZVoicePacketHook(_dispatcher);
-            }
-            return _incomingAZVoicePacket;
-        }
-    }
-
-    public IncomingAZVoiceRpcHook? IncomingAZVoiceRpc
-    {
-        get
-        {
-            if (!_azVoiceRpcHookChecked)
-            {
-                _azVoiceRpcHookChecked = true;
-                // Resolved by a stable byte pattern now (see IncomingAZVoiceRpcHook); the
-                // earlier crashes came from a stale module offset landing mid-function.
-                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && IncomingAZVoiceRpcHook.IsAvailable)
-                    _incomingAZVoiceRpc = new IncomingAZVoiceRpcHook(_dispatcher);
-            }
-
-            return _incomingAZVoiceRpc;
-        }
-    }
-
-    public OutgoingAZVoiceRpcHook? OutgoingAZVoiceRpc
-    {
-        get
-        {
-            if (!_azVoiceOutRpcHookChecked)
-            {
-                _azVoiceOutRpcHookChecked = true;
-                if (ModuleResolver.IsModuleLoaded("AZVoice.asi") && OutgoingAZVoiceRpcHook.IsAvailable)
-                    _outgoingAZVoiceRpc = new OutgoingAZVoiceRpcHook(_dispatcher);
-            }
-
-            return _outgoingAZVoiceRpc;
-        }
-    }
-
-    // Close and Hide are not installed. The Arizona client detours the CDialog::Close entry itself
-    // and patches out samp's native dialog drawing, so a detour here can drop its CEF chain and
-    // leave dialogs invisible; closing is observed through outgoing RPC 62 instead. Touching either
-    // property re-installs the hook.
-    public HookBase<CDialogCloseArgs, NoRetValue> CDialogClose => _cDialogClose ??= !ModuleResolver.IsModuleLoaded("sampfuncs.asi") ? new CDialogCloseHook() : new CDialogCloseSampfuncsHook();
+    public HookBase<CDialogCloseArgs, NoRetValue> CDialogClose => _cDialogClose ??= new CDialogCloseHook();
     public HookBase<CDialogHideArgs, NoRetValue> CDialogHide => _cDialogHide ??= new CDialogHideHook();
     public HookBase<CDialogShowHookArgs, NoRetValue> CDialogShow => _cDialogShow ??= new CDialogShowHook();
     public HookBase<CInputCommandSendArgs, bool> CInputCommandSend => _cInputCommandSend ??= new CInputCommandSendHook();

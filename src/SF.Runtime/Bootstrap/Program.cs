@@ -14,7 +14,6 @@ public static class Program
 
         SFModuleContainer container = runtime.Modules;
         container.RegisterModule(() => new RpcDebugger(runtime.Host));
-        container.RegisterModule(() => new DebugModule(runtime.Host, runtime.MainThread, runtime.Exceptions));
 
         int loadedPluginCount = runtime.Plugins.DiscoverAndLoadAll();
         SFLog.Info($"Program.LoadModules plugin discovery complete, loaded {loadedPluginCount} plugin(s)");

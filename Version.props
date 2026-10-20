@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <SFBaseVersion>4.0.0</SFBaseVersion>
+    <SFBaseVersion>4.1.0</SFBaseVersion>
     <Version Condition="'$(Version)' == ''">$(SFBaseVersion)</Version>
     <AssemblyVersion>$(SFBaseVersion).0</AssemblyVersion>
     <FileVersion>$(SFBaseVersion).0</FileVersion>

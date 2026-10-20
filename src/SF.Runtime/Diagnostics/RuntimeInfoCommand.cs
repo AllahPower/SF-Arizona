@@ -39,12 +39,6 @@ internal static unsafe class RuntimeInfoCommand
         AppendSection(text, "Environment");
         SampVersionInfo? samp = SampEnvironment.GetOrDetect();
         AppendStatus(text, "SA-MP", samp is not null && samp.IsSupported, samp?.Version.ToString() ?? "not detected");
-        SampfuncsInfo sampfuncs = samp?.Sampfuncs ?? SampfuncsInfo.NotLoaded;
-        AppendStatus(text, "SAMPFUNCS", sampfuncs.IsSupported, sampfuncs.IsLoaded ? sampfuncs.VersionString ?? "unknown version" : "not loaded");
-        AppendStatus(text, "_chat.asi", ModuleResolver.IsModuleLoaded("_chat.asi"), ModuleResolver.IsModuleLoaded("_chat.asi") ? "loaded" : "not loaded");
-        bool azVoiceLoaded = ModuleResolver.IsModuleLoaded("AZVoice.asi");
-        AppendStatus(text, "AZVoice.asi", azVoiceLoaded && IncomingAZVoicePacketHook.IsAvailable,
-            !azVoiceLoaded ? "not loaded" : IncomingAZVoicePacketHook.IsAvailable ? "loaded, hooked" : "loaded, hook target not found");
         string gameState = CNetGame.TryGetInstance(out CNetGame* netGame) ? netGame->State.ToString() : "no CNetGame";
         AppendLine(text, "Network", $"game state {gameState}, server traffic {(runtime.Hooks.IncomingRpcPacket.HasServerPlayerId ? "seen" : "not seen")}");
         AppendLine(text, "Load stage", $"{runtime.Loading.Stage}, gGameState {runtime.Loading.GameState}");

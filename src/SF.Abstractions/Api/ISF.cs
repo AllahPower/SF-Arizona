@@ -39,10 +39,7 @@ public interface ISF
     /// <summary>Raw packet transport facade backed by copied payload frames.</summary>
     ISFPackets Packets { get; }
 
-    /// <summary>Arizona packet transport facade backed by copied payload frames.</summary>
-    ISFArizonaPackets Arizona { get; }
-
-    /// <summary>Typed parsed packet facade, including Arizona packet routes.</summary>
+    /// <summary>Typed parsed SA-MP packets and explicitly registered extension decoders.</summary>
     ISFPacketParsers PacketParsers { get; }
 
     /// <summary>Typed parsed RPC facade.</summary>

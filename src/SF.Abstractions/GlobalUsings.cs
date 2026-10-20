@@ -1,4 +1,3 @@
-global using SFSharp.Abstractions.Arizona;
 global using SFSharp.Abstractions.Game;
 global using SFSharp.Abstractions.Network.Protocol;
 global using SFSharp.Abstractions.Modules;

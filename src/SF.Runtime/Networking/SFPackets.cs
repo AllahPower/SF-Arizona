@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace SFSharp.Runtime.Networking;
 
-public sealed unsafe class SFPackets(NetworkFilters filters, NetworkDispatcher dispatcher) : ISFPackets
+public sealed unsafe partial class SFPackets(NetworkFilters filters, NetworkDispatcher dispatcher) : ISFPackets
 {
     public IDisposable RegisterIncomingFilter(int packetId, SFPacketFilterCallback filter)
     {
@@ -155,9 +155,7 @@ public sealed unsafe class SFPackets(NetworkFilters filters, NetworkDispatcher d
     }
 
     /// <remarks>
-    /// Arizona Packet 220 traffic cannot be cancelled via incoming filters because vorbisFile.dll
-    /// replaces the entire RakClientInterface vtable - those packets are intercepted and processed
-    /// before reaching SAMP's RakClient Receive, so our hook never sees them.
+    /// Incoming filters run at the native SA-MP Receive boundary.
     /// </remarks>
     public IDisposable RegisterIncomingFilter(RakNetPacketId packetId, Func<nint, int, bool> filter)
     {

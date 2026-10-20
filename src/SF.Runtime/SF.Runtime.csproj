@@ -33,14 +33,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Diagnostics\DebugWeb\wwwroot\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-			<TargetPath>debug-web\wwwroot\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\SF.Abstractions\SF.Abstractions.csproj" />
 		<ProjectReference Include="..\SF.Protocol\SF.Protocol.csproj" />
 		<InternalsVisibleTo Include="SF.Network.Tests" />

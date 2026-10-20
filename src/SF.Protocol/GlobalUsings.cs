@@ -1,11 +1,6 @@
-global using SFSharp.Abstractions.Arizona;
 global using SFSharp.Abstractions.Network;
 global using SFSharp.Abstractions.Network.Protocol;
 global using SFSharp.Abstractions.Parsing;
-global using SFSharp.Protocol.Arizona;
-global using SFSharp.Protocol.Arizona.AZVoice;
-global using SFSharp.Protocol.Arizona.Models;
-global using SFSharp.Protocol.Arizona.Parsing;
 global using SFSharp.Protocol.BitStream;
 global using SFSharp.Protocol.Packets.Catalog;
 global using SFSharp.Protocol.Packets.Models;

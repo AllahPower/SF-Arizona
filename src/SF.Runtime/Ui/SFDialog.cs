@@ -3,10 +3,8 @@ namespace SFSharp.Runtime.Ui;
 using DialogResultArgs = (SFDialogButton Button, int SelectedItemIndex, string? InputText);
 
 /// <summary>
-/// SA-MP dialog facade. <c>CDialog::Show</c> is hooked at its entry, which the Arizona client leaves
-/// free (its own hook sits 0x40 bytes further in). <c>CDialog::Hide</c> and <c>CDialog::Close</c> are
-/// deliberately left alone: the client detours the close entry itself, and its CEF path is the only
-/// thing that still draws dialogs. Completion comes from outgoing RPC 62.
+/// SA-MP dialog facade. Observes Show and completes host-owned dialogs through intercepted
+/// DialogResponse RPCs. Responses for host-owned IDs are not sent to the server.
 /// </summary>
 public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter exceptions) : ISFDialog, ISubHook<CDialogShowHookArgs, NoRetValue>
 {
@@ -41,10 +39,7 @@ public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter excepti
         _tcs = tcs;
 
         SFLog.Debug($"Dialog.Show id={dialogId} style={style} title={title} ok={okButton} cancel={cancelButton}");
-        // Shown as server-side on purpose. The Arizona client only produces a DialogResponse for a
-        // dialog whose m_bServerside is set; with it clear, closing the dialog yields nothing at all
-        // and the caller can never learn which row was picked. The response is intercepted and
-        // cancelled in TryConsumeOwnDialogResponse, so it never reaches the server.
+        // Use the normal response path, but consume host-owned dialog IDs before transmission.
         CDialog.Instance.Show(dialogId, style, title, text, okButton, cancelButton, true);
         exceptions.Observe(WatchNativeDialog(dialogId, tcs), $"{nameof(SFDialog)}.{nameof(WatchNativeDialog)}");
         return tcs.Task;

@@ -57,13 +57,6 @@ public enum RakNetPacketId : byte
 
     #region multiplexed / aliased
 
-    // Assert: packet 252 carries AZVoice control sub-IDs 3-23 or raw voice frames without sub-ID dispatch.
-    AZVoice = 252,
-
-    // Assert: Arizona RP custom packet transports.
-    ArizonaCefEx = 221,
-    ArizonaCef = 220,
-
     // Assert: SA:MP sync packets reuse the same ID in both directions with different payload owners.
     SpectatorData = 212,
     SpectatorSync = 212,

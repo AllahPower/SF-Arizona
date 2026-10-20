@@ -17,9 +17,8 @@ internal sealed class SFHost : ISF
         EntitiesImpl = new SFEntities(PlayersImpl, VehiclesImpl, PoolsImpl);
         RpcImpl = new SFRpc(runtime.Filters, runtime.Dispatcher);
         PacketsImpl = new SFPackets(runtime.Filters, runtime.Dispatcher);
-        ArizonaImpl = new SFArizonaPackets(PacketsImpl, runtime.Dispatcher);
         RpcParsersImpl = new SFRpcParsers(RpcParserCatalog.CreateDefaultRegistry(), RpcImpl);
-        PacketParsersImpl = new SFPacketParsers(PacketParserCatalog.CreateDefaultRegistry(), PacketsImpl, ArizonaImpl);
+        PacketParsersImpl = new SFPacketParsers(PacketParserCatalog.CreateDefaultRegistry(), PacketsImpl);
         CameraImpl = new SFCamera(PlayersImpl, RpcImpl);
         EventsImpl = new SFEvents(new SFEventFactory(RpcImpl, RpcParsersImpl, PacketParsersImpl));
         NetworkImpl = new SFNetwork(runtime.Hooks.IncomingRpcPacket);
@@ -35,7 +34,6 @@ internal sealed class SFHost : ISF
     public SFEntities EntitiesImpl { get; }
     public SFRpc RpcImpl { get; }
     public SFPackets PacketsImpl { get; }
-    public SFArizonaPackets ArizonaImpl { get; }
     public SFPacketParsers PacketParsersImpl { get; }
     public SFRpcParsers RpcParsersImpl { get; }
     public SFCamera CameraImpl { get; }
@@ -58,7 +56,6 @@ internal sealed class SFHost : ISF
     ISFEvents ISF.Events => EventsImpl;
     ISFRpc ISF.Rpc => RpcImpl;
     ISFPackets ISF.Packets => PacketsImpl;
-    ISFArizonaPackets ISF.Arizona => ArizonaImpl;
     ISFPacketParsers ISF.PacketParsers => PacketParsersImpl;
     ISFRpcParsers ISF.RpcParsers => RpcParsersImpl;
     ISFCamera ISF.Camera => CameraImpl;

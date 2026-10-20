@@ -14,8 +14,3 @@ public interface IParsedIncomingPacket : IParsedPacket
 public interface IParsedOutgoingPacket : IParsedPacket
 {
 }
-
-public interface IParsedArizonaPacket : IParsedPacket
-{
-    int SubId { get; }
-}

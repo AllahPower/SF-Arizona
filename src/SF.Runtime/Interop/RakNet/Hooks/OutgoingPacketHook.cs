@@ -22,11 +22,7 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
         _filters = filters;
         _dispatcher = dispatcher;
         _instance = this;
-        nint targetAddress = ModuleResolver.ResolveVTableFunction(
-            "samp.dll",
-            SampOffsets.CNetGame.Instance,
-            SampOffsets.CNetGame.RakClient,
-            SampOffsets.RakClientVTable.Send_BitStream);
+        nint targetAddress = ModuleResolver.GetProcAddress("samp.dll", SampOffsets.RakClientRuntime.SendBitStream);
         InstallHook(targetAddress, new SendBitStreamNative(HookProc));
     }
 
@@ -44,12 +40,9 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
 
         if (bitStream != 0)
         {
-            int bitsUsed = *(int*)(bitStream + SampOffsets.RakNetBitStream.NumberOfBitsUsed);
-            byte* data = *(byte**)(bitStream + SampOffsets.RakNetBitStream.Data);
-
-            if (data != null && bitsUsed >= 8)
+            if (RakNetHookPayloadReader.TryReadPacketBitStream((CRakNetBitStream*)bitStream, out int packetId, out int bitsUsed, out ReadOnlySpan<byte> payload))
             {
-                int packetId = data[0];
+                byte* data = ((CRakNetBitStream*)bitStream)->Data;
 
                 if (_instance!._filters.OutgoingPacket.HasFilters &&
                     _instance!._filters.OutgoingPacket.ShouldCancel(packetId, data, bitsUsed))
@@ -59,14 +52,7 @@ internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacket
 
                 if (_instance!._dispatcher.OutgoingPacketHandlers.HasSubscribers(packetId))
                 {
-                    int dataByteLength = (bitsUsed + 7) / 8;
-                    byte[] packet = new byte[dataByteLength];
-                    fixed (byte* dst = packet)
-                    {
-                        Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
-                    }
-
-                    _instance!._dispatcher.EnqueueOutgoingPacket(packetId, packet, bitsUsed);
+                    _instance!._dispatcher.EnqueueOutgoingPacket(packetId, payload.ToArray(), bitsUsed);
                 }
             }
         }

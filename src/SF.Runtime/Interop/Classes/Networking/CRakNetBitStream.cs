@@ -5,8 +5,8 @@ namespace SFSharp.Runtime.Interop.Classes.Networking;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public unsafe struct CRakNetBitStream
 {
-    public int NumberOfBitsAllocated;
     public int NumberOfBitsUsed;
+    public int NumberOfBitsAllocated;
     public int ReadOffset;
     public byte* Data;
 
