@@ -1,22 +1,39 @@
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) : ISFGamePools
+public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles, ISFMainThread mainThread) : ISFGamePools
 {
     public SFPlayers Players => players;
     public SFVehicles Vehicles => vehicles;
-    public SFActors Actors { get; } = new();
-    public SFObjects Objects { get; } = new();
-    public SFPickups Pickups { get; } = new();
-    public SFMenus Menus { get; } = new();
-    public SFGangZones GangZones { get; } = new();
-    public SFLabels Labels { get; } = new();
-    public SFTextDraws TextDraws { get; } = new();
+    public SFActors Actors { get; } = new(mainThread);
+    public SFObjects Objects { get; } = new(mainThread);
+    public SFPickups Pickups { get; } = new(mainThread);
+    public SFMenus Menus { get; } = new(mainThread);
+    public SFGangZones GangZones { get; } = new(mainThread);
+    public SFLabels Labels { get; } = new(mainThread);
+    public SFTextDraws TextDraws { get; } = new(mainThread);
 
-    public bool IsAvailable => CNetGame.TryGetInstance(out _);
-    public bool IsInitialized => CNetGame.TryGetPools(out _);
-    public int State => CNetGame.TryGetInstance(out CNetGame* netGame) ? netGame->GetState() : 0;
-    public bool IsLanMode => CNetGame.TryGetInstance(out CNetGame* netGame) && netGame->IsLanMode();
-    public int InitializedPoolCount => CNetGame.TryGetPools(out CNetGamePools* pools) ? pools->GetInitializedCount() : 0;
+    private bool TryGetInstance(out CNetGame* netGame)
+    {
+        RequireThread();
+        return CNetGame.TryGetInstance(out netGame);
+    }
+
+    private bool TryGetPools(out CNetGamePools* pools)
+    {
+        RequireThread();
+        return CNetGame.TryGetPools(out pools);
+    }
+
+    private void RequireThread()
+    {
+        if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP pools require the game thread.");
+    }
+
+    public bool IsAvailable => TryGetInstance(out _);
+    public bool IsInitialized => TryGetPools(out _);
+    public int State => TryGetInstance(out CNetGame* netGame) ? netGame->GetState() : 0;
+    public bool IsLanMode => TryGetInstance(out CNetGame* netGame) && netGame->IsLanMode();
+    public int InitializedPoolCount => TryGetPools(out CNetGamePools* pools) ? pools->GetInitializedCount() : 0;
 
     ISFPlayers ISFGamePools.Players => Players;
     ISFVehicles ISFGamePools.Vehicles => Vehicles;
@@ -30,7 +47,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void InitializePools()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->InitializePools();
         }
@@ -38,7 +55,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void UpdatePlayers()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->UpdatePlayers();
         }
@@ -46,7 +63,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetAll()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetPools();
         }
@@ -54,7 +71,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetPlayers()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetPlayerPool();
         }
@@ -62,7 +79,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetVehicles()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetVehiclePool();
         }
@@ -70,7 +87,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetActors()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetActorPool();
         }
@@ -78,7 +95,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetObjects()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetObjectPool();
         }
@@ -86,7 +103,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetPickups()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetPickupPool();
         }
@@ -94,7 +111,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetMenus()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetMenuPool();
         }
@@ -102,7 +119,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetGangZones()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetGangZonePool();
         }
@@ -110,7 +127,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetLabels()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetLabelPool();
         }
@@ -118,7 +135,7 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles) :
 
     public void ResetTextDraws()
     {
-        if (CNetGame.TryGetInstance(out CNetGame* netGame))
+        if (TryGetInstance(out CNetGame* netGame))
         {
             netGame->ResetTextDrawPool();
         }

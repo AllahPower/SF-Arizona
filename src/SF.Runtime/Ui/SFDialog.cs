@@ -31,6 +31,7 @@ public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter excepti
 
     public Task<DialogResultArgs> Show(DialogStyle style, string title, string text, string okButton, string cancelButton)
     {
+        if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP dialogs require the game thread.");
         AbandonPendingDialog();
 
         int dialogId = AllocateDialogId();

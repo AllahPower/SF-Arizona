@@ -1,19 +1,28 @@
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed unsafe class SFActors : ISFActors
+public sealed unsafe class SFActors(ISFMainThread mainThread) : ISFActors
 {
-    public int LargestId => CActorPool.Instance.LargestId;
+    private ref readonly CActorPool Pool
+    {
+        get
+        {
+            if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP actors require the game thread.");
+            return ref CActorPool.Instance;
+        }
+    }
 
-    public bool Exists(ushort actorId) => CActorPool.Instance.DoesExist(actorId);
+    public int LargestId => Pool.LargestId;
+
+    public bool Exists(ushort actorId) => Pool.DoesExist(actorId);
 
     public SFActor Get(ushort actorId)
     {
-        return new(actorId, CActorPool.Instance.Get(actorId));
+        return new(actorId, Pool.Get(actorId));
     }
 
     public bool TryGet(ushort actorId, out SFActor actor)
     {
-        if (!CActorPool.Instance.TryGet(actorId, out CActor* nativeActor))
+        if (!Pool.TryGet(actorId, out CActor* nativeActor))
         {
             actor = null!;
             return false;
@@ -25,21 +34,19 @@ public sealed unsafe class SFActors : ISFActors
 
     public ushort Find(SFPed ped)
     {
+        ref readonly CActorPool pool = ref Pool;
         nint gamePed = ped.GamePedPointer;
-        return gamePed == 0 ? ushort.MaxValue : CActorPool.Instance.Find(gamePed);
+        return gamePed == 0 ? ushort.MaxValue : pool.Find(gamePed);
     }
 
     public bool Delete(ushort actorId)
     {
-        return CActorPool.Instance.Delete(actorId);
+        return Pool.Delete(actorId);
     }
 
     public IEnumerable<ushort> EnumerateIds()
     {
-        foreach (ushort actorId in CActorPool.Instance.GetExistingIds())
-        {
-            yield return actorId;
-        }
+        return Pool.GetExistingIds().ToArray();
     }
 
     public IEnumerable<SFActor> Enumerate()

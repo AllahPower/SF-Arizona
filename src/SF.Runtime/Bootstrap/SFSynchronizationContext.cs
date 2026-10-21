@@ -7,8 +7,7 @@ public class SFSynchronizationContext(Action<Exception> reportException) : Synch
 {
     private readonly Lock _queueLock = new();
 
-    private Queue<WorkItem> _queue = new();
-    private Queue<WorkItem> _lastQueue = new();
+    private readonly Queue<WorkItem> _queue = new();
     private readonly ConcurrentBag<SyncWorkItem> _syncPool = new();
 
     private readonly int _mainThreadId = Environment.CurrentManagedThreadId;
@@ -48,13 +47,20 @@ public class SFSynchronizationContext(Action<Exception> reportException) : Synch
 
     internal void ProcLoop()
     {
+        if (!IsMainThread) throw new InvalidOperationException("Only the game thread may drain its queue.");
+        int remaining;
         lock (_queueLock)
         {
-            if (_queue.Count == 0) return;
-            (_queue, _lastQueue) = (_lastQueue, _queue);
+            remaining = _queue.Count;
         }
-        while (_lastQueue.TryDequeue(out var entry))
+        // Nested pumps (plugin unload) share the same FIFO instead of swapping the active buffer.
+        while (remaining-- > 0)
         {
+            WorkItem entry;
+            lock (_queueLock)
+            {
+                if (!_queue.TryDequeue(out entry)) break;
+            }
             try
             {
                 entry.Callback(entry.State);
@@ -67,10 +73,11 @@ public class SFSynchronizationContext(Action<Exception> reportException) : Synch
                 }
                 else
                 {
-                    reportException(ex);
+                    try { reportException(ex); }
+                    catch { /* Reporting must not strand synchronous senders behind this item. */ }
                 }
             }
-            entry.Sync?.Gate.Set();
+            finally { entry.Sync?.Gate.Set(); }
         }
     }
 

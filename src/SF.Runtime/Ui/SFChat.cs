@@ -1,9 +1,15 @@
 namespace SFSharp.Runtime.Ui;
 
-public partial class SFChat(ExceptionReporter exceptions) : ISFChat
+public partial class SFChat(ExceptionReporter exceptions, ISFMainThread mainThread) : ISFChat
 {
+    private void RequireThread()
+    {
+        if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP chat operations require the game thread.");
+    }
+
     public void Send(string message)
     {
+        RequireThread();
         if (message.StartsWith('/'))
         {
             CInput.Instance.Send(message);
@@ -16,18 +22,21 @@ public partial class SFChat(ExceptionReporter exceptions) : ISFChat
     // Main-thread only (CChat.Instance touches native SA-MP chat state).
     public void Add(string text, uint textColor = 0xFFAAAAAA, string? prefix = null, uint prefixColor = 0xFFAAAAAA)
     {
+        RequireThread();
         CChat.Instance.AddEntry(EntryType.Debug, text, prefix, textColor, prefixColor);
     }
 
     // Main-thread only.
     public void Add(string text, SFColor textColor, string? prefix = null, SFColor? prefixColor = null)
     {
+        RequireThread();
         CChat.Instance.AddEntry(EntryType.Debug, text, prefix, textColor.Argb, (prefixColor ?? textColor).Argb);
     }
 
     [Obsolete]
     public void AddDirect(string text, uint textColor = 0xFFAAAAAA, string? prefix = null, uint prefixColor = 0xFFAAAAAA, EntryType type = EntryType.Debug)
     {
+        RequireThread();
         CChat.DirectWriteEntry(type, text, prefix, textColor, prefixColor);
         PublishLocalChatEntry(new ChatEntry(type, text, prefix, textColor, prefixColor));
     }
@@ -35,6 +44,7 @@ public partial class SFChat(ExceptionReporter exceptions) : ISFChat
     [Obsolete]
     public NativeChatEntry[] GetHistory(int count = SampOffsets.CChat.EntryCount)
     {
+        RequireThread();
         if (!CChat.IsAvailable)
         {
             return [];

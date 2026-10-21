@@ -2,15 +2,24 @@ using System.Numerics;
 
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed class SFPickups : ISFPickups
+public sealed class SFPickups(ISFMainThread mainThread) : ISFPickups
 {
-    public int Count => CPickupPool.Instance.Count;
+    private ref readonly CPickupPool Pool
+    {
+        get
+        {
+            if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP pickups require the game thread.");
+            return ref CPickupPool.Instance;
+        }
+    }
+
+    public int Count => Pool.Count;
 
     public bool Exists(int pickupIndex)
     {
         return pickupIndex >= 0 &&
                pickupIndex < SampOffsets.CPickupPool.MaxPickups &&
-               CPickupPool.Instance.GetServerId(pickupIndex) != 0;
+               Pool.GetServerId(pickupIndex) != 0;
     }
 
     public SFPickup Get(int pickupIndex)
@@ -32,48 +41,51 @@ public sealed class SFPickups : ISFPickups
 
     public int GetIndex(int serverPickupId)
     {
-        return CPickupPool.Instance.GetIndex(serverPickupId);
+        return Pool.GetIndex(serverPickupId);
     }
 
     public void Create(in Pickup pickup, ushort pickupId)
     {
-        CPickupPool.Instance.Create(pickup, pickupId);
+        Pool.Create(pickup, pickupId);
     }
 
     public void CreateWeapon(int modelId, Vector3 position, int ammo, ushort excludedOwnerId)
     {
-        CPickupPool.Instance.CreateWeapon(modelId, position, ammo, excludedOwnerId);
+        Pool.CreateWeapon(modelId, position, ammo, excludedOwnerId);
     }
 
     public void Delete(int pickupIndex)
     {
-        CPickupPool.Instance.Delete(pickupIndex);
+        Pool.Delete(pickupIndex);
     }
 
     public void DeleteWeapon(ushort excludedOwnerId)
     {
-        CPickupPool.Instance.DeleteWeapon(excludedOwnerId);
+        Pool.DeleteWeapon(excludedOwnerId);
     }
 
     public void SendNotification(int pickupIndex)
     {
-        CPickupPool.Instance.SendNotification(pickupIndex);
+        Pool.SendNotification(pickupIndex);
     }
 
     public void Process()
     {
-        CPickupPool.Instance.Process();
+        Pool.Process();
     }
 
     public IEnumerable<int> EnumerateIndices()
     {
+        if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP pickups require the game thread.");
+        List<int> indices = [];
         for (int pickupIndex = 0; pickupIndex < SampOffsets.CPickupPool.MaxPickups; pickupIndex++)
         {
             if (Exists(pickupIndex))
             {
-                yield return pickupIndex;
+                indices.Add(pickupIndex);
             }
         }
+        return indices;
     }
 
     public IEnumerable<SFPickup> Enumerate()

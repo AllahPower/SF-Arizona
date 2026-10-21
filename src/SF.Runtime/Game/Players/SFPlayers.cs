@@ -2,24 +2,41 @@ namespace SFSharp.Runtime.Game.Players;
 
 public partial class SFPlayers : ISFPlayers
 {
-    public SFPlayers()
+    private readonly ISFMainThread _mainThread;
+
+    private ref readonly CPlayerPool Pool
     {
+        get
+        {
+            RequireThread();
+            return ref CPlayerPool.Instance;
+        }
+    }
+
+    private void RequireThread()
+    {
+        if (!_mainThread.IsMainThread) throw new InvalidOperationException("SA-MP player queries require the game thread.");
+    }
+
+    public SFPlayers(ISFMainThread mainThread)
+    {
+        _mainThread = mainThread;
         Local = new SFLocalPlayer(this);
     }
 
     public SFLocalPlayer Local { get; }
 
-    public ushort LocalPlayerId => CPlayerPool.Instance.LocalPlayerId;
-    public string? LocalPlayerName => CPlayerPool.Instance.GetLocalPlayerName();
-    public int LocalPlayerScore => CPlayerPool.Instance.GetLocalPlayerScore();
-    public int LocalPlayerPing => CPlayerPool.Instance.GetLocalPlayerPing();
+    public ushort LocalPlayerId => Pool.LocalPlayerId;
+    public string? LocalPlayerName => Pool.GetLocalPlayerName();
+    public int LocalPlayerScore => Pool.GetLocalPlayerScore();
+    public int LocalPlayerPing => Pool.GetLocalPlayerPing();
 
-    public string? GetName(ushort playerId) => CPlayerPool.Instance.GetName(playerId);
-    public int GetScore(ushort playerId) => CPlayerPool.Instance.GetScore(playerId);
-    public int GetPing(ushort playerId) => CPlayerPool.Instance.GetPing(playerId);
-    public bool IsConnected(ushort playerId) => CPlayerPool.Instance.IsConnected(playerId);
-    public bool IsNpc(ushort playerId) => CPlayerPool.Instance.IsNpc(playerId);
-    public int GetConnectedCount(bool includeNpcPlayers = true) => CPlayerPool.Instance.GetCount(includeNpcPlayers);
+    public string? GetName(ushort playerId) => Pool.GetName(playerId);
+    public int GetScore(ushort playerId) => Pool.GetScore(playerId);
+    public int GetPing(ushort playerId) => Pool.GetPing(playerId);
+    public bool IsConnected(ushort playerId) => Pool.IsConnected(playerId);
+    public bool IsNpc(ushort playerId) => Pool.IsNpc(playerId);
+    public int GetConnectedCount(bool includeNpcPlayers = true) => Pool.GetCount(includeNpcPlayers);
 
     public bool TryGetName(ushort playerId, out string? name)
     {
@@ -102,6 +119,8 @@ public partial class SFPlayers : ISFPlayers
 
     public IEnumerable<SFPlayerSnapshot> EnumeratePlayers(bool includeNpcPlayers = true)
     {
+        RequireThread();
+        List<SFPlayerSnapshot> snapshot = [];
         for (ushort playerId = 0; playerId < SampOffsets.CPlayerPool.MaxPlayers; playerId++)
         {
             if (!TryGetPlayer(playerId, out SFPlayerSnapshot player))
@@ -114,12 +133,14 @@ public partial class SFPlayers : ISFPlayers
                 continue;
             }
 
-            yield return player;
+            snapshot.Add(player);
         }
+        return snapshot;
     }
 
     public ushort? GetAimedPlayerId()
     {
+        RequireThread();
         ushort aimedPlayer = CLocalPlayer.Instance.AimedPlayerId;
         return aimedPlayer != ushort.MaxValue && IsConnected(aimedPlayer) ? aimedPlayer : null;
     }

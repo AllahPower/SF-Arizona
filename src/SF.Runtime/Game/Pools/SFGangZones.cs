@@ -1,8 +1,17 @@
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed class SFGangZones : ISFGangZones
+public sealed class SFGangZones(ISFMainThread mainThread) : ISFGangZones
 {
-    public bool Exists(ushort zoneId) => CGangZonePool.Instance.DoesExist(zoneId);
+    private ref readonly CGangZonePool Pool
+    {
+        get
+        {
+            if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP gang zones require the game thread.");
+            return ref CGangZonePool.Instance;
+        }
+    }
+
+    public bool Exists(ushort zoneId) => Pool.DoesExist(zoneId);
 
     public SFGangZone Get(ushort zoneId)
     {
@@ -23,10 +32,7 @@ public sealed class SFGangZones : ISFGangZones
 
     public IEnumerable<ushort> EnumerateIds()
     {
-        foreach (ushort zoneId in CGangZonePool.Instance.GetExistingIds())
-        {
-            yield return zoneId;
-        }
+        return Pool.GetExistingIds().ToArray();
     }
 
     public IEnumerable<SFGangZone> Enumerate()
@@ -39,26 +45,26 @@ public sealed class SFGangZones : ISFGangZones
 
     public void Create(ushort zoneId, float left, float top, float right, float bottom, uint color)
     {
-        CGangZonePool.Instance.Create(zoneId, left, top, right, bottom, color);
+        Pool.Create(zoneId, left, top, right, bottom, color);
     }
 
     public void StartFlashing(ushort zoneId, uint color)
     {
-        CGangZonePool.Instance.StartFlashing(zoneId, color);
+        Pool.StartFlashing(zoneId, color);
     }
 
     public void StopFlashing(ushort zoneId)
     {
-        CGangZonePool.Instance.StopFlashing(zoneId);
+        Pool.StopFlashing(zoneId);
     }
 
     public void Delete(ushort zoneId)
     {
-        CGangZonePool.Instance.Delete(zoneId);
+        Pool.Delete(zoneId);
     }
 
     public void Draw()
     {
-        CGangZonePool.Instance.Draw();
+        Pool.Draw();
     }
 }

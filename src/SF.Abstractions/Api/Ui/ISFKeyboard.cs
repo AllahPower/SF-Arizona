@@ -5,8 +5,8 @@ namespace SFSharp.Abstractions.Ui;
 /// the latest sampled state through this interface.
 /// </summary>
 /// <remarks>
-/// Thread-safe for reads - the host polls Win32 <c>GetAsyncKeyState</c> and caches state that
-/// these queries observe.
+/// Thread-safe for reads. The host samples Win32 <c>GetKeyboardState</c> on the game thread.
+/// Each query observes a coherent current/previous pair; separate calls may observe different samples.
 /// </remarks>
 public interface ISFKeyboard
 {

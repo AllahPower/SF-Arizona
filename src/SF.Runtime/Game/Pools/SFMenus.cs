@@ -1,21 +1,30 @@
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed unsafe class SFMenus : ISFMenus
+public sealed unsafe class SFMenus(ISFMainThread mainThread) : ISFMenus
 {
-    public ushort CurrentMenu => CMenuPool.Instance.CurrentMenu;
-    public bool Cancelled => CMenuPool.Instance.Cancelled;
+    private ref readonly CMenuPool Pool
+    {
+        get
+        {
+            if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP menus require the game thread.");
+            return ref CMenuPool.Instance;
+        }
+    }
 
-    public bool Exists(byte menuId) => CMenuPool.Instance.DoesExist(menuId);
+    public ushort CurrentMenu => Pool.CurrentMenu;
+    public bool Cancelled => Pool.Cancelled;
+
+    public bool Exists(byte menuId) => Pool.DoesExist(menuId);
 
     public SFMenu Get(byte menuId)
     {
-        return new(menuId, CMenuPool.Instance.Get(menuId));
+        return new(menuId, Pool.Get(menuId));
     }
 
     public bool TryGet(byte menuId, out SFMenu menu)
     {
-        CMenu* nativeMenu = CMenuPool.Instance.Get(menuId);
-        if (nativeMenu == null || !CMenuPool.Instance.DoesExist(menuId))
+        CMenu* nativeMenu = Pool.Get(menuId);
+        if (nativeMenu == null || !Pool.DoesExist(menuId))
         {
             menu = null!;
             return false;
@@ -27,10 +36,7 @@ public sealed unsafe class SFMenus : ISFMenus
 
     public IEnumerable<byte> EnumerateIds()
     {
-        foreach (byte menuId in CMenuPool.Instance.GetExistingIds())
-        {
-            yield return menuId;
-        }
+        return Pool.GetExistingIds().ToArray();
     }
 
     public IEnumerable<SFMenu> Enumerate()
@@ -51,26 +57,26 @@ public sealed unsafe class SFMenus : ISFMenus
 
     public string? GetTextPointer(string name)
     {
-        return CMenuPool.Instance.GetTextPointer(name);
+        return Pool.GetTextPointer(name);
     }
 
     public void Show(byte menuId)
     {
-        CMenuPool.Instance.Show(menuId);
+        Pool.Show(menuId);
     }
 
     public void Hide(byte menuId)
     {
-        CMenuPool.Instance.Hide(menuId);
+        Pool.Hide(menuId);
     }
 
     public bool Delete(byte menuId)
     {
-        return CMenuPool.Instance.Delete(menuId);
+        return Pool.Delete(menuId);
     }
 
     public void Process()
     {
-        CMenuPool.Instance.Process();
+        Pool.Process();
     }
 }

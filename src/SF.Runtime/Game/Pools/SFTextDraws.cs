@@ -1,17 +1,26 @@
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed unsafe class SFTextDraws : ISFTextDraws
+public sealed unsafe class SFTextDraws(ISFMainThread mainThread) : ISFTextDraws
 {
-    public bool Exists(ushort textDrawId) => CTextDrawPool.Instance.DoesExist(textDrawId);
+    private ref readonly CTextDrawPool Pool
+    {
+        get
+        {
+            if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP text draws require the game thread.");
+            return ref CTextDrawPool.Instance;
+        }
+    }
+
+    public bool Exists(ushort textDrawId) => Pool.DoesExist(textDrawId);
 
     public SFTextDraw Get(ushort textDrawId)
     {
-        return new(textDrawId, CTextDrawPool.Instance.Get(textDrawId));
+        return new(textDrawId, Pool.Get(textDrawId));
     }
 
     public bool TryGet(ushort textDrawId, out SFTextDraw textDraw)
     {
-        if (!CTextDrawPool.Instance.TryGet(textDrawId, out CTextDraw* nativeTextDraw))
+        if (!Pool.TryGet(textDrawId, out CTextDraw* nativeTextDraw))
         {
             textDraw = null!;
             return false;
@@ -29,10 +38,7 @@ public sealed unsafe class SFTextDraws : ISFTextDraws
 
     public IEnumerable<ushort> EnumerateIds()
     {
-        foreach (ushort textDrawId in CTextDrawPool.Instance.GetExistingIds())
-        {
-            yield return textDrawId;
-        }
+        return Pool.GetExistingIds().ToArray();
     }
 
     public IEnumerable<SFTextDraw> Enumerate()
@@ -48,11 +54,11 @@ public sealed unsafe class SFTextDraws : ISFTextDraws
 
     public void Delete(ushort textDrawId)
     {
-        CTextDrawPool.Instance.Delete(textDrawId);
+        Pool.Delete(textDrawId);
     }
 
     public void Draw()
     {
-        CTextDrawPool.Instance.Draw();
+        Pool.Draw();
     }
 }

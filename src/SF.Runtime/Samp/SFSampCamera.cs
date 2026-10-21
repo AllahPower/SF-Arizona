@@ -2,17 +2,31 @@ using System.Numerics;
 
 namespace SFSharp.Runtime.Samp;
 
-public sealed class SFSampCamera(SFPlayers players, SFRpc rpc)
+public sealed class SFSampCamera(SFPlayers players, SFRpc rpc, ISFMainThread mainThread)
     : ISFSampCamera
 {
-    public byte AimCameraMode => CLocalPlayer.Instance.AimData.CameraMode;
-    public Vector3 AimDirection => CLocalPlayer.Instance.AimData.AimDirection;
-    public Vector3 AimPosition => CLocalPlayer.Instance.AimData.AimPosition;
-    public float AimZ => CLocalPlayer.Instance.AimData.AimZ;
-    public byte AimZoom => CLocalPlayer.Instance.AimData.CameraExtZoom;
-    public sbyte AspectRatio => CLocalPlayer.Instance.AimData.AspectRatio;
+    private ref readonly CLocalPlayer Local
+    {
+        get
+        {
+            RequireThread();
+            return ref CLocalPlayer.Instance;
+        }
+    }
 
-    public SFLocalPlayerCameraTarget Target => players.Local.CameraTarget;
+    private void RequireThread()
+    {
+        if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP camera queries require the game thread.");
+    }
+
+    public byte AimCameraMode => Local.AimData.CameraMode;
+    public Vector3 AimDirection => Local.AimData.AimDirection;
+    public Vector3 AimPosition => Local.AimData.AimPosition;
+    public float AimZ => Local.AimData.AimZ;
+    public byte AimZoom => Local.AimData.CameraExtZoom;
+    public sbyte AspectRatio => Local.AimData.AspectRatio;
+
+    public SFLocalPlayerCameraTarget Target { get { RequireThread(); return players.Local.CameraTarget; } }
 
     public IAsyncEnumerable<SetPlayerCameraPosRpc> StreamSetPosition(CancellationToken token = default)
     {

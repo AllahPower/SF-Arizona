@@ -8,21 +8,21 @@ internal sealed class SFHost : ISF
 {
     public SFHost(SFRuntime runtime)
     {
-        ChatImpl = new SFChat(runtime.Exceptions);
+        ChatImpl = new SFChat(runtime.Exceptions, runtime.MainThread);
         DialogImpl = new SFDialog(runtime.MainThread, runtime.Exceptions);
         KeyboardImpl = new SFKeyboard(runtime.Exceptions);
-        PlayersImpl = new SFPlayers();
-        VehiclesImpl = new SFVehicles();
-        PoolsImpl = new SFGamePools(PlayersImpl, VehiclesImpl);
+        PlayersImpl = new SFPlayers(runtime.MainThread);
+        VehiclesImpl = new SFVehicles(runtime.MainThread);
+        PoolsImpl = new SFGamePools(PlayersImpl, VehiclesImpl, runtime.MainThread);
         EntitiesImpl = new SFEntities(runtime.MainThread);
-        SampEntitiesImpl = new SFSampEntities(PlayersImpl, VehiclesImpl, PoolsImpl);
+        SampEntitiesImpl = new SFSampEntities(PlayersImpl, VehiclesImpl, PoolsImpl, runtime.MainThread);
         RpcImpl = new SFRpc(runtime.Filters, runtime.Dispatcher);
         PacketsImpl = new SFPackets(runtime.Filters, runtime.Dispatcher);
         RpcParsersImpl = new SFRpcParsers(RpcParserCatalog.CreateDefaultRegistry(), RpcImpl);
         PacketParsersImpl = new SFPacketParsers(PacketParserCatalog.CreateDefaultRegistry(), PacketsImpl);
         CameraImpl = new SFGtaCamera(runtime.MainThread);
         World = new SFGtaWorld(runtime.MainThread);
-        SampCameraImpl = new SFSampCamera(PlayersImpl, RpcImpl);
+        SampCameraImpl = new SFSampCamera(PlayersImpl, RpcImpl, runtime.MainThread);
         EventsImpl = new SFEvents(new SFEventFactory(RpcImpl, RpcParsersImpl, PacketParsersImpl));
         NetworkImpl = new SFNetwork(runtime.Hooks.IncomingRpcPacket);
         LoadingImpl = runtime.Loading;

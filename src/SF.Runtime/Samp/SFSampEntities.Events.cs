@@ -9,6 +9,7 @@ public sealed unsafe partial class SFSampEntities
     public IDisposable OnSampEntityChanged(Action<SFSampEntityEvent> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
+        RequireThread();
         if (!_installed)
         {
             Install(new VehiclePoolCreateHook());

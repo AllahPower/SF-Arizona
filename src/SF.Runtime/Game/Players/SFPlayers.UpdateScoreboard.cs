@@ -7,6 +7,7 @@ public partial class SFPlayers : ISubHook<UpdateScoresPingsIpsArgs, NoRetValue>
 
     public Task UpdateScoreboard()
     {
+        RequireThread();
         _tcs ??= new(TaskCreationOptions.RunContinuationsAsynchronously);
         CNetGame.Instance.UpdatePlayers();
         return _tcs.Task;

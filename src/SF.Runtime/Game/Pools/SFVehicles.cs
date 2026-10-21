@@ -1,19 +1,28 @@
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed unsafe class SFVehicles : ISFVehicles
+public sealed unsafe class SFVehicles(ISFMainThread mainThread) : ISFVehicles
 {
-    public int Count => CVehiclePool.Instance.Count;
+    private ref readonly CVehiclePool Pool
+    {
+        get
+        {
+            if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP vehicle queries require the game thread.");
+            return ref CVehiclePool.Instance;
+        }
+    }
 
-    public bool Exists(ushort vehicleId) => CVehiclePool.Instance.DoesExist(vehicleId);
+    public int Count => Pool.Count;
+
+    public bool Exists(ushort vehicleId) => Pool.DoesExist(vehicleId);
 
     public SFVehicle Get(ushort vehicleId)
     {
-        return new SFVehicle(vehicleId, CVehiclePool.Instance.Get(vehicleId));
+        return new SFVehicle(vehicleId, Pool.Get(vehicleId));
     }
 
     public bool TryGet(ushort vehicleId, out SFVehicle vehicle)
     {
-        if (!CVehiclePool.Instance.TryGet(vehicleId, out CVehicle* nativeVehicle))
+        if (!Pool.TryGet(vehicleId, out CVehicle* nativeVehicle))
         {
             vehicle = null!;
             return false;
@@ -25,7 +34,7 @@ public sealed unsafe class SFVehicles : ISFVehicles
 
     public ushort GetNearestId()
     {
-        return CVehiclePool.Instance.GetNearest();
+        return Pool.GetNearest();
     }
 
     public SFVehicle? GetNearest()
@@ -36,10 +45,7 @@ public sealed unsafe class SFVehicles : ISFVehicles
 
     public IEnumerable<ushort> EnumerateIds()
     {
-        foreach (ushort vehicleId in CVehiclePool.Instance.GetExistingIds())
-        {
-            yield return vehicleId;
-        }
+        return Pool.GetExistingIds().ToArray();
     }
 
     public IEnumerable<SFVehicle> Enumerate()
@@ -76,11 +82,11 @@ public sealed unsafe class SFVehicles : ISFVehicles
 
     public void ChangeInterior(ushort vehicleId, int interiorId)
     {
-        CVehiclePool.Instance.ChangeInterior(vehicleId, interiorId);
+        Pool.ChangeInterior(vehicleId, interiorId);
     }
 
     public void SetParams(ushort vehicleId, bool isObjective, bool isLocked)
     {
-        CVehiclePool.Instance.SetParams(vehicleId, isObjective, isLocked);
+        Pool.SetParams(vehicleId, isObjective, isLocked);
     }
 }

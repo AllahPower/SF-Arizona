@@ -1,9 +1,14 @@
 namespace SFSharp.Runtime.Samp;
 
 /// <summary>Explicit bridge from SA-MP pool IDs to live GTA entities.</summary>
-public sealed unsafe partial class SFSampEntities(SFPlayers players, SFVehicles vehicles, SFGamePools pools) : ISFSampEntities
+public sealed unsafe partial class SFSampEntities(SFPlayers players, SFVehicles vehicles, SFGamePools pools, ISFMainThread mainThread) : ISFSampEntities
 {
-    private static bool SampPoolsReady => CNetGame.TryGetPools(out _);
+    private void RequireThread()
+    {
+        if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP entity queries require the game thread.");
+    }
+
+    private bool SampPoolsReady { get { RequireThread(); return CNetGame.TryGetPools(out _); } }
 
     public bool TryGetLocalPlayer(out SFEntityRef entity) =>
         SFEntities.TryCreateRef(SFEntityKind.Ped, SampPoolsReady ? players.Local.Ped?.GamePedPointer ?? 0 : 0, out entity);
@@ -27,6 +32,7 @@ public sealed unsafe partial class SFSampEntities(SFPlayers players, SFVehicles 
 
     public bool TryGetPlayerId(SFEntityRef entity, out ushort id)
     {
+        RequireThread();
         id = ushort.MaxValue;
         GtaEntity* native = entity.Kind == SFEntityKind.Ped ? SFEntities.Resolve(entity) : null;
         if (native is null || !SampPoolsReady) return false;
@@ -40,6 +46,7 @@ public sealed unsafe partial class SFSampEntities(SFPlayers players, SFVehicles 
 
     public bool TryGetVehicleId(SFEntityRef entity, out ushort id)
     {
+        RequireThread();
         id = ushort.MaxValue;
         GtaEntity* native = entity.Kind == SFEntityKind.Vehicle ? SFEntities.Resolve(entity) : null;
         return native is not null && SampPoolsReady && Accept(CVehiclePool.Instance.Find((nint)native), SampOffsets.CVehiclePool.MaxVehicles, out id);
@@ -47,6 +54,7 @@ public sealed unsafe partial class SFSampEntities(SFPlayers players, SFVehicles 
 
     public bool TryGetObjectId(SFEntityRef entity, out ushort id)
     {
+        RequireThread();
         id = ushort.MaxValue;
         GtaEntity* native = entity.Kind == SFEntityKind.Object ? SFEntities.Resolve(entity) : null;
         return native is not null && SampPoolsReady && Accept(CObjectPool.Instance.GetId((nint)native), SampOffsets.CObjectPool.MaxObjects, out id);
@@ -54,6 +62,7 @@ public sealed unsafe partial class SFSampEntities(SFPlayers players, SFVehicles 
 
     public bool TryGetActorId(SFEntityRef entity, out ushort id)
     {
+        RequireThread();
         id = ushort.MaxValue;
         GtaEntity* native = entity.Kind == SFEntityKind.Ped ? SFEntities.Resolve(entity) : null;
         return native is not null && SampPoolsReady && Accept(CActorPool.Instance.Find((nint)native), SampOffsets.CActorPool.MaxActors, out id);

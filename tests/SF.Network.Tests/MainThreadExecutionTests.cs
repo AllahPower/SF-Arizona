@@ -6,6 +6,38 @@ namespace SF.Network.Tests;
 
 public sealed class MainThreadExecutionTests
 {
+    [Fact]
+    public void NestedPumpPreservesFifoOrder()
+    {
+        MainThreadDispatcher dispatcher = Create();
+        List<int> order = [];
+        dispatcher.Post(() =>
+        {
+            order.Add(1);
+            dispatcher.Post(() => order.Add(3));
+            dispatcher.Pump();
+        });
+        dispatcher.Post(() => order.Add(2));
+
+        dispatcher.Pump();
+        dispatcher.Pump();
+
+        Assert.Equal([1, 2, 3], order);
+    }
+
+    [Fact]
+    public void ThrowingReporterDoesNotPreventLaterCallbacks()
+    {
+        MainThreadDispatcher dispatcher = Create();
+        bool called = false;
+        dispatcher.Post(() => throw new InvalidOperationException());
+        dispatcher.Post(() => called = true);
+
+        dispatcher.Pump();
+
+        Assert.True(called);
+    }
+
     private static MainThreadDispatcher Create() => new(new SFSynchronizationContext(ex => throw ex));
 
     [Fact]

@@ -2,10 +2,19 @@ using System.Numerics;
 
 namespace SFSharp.Runtime.Game.Pools;
 
-public sealed unsafe class SFLabels
+public sealed unsafe class SFLabels(ISFMainThread mainThread)
     : ISFLabels
 {
-    public bool Exists(ushort labelId) => CLabelPool.Instance.DoesExist(labelId);
+    private ref readonly CLabelPool Pool
+    {
+        get
+        {
+            if (!mainThread.IsMainThread) throw new InvalidOperationException("SA-MP labels require the game thread.");
+            return ref CLabelPool.Instance;
+        }
+    }
+
+    public bool Exists(ushort labelId) => Pool.DoesExist(labelId);
 
     public SFLabel Get(ushort labelId)
     {
@@ -32,10 +41,7 @@ public sealed unsafe class SFLabels
 
     public IEnumerable<ushort> EnumerateIds()
     {
-        foreach (ushort labelId in CLabelPool.Instance.GetExistingIds())
-        {
-            yield return labelId;
-        }
+        return Pool.GetExistingIds().ToArray();
     }
 
     public IEnumerable<SFLabel> Enumerate()
@@ -48,16 +54,16 @@ public sealed unsafe class SFLabels
 
     public void Create(ushort labelId, string text, uint color, Vector3 position, float drawDistance, bool behindWalls, ushort attachedToPlayer = ushort.MaxValue, ushort attachedToVehicle = ushort.MaxValue)
     {
-        CLabelPool.Instance.Create(labelId, text, color, position, drawDistance, behindWalls, attachedToPlayer, attachedToVehicle);
+        Pool.Create(labelId, text, color, position, drawDistance, behindWalls, attachedToPlayer, attachedToVehicle);
     }
 
     public bool Delete(ushort labelId)
     {
-        return CLabelPool.Instance.Delete(labelId);
+        return Pool.Delete(labelId);
     }
 
     public void Draw()
     {
-        CLabelPool.Instance.Draw();
+        Pool.Draw();
     }
 }

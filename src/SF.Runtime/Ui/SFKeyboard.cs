@@ -2,6 +2,7 @@ namespace SFSharp.Runtime.Ui;
 
 public class SFKeyboard(ExceptionReporter exceptions) : ISFKeyboard
 {
+    private readonly Lock _sync = new();
     private byte[] _currentState = new byte[256];
     private byte[] _lastState = new byte[256];
 
@@ -11,9 +12,12 @@ public class SFKeyboard(ExceptionReporter exceptions) : ISFKeyboard
         {
             while (true)
             {
-                (_currentState, _lastState) = (_lastState, _currentState);
-                _currentState.AsSpan().Clear();
-                Win32.GetKeyboardState(ref _currentState[0]);
+                lock (_sync)
+                {
+                    (_currentState, _lastState) = (_lastState, _currentState);
+                    _currentState.AsSpan().Clear();
+                    Win32.GetKeyboardState(ref _currentState[0]);
+                }
                 await Task.Yield();
             }
         }
@@ -30,7 +34,7 @@ public class SFKeyboard(ExceptionReporter exceptions) : ISFKeyboard
 
     public bool IsKeyDown(VirtualKey key)
     {
-        return IsKeyDownCore(key, _currentState);
+        lock (_sync) return IsKeyDownCore(key, _currentState);
     }
 
     public bool IsKeyDown(byte virtualKeyCode)
@@ -40,7 +44,7 @@ public class SFKeyboard(ExceptionReporter exceptions) : ISFKeyboard
 
     public bool IsKeyPressed(VirtualKey key)
     {
-        return IsKeyDownCore(key, _currentState) && !IsKeyDownCore(key, _lastState);
+        lock (_sync) return IsKeyDownCore(key, _currentState) && !IsKeyDownCore(key, _lastState);
     }
 
     public bool IsKeyPressed(byte virtualKeyCode)
