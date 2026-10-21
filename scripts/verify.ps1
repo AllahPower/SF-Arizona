@@ -42,7 +42,7 @@ foreach ($project in 'SF.Abstractions', 'SF.Protocol') {
     }
 }
 $native = Get-Content -LiteralPath "$root/src/SF.Native/src/runtime/hostfxr_bootstrap.cpp" -Raw
-foreach ($folder in 'src/SF.Runtime/Gta', 'src/SF.Runtime/Interop/Gta', 'src/SF.Abstractions/Api/Gta') {
+foreach ($folder in 'src/SF.Runtime/Gta', 'src/SF.Runtime/Interop/Gta', 'src/SF.Abstractions/Gta') {
     foreach ($source in Get-ChildItem -LiteralPath "$root/$folder" -Filter '*.cs' -Recurse) {
         Assert-True (!(Select-String -LiteralPath $source.FullName -Pattern '\b(?:SampOffsets|CNetGame|CPlayerPool|CLocalPlayer|SFPlayers|SFRpc)\b|using SFSharp\..*\.Samp\b' -Quiet)) "SA-MP implementation dependency in GTA code: $($source.FullName)"
     }

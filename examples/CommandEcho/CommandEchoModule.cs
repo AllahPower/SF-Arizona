@@ -12,12 +12,10 @@ namespace SFSharp.Examples.CommandEcho;
     DefaultEnabled = true,
     ExecutionModel = ModuleExecutionModel.MainThread,
     RestartPolicy = ModuleRestartPolicy.Manual)]
-public sealed class CommandEchoModule : ISFModule
+public sealed class CommandEchoModule : SFModuleBase
 {
-    private IModuleContext Context => ((ISFModule)this).Context;
-    private ILogger Log => ((ISFModule)this).Log;
 
-    public Task OnStartingAsync()
+    protected override Task OnStartingAsync()
     {
         Context.RegisterChatCommand("echoexample", OnCommand);
         Context.SetDetail("command", "/echoexample <text>");
@@ -30,12 +28,12 @@ public sealed class CommandEchoModule : ISFModule
         return Task.CompletedTask;
     }
 
-    public async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(Timeout.Infinite, cancellationToken);
     }
 
-    public Task OnStoppingAsync()
+    protected override Task OnStoppingAsync()
     {
         Log.LogInformation("Command Echo example stopping");
         return Task.CompletedTask;

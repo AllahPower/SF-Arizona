@@ -1,13 +1,13 @@
 namespace SFSharp.Abstractions.Modules;
 
 /// <summary>
-/// Declares a class as an SF module and carries the metadata that <see cref="SFModuleContainer"/>
+/// Declares a class as an SF module and carries the metadata that <c>host</c>
 /// reads at registration time. The attribute is mandatory for any type registered through
-/// <see cref="SFModuleContainer.RegisterModule{T}(bool?)"/>.
+/// <c>host</c>.
 /// </summary>
 /// <param name="id">
 /// Stable module identifier. Used as the key for <c>/sfs</c> commands, telemetry and storage roots
-/// (<see cref="SFPaths.GetModuleAssetsDirectory(string)"/>, <see cref="SFPaths.GetModuleUserDataDirectory(string)"/>).
+/// (<c>host</c>, <c>host</c>).
 /// Must be unique per container.
 /// </param>
 /// <param name="displayName">Human readable name shown in chat and in the dashboard dialog.</param>
@@ -30,9 +30,9 @@ public sealed class SFModuleAttribute(string id, string displayName) : Attribute
     public string Description { get; init; } = string.Empty;
 
     /// <summary>
-    /// If <see langword="true"/>, <see cref="SFModuleContainer.Run(System.Threading.CancellationToken)"/>
+    /// If <see langword="true"/>, <c>host</c>
     /// starts the module automatically. The value passed to
-    /// <see cref="SFModuleContainer.RegisterModule{T}(bool?)"/> overrides this default.
+    /// <c>host</c> overrides this default.
     /// </summary>
     public bool DefaultEnabled { get; init; } = true;
 

@@ -1,12 +1,12 @@
 using System.Text;
 
-namespace SFSharp.Abstractions.Network.Protocol.BitStream;
+namespace SFSharp.Protocol.BitStream;
 
 /// <summary>
 /// Managed RakNet-compatible bitstream writer. Builds a <c>byte[]</c> payload whose layout matches
 /// the one produced by <c>RakNet::BitStream</c> so plugins can hand the result to
-/// <see cref="Network.ISFNetwork.SendPacket"/>, <see cref="Network.ISFNetwork.SendRpc(int, System.ReadOnlySpan{byte}, int, Network.RakNetPacketPriority, Network.RakNetPacketReliability, byte, bool)"/>
-/// or <see cref="Network.ISFNetwork.SimulateIncomingPacket"/>.
+/// <see cref="ISFNetwork"/>, <see cref="ISFNetwork"/>
+/// or <see cref="ISFNetwork"/>.
 /// </summary>
 /// <remarks>
 /// Internal layout tracks a bit cursor, so every write advances by an exact bit count. For

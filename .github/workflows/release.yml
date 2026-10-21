@@ -16,6 +16,57 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  packages:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          dotnet-version: '10.0.x'
+      - name: Resolve package version
+        id: version
+        shell: pwsh
+        run: ./scripts/release-version.ps1
+      - name: Test public contracts
+        run: dotnet test tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
+      - name: Pack public libraries
+        shell: pwsh
+        run: ./scripts/pack-nuget.ps1 -Version '${{ steps.version.outputs.version }}'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuget-${{ steps.version.outputs.version }}
+          path: artifacts/packages/${{ steps.version.outputs.version }}/*.*nupkg
+          if-no-files-found: error
+
+  nuget:
+    needs: [build, packages]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget-${{ needs.packages.outputs.version }}
+          path: packages
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Authenticate with nuget.org
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ vars.NUGET_USER }}
+      - name: Publish validated packages
+        run: dotnet nuget push 'packages/*.nupkg' --source https://api.nuget.org/v3/index.json --api-key '${{ steps.login.outputs.NUGET_API_KEY }}' --skip-duplicate
+
   build:
     runs-on: windows-2025-vs2026
     outputs:

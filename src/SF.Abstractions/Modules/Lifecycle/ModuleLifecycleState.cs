@@ -1,7 +1,7 @@
 namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 /// <summary>
-/// Current state of a module instance as tracked by <see cref="SFModuleContainer"/>.
+/// Current state of a module instance as tracked by <c>host</c>.
 /// Exposed through <see cref="ModuleRuntimeSnapshot.State"/>.
 /// </summary>
 public enum ModuleLifecycleState

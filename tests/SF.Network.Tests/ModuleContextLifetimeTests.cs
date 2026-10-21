@@ -11,7 +11,7 @@ public sealed class ModuleContextLifetimeTests
     public void LateWorkerRegistrationReleasesOnGameThread()
     {
         var mainThread = new MainThreadDispatcher(new SFSynchronizationContext(_ => { }));
-        var descriptor = ModuleDescriptor.FromType(typeof(FixtureModule));
+        var descriptor = ModuleDescriptorFactory.FromType(typeof(FixtureModule));
         var runtime = new ModuleRuntimeInfo(descriptor, false);
         var context = new ModuleContext(descriptor, runtime, CancellationToken.None, null!, mainThread);
         context.Dispose();
@@ -41,9 +41,9 @@ public sealed class ModuleContextLifetimeTests
     }
 
     [SFModule("fixture.lifetime", "Lifetime fixture")]
-    private sealed class FixtureModule : ISFModule
+    private sealed class FixtureModule : SFModuleBase
     {
-        public Task ExecuteAsync(CancellationToken token) => Task.CompletedTask;
+        protected override Task ExecuteAsync(CancellationToken token) => Task.CompletedTask;
     }
 
     private sealed class Resource(Action dispose) : IDisposable { public void Dispose() => dispose(); }

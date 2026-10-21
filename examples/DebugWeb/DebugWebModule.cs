@@ -8,11 +8,11 @@ namespace SFSharp.Examples.DebugWeb;
 
 [SFModule("debug-web", "DebugWeb", Category = "Debug", Description = "Packet and RPC inspector at http://localhost:7777/",
     DefaultEnabled = false, ExecutionModel = ModuleExecutionModel.MainThread, RestartPolicy = ModuleRestartPolicy.Manual, Order = 70)]
-public sealed class DebugWebModule : ISFModule
+public sealed class DebugWebModule : SFModuleBase
 {
-    public async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        IModuleContext context = ((ISFModule)this).Context;
+        IModuleContext context = Context;
         CaptureSettings settings = context.Config.Load(CaptureJsonContext.Default.CaptureSettings, () => new CaptureSettings()) with { Capture = false };
         if (settings.Validate() is string error) throw new InvalidDataException(error);
         using TrafficCapture capture = new(settings);

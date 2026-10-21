@@ -20,7 +20,7 @@ public enum ModuleExecutionModel
 
     /// <summary>
     /// Module starts on the main thread but is free to switch to background work through
-    /// <see cref="ModuleContext.RunBackground(System.Func{System.Threading.Tasks.Task})"/> and back through
+    /// <see cref="IModuleContext.RunBackground(System.Func{System.Threading.CancellationToken, System.Threading.Tasks.Task})"/> and back through
     /// <see cref="ISF.MainThread"/>.
     /// </summary>
     Hybrid

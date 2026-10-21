@@ -10,6 +10,7 @@
 		<IsTrimmable>false</IsTrimmable>
 		<RootNamespace>SFSharp.Protocol</RootNamespace>
 		<AssemblyName>SF.Protocol</AssemblyName>
+		<Description>Native-free SA-MP packet and RPC models, parsers and RakNet-compatible managed bitstreams.</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

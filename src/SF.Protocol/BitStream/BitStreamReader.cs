@@ -1,11 +1,11 @@
 using System.Text;
 
-namespace SFSharp.Abstractions.Network.Protocol.BitStream;
+namespace SFSharp.Protocol.BitStream;
 
 /// <summary>
 /// Managed RakNet-compatible bitstream reader. Mirrors <see cref="BitStreamWriter"/> for the
 /// decoding side so plugins can parse payloads they receive through the typed event facades, from
-/// <see cref="Network.ISFNetwork.SimulateIncomingPacket"/> echoes, or from any other raw byte span.
+/// <see cref="ISFNetwork"/> echoes, or from any other raw byte span.
 /// </summary>
 /// <remarks>
 /// Supports arbitrary start bit offsets so callers whose payload is not byte-aligned (e.g. raw RPC

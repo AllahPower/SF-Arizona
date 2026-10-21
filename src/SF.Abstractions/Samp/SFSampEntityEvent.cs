@@ -24,6 +24,9 @@ public enum SFSampEntityChange : byte
 }
 
 /// <summary>Change of a server-owned entity in a SA-MP pool, raised synchronously on the main thread.</summary>
+/// <param name="Type">SA-MP pool kind.</param>
+/// <param name="SampId">Server-side entity identifier.</param>
+/// <param name="Change">Observed lifecycle transition.</param>
 /// <param name="Entity">Game entity, when one exists at the time of the event.</param>
 public readonly record struct SFSampEntityEvent(
     SFSampEntityType Type,

@@ -1,0 +1,1377 @@
+#nullable enable
+abstract SFSharp.Abstractions.Modules.SFModuleBase.ExecuteAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+const SFSharp.Abstractions.Network.RakNetTimestampEnvelope.HeaderByteLength = 6 -> int
+const SFSharp.Abstractions.Network.RakNetTimestampEnvelope.PrefixByteLength = 5 -> int
+override SFSharp.Abstractions.Gta.SFEntityRef.GetHashCode() -> int
+override SFSharp.Abstractions.Gta.SFEntitySnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.Gta.SFGameTick.GetHashCode() -> int
+override SFSharp.Abstractions.Gta.SFRaycastHit.GetHashCode() -> int
+override SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.ToString() -> string!
+override SFSharp.Abstractions.Modules.ModuleDescriptor.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Modules.ModuleDescriptor.GetHashCode() -> int
+override SFSharp.Abstractions.Modules.ModuleDescriptor.ToString() -> string!
+override SFSharp.Abstractions.Modules.SFModuleInfo.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Modules.SFModuleInfo.GetHashCode() -> int
+override SFSharp.Abstractions.Modules.SFModuleInfo.ToString() -> string!
+override SFSharp.Abstractions.Network.IncomingPacketFrame.GetHashCode() -> int
+override SFSharp.Abstractions.Network.IncomingRpcFrame.GetHashCode() -> int
+override SFSharp.Abstractions.Network.OutgoingPacketFrame.GetHashCode() -> int
+override SFSharp.Abstractions.Network.OutgoingRpcFrame.GetHashCode() -> int
+override SFSharp.Abstractions.Network.RakNetTimestampEnvelope.GetHashCode() -> int
+override SFSharp.Abstractions.Network.SFPacketMetadata.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Network.SFPacketMetadata.GetHashCode() -> int
+override SFSharp.Abstractions.Network.SFPacketMetadata.ToString() -> string!
+override SFSharp.Abstractions.Network.SFPacketObservation.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Network.SFPacketObservation.GetHashCode() -> int
+override SFSharp.Abstractions.Network.SFPacketObservation.ToString() -> string!
+override SFSharp.Abstractions.Samp.SFLabelSnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.SFPlayerSnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.SFSampClientInfo.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Samp.SFSampClientInfo.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.SFSampClientInfo.ToString() -> string!
+override SFSharp.Abstractions.Samp.SFSampEntityEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.SFTextDrawSnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.SFVehicleSnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.SFColor.GetHashCode() -> int
+override SFSharp.Abstractions.SFColor.ToString() -> string!
+override SFSharp.Abstractions.Ui.ChatEntry.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Ui.ChatEntry.GetHashCode() -> int
+override SFSharp.Abstractions.Ui.ChatEntry.ToString() -> string!
+override SFSharp.Abstractions.Ui.ServerChatEntry.Equals(object? obj) -> bool
+override SFSharp.Abstractions.Ui.ServerChatEntry.GetHashCode() -> int
+override SFSharp.Abstractions.Ui.ServerChatEntry.ToString() -> string!
+override SFSharp.Abstractions.Ui.SFDialogInputResult.GetHashCode() -> int
+override SFSharp.Abstractions.Ui.SFDialogListResult.GetHashCode() -> int
+override SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.GetHashCode() -> int
+SFSharp.Abstractions.Game.ISFGameLoading
+SFSharp.Abstractions.Game.ISFGameLoading.GameState.get -> int
+SFSharp.Abstractions.Game.ISFGameLoading.Stage.get -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.ISFGameLoading.Subscribe(SFSharp.Abstractions.Game.SFGameLoadStage stage, System.Action! handler) -> System.IDisposable!
+SFSharp.Abstractions.Game.ISFGameLoading.WhenStageAsync(SFSharp.Abstractions.Game.SFGameLoadStage stage) -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.AfterCoreData = 3 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.AfterInit1 = 5 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.AfterInit2 = 7 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.AfterInit3 = 9 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.BeforeCoreData = 2 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.BeforeInit1 = 4 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.BeforeInit2 = 6 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.BeforeInit3 = 8 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.NetGameReady = 10 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.None = 0 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Game.SFGameLoadStage.Startup = 1 -> SFSharp.Abstractions.Game.SFGameLoadStage
+SFSharp.Abstractions.Gta.ISFCamera
+SFSharp.Abstractions.Gta.ISFCamera.FadeAlpha.get -> float
+SFSharp.Abstractions.Gta.ISFCamera.FadeState.get -> byte
+SFSharp.Abstractions.Gta.ISFCamera.FieldOfView.get -> float
+SFSharp.Abstractions.Gta.ISFCamera.Front.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.ISFCamera.GetDistanceTo(System.Numerics.Vector3 point) -> float
+SFSharp.Abstractions.Gta.ISFCamera.GetLookAtPoint(float distance = 100) -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.ISFCamera.IsAvailable.get -> bool
+SFSharp.Abstractions.Gta.ISFCamera.IsFading.get -> bool
+SFSharp.Abstractions.Gta.ISFCamera.IsWideScreen.get -> bool
+SFSharp.Abstractions.Gta.ISFCamera.Mode.get -> ushort
+SFSharp.Abstractions.Gta.ISFCamera.Position.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.ISFCamera.Right.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.ISFCamera.ShakeForce.get -> float
+SFSharp.Abstractions.Gta.ISFCamera.TryWorldToScreen(System.Numerics.Vector3 point, out System.Numerics.Vector2 screen, out float cameraDepth) -> bool
+SFSharp.Abstractions.Gta.ISFCamera.Up.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.ISFEntities
+SFSharp.Abstractions.Gta.ISFEntities.Enumerate(SFSharp.Abstractions.Gta.SFEntityKind kind) -> System.Collections.Generic.IReadOnlyList<SFSharp.Abstractions.Gta.SFEntityRef>!
+SFSharp.Abstractions.Gta.ISFEntities.Exists(SFSharp.Abstractions.Gta.SFEntityRef entity) -> bool
+SFSharp.Abstractions.Gta.ISFEntities.OnDamage(System.Action<SFSharp.Abstractions.Gta.SFDamageEvent!>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Gta.ISFEntities.SetArmour(SFSharp.Abstractions.Gta.SFEntityRef entity, float armour) -> bool
+SFSharp.Abstractions.Gta.ISFEntities.SetHeading(SFSharp.Abstractions.Gta.SFEntityRef entity, float heading) -> bool
+SFSharp.Abstractions.Gta.ISFEntities.SetHealth(SFSharp.Abstractions.Gta.SFEntityRef entity, float health) -> bool
+SFSharp.Abstractions.Gta.ISFEntities.SetTurnSpeed(SFSharp.Abstractions.Gta.SFEntityRef entity, System.Numerics.Vector3 turnSpeed) -> bool
+SFSharp.Abstractions.Gta.ISFEntities.SetVelocity(SFSharp.Abstractions.Gta.SFEntityRef entity, System.Numerics.Vector3 velocity) -> bool
+SFSharp.Abstractions.Gta.ISFEntities.Teleport(SFSharp.Abstractions.Gta.SFEntityRef entity, System.Numerics.Vector3 position) -> bool
+SFSharp.Abstractions.Gta.ISFEntities.TryGetSnapshot(SFSharp.Abstractions.Gta.SFEntityRef entity, out SFSharp.Abstractions.Gta.SFEntitySnapshot snapshot) -> bool
+SFSharp.Abstractions.Gta.ISFGameClock
+SFSharp.Abstractions.Gta.ISFGameClock.Current.get -> SFSharp.Abstractions.Gta.SFGameTick
+SFSharp.Abstractions.Gta.ISFGameClock.IsAvailable.get -> bool
+SFSharp.Abstractions.Gta.ISFGameClock.Subscribe(System.Action<SFSharp.Abstractions.Gta.SFGameTick>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Gta.ISFGta
+SFSharp.Abstractions.Gta.ISFGta.Camera.get -> SFSharp.Abstractions.Gta.ISFCamera!
+SFSharp.Abstractions.Gta.ISFGta.Clock.get -> SFSharp.Abstractions.Gta.ISFGameClock!
+SFSharp.Abstractions.Gta.ISFGta.Entities.get -> SFSharp.Abstractions.Gta.ISFEntities!
+SFSharp.Abstractions.Gta.ISFGta.World.get -> SFSharp.Abstractions.Gta.ISFWorld!
+SFSharp.Abstractions.Gta.ISFWorld
+SFSharp.Abstractions.Gta.ISFWorld.TryFindGround(System.Numerics.Vector3 position, out float height) -> bool
+SFSharp.Abstractions.Gta.ISFWorld.TryRaycast(System.Numerics.Vector3 origin, System.Numerics.Vector3 target, SFSharp.Abstractions.Gta.SFRaycastOptions options, out SFSharp.Abstractions.Gta.SFRaycastHit hit) -> bool
+SFSharp.Abstractions.Gta.SFDamageEvent
+SFSharp.Abstractions.Gta.SFDamageEvent.Amount.get -> float
+SFSharp.Abstractions.Gta.SFDamageEvent.Amount.set -> void
+SFSharp.Abstractions.Gta.SFDamageEvent.BodyPart.get -> int
+SFSharp.Abstractions.Gta.SFDamageEvent.Cancel.get -> bool
+SFSharp.Abstractions.Gta.SFDamageEvent.Cancel.set -> void
+SFSharp.Abstractions.Gta.SFDamageEvent.SFDamageEvent(SFSharp.Abstractions.Gta.SFEntityRef target, SFSharp.Abstractions.Gta.SFEntityRef? source, int weapon, int bodyPart, float amount) -> void
+SFSharp.Abstractions.Gta.SFDamageEvent.Source.get -> SFSharp.Abstractions.Gta.SFEntityRef?
+SFSharp.Abstractions.Gta.SFDamageEvent.Target.get -> SFSharp.Abstractions.Gta.SFEntityRef
+SFSharp.Abstractions.Gta.SFDamageEvent.Weapon.get -> int
+SFSharp.Abstractions.Gta.SFEntityKind
+SFSharp.Abstractions.Gta.SFEntityKind.Object = 4 -> SFSharp.Abstractions.Gta.SFEntityKind
+SFSharp.Abstractions.Gta.SFEntityKind.Ped = 3 -> SFSharp.Abstractions.Gta.SFEntityKind
+SFSharp.Abstractions.Gta.SFEntityKind.Vehicle = 2 -> SFSharp.Abstractions.Gta.SFEntityKind
+SFSharp.Abstractions.Gta.SFEntityRef
+SFSharp.Abstractions.Gta.SFEntityRef.Deconstruct(out SFSharp.Abstractions.Gta.SFEntityKind Kind, out int Handle) -> void
+SFSharp.Abstractions.Gta.SFEntityRef.Equals(SFSharp.Abstractions.Gta.SFEntityRef other) -> bool
+SFSharp.Abstractions.Gta.SFEntityRef.Handle.get -> int
+SFSharp.Abstractions.Gta.SFEntityRef.Handle.init -> void
+SFSharp.Abstractions.Gta.SFEntityRef.Kind.get -> SFSharp.Abstractions.Gta.SFEntityKind
+SFSharp.Abstractions.Gta.SFEntityRef.Kind.init -> void
+SFSharp.Abstractions.Gta.SFEntityRef.SFEntityRef() -> void
+SFSharp.Abstractions.Gta.SFEntityRef.SFEntityRef(SFSharp.Abstractions.Gta.SFEntityKind Kind, int Handle) -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Armour.get -> float
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Armour.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Deconstruct(out SFSharp.Abstractions.Gta.SFEntityRef Entity, out int ModelId, out byte Interior, out System.Numerics.Vector3 Position, out float Heading, out System.Numerics.Matrix4x4 Matrix, out System.Numerics.Vector3 Velocity, out System.Numerics.Vector3 TurnSpeed, out float Health, out float Armour, out SFSharp.Abstractions.Gta.SFEntityRef? Vehicle, out SFSharp.Abstractions.Gta.SFEntityRef? Driver) -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Driver.get -> SFSharp.Abstractions.Gta.SFEntityRef?
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Driver.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Entity.get -> SFSharp.Abstractions.Gta.SFEntityRef
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Entity.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Equals(SFSharp.Abstractions.Gta.SFEntitySnapshot other) -> bool
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Heading.get -> float
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Heading.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Health.get -> float
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Health.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Interior.get -> byte
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Interior.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Matrix.get -> System.Numerics.Matrix4x4
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Matrix.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.ModelId.get -> int
+SFSharp.Abstractions.Gta.SFEntitySnapshot.ModelId.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Position.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Position.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.SFEntitySnapshot() -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.SFEntitySnapshot(SFSharp.Abstractions.Gta.SFEntityRef Entity, int ModelId, byte Interior, System.Numerics.Vector3 Position, float Heading, System.Numerics.Matrix4x4 Matrix, System.Numerics.Vector3 Velocity, System.Numerics.Vector3 TurnSpeed, float Health, float Armour, SFSharp.Abstractions.Gta.SFEntityRef? Vehicle, SFSharp.Abstractions.Gta.SFEntityRef? Driver) -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.TurnSpeed.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.SFEntitySnapshot.TurnSpeed.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Vehicle.get -> SFSharp.Abstractions.Gta.SFEntityRef?
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Vehicle.init -> void
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Velocity.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.SFEntitySnapshot.Velocity.init -> void
+SFSharp.Abstractions.Gta.SFGameTick
+SFSharp.Abstractions.Gta.SFGameTick.Deconstruct(out uint Frame, out uint GameMilliseconds, out System.TimeSpan Delta, out float EngineTimeStep, out bool IsPaused) -> void
+SFSharp.Abstractions.Gta.SFGameTick.Delta.get -> System.TimeSpan
+SFSharp.Abstractions.Gta.SFGameTick.Delta.init -> void
+SFSharp.Abstractions.Gta.SFGameTick.EngineTimeStep.get -> float
+SFSharp.Abstractions.Gta.SFGameTick.EngineTimeStep.init -> void
+SFSharp.Abstractions.Gta.SFGameTick.Equals(SFSharp.Abstractions.Gta.SFGameTick other) -> bool
+SFSharp.Abstractions.Gta.SFGameTick.Frame.get -> uint
+SFSharp.Abstractions.Gta.SFGameTick.Frame.init -> void
+SFSharp.Abstractions.Gta.SFGameTick.GameMilliseconds.get -> uint
+SFSharp.Abstractions.Gta.SFGameTick.GameMilliseconds.init -> void
+SFSharp.Abstractions.Gta.SFGameTick.IsPaused.get -> bool
+SFSharp.Abstractions.Gta.SFGameTick.IsPaused.init -> void
+SFSharp.Abstractions.Gta.SFGameTick.SFGameTick() -> void
+SFSharp.Abstractions.Gta.SFGameTick.SFGameTick(uint Frame, uint GameMilliseconds, System.TimeSpan Delta, float EngineTimeStep, bool IsPaused) -> void
+SFSharp.Abstractions.Gta.SFRaycastHit
+SFSharp.Abstractions.Gta.SFRaycastHit.Deconstruct(out System.Numerics.Vector3 Position, out System.Numerics.Vector3 Normal, out byte Surface, out SFSharp.Abstractions.Gta.SFEntityRef? Entity) -> void
+SFSharp.Abstractions.Gta.SFRaycastHit.Entity.get -> SFSharp.Abstractions.Gta.SFEntityRef?
+SFSharp.Abstractions.Gta.SFRaycastHit.Entity.init -> void
+SFSharp.Abstractions.Gta.SFRaycastHit.Equals(SFSharp.Abstractions.Gta.SFRaycastHit other) -> bool
+SFSharp.Abstractions.Gta.SFRaycastHit.Normal.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.SFRaycastHit.Normal.init -> void
+SFSharp.Abstractions.Gta.SFRaycastHit.Position.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Gta.SFRaycastHit.Position.init -> void
+SFSharp.Abstractions.Gta.SFRaycastHit.SFRaycastHit() -> void
+SFSharp.Abstractions.Gta.SFRaycastHit.SFRaycastHit(System.Numerics.Vector3 Position, System.Numerics.Vector3 Normal, byte Surface, SFSharp.Abstractions.Gta.SFEntityRef? Entity) -> void
+SFSharp.Abstractions.Gta.SFRaycastHit.Surface.get -> byte
+SFSharp.Abstractions.Gta.SFRaycastHit.Surface.init -> void
+SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.AllEntities = SFSharp.Abstractions.Gta.SFRaycastOptions.Buildings | SFSharp.Abstractions.Gta.SFRaycastOptions.Vehicles | SFSharp.Abstractions.Gta.SFRaycastOptions.Peds | SFSharp.Abstractions.Gta.SFRaycastOptions.Objects | SFSharp.Abstractions.Gta.SFRaycastOptions.Dummies -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.Buildings = 1 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.Dummies = 16 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.IgnoreCameraCheck = 64 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.None = 0 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.Objects = 8 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.Peds = 4 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.SeeThrough = 32 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.ShootThrough = 128 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.Gta.SFRaycastOptions.Vehicles = 2 -> SFSharp.Abstractions.Gta.SFRaycastOptions
+SFSharp.Abstractions.ISF
+SFSharp.Abstractions.ISF.Gta.get -> SFSharp.Abstractions.Gta.ISFGta!
+SFSharp.Abstractions.ISF.Keyboard.get -> SFSharp.Abstractions.Ui.ISFKeyboard!
+SFSharp.Abstractions.ISF.Loading.get -> SFSharp.Abstractions.Game.ISFGameLoading!
+SFSharp.Abstractions.ISF.MainThread.get -> SFSharp.Abstractions.ISFMainThread!
+SFSharp.Abstractions.ISF.Modules.get -> SFSharp.Abstractions.Modules.ISFModules!
+SFSharp.Abstractions.ISF.Samp.get -> SFSharp.Abstractions.Samp.ISFSamp!
+SFSharp.Abstractions.ISF.UserFilesDirectory.get -> string!
+SFSharp.Abstractions.ISFEvents
+SFSharp.Abstractions.ISFEvents.OnIncomingPacket<TPacket>(System.Action<TPacket>! handler) -> System.IDisposable!
+SFSharp.Abstractions.ISFEvents.OnIncomingRpc<TRpc>(System.Action<TRpc>! handler) -> System.IDisposable!
+SFSharp.Abstractions.ISFEvents.OnOutgoingPacket<TPacket>(System.Action<TPacket>! handler) -> System.IDisposable!
+SFSharp.Abstractions.ISFEvents.OnOutgoingRpc<TRpc>(System.Action<TRpc>! handler) -> System.IDisposable!
+SFSharp.Abstractions.ISFEvents.StreamIncomingPacket<TPacket>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TPacket>!
+SFSharp.Abstractions.ISFEvents.StreamIncomingRpc<TRpc>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TRpc>!
+SFSharp.Abstractions.ISFEvents.StreamOutgoingPacket<TPacket>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TPacket>!
+SFSharp.Abstractions.ISFEvents.StreamOutgoingRpc<TRpc>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TRpc>!
+SFSharp.Abstractions.ISFMainThread
+SFSharp.Abstractions.ISFMainThread.InvokeAsync(System.Action! action, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.ISFMainThread.InvokeAsync<T>(System.Func<T>! action, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+SFSharp.Abstractions.ISFMainThread.IsMainThread.get -> bool
+SFSharp.Abstractions.Modules.IModuleContext
+SFSharp.Abstractions.Modules.IModuleContext.Assets.get -> SFSharp.Abstractions.Storage.IModuleStorage!
+SFSharp.Abstractions.Modules.IModuleContext.CancellationToken.get -> System.Threading.CancellationToken
+SFSharp.Abstractions.Modules.IModuleContext.Config.get -> SFSharp.Abstractions.Storage.IModuleConfig!
+SFSharp.Abstractions.Modules.IModuleContext.Descriptor.get -> SFSharp.Abstractions.Modules.ModuleDescriptor!
+SFSharp.Abstractions.Modules.IModuleContext.GetSnapshot() -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot!
+SFSharp.Abstractions.Modules.IModuleContext.Heartbeat(string? activity = null) -> void
+SFSharp.Abstractions.Modules.IModuleContext.IncrementCounter(string! counterName, long delta = 1) -> void
+SFSharp.Abstractions.Modules.IModuleContext.InvokeOnMainThreadAsync(System.Action! action, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.Modules.IModuleContext.InvokeOnMainThreadAsync<T>(System.Func<T>! action, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+SFSharp.Abstractions.Modules.IModuleContext.Log.get -> Microsoft.Extensions.Logging.ILogger!
+SFSharp.Abstractions.Modules.IModuleContext.RegisterAsyncChatCommand(string! command, System.Func<string?, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! callback) -> System.IDisposable!
+SFSharp.Abstractions.Modules.IModuleContext.RegisterChatCommand(string! command, System.Action<string?>! callback) -> System.IDisposable!
+SFSharp.Abstractions.Modules.IModuleContext.RegisterDisposable(System.IDisposable! disposable) -> System.IDisposable!
+SFSharp.Abstractions.Modules.IModuleContext.ReportActivity(string! activity) -> void
+SFSharp.Abstractions.Modules.IModuleContext.RunBackground(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>! work) -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.Modules.IModuleContext.RunBackground(System.Func<System.Threading.Tasks.Task!>! work) -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.Modules.IModuleContext.SetDetail(string! key, string? value) -> void
+SFSharp.Abstractions.Modules.IModuleContext.SetStatusText(string? value) -> void
+SFSharp.Abstractions.Modules.IModuleContext.SF.get -> SFSharp.Abstractions.ISF!
+SFSharp.Abstractions.Modules.IModuleContext.Telemetry.get -> SFSharp.Abstractions.Modules.IModuleTelemetry!
+SFSharp.Abstractions.Modules.IModuleContext.TrackLoop(string? activity = null) -> System.IDisposable!
+SFSharp.Abstractions.Modules.IModuleContext.UserData.get -> SFSharp.Abstractions.Storage.IModuleStorage!
+SFSharp.Abstractions.Modules.IModuleTelemetry
+SFSharp.Abstractions.Modules.IModuleTelemetry.GetSnapshot() -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot!
+SFSharp.Abstractions.Modules.IModuleTelemetry.Heartbeat(string? activity = null) -> void
+SFSharp.Abstractions.Modules.IModuleTelemetry.IncrementCounter(string! counterName, long delta = 1) -> void
+SFSharp.Abstractions.Modules.IModuleTelemetry.ReportActivity(string! activity) -> void
+SFSharp.Abstractions.Modules.IModuleTelemetry.SetDetail(string! key, string? value) -> void
+SFSharp.Abstractions.Modules.IModuleTelemetry.SetStatusText(string? value) -> void
+SFSharp.Abstractions.Modules.IModuleTelemetry.TrackLoop(string? activity = null) -> System.IDisposable!
+SFSharp.Abstractions.Modules.ISFEarlyContext
+SFSharp.Abstractions.Modules.ISFEarlyContext.Loading.get -> SFSharp.Abstractions.Game.ISFGameLoading!
+SFSharp.Abstractions.Modules.ISFEarlyContext.Log.get -> Microsoft.Extensions.Logging.ILogger!
+SFSharp.Abstractions.Modules.ISFEarlyContext.PluginId.get -> string!
+SFSharp.Abstractions.Modules.ISFEarlyContext.RegisterDisposable(System.IDisposable! disposable) -> System.IDisposable!
+SFSharp.Abstractions.Modules.ISFEarlyModule
+SFSharp.Abstractions.Modules.ISFEarlyModule.OnGameLoading(SFSharp.Abstractions.Modules.ISFEarlyContext! context) -> void
+SFSharp.Abstractions.Modules.ISFModule
+SFSharp.Abstractions.Modules.ISFModule.RunAsync(SFSharp.Abstractions.Modules.IModuleContext! context) -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.Modules.ISFModules
+SFSharp.Abstractions.Modules.ISFModules.Get(string! moduleId) -> SFSharp.Abstractions.Modules.SFModuleInfo?
+SFSharp.Abstractions.Modules.ISFModules.GetAll() -> System.Collections.Generic.IReadOnlyCollection<SFSharp.Abstractions.Modules.SFModuleInfo!>!
+SFSharp.Abstractions.Modules.ISFModules.TryGet(string! moduleId, out SFSharp.Abstractions.Modules.SFModuleInfo! module) -> bool
+SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel
+SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel.BackgroundWorker = 1 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel
+SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel.Hybrid = 2 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel
+SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel.MainThread = 0 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel
+SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState.Created = 0 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState.Faulted = 5 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState.Running = 2 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState.Starting = 1 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState.Stopped = 4 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState.Stopping = 3 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy.Manual = 0 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy.OnFault = 1 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.<Clone>$() -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot!
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.AutoStartEnabled.get -> bool
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.AutoStartEnabled.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.AverageLoopMilliseconds.get -> double
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.AverageLoopMilliseconds.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Counters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, long>!
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Counters.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.CreatedAt.get -> System.DateTimeOffset?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.CreatedAt.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Deconstruct(out SFSharp.Abstractions.Modules.ModuleDescriptor! Descriptor, out SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState State, out SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason LastStopReason, out bool AutoStartEnabled, out System.DateTimeOffset? CreatedAt, out System.DateTimeOffset? StartedAt, out System.DateTimeOffset? StoppedAt, out System.DateTimeOffset? LastHeartbeatAt, out System.DateTimeOffset? LastActivityAt, out string? LastActivity, out string? StatusText, out int? StartThreadId, out int? LastThreadId, out long StartCount, out long RestartCount, out long FaultCount, out long LoopCount, out double AverageLoopMilliseconds, out double MaxLoopMilliseconds, out double EstimatedLoadPercent, out long LastMemoryBytes, out string? LastExceptionType, out string? LastExceptionMessage, out System.Collections.Generic.IReadOnlyDictionary<string!, long>! Counters, out System.Collections.Generic.IReadOnlyDictionary<string!, string!>! Details, out int OwnedDisposableCount) -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Descriptor.get -> SFSharp.Abstractions.Modules.ModuleDescriptor!
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Descriptor.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Details.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Details.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Equals(SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot? other) -> bool
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.EstimatedLoadPercent.get -> double
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.EstimatedLoadPercent.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.FaultCount.get -> long
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.FaultCount.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastActivity.get -> string?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastActivity.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastActivityAt.get -> System.DateTimeOffset?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastActivityAt.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastExceptionMessage.get -> string?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastExceptionMessage.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastExceptionType.get -> string?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastExceptionType.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastHeartbeatAt.get -> System.DateTimeOffset?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastHeartbeatAt.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastMemoryBytes.get -> long
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastMemoryBytes.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastStopReason.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastStopReason.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastThreadId.get -> int?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LastThreadId.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LoopCount.get -> long
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.LoopCount.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.MaxLoopMilliseconds.get -> double
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.MaxLoopMilliseconds.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.ModuleRuntimeSnapshot(SFSharp.Abstractions.Modules.ModuleDescriptor! Descriptor, SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState State, SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason LastStopReason, bool AutoStartEnabled, System.DateTimeOffset? CreatedAt, System.DateTimeOffset? StartedAt, System.DateTimeOffset? StoppedAt, System.DateTimeOffset? LastHeartbeatAt, System.DateTimeOffset? LastActivityAt, string? LastActivity, string? StatusText, int? StartThreadId, int? LastThreadId, long StartCount, long RestartCount, long FaultCount, long LoopCount, double AverageLoopMilliseconds, double MaxLoopMilliseconds, double EstimatedLoadPercent, long LastMemoryBytes, string? LastExceptionType, string? LastExceptionMessage, System.Collections.Generic.IReadOnlyDictionary<string!, long>! Counters, System.Collections.Generic.IReadOnlyDictionary<string!, string!>! Details, int OwnedDisposableCount) -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.OwnedDisposableCount.get -> int
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.OwnedDisposableCount.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.RestartCount.get -> long
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.RestartCount.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StartCount.get -> long
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StartCount.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StartedAt.get -> System.DateTimeOffset?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StartedAt.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StartThreadId.get -> int?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StartThreadId.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.State.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.State.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StatusText.get -> string?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StatusText.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StoppedAt.get -> System.DateTimeOffset?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.StoppedAt.init -> void
+SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.Uptime.get -> System.TimeSpan?
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason.Completed = 1 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason.ContainerShutdown = 4 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason.Faulted = 5 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason.None = 0 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason.PluginUnload = 6 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason.RestartRequested = 3 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason.UserRequested = 2 -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.ModuleDescriptor
+SFSharp.Abstractions.Modules.ModuleDescriptor.<Clone>$() -> SFSharp.Abstractions.Modules.ModuleDescriptor!
+SFSharp.Abstractions.Modules.ModuleDescriptor.Category.get -> string!
+SFSharp.Abstractions.Modules.ModuleDescriptor.Category.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.Deconstruct(out string! Id, out string! DisplayName, out string! Category, out string! Description, out bool DefaultEnabled, out SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel ExecutionModel, out SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy RestartPolicy, out int Order, out System.Collections.Generic.IReadOnlyList<string!>! Dependencies, out string! ModuleTypeName) -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.DefaultEnabled.get -> bool
+SFSharp.Abstractions.Modules.ModuleDescriptor.DefaultEnabled.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.Dependencies.get -> System.Collections.Generic.IReadOnlyList<string!>!
+SFSharp.Abstractions.Modules.ModuleDescriptor.Dependencies.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.Description.get -> string!
+SFSharp.Abstractions.Modules.ModuleDescriptor.Description.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.DisplayName.get -> string!
+SFSharp.Abstractions.Modules.ModuleDescriptor.DisplayName.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.Equals(SFSharp.Abstractions.Modules.ModuleDescriptor? other) -> bool
+SFSharp.Abstractions.Modules.ModuleDescriptor.ExecutionModel.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel
+SFSharp.Abstractions.Modules.ModuleDescriptor.ExecutionModel.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.Id.get -> string!
+SFSharp.Abstractions.Modules.ModuleDescriptor.Id.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.ModuleDescriptor(string! Id, string! DisplayName, string! Category, string! Description, bool DefaultEnabled, SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel ExecutionModel, SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy RestartPolicy, int Order, System.Collections.Generic.IReadOnlyList<string!>! Dependencies, string! ModuleTypeName) -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.ModuleTypeName.get -> string!
+SFSharp.Abstractions.Modules.ModuleDescriptor.ModuleTypeName.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.Order.get -> int
+SFSharp.Abstractions.Modules.ModuleDescriptor.Order.init -> void
+SFSharp.Abstractions.Modules.ModuleDescriptor.RestartPolicy.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy
+SFSharp.Abstractions.Modules.ModuleDescriptor.RestartPolicy.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute
+SFSharp.Abstractions.Modules.SFModuleAttribute.Category.get -> string!
+SFSharp.Abstractions.Modules.SFModuleAttribute.Category.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute.DefaultEnabled.get -> bool
+SFSharp.Abstractions.Modules.SFModuleAttribute.DefaultEnabled.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute.Dependencies.get -> string![]!
+SFSharp.Abstractions.Modules.SFModuleAttribute.Dependencies.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute.Description.get -> string!
+SFSharp.Abstractions.Modules.SFModuleAttribute.Description.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute.DisplayName.get -> string!
+SFSharp.Abstractions.Modules.SFModuleAttribute.ExecutionModel.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel
+SFSharp.Abstractions.Modules.SFModuleAttribute.ExecutionModel.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute.Id.get -> string!
+SFSharp.Abstractions.Modules.SFModuleAttribute.Order.get -> int
+SFSharp.Abstractions.Modules.SFModuleAttribute.Order.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute.RestartPolicy.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy
+SFSharp.Abstractions.Modules.SFModuleAttribute.RestartPolicy.init -> void
+SFSharp.Abstractions.Modules.SFModuleAttribute.SFModuleAttribute(string! id, string! displayName) -> void
+SFSharp.Abstractions.Modules.SFModuleBase
+SFSharp.Abstractions.Modules.SFModuleBase.Context.get -> SFSharp.Abstractions.Modules.IModuleContext!
+SFSharp.Abstractions.Modules.SFModuleBase.Log.get -> Microsoft.Extensions.Logging.ILogger!
+SFSharp.Abstractions.Modules.SFModuleBase.RunAsync(SFSharp.Abstractions.Modules.IModuleContext! context) -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.Modules.SFModuleBase.SFModuleBase() -> void
+SFSharp.Abstractions.Modules.SFModuleInfo
+SFSharp.Abstractions.Modules.SFModuleInfo.<Clone>$() -> SFSharp.Abstractions.Modules.SFModuleInfo!
+SFSharp.Abstractions.Modules.SFModuleInfo.AutoStartEnabled.get -> bool
+SFSharp.Abstractions.Modules.SFModuleInfo.AutoStartEnabled.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.Category.get -> string!
+SFSharp.Abstractions.Modules.SFModuleInfo.Category.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.Deconstruct(out string! Id, out string! DisplayName, out string! Category, out string! Description, out bool DefaultEnabled, out bool AutoStartEnabled, out SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel ExecutionModel, out SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy RestartPolicy, out int Order, out System.Collections.Generic.IReadOnlyList<string!>! Dependencies, out string? PluginId, out SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState State, out SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason LastStopReason, out long RestartCount, out long FaultCount) -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.DefaultEnabled.get -> bool
+SFSharp.Abstractions.Modules.SFModuleInfo.DefaultEnabled.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.Dependencies.get -> System.Collections.Generic.IReadOnlyList<string!>!
+SFSharp.Abstractions.Modules.SFModuleInfo.Dependencies.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.Description.get -> string!
+SFSharp.Abstractions.Modules.SFModuleInfo.Description.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.DisplayName.get -> string!
+SFSharp.Abstractions.Modules.SFModuleInfo.DisplayName.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.Equals(SFSharp.Abstractions.Modules.SFModuleInfo? other) -> bool
+SFSharp.Abstractions.Modules.SFModuleInfo.ExecutionModel.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel
+SFSharp.Abstractions.Modules.SFModuleInfo.ExecutionModel.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.FaultCount.get -> long
+SFSharp.Abstractions.Modules.SFModuleInfo.FaultCount.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.Id.get -> string!
+SFSharp.Abstractions.Modules.SFModuleInfo.Id.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.IsPluginModule.get -> bool
+SFSharp.Abstractions.Modules.SFModuleInfo.LastStopReason.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason
+SFSharp.Abstractions.Modules.SFModuleInfo.LastStopReason.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.Order.get -> int
+SFSharp.Abstractions.Modules.SFModuleInfo.Order.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.PluginId.get -> string?
+SFSharp.Abstractions.Modules.SFModuleInfo.PluginId.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.RestartCount.get -> long
+SFSharp.Abstractions.Modules.SFModuleInfo.RestartCount.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.RestartPolicy.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy
+SFSharp.Abstractions.Modules.SFModuleInfo.RestartPolicy.init -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.SFModuleInfo(string! Id, string! DisplayName, string! Category, string! Description, bool DefaultEnabled, bool AutoStartEnabled, SFSharp.Abstractions.Modules.Lifecycle.ModuleExecutionModel ExecutionModel, SFSharp.Abstractions.Modules.Lifecycle.ModuleRestartPolicy RestartPolicy, int Order, System.Collections.Generic.IReadOnlyList<string!>! Dependencies, string? PluginId, SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState State, SFSharp.Abstractions.Modules.Lifecycle.ModuleStopReason LastStopReason, long RestartCount, long FaultCount) -> void
+SFSharp.Abstractions.Modules.SFModuleInfo.State.get -> SFSharp.Abstractions.Modules.Lifecycle.ModuleLifecycleState
+SFSharp.Abstractions.Modules.SFModuleInfo.State.init -> void
+SFSharp.Abstractions.Network.IncomingPacketFrame
+SFSharp.Abstractions.Network.IncomingPacketFrame.Data.get -> System.ReadOnlyMemory<byte>
+SFSharp.Abstractions.Network.IncomingPacketFrame.Data.init -> void
+SFSharp.Abstractions.Network.IncomingPacketFrame.DataBitLength.get -> int
+SFSharp.Abstractions.Network.IncomingPacketFrame.DataBitLength.init -> void
+SFSharp.Abstractions.Network.IncomingPacketFrame.Deconstruct(out int PacketId, out System.ReadOnlyMemory<byte> Data, out int DataBitLength) -> void
+SFSharp.Abstractions.Network.IncomingPacketFrame.EffectivePacketId.get -> int
+SFSharp.Abstractions.Network.IncomingPacketFrame.Equals(SFSharp.Abstractions.Network.IncomingPacketFrame other) -> bool
+SFSharp.Abstractions.Network.IncomingPacketFrame.IncomingPacketFrame() -> void
+SFSharp.Abstractions.Network.IncomingPacketFrame.IncomingPacketFrame(int PacketId, System.ReadOnlyMemory<byte> Data, int DataBitLength) -> void
+SFSharp.Abstractions.Network.IncomingPacketFrame.PacketData.get -> System.ReadOnlyMemory<byte>
+SFSharp.Abstractions.Network.IncomingPacketFrame.PacketDataBitLength.get -> int
+SFSharp.Abstractions.Network.IncomingPacketFrame.PacketDataBitOffset.get -> int
+SFSharp.Abstractions.Network.IncomingPacketFrame.PacketId.get -> int
+SFSharp.Abstractions.Network.IncomingPacketFrame.PacketId.init -> void
+SFSharp.Abstractions.Network.IncomingPacketFrame.RakNetTimestamp.get -> uint?
+SFSharp.Abstractions.Network.IncomingPacketFrame.TryGetTimestampEnvelope(out SFSharp.Abstractions.Network.RakNetTimestampEnvelope envelope) -> bool
+SFSharp.Abstractions.Network.IncomingRpcFrame
+SFSharp.Abstractions.Network.IncomingRpcFrame.Data.get -> System.ReadOnlyMemory<byte>
+SFSharp.Abstractions.Network.IncomingRpcFrame.Data.init -> void
+SFSharp.Abstractions.Network.IncomingRpcFrame.DataBitLength.get -> int
+SFSharp.Abstractions.Network.IncomingRpcFrame.DataBitLength.init -> void
+SFSharp.Abstractions.Network.IncomingRpcFrame.DataBitOffset.get -> int
+SFSharp.Abstractions.Network.IncomingRpcFrame.DataBitOffset.init -> void
+SFSharp.Abstractions.Network.IncomingRpcFrame.Deconstruct(out int RpcId, out System.ReadOnlyMemory<byte> Data, out int DataBitOffset, out int DataBitLength) -> void
+SFSharp.Abstractions.Network.IncomingRpcFrame.Equals(SFSharp.Abstractions.Network.IncomingRpcFrame other) -> bool
+SFSharp.Abstractions.Network.IncomingRpcFrame.IncomingRpcFrame() -> void
+SFSharp.Abstractions.Network.IncomingRpcFrame.IncomingRpcFrame(int RpcId, System.ReadOnlyMemory<byte> Data, int DataBitOffset, int DataBitLength) -> void
+SFSharp.Abstractions.Network.IncomingRpcFrame.RpcId.get -> int
+SFSharp.Abstractions.Network.IncomingRpcFrame.RpcId.init -> void
+SFSharp.Abstractions.Network.ISFNetwork
+SFSharp.Abstractions.Network.ISFNetwork.SendPacket(System.ReadOnlySpan<byte> data, SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority priority = SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority.High, SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability reliability = SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.ReliableOrdered, byte orderingChannel = 0) -> bool
+SFSharp.Abstractions.Network.ISFNetwork.SendRpc(int rpcId, SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority priority = SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority.High, SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability reliability = SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.ReliableOrdered, byte orderingChannel = 0, bool shiftTimestamp = false) -> bool
+SFSharp.Abstractions.Network.ISFNetwork.SendRpc(int rpcId, System.ReadOnlySpan<byte> payload, int payloadBitLength, SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority priority = SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority.High, SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability reliability = SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.ReliableOrdered, byte orderingChannel = 0, bool shiftTimestamp = false) -> bool
+SFSharp.Abstractions.Network.ISFNetwork.SimulateIncomingPacket(System.ReadOnlySpan<byte> data) -> bool
+SFSharp.Abstractions.Network.ISFNetwork.SimulateIncomingRpc(int rpcId) -> bool
+SFSharp.Abstractions.Network.ISFNetwork.SimulateIncomingRpc(int rpcId, System.ReadOnlySpan<byte> payload, int payloadBitLength) -> bool
+SFSharp.Abstractions.Network.ISFPacketParsers
+SFSharp.Abstractions.Network.ISFPacketParsers.BindIncoming<TPacket>(System.Action<TPacket>! handler, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPacketParsers.BindOutgoing<TPacket>(System.Action<TPacket>! handler, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPacketParsers.Describe(int packetId, bool incoming, System.ReadOnlyMemory<byte> data, int dataBitLength) -> SFSharp.Abstractions.Network.SFPacketMetadata?
+SFSharp.Abstractions.Network.ISFPacketParsers.RegisterIncomingDecoder(int packetId, System.Func<SFSharp.Abstractions.Network.IncomingPacketFrame, SFSharp.Abstractions.Parsing.IParsedIncomingPacket?>! decoder) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPacketParsers.RegisterMetadata(int packetId, System.Func<bool, System.ReadOnlyMemory<byte>, int, SFSharp.Abstractions.Network.SFPacketMetadata?>! describe) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPacketParsers.RegisterObservationDecoder(int packetId, System.Func<SFSharp.Abstractions.Network.SFPacketObservation!, SFSharp.Abstractions.Parsing.IParsedPacket?>! decoder) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPacketParsers.RegisterOutgoingDecoder(int packetId, System.Func<SFSharp.Abstractions.Network.OutgoingPacketFrame, SFSharp.Abstractions.Parsing.IParsedOutgoingPacket?>! decoder) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPacketParsers.StreamIncoming<TPacket>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TPacket>!
+SFSharp.Abstractions.Network.ISFPacketParsers.StreamOutgoing<TPacket>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TPacket>!
+SFSharp.Abstractions.Network.ISFPacketParsers.TryParseIncoming(SFSharp.Abstractions.Network.IncomingPacketFrame frame, out SFSharp.Abstractions.Parsing.IParsedIncomingPacket? packet) -> bool
+SFSharp.Abstractions.Network.ISFPacketParsers.TryParseObservation(SFSharp.Abstractions.Network.SFPacketObservation! observation, out SFSharp.Abstractions.Parsing.IParsedPacket? packet) -> bool
+SFSharp.Abstractions.Network.ISFPacketParsers.TryParseOutgoing(SFSharp.Abstractions.Network.OutgoingPacketFrame frame, out SFSharp.Abstractions.Parsing.IParsedOutgoingPacket? packet) -> bool
+SFSharp.Abstractions.Network.ISFPackets
+SFSharp.Abstractions.Network.ISFPackets.ObserveSources(System.Action<SFSharp.Abstractions.Network.SFPacketObservation!>! observer) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPackets.RegisterIncomingFilter(int packetId, SFSharp.Abstractions.Network.SFPacketFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPackets.RegisterIncomingFilter(SFSharp.Abstractions.Network.SFPacketFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPackets.RegisterOutgoingFilter(int packetId, SFSharp.Abstractions.Network.SFPacketFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPackets.RegisterOutgoingFilter(SFSharp.Abstractions.Network.SFPacketFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPackets.RegisterSource(string! source) -> SFSharp.Abstractions.Network.ISFPacketSource!
+SFSharp.Abstractions.Network.ISFPackets.StreamIncoming(int packetId, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<SFSharp.Abstractions.Network.IncomingPacketFrame>!
+SFSharp.Abstractions.Network.ISFPackets.StreamOutgoing(int packetId, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<SFSharp.Abstractions.Network.OutgoingPacketFrame>!
+SFSharp.Abstractions.Network.ISFPackets.SubscribeIncoming(int packetId, System.Action<SFSharp.Abstractions.Network.IncomingPacketFrame>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPackets.SubscribeOutgoing(int packetId, System.Action<SFSharp.Abstractions.Network.OutgoingPacketFrame>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFPacketSource
+SFSharp.Abstractions.Network.ISFPacketSource.Publish(bool incoming, int packetId, System.ReadOnlySpan<byte> data, int dataBitLength, int payloadBitOffset, int payloadBitLength, int? subId = null, bool reconstructed = false) -> void
+SFSharp.Abstractions.Network.ISFRpc
+SFSharp.Abstractions.Network.ISFRpc.RegisterIncomingFilter(int rpcId, SFSharp.Abstractions.Network.SFRpcFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpc.RegisterIncomingFilter(SFSharp.Abstractions.Network.SFRpcFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpc.RegisterOutgoingFilter(int rpcId, SFSharp.Abstractions.Network.SFRpcFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpc.RegisterOutgoingFilter(SFSharp.Abstractions.Network.SFRpcFilterCallback! filter) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpc.StreamIncoming(int rpcId, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<SFSharp.Abstractions.Network.IncomingRpcFrame>!
+SFSharp.Abstractions.Network.ISFRpc.StreamOutgoing(int rpcId, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<SFSharp.Abstractions.Network.OutgoingRpcFrame>!
+SFSharp.Abstractions.Network.ISFRpc.SubscribeIncoming(int rpcId, System.Action<SFSharp.Abstractions.Network.IncomingRpcFrame>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpc.SubscribeOutgoing(int rpcId, System.Action<SFSharp.Abstractions.Network.OutgoingRpcFrame>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpcParsers
+SFSharp.Abstractions.Network.ISFRpcParsers.BindIncoming<TRpc>(System.Action<TRpc>! handler, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpcParsers.BindOutgoing<TRpc>(System.Action<TRpc>! handler, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.IDisposable!
+SFSharp.Abstractions.Network.ISFRpcParsers.StreamIncoming<TRpc>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TRpc>!
+SFSharp.Abstractions.Network.ISFRpcParsers.StreamOutgoing<TRpc>(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<TRpc>!
+SFSharp.Abstractions.Network.OutgoingPacketFrame
+SFSharp.Abstractions.Network.OutgoingPacketFrame.Data.get -> System.ReadOnlyMemory<byte>
+SFSharp.Abstractions.Network.OutgoingPacketFrame.Data.init -> void
+SFSharp.Abstractions.Network.OutgoingPacketFrame.DataBitLength.get -> int
+SFSharp.Abstractions.Network.OutgoingPacketFrame.DataBitLength.init -> void
+SFSharp.Abstractions.Network.OutgoingPacketFrame.Deconstruct(out int PacketId, out System.ReadOnlyMemory<byte> Data, out int DataBitLength) -> void
+SFSharp.Abstractions.Network.OutgoingPacketFrame.Equals(SFSharp.Abstractions.Network.OutgoingPacketFrame other) -> bool
+SFSharp.Abstractions.Network.OutgoingPacketFrame.OutgoingPacketFrame() -> void
+SFSharp.Abstractions.Network.OutgoingPacketFrame.OutgoingPacketFrame(int PacketId, System.ReadOnlyMemory<byte> Data, int DataBitLength) -> void
+SFSharp.Abstractions.Network.OutgoingPacketFrame.PacketId.get -> int
+SFSharp.Abstractions.Network.OutgoingPacketFrame.PacketId.init -> void
+SFSharp.Abstractions.Network.OutgoingRpcFrame
+SFSharp.Abstractions.Network.OutgoingRpcFrame.Data.get -> System.ReadOnlyMemory<byte>
+SFSharp.Abstractions.Network.OutgoingRpcFrame.Data.init -> void
+SFSharp.Abstractions.Network.OutgoingRpcFrame.DataBitLength.get -> int
+SFSharp.Abstractions.Network.OutgoingRpcFrame.DataBitLength.init -> void
+SFSharp.Abstractions.Network.OutgoingRpcFrame.Deconstruct(out int RpcId, out System.ReadOnlyMemory<byte> Data, out int DataBitLength) -> void
+SFSharp.Abstractions.Network.OutgoingRpcFrame.Equals(SFSharp.Abstractions.Network.OutgoingRpcFrame other) -> bool
+SFSharp.Abstractions.Network.OutgoingRpcFrame.OutgoingRpcFrame() -> void
+SFSharp.Abstractions.Network.OutgoingRpcFrame.OutgoingRpcFrame(int RpcId, System.ReadOnlyMemory<byte> Data, int DataBitLength) -> void
+SFSharp.Abstractions.Network.OutgoingRpcFrame.RpcId.get -> int
+SFSharp.Abstractions.Network.OutgoingRpcFrame.RpcId.init -> void
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.AdvertiseSystem = 47 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.AimData = 203 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.AimSync = 203 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.Authentication = 12 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.AuthKey = 12 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.BroadcastPings = 15 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.BulletData = 206 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.BulletSync = 206 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionAttemptFailed = 29 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionBanned = 36 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionClosed = 32 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionCookie = 26 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionFailed = 29 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionLost = 33 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionRequest = 11 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ConnectionRequestAccepted = 34 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.DetectLostConnections = 23 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.DisconnectionNotification = 32 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.IncarData = 200 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.InitializeEncryption = 35 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.InternalPing = 6 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.InvalidPassword = 37 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.MarkersData = 208 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.MarkersSync = 208 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ModifiedPacket = 38 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.NewIncomingConnection = 30 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.NoFreeIncomingConnections = 31 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.OnfootData = 207 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.OpenConnectionReply = 25 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.OpenConnectionRequest = 24 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.PassengerData = 211 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.PassengerSync = 211 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.Ping = 7 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.PingOpenConnections = 8 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.PlayerSync = 207 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.Pong = 39 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RconCommand = 201 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RconResponse = 202 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.ReceivedStaticData = 41 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RemoteConnectionLost = 43 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RemoteDisconnectionNotification = 42 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RemoteExistingConnection = 45 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RemoteNewIncomingConnection = 44 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RemoteStaticData = 46 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RequestStaticData = 10 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.Rpc = 20 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RpcMapping = 18 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RpcReply = 21 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.RsaPublicKeyMismatch = 28 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.SecuredConnectionConfirmation = 17 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.SecuredConnectionResponse = 16 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.SetRandomNumberSeed = 19 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.SpectatorData = 212 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.SpectatorSync = 212 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.StatsData = 205 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.StatsUpdate = 205 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.Timestamp = 40 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.TrailerData = 210 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.TrailerSync = 210 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.UnoccupiedData = 209 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.UnoccupiedSync = 209 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.VehicleSync = 200 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.WeaponsData = 204 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketId.WeaponsUpdate = 204 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority
+SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority.High = 1 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority
+SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority.Low = 3 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority
+SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority.Medium = 2 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority
+SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority.System = 0 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketPriority
+SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability
+SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.Reliable = 2 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability
+SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.ReliableOrdered = 3 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability
+SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.ReliableSequenced = 4 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability
+SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.Unreliable = 0 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability
+SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability.UnreliableSequenced = 1 -> SFSharp.Abstractions.Network.Protocol.RakNetPacketReliability
+SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ApplyActorAnimation = 173 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ApplyPlayerAnimation = 86 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.AttachCameraToObject = 81 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.AttachObjectToPlayer = 75 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.AttachTrailerToVehicle = 148 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.CameraTargetUpdate = 168 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.CancelEdit = 28 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.Chat = 101 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ChatBubble = 59 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ClearActorAnimation = 174 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ClearPlayerAnimations = 87 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ClickPlayer = 23 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ClickTextDraw = 83 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ClientCheck = 103 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ClientJoin = 25 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ClientMessage = 93 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ConnectionRejected = 130 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.Create3DTextLabel = 36 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.CreateActor = 171 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.CreateExplosion = 79 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.CreateGangZone = 108 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.CreateObject = 44 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.CreatePickup = 95 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.Death = 53 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DeathMessage = 55 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.Destroy3DTextLabel = 58 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DestroyActor = 172 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DestroyObject = 47 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DestroyPickup = 63 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DestroyWeaponPickup = 151 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DetachTrailerFromVehicle = 149 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DialogResponse = 62 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DisableCheckpoint = 37 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DisableRaceCheckpoint = 39 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DisableVehicleCollisions = 167 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.DisplayGameText = 73 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.EditAttachedObject = 116 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.EditObject = 117 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.EnableStuntBonus = 104 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.EnterVehicle = 26 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ExitVehicle = 154 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ForceClassSelection = 74 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GameModeRestart = 40 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GangZoneDestroy = 120 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GangZoneFlash = 121 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GangZoneStopFlash = 85 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GiveActorDamage = 177 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GivePlayerMoney = 18 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GivePlayerWeapon = 22 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.GiveTakeDamage = 115 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.HideMenu = 78 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.HideTextDraw = 135 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.InitGame = 139 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.InitMenu = 76 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.InterpolateCamera = 82 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.LinkVehicleToInterior = 65 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.MapMarker = 119 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.MenuQuit = 140 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.MenuSelect = 132 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.MoveObject = 99 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.NpcJoin = 54 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.PickedUpPickup = 131 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.PlayAudioStream = 41 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.PlayCrimeReport = 112 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.PlayerSpectatePlayer = 126 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.PlayerSpectateVehicle = 127 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.PlaySound = 16 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.PutPlayerInVehicle = 70 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.RemoveBuildingForPlayer = 43 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.RemovePlayerFromVehicle = 71 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.RemovePlayerMapIcon = 144 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.RemoveVehicleComponent = 57 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.RequestClass = 128 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.RequestSpawn = 129 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ResetPlayerMoney = 20 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ResetPlayerWeapons = 21 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ScmEvent = 96 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ScriptCash = 31 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SelectObject = 27 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ServerCommand = 50 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ServerJoin = 137 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ServerQuit = 138 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetActorFacingAngle = 175 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetActorHealth = 178 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetActorPos = 176 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetCameraBehindPlayer = 162 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetCheckpoint = 107 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetGravity = 146 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetInteriorId = 118 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetNumberPlate = 123 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetObjectMaterial = 84 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetObjectPos = 45 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetObjectRot = 46 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerAmmo = 145 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerArmedWeapon = 67 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerArmour = 66 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerAttachedObject = 113 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerCameraLookAt = 158 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerCameraPos = 157 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerColor = 72 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerDrunkHandling = 150 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerDrunkLevel = 35 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerDrunkVisuals = 92 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerFacingAngle = 19 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerFightingStyle = 89 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerHealth = 14 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerInterior = 156 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerMapIcon = 56 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerName = 11 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerObjectNoCameraCol = 169 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerPos = 12 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerPosFindZ = 13 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerSkillLevel = 34 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerSkin = 153 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerSpecialAction = 88 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerTeam = 69 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerTime = 29 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerVelocity = 90 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetPlayerWantedLevel = 133 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetRaceCheckpoint = 38 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetShopName = 33 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetSpawnInfo = 68 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetVehicleHealth = 147 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetVehicleParamsEx = 24 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetVehicleParamsForPlayer = 161 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetVehiclePos = 159 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetVehicleTires = 98 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetVehicleVelocity = 91 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetVehicleZAngle = 160 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetWeather = 152 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetWorldBounds = 17 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SetWorldTime = 94 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ShowDialog = 61 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ShowMenu = 77 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ShowPlayerNameTag = 80 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ShowTextDraw = 134 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.Spawn = 52 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.SrvNetStats = 102 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.StopAudioStream = 42 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.StopObject = 122 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.TextDrawSetString = 105 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ToggleCameraTarget = 170 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ToggleClock = 30 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.TogglePlayerControllable = 15 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.TogglePlayerSpectating = 124 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.ToggleWidescreen = 111 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.UpdateScoresAndPings = 155 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.UpdateTime = 60 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.UpdateVehicleDamageStatus = 106 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.VehicleDestroyed = 136 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.WeaponPickupDestroy = 97 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.WorldPlayerAdd = 32 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.WorldPlayerDeath = 166 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.WorldPlayerRemove = 163 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.WorldVehicleAdd = 164 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.Protocol.SampRpcId.WorldVehicleRemove = 165 -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.Deconstruct(out uint Timestamp, out byte PacketId) -> void
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.Equals(SFSharp.Abstractions.Network.RakNetTimestampEnvelope other) -> bool
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.PacketId.get -> byte
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.PacketId.init -> void
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.RakNetTimestampEnvelope() -> void
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.RakNetTimestampEnvelope(uint Timestamp, byte PacketId) -> void
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.Timestamp.get -> uint
+SFSharp.Abstractions.Network.RakNetTimestampEnvelope.Timestamp.init -> void
+SFSharp.Abstractions.Network.SFPacketFilterCallback
+SFSharp.Abstractions.Network.SFPacketMetadata
+SFSharp.Abstractions.Network.SFPacketMetadata.<Clone>$() -> SFSharp.Abstractions.Network.SFPacketMetadata!
+SFSharp.Abstractions.Network.SFPacketMetadata.Category.get -> string?
+SFSharp.Abstractions.Network.SFPacketMetadata.Category.init -> void
+SFSharp.Abstractions.Network.SFPacketMetadata.Deconstruct(out string! Name, out int? SubId, out string? Category, out string? Group, out int HeaderBitLength) -> void
+SFSharp.Abstractions.Network.SFPacketMetadata.Equals(SFSharp.Abstractions.Network.SFPacketMetadata? other) -> bool
+SFSharp.Abstractions.Network.SFPacketMetadata.Group.get -> string?
+SFSharp.Abstractions.Network.SFPacketMetadata.Group.init -> void
+SFSharp.Abstractions.Network.SFPacketMetadata.HeaderBitLength.get -> int
+SFSharp.Abstractions.Network.SFPacketMetadata.HeaderBitLength.init -> void
+SFSharp.Abstractions.Network.SFPacketMetadata.Name.get -> string!
+SFSharp.Abstractions.Network.SFPacketMetadata.Name.init -> void
+SFSharp.Abstractions.Network.SFPacketMetadata.SFPacketMetadata(string! Name, int? SubId = null, string? Category = null, string? Group = null, int HeaderBitLength = 0) -> void
+SFSharp.Abstractions.Network.SFPacketMetadata.SubId.get -> int?
+SFSharp.Abstractions.Network.SFPacketMetadata.SubId.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation
+SFSharp.Abstractions.Network.SFPacketObservation.<Clone>$() -> SFSharp.Abstractions.Network.SFPacketObservation!
+SFSharp.Abstractions.Network.SFPacketObservation.Data.get -> System.ReadOnlyMemory<byte>
+SFSharp.Abstractions.Network.SFPacketObservation.Data.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.DataBitLength.get -> int
+SFSharp.Abstractions.Network.SFPacketObservation.DataBitLength.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.Deconstruct(out string! Source, out bool Incoming, out int PacketId, out System.ReadOnlyMemory<byte> Data, out int DataBitLength, out int PayloadBitOffset, out int PayloadBitLength, out int? SubId, out bool Reconstructed) -> void
+SFSharp.Abstractions.Network.SFPacketObservation.Equals(SFSharp.Abstractions.Network.SFPacketObservation? other) -> bool
+SFSharp.Abstractions.Network.SFPacketObservation.Incoming.get -> bool
+SFSharp.Abstractions.Network.SFPacketObservation.Incoming.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.PacketId.get -> int
+SFSharp.Abstractions.Network.SFPacketObservation.PacketId.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.PayloadBitLength.get -> int
+SFSharp.Abstractions.Network.SFPacketObservation.PayloadBitLength.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.PayloadBitOffset.get -> int
+SFSharp.Abstractions.Network.SFPacketObservation.PayloadBitOffset.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.Reconstructed.get -> bool
+SFSharp.Abstractions.Network.SFPacketObservation.Reconstructed.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.SFPacketObservation(string! Source, bool Incoming, int PacketId, System.ReadOnlyMemory<byte> Data, int DataBitLength, int PayloadBitOffset, int PayloadBitLength, int? SubId = null, bool Reconstructed = false) -> void
+SFSharp.Abstractions.Network.SFPacketObservation.Source.get -> string!
+SFSharp.Abstractions.Network.SFPacketObservation.Source.init -> void
+SFSharp.Abstractions.Network.SFPacketObservation.SubId.get -> int?
+SFSharp.Abstractions.Network.SFPacketObservation.SubId.init -> void
+SFSharp.Abstractions.Network.SFRpcFilterCallback
+SFSharp.Abstractions.Parsing.IParsedIncomingPacket
+SFSharp.Abstractions.Parsing.IParsedIncomingRpc
+SFSharp.Abstractions.Parsing.IParsedOutgoingPacket
+SFSharp.Abstractions.Parsing.IParsedOutgoingRpc
+SFSharp.Abstractions.Parsing.IParsedPacket
+SFSharp.Abstractions.Parsing.IParsedPacket.Detail.get -> string?
+SFSharp.Abstractions.Parsing.IParsedPacket.Name.get -> string!
+SFSharp.Abstractions.Parsing.IParsedPacket.RakNetPacketId.get -> SFSharp.Abstractions.Network.Protocol.RakNetPacketId
+SFSharp.Abstractions.Parsing.IParsedRpc
+SFSharp.Abstractions.Parsing.IParsedRpc.Detail.get -> string?
+SFSharp.Abstractions.Parsing.IParsedRpc.Name.get -> string!
+SFSharp.Abstractions.Parsing.IParsedRpc.SampRpcId.get -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Samp.ISFActors
+SFSharp.Abstractions.Samp.ISFActors.EnumerateIds() -> System.Collections.Generic.IEnumerable<ushort>!
+SFSharp.Abstractions.Samp.ISFActors.Exists(ushort actorId) -> bool
+SFSharp.Abstractions.Samp.ISFActors.LargestId.get -> int
+SFSharp.Abstractions.Samp.ISFGamePools
+SFSharp.Abstractions.Samp.ISFGamePools.Actors.get -> SFSharp.Abstractions.Samp.ISFActors!
+SFSharp.Abstractions.Samp.ISFGamePools.GangZones.get -> SFSharp.Abstractions.Samp.ISFGangZones!
+SFSharp.Abstractions.Samp.ISFGamePools.InitializedPoolCount.get -> int
+SFSharp.Abstractions.Samp.ISFGamePools.IsAvailable.get -> bool
+SFSharp.Abstractions.Samp.ISFGamePools.IsInitialized.get -> bool
+SFSharp.Abstractions.Samp.ISFGamePools.IsLanMode.get -> bool
+SFSharp.Abstractions.Samp.ISFGamePools.Labels.get -> SFSharp.Abstractions.Samp.ISFLabels!
+SFSharp.Abstractions.Samp.ISFGamePools.Menus.get -> SFSharp.Abstractions.Samp.ISFMenus!
+SFSharp.Abstractions.Samp.ISFGamePools.Objects.get -> SFSharp.Abstractions.Samp.ISFObjects!
+SFSharp.Abstractions.Samp.ISFGamePools.Pickups.get -> SFSharp.Abstractions.Samp.ISFPickups!
+SFSharp.Abstractions.Samp.ISFGamePools.Players.get -> SFSharp.Abstractions.Samp.ISFPlayers!
+SFSharp.Abstractions.Samp.ISFGamePools.RawState.get -> int
+SFSharp.Abstractions.Samp.ISFGamePools.State.get -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.ISFGamePools.TextDraws.get -> SFSharp.Abstractions.Samp.ISFTextDraws!
+SFSharp.Abstractions.Samp.ISFGamePools.Vehicles.get -> SFSharp.Abstractions.Samp.ISFVehicles!
+SFSharp.Abstractions.Samp.ISFGangZones
+SFSharp.Abstractions.Samp.ISFGangZones.EnumerateIds() -> System.Collections.Generic.IEnumerable<ushort>!
+SFSharp.Abstractions.Samp.ISFGangZones.Exists(ushort zoneId) -> bool
+SFSharp.Abstractions.Samp.ISFLabels
+SFSharp.Abstractions.Samp.ISFLabels.EnumerateIds() -> System.Collections.Generic.IEnumerable<ushort>!
+SFSharp.Abstractions.Samp.ISFLabels.Exists(ushort labelId) -> bool
+SFSharp.Abstractions.Samp.ISFLabels.TryGetSnapshot(ushort labelId, out SFSharp.Abstractions.Samp.SFLabelSnapshot snapshot) -> bool
+SFSharp.Abstractions.Samp.ISFMenus
+SFSharp.Abstractions.Samp.ISFMenus.Cancelled.get -> bool
+SFSharp.Abstractions.Samp.ISFMenus.CurrentMenu.get -> ushort
+SFSharp.Abstractions.Samp.ISFMenus.EnumerateIds() -> System.Collections.Generic.IEnumerable<byte>!
+SFSharp.Abstractions.Samp.ISFMenus.Exists(byte menuId) -> bool
+SFSharp.Abstractions.Samp.ISFObjects
+SFSharp.Abstractions.Samp.ISFObjects.Count.get -> int
+SFSharp.Abstractions.Samp.ISFObjects.EnumerateIds() -> System.Collections.Generic.IEnumerable<ushort>!
+SFSharp.Abstractions.Samp.ISFObjects.Exists(ushort objectId) -> bool
+SFSharp.Abstractions.Samp.ISFObjects.LargestId.get -> int
+SFSharp.Abstractions.Samp.ISFPickups
+SFSharp.Abstractions.Samp.ISFPickups.Count.get -> int
+SFSharp.Abstractions.Samp.ISFPickups.EnumerateIndices() -> System.Collections.Generic.IEnumerable<int>!
+SFSharp.Abstractions.Samp.ISFPickups.Exists(int pickupIndex) -> bool
+SFSharp.Abstractions.Samp.ISFPickups.GetIndex(int serverPickupId) -> int
+SFSharp.Abstractions.Samp.ISFPlayers
+SFSharp.Abstractions.Samp.ISFPlayers.EnumeratePlayers(bool includeNpcPlayers = true) -> System.Collections.Generic.IEnumerable<SFSharp.Abstractions.Samp.SFPlayerSnapshot>!
+SFSharp.Abstractions.Samp.ISFPlayers.GetAimedPlayerId() -> ushort?
+SFSharp.Abstractions.Samp.ISFPlayers.GetConnectedCount(bool includeNpcPlayers = true) -> int
+SFSharp.Abstractions.Samp.ISFPlayers.GetName(ushort playerId) -> string?
+SFSharp.Abstractions.Samp.ISFPlayers.GetPing(ushort playerId) -> int
+SFSharp.Abstractions.Samp.ISFPlayers.GetScore(ushort playerId) -> int
+SFSharp.Abstractions.Samp.ISFPlayers.IsConnected(ushort playerId) -> bool
+SFSharp.Abstractions.Samp.ISFPlayers.IsNpc(ushort playerId) -> bool
+SFSharp.Abstractions.Samp.ISFPlayers.LocalPlayerId.get -> ushort
+SFSharp.Abstractions.Samp.ISFPlayers.LocalPlayerName.get -> string?
+SFSharp.Abstractions.Samp.ISFPlayers.LocalPlayerPing.get -> int
+SFSharp.Abstractions.Samp.ISFPlayers.LocalPlayerScore.get -> int
+SFSharp.Abstractions.Samp.ISFPlayers.TryGetName(ushort playerId, out string? name) -> bool
+SFSharp.Abstractions.Samp.ISFPlayers.TryGetPing(ushort playerId, out int ping) -> bool
+SFSharp.Abstractions.Samp.ISFPlayers.TryGetPlayer(ushort playerId, out SFSharp.Abstractions.Samp.SFPlayerSnapshot player) -> bool
+SFSharp.Abstractions.Samp.ISFPlayers.TryGetScore(ushort playerId, out int score) -> bool
+SFSharp.Abstractions.Samp.ISFPlayers.UpdateScoreboard() -> System.Threading.Tasks.Task!
+SFSharp.Abstractions.Samp.ISFSamp
+SFSharp.Abstractions.Samp.ISFSamp.Camera.get -> SFSharp.Abstractions.Samp.ISFSampCamera!
+SFSharp.Abstractions.Samp.ISFSamp.Chat.get -> SFSharp.Abstractions.Ui.ISFChat!
+SFSharp.Abstractions.Samp.ISFSamp.Client.get -> SFSharp.Abstractions.Samp.SFSampClientInfo!
+SFSharp.Abstractions.Samp.ISFSamp.Dialog.get -> SFSharp.Abstractions.Ui.ISFDialog!
+SFSharp.Abstractions.Samp.ISFSamp.Entities.get -> SFSharp.Abstractions.Samp.ISFSampEntities!
+SFSharp.Abstractions.Samp.ISFSamp.Events.get -> SFSharp.Abstractions.ISFEvents!
+SFSharp.Abstractions.Samp.ISFSamp.Network.get -> SFSharp.Abstractions.Network.ISFNetwork!
+SFSharp.Abstractions.Samp.ISFSamp.PacketParsers.get -> SFSharp.Abstractions.Network.ISFPacketParsers!
+SFSharp.Abstractions.Samp.ISFSamp.Packets.get -> SFSharp.Abstractions.Network.ISFPackets!
+SFSharp.Abstractions.Samp.ISFSamp.Players.get -> SFSharp.Abstractions.Samp.ISFPlayers!
+SFSharp.Abstractions.Samp.ISFSamp.Pools.get -> SFSharp.Abstractions.Samp.ISFGamePools!
+SFSharp.Abstractions.Samp.ISFSamp.Rpc.get -> SFSharp.Abstractions.Network.ISFRpc!
+SFSharp.Abstractions.Samp.ISFSamp.RpcParsers.get -> SFSharp.Abstractions.Network.ISFRpcParsers!
+SFSharp.Abstractions.Samp.ISFSamp.Vehicles.get -> SFSharp.Abstractions.Samp.ISFVehicles!
+SFSharp.Abstractions.Samp.ISFSampCamera
+SFSharp.Abstractions.Samp.ISFSampCamera.AimCameraMode.get -> byte
+SFSharp.Abstractions.Samp.ISFSampCamera.AimDirection.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.ISFSampCamera.AimPosition.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.ISFSampCamera.AimZ.get -> float
+SFSharp.Abstractions.Samp.ISFSampCamera.AimZoom.get -> byte
+SFSharp.Abstractions.Samp.ISFSampCamera.AspectRatio.get -> sbyte
+SFSharp.Abstractions.Samp.ISFSampCamera.Target.get -> SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget
+SFSharp.Abstractions.Samp.ISFSampEntities
+SFSharp.Abstractions.Samp.ISFSampEntities.OnSampEntityChanged(System.Action<SFSharp.Abstractions.Samp.SFSampEntityEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetActor(ushort actorId, out SFSharp.Abstractions.Gta.SFEntityRef entity) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetActorId(SFSharp.Abstractions.Gta.SFEntityRef entity, out ushort actorId) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetLocalPlayer(out SFSharp.Abstractions.Gta.SFEntityRef entity) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetObject(ushort objectId, out SFSharp.Abstractions.Gta.SFEntityRef entity) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetObjectId(SFSharp.Abstractions.Gta.SFEntityRef entity, out ushort objectId) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetPlayer(ushort playerId, out SFSharp.Abstractions.Gta.SFEntityRef entity) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetPlayerId(SFSharp.Abstractions.Gta.SFEntityRef entity, out ushort playerId) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetVehicle(ushort vehicleId, out SFSharp.Abstractions.Gta.SFEntityRef entity) -> bool
+SFSharp.Abstractions.Samp.ISFSampEntities.TryGetVehicleId(SFSharp.Abstractions.Gta.SFEntityRef entity, out ushort vehicleId) -> bool
+SFSharp.Abstractions.Samp.ISFTextDraws
+SFSharp.Abstractions.Samp.ISFTextDraws.EnumerateIds() -> System.Collections.Generic.IEnumerable<ushort>!
+SFSharp.Abstractions.Samp.ISFTextDraws.Exists(ushort textDrawId) -> bool
+SFSharp.Abstractions.Samp.ISFTextDraws.TryGetSnapshot(ushort textDrawId, out SFSharp.Abstractions.Samp.SFTextDrawSnapshot snapshot) -> bool
+SFSharp.Abstractions.Samp.ISFVehicles
+SFSharp.Abstractions.Samp.ISFVehicles.Count.get -> int
+SFSharp.Abstractions.Samp.ISFVehicles.EnumerateIds() -> System.Collections.Generic.IEnumerable<ushort>!
+SFSharp.Abstractions.Samp.ISFVehicles.Exists(ushort vehicleId) -> bool
+SFSharp.Abstractions.Samp.ISFVehicles.GetNearestId() -> ushort
+SFSharp.Abstractions.Samp.ISFVehicles.TryGetSnapshot(ushort vehicleId, out SFSharp.Abstractions.Samp.SFVehicleSnapshot snapshot) -> bool
+SFSharp.Abstractions.Samp.SFLabelSnapshot
+SFSharp.Abstractions.Samp.SFLabelSnapshot.AttachedToPlayer.get -> ushort
+SFSharp.Abstractions.Samp.SFLabelSnapshot.AttachedToPlayer.init -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.AttachedToVehicle.get -> ushort
+SFSharp.Abstractions.Samp.SFLabelSnapshot.AttachedToVehicle.init -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.BehindWalls.get -> bool
+SFSharp.Abstractions.Samp.SFLabelSnapshot.BehindWalls.init -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Color.get -> uint
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Color.init -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Deconstruct(out string? Text, out uint Color, out System.Numerics.Vector3 Position, out float DrawDistance, out bool BehindWalls, out ushort AttachedToPlayer, out ushort AttachedToVehicle) -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.DrawDistance.get -> float
+SFSharp.Abstractions.Samp.SFLabelSnapshot.DrawDistance.init -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Equals(SFSharp.Abstractions.Samp.SFLabelSnapshot other) -> bool
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Position.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Position.init -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.SFLabelSnapshot() -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.SFLabelSnapshot(string? Text, uint Color, System.Numerics.Vector3 Position, float DrawDistance, bool BehindWalls, ushort AttachedToPlayer, ushort AttachedToVehicle) -> void
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Text.get -> string?
+SFSharp.Abstractions.Samp.SFLabelSnapshot.Text.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Deconstruct(out ushort Id, out string? Name, out int Score, out int Ping, out bool IsConnected, out bool IsNpc, out bool IsLocal) -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Equals(SFSharp.Abstractions.Samp.SFPlayerSnapshot other) -> bool
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Id.get -> ushort
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Id.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.IsConnected.get -> bool
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.IsConnected.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.IsLocal.get -> bool
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.IsLocal.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.IsNpc.get -> bool
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.IsNpc.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Name.get -> string?
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Name.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Ping.get -> int
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Ping.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Score.get -> int
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.Score.init -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.SFPlayerSnapshot() -> void
+SFSharp.Abstractions.Samp.SFPlayerSnapshot.SFPlayerSnapshot(ushort Id, string? Name, int Score, int Ping, bool IsConnected, bool IsNpc, bool IsLocal) -> void
+SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampCapabilities.Chat = 1 -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampCapabilities.CompressedStrings = 32 -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampCapabilities.Dialogs = 2 -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampCapabilities.IncomingEmulation = 16 -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampCapabilities.Network = 8 -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampCapabilities.None = 0 -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampCapabilities.Pools = 4 -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampClientInfo
+SFSharp.Abstractions.Samp.SFSampClientInfo.<Clone>$() -> SFSharp.Abstractions.Samp.SFSampClientInfo!
+SFSharp.Abstractions.Samp.SFSampClientInfo.Capabilities.get -> SFSharp.Abstractions.Samp.SFSampCapabilities
+SFSharp.Abstractions.Samp.SFSampClientInfo.Capabilities.init -> void
+SFSharp.Abstractions.Samp.SFSampClientInfo.Deconstruct(out SFSharp.Abstractions.Samp.SFSampVersion Version, out SFSharp.Abstractions.Samp.SFSampCapabilities Capabilities) -> void
+SFSharp.Abstractions.Samp.SFSampClientInfo.Equals(SFSharp.Abstractions.Samp.SFSampClientInfo? other) -> bool
+SFSharp.Abstractions.Samp.SFSampClientInfo.SFSampClientInfo(SFSharp.Abstractions.Samp.SFSampVersion Version, SFSharp.Abstractions.Samp.SFSampCapabilities Capabilities) -> void
+SFSharp.Abstractions.Samp.SFSampClientInfo.Version.get -> SFSharp.Abstractions.Samp.SFSampVersion
+SFSharp.Abstractions.Samp.SFSampClientInfo.Version.init -> void
+SFSharp.Abstractions.Samp.SFSampEntityChange
+SFSharp.Abstractions.Samp.SFSampEntityChange.Created = 0 -> SFSharp.Abstractions.Samp.SFSampEntityChange
+SFSharp.Abstractions.Samp.SFSampEntityChange.Deleted = 1 -> SFSharp.Abstractions.Samp.SFSampEntityChange
+SFSharp.Abstractions.Samp.SFSampEntityChange.StreamedIn = 2 -> SFSharp.Abstractions.Samp.SFSampEntityChange
+SFSharp.Abstractions.Samp.SFSampEntityChange.StreamedOut = 3 -> SFSharp.Abstractions.Samp.SFSampEntityChange
+SFSharp.Abstractions.Samp.SFSampEntityEvent
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Change.get -> SFSharp.Abstractions.Samp.SFSampEntityChange
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Change.init -> void
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Deconstruct(out SFSharp.Abstractions.Samp.SFSampEntityType Type, out ushort SampId, out SFSharp.Abstractions.Samp.SFSampEntityChange Change, out SFSharp.Abstractions.Gta.SFEntityRef? Entity) -> void
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Entity.get -> SFSharp.Abstractions.Gta.SFEntityRef?
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Entity.init -> void
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Equals(SFSharp.Abstractions.Samp.SFSampEntityEvent other) -> bool
+SFSharp.Abstractions.Samp.SFSampEntityEvent.SampId.get -> ushort
+SFSharp.Abstractions.Samp.SFSampEntityEvent.SampId.init -> void
+SFSharp.Abstractions.Samp.SFSampEntityEvent.SFSampEntityEvent() -> void
+SFSharp.Abstractions.Samp.SFSampEntityEvent.SFSampEntityEvent(SFSharp.Abstractions.Samp.SFSampEntityType Type, ushort SampId, SFSharp.Abstractions.Samp.SFSampEntityChange Change, SFSharp.Abstractions.Gta.SFEntityRef? Entity) -> void
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Type.get -> SFSharp.Abstractions.Samp.SFSampEntityType
+SFSharp.Abstractions.Samp.SFSampEntityEvent.Type.init -> void
+SFSharp.Abstractions.Samp.SFSampEntityType
+SFSharp.Abstractions.Samp.SFSampEntityType.Actor = 3 -> SFSharp.Abstractions.Samp.SFSampEntityType
+SFSharp.Abstractions.Samp.SFSampEntityType.Object = 2 -> SFSharp.Abstractions.Samp.SFSampEntityType
+SFSharp.Abstractions.Samp.SFSampEntityType.Player = 0 -> SFSharp.Abstractions.Samp.SFSampEntityType
+SFSharp.Abstractions.Samp.SFSampEntityType.Vehicle = 1 -> SFSharp.Abstractions.Samp.SFSampEntityType
+SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.SFSampGameState.Connected = 3 -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.SFSampGameState.Connecting = 2 -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.SFSampGameState.Restarting = 5 -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.SFSampGameState.Unknown = 0 -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.SFSampGameState.WaitingToConnect = 1 -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.SFSampGameState.WaitingToJoin = 4 -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.SFSampVersion
+SFSharp.Abstractions.Samp.SFSampVersion.R1 = 1 -> SFSharp.Abstractions.Samp.SFSampVersion
+SFSharp.Abstractions.Samp.SFSampVersion.R3_1 = 2 -> SFSharp.Abstractions.Samp.SFSampVersion
+SFSharp.Abstractions.Samp.SFSampVersion.R5_1 = 3 -> SFSharp.Abstractions.Samp.SFSampVersion
+SFSharp.Abstractions.Samp.SFSampVersion.Unknown = 0 -> SFSharp.Abstractions.Samp.SFSampVersion
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BackgroundColor.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BackgroundColor.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Box.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Box.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BoxColor.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BoxColor.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BoxSizeX.get -> float
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BoxSizeX.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BoxSizeY.get -> float
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.BoxSizeY.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Center.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Center.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Color0.get -> ushort
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Color0.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Color1.get -> ushort
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Color1.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ColorIfSelected.get -> byte
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ColorIfSelected.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedBottom.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedBottom.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedLeft.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedLeft.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedRight.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedRight.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedTop.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ComputedTop.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Deconstruct(out float LetterWidth, out float LetterHeight, out uint LetterColor, out bool Center, out bool Box, out float BoxSizeX, out float BoxSizeY, out uint BoxColor, out bool Proportional, out uint BackgroundColor, out byte Shadow, out byte Outline, out bool Left, out bool Right, out int Style, out float X, out float Y, out uint Field99B, out uint Field99F, out int Index, out bool Selectable, out ushort Model, out System.Numerics.Vector3 Rotation, out float Zoom, out ushort Color0, out ushort Color1, out bool TextContainsKeys, out bool DrawnThisFrame, out bool IsSelected, out uint ComputedLeft, out uint ComputedRight, out uint ComputedTop, out uint ComputedBottom, out byte ColorIfSelected) -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.DrawnThisFrame.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.DrawnThisFrame.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Equals(SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot other) -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Field99B.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Field99B.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Field99F.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Field99F.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Index.get -> int
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Index.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.IsSelected.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.IsSelected.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Left.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Left.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.LetterColor.get -> uint
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.LetterColor.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.LetterHeight.get -> float
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.LetterHeight.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.LetterWidth.get -> float
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.LetterWidth.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Model.get -> ushort
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Model.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Outline.get -> byte
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Outline.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Proportional.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Proportional.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Right.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Right.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Rotation.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Rotation.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Selectable.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Selectable.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.SFTextDrawDataSnapshot() -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.SFTextDrawDataSnapshot(float LetterWidth, float LetterHeight, uint LetterColor, bool Center, bool Box, float BoxSizeX, float BoxSizeY, uint BoxColor, bool Proportional, uint BackgroundColor, byte Shadow, byte Outline, bool Left, bool Right, int Style, float X, float Y, uint Field99B, uint Field99F, int Index, bool Selectable, ushort Model, System.Numerics.Vector3 Rotation, float Zoom, ushort Color0, ushort Color1, bool TextContainsKeys, bool DrawnThisFrame, bool IsSelected, uint ComputedLeft, uint ComputedRight, uint ComputedTop, uint ComputedBottom, byte ColorIfSelected) -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Shadow.get -> byte
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Shadow.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Style.get -> int
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Style.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.TextContainsKeys.get -> bool
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.TextContainsKeys.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.X.get -> float
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.X.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Y.get -> float
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Y.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Zoom.get -> float
+SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Zoom.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.Data.get -> SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.Data.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.Deconstruct(out string? Text, out string? String, out SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot Data) -> void
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.Equals(SFSharp.Abstractions.Samp.SFTextDrawSnapshot other) -> bool
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.SFTextDrawSnapshot() -> void
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.SFTextDrawSnapshot(string? Text, string? String, SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot Data) -> void
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.String.get -> string?
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.String.init -> void
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.Text.get -> string?
+SFSharp.Abstractions.Samp.SFTextDrawSnapshot.Text.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Deconstruct(out ushort Id, out bool Exists, out int Handle, out bool IsInvulnerable, out bool IsLightsOn, out bool IsLocked, out bool EngineState, out byte PrimaryColor, out byte SecondaryColor) -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.EngineState.get -> bool
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.EngineState.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Equals(SFSharp.Abstractions.Samp.SFVehicleSnapshot other) -> bool
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Exists.get -> bool
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Exists.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Handle.get -> int
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Handle.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Id.get -> ushort
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.Id.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.IsInvulnerable.get -> bool
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.IsInvulnerable.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.IsLightsOn.get -> bool
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.IsLightsOn.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.IsLocked.get -> bool
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.IsLocked.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.PrimaryColor.get -> byte
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.PrimaryColor.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.SecondaryColor.get -> byte
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.SecondaryColor.init -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.SFVehicleSnapshot() -> void
+SFSharp.Abstractions.Samp.SFVehicleSnapshot.SFVehicleSnapshot(ushort Id, bool Exists, int Handle, bool IsInvulnerable, bool IsLightsOn, bool IsLocked, bool EngineState, byte PrimaryColor, byte SecondaryColor) -> void
+SFSharp.Abstractions.SFColor
+SFSharp.Abstractions.SFColor.A.get -> byte
+SFSharp.Abstractions.SFColor.Apply(string! text) -> string!
+SFSharp.Abstractions.SFColor.Argb.get -> uint
+SFSharp.Abstractions.SFColor.Argb.init -> void
+SFSharp.Abstractions.SFColor.B.get -> byte
+SFSharp.Abstractions.SFColor.Blend(SFSharp.Abstractions.SFColor other, float weight = 0.5) -> SFSharp.Abstractions.SFColor
+SFSharp.Abstractions.SFColor.Deconstruct(out uint Argb) -> void
+SFSharp.Abstractions.SFColor.Equals(SFSharp.Abstractions.SFColor other) -> bool
+SFSharp.Abstractions.SFColor.G.get -> byte
+SFSharp.Abstractions.SFColor.R.get -> byte
+SFSharp.Abstractions.SFColor.Rgba.get -> uint
+SFSharp.Abstractions.SFColor.SampTag.get -> string!
+SFSharp.Abstractions.SFColor.SFColor() -> void
+SFSharp.Abstractions.SFColor.SFColor(uint Argb) -> void
+SFSharp.Abstractions.SFColor.WithAlpha(byte alpha) -> SFSharp.Abstractions.SFColor
+SFSharp.Abstractions.SFColors
+SFSharp.Abstractions.Storage.IModuleConfig
+SFSharp.Abstractions.Storage.IModuleConfig.Delete() -> void
+SFSharp.Abstractions.Storage.IModuleConfig.Exists.get -> bool
+SFSharp.Abstractions.Storage.IModuleConfig.Load<T>(System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! typeInfo, System.Func<T>! createDefault) -> T
+SFSharp.Abstractions.Storage.IModuleConfig.Location.get -> string!
+SFSharp.Abstractions.Storage.IModuleConfig.Save<T>(System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! typeInfo, T value) -> void
+SFSharp.Abstractions.Storage.IModuleConfig.TryLoad<T>(System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>! typeInfo, out T value) -> bool
+SFSharp.Abstractions.Storage.IModuleStorage
+SFSharp.Abstractions.Storage.IModuleStorage.Delete(string! relativePath) -> bool
+SFSharp.Abstractions.Storage.IModuleStorage.EnumerateFiles(string! relativeDirectory = "", string! searchPattern = "*", bool recursive = false) -> System.Collections.Generic.IEnumerable<string!>!
+SFSharp.Abstractions.Storage.IModuleStorage.Exists(string! relativePath) -> bool
+SFSharp.Abstractions.Storage.IModuleStorage.GetFullPath(string! relativePath) -> string!
+SFSharp.Abstractions.Storage.IModuleStorage.IsReadOnly.get -> bool
+SFSharp.Abstractions.Storage.IModuleStorage.OpenRead(string! relativePath) -> System.IO.Stream!
+SFSharp.Abstractions.Storage.IModuleStorage.OpenWrite(string! relativePath) -> System.IO.Stream!
+SFSharp.Abstractions.Storage.IModuleStorage.ReadAllBytes(string! relativePath) -> byte[]!
+SFSharp.Abstractions.Storage.IModuleStorage.ReadAllLines(string! relativePath) -> string![]!
+SFSharp.Abstractions.Storage.IModuleStorage.ReadAllText(string! relativePath) -> string!
+SFSharp.Abstractions.Storage.IModuleStorage.Root.get -> string!
+SFSharp.Abstractions.Storage.IModuleStorage.WriteAllBytes(string! relativePath, System.ReadOnlySpan<byte> contents) -> void
+SFSharp.Abstractions.Storage.IModuleStorage.WriteAllLines(string! relativePath, System.Collections.Generic.IEnumerable<string!>! lines) -> void
+SFSharp.Abstractions.Storage.IModuleStorage.WriteAllText(string! relativePath, string! contents) -> void
+SFSharp.Abstractions.Storage.IModuleStorageProvider
+SFSharp.Abstractions.Storage.IModuleStorageProvider.GetAssets(SFSharp.Abstractions.Modules.ModuleDescriptor! descriptor) -> SFSharp.Abstractions.Storage.IModuleStorage!
+SFSharp.Abstractions.Storage.IModuleStorageProvider.GetConfig(SFSharp.Abstractions.Modules.ModuleDescriptor! descriptor) -> SFSharp.Abstractions.Storage.IModuleConfig!
+SFSharp.Abstractions.Storage.IModuleStorageProvider.GetUserData(SFSharp.Abstractions.Modules.ModuleDescriptor! descriptor) -> SFSharp.Abstractions.Storage.IModuleStorage!
+SFSharp.Abstractions.Ui.ChatEntry
+SFSharp.Abstractions.Ui.ChatEntry.ChatEntry(SFSharp.Abstractions.Ui.ChatEntry! original) -> void
+SFSharp.Abstractions.Ui.ChatEntry.ChatEntry(SFSharp.Abstractions.Ui.EntryType Type, string? Text, string? Prefix, uint TextColor, uint PrefixColor) -> void
+SFSharp.Abstractions.Ui.ChatEntry.Deconstruct(out SFSharp.Abstractions.Ui.EntryType Type, out string? Text, out string? Prefix, out uint TextColor, out uint PrefixColor) -> void
+SFSharp.Abstractions.Ui.ChatEntry.Prefix.get -> string?
+SFSharp.Abstractions.Ui.ChatEntry.Prefix.init -> void
+SFSharp.Abstractions.Ui.ChatEntry.PrefixColor.get -> uint
+SFSharp.Abstractions.Ui.ChatEntry.PrefixColor.init -> void
+SFSharp.Abstractions.Ui.ChatEntry.Text.get -> string?
+SFSharp.Abstractions.Ui.ChatEntry.Text.init -> void
+SFSharp.Abstractions.Ui.ChatEntry.TextColor.get -> uint
+SFSharp.Abstractions.Ui.ChatEntry.TextColor.init -> void
+SFSharp.Abstractions.Ui.ChatEntry.Type.get -> SFSharp.Abstractions.Ui.EntryType
+SFSharp.Abstractions.Ui.ChatEntry.Type.init -> void
+SFSharp.Abstractions.Ui.EntryType
+SFSharp.Abstractions.Ui.EntryType.Chat = 2 -> SFSharp.Abstractions.Ui.EntryType
+SFSharp.Abstractions.Ui.EntryType.Debug = 8 -> SFSharp.Abstractions.Ui.EntryType
+SFSharp.Abstractions.Ui.EntryType.Info = 4 -> SFSharp.Abstractions.Ui.EntryType
+SFSharp.Abstractions.Ui.EntryType.None = 0 -> SFSharp.Abstractions.Ui.EntryType
+SFSharp.Abstractions.Ui.ISFChat
+SFSharp.Abstractions.Ui.ISFChat.Add(string! text, SFSharp.Abstractions.SFColor textColor, string? prefix = null, SFSharp.Abstractions.SFColor? prefixColor = null) -> void
+SFSharp.Abstractions.Ui.ISFChat.Add(string! text, uint textColor = 4289374890, string? prefix = null, uint prefixColor = 4289374890) -> void
+SFSharp.Abstractions.Ui.ISFChat.RegisterChatCommand(string! command, System.Action<string?>! commandCallback) -> System.IDisposable!
+SFSharp.Abstractions.Ui.ISFChat.Send(string! message) -> void
+SFSharp.Abstractions.Ui.ISFChat.StreamEntries(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<SFSharp.Abstractions.Ui.ChatEntry!>!
+SFSharp.Abstractions.Ui.ISFChat.StreamServerEntries(System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<SFSharp.Abstractions.Ui.ServerChatEntry!>!
+SFSharp.Abstractions.Ui.ISFDialog
+SFSharp.Abstractions.Ui.ISFDialog.ShowInput(string! title, string! text) -> System.Threading.Tasks.Task<SFSharp.Abstractions.Ui.SFDialogInputResult>!
+SFSharp.Abstractions.Ui.ISFDialog.ShowList(string! title, System.Collections.Generic.IEnumerable<string!>! items, string! header = "") -> System.Threading.Tasks.Task<SFSharp.Abstractions.Ui.SFDialogListResult>!
+SFSharp.Abstractions.Ui.ISFDialog.ShowMessage(string! title, string! text) -> System.Threading.Tasks.Task<SFSharp.Abstractions.Ui.SFDialogButton>!
+SFSharp.Abstractions.Ui.ISFKeyboard
+SFSharp.Abstractions.Ui.ISFKeyboard.IsKeyDown(byte virtualKeyCode) -> bool
+SFSharp.Abstractions.Ui.ISFKeyboard.IsKeyPressed(byte virtualKeyCode) -> bool
+SFSharp.Abstractions.Ui.ServerChatEntry
+SFSharp.Abstractions.Ui.ServerChatEntry.Deconstruct(out SFSharp.Abstractions.Ui.ServerChatKind Kind, out SFSharp.Abstractions.Network.Protocol.SampRpcId SampRpcId, out SFSharp.Abstractions.Ui.ChatEntry! Entry) -> void
+SFSharp.Abstractions.Ui.ServerChatEntry.Entry.get -> SFSharp.Abstractions.Ui.ChatEntry!
+SFSharp.Abstractions.Ui.ServerChatEntry.Entry.init -> void
+SFSharp.Abstractions.Ui.ServerChatEntry.Kind.get -> SFSharp.Abstractions.Ui.ServerChatKind
+SFSharp.Abstractions.Ui.ServerChatEntry.Kind.init -> void
+SFSharp.Abstractions.Ui.ServerChatEntry.Prefix.get -> string?
+SFSharp.Abstractions.Ui.ServerChatEntry.PrefixColor.get -> uint
+SFSharp.Abstractions.Ui.ServerChatEntry.SampRpcId.get -> SFSharp.Abstractions.Network.Protocol.SampRpcId
+SFSharp.Abstractions.Ui.ServerChatEntry.SampRpcId.init -> void
+SFSharp.Abstractions.Ui.ServerChatEntry.ServerChatEntry(SFSharp.Abstractions.Ui.ServerChatEntry! original) -> void
+SFSharp.Abstractions.Ui.ServerChatEntry.ServerChatEntry(SFSharp.Abstractions.Ui.ServerChatKind Kind, SFSharp.Abstractions.Network.Protocol.SampRpcId SampRpcId, SFSharp.Abstractions.Ui.ChatEntry! Entry) -> void
+SFSharp.Abstractions.Ui.ServerChatEntry.Text.get -> string?
+SFSharp.Abstractions.Ui.ServerChatEntry.TextColor.get -> uint
+SFSharp.Abstractions.Ui.ServerChatEntry.Type.get -> SFSharp.Abstractions.Ui.EntryType
+SFSharp.Abstractions.Ui.ServerChatKind
+SFSharp.Abstractions.Ui.ServerChatKind.Chat = 0 -> SFSharp.Abstractions.Ui.ServerChatKind
+SFSharp.Abstractions.Ui.ServerChatKind.ClientMessage = 1 -> SFSharp.Abstractions.Ui.ServerChatKind
+SFSharp.Abstractions.Ui.SFDialogButton
+SFSharp.Abstractions.Ui.SFDialogButton.Cancel = 0 -> SFSharp.Abstractions.Ui.SFDialogButton
+SFSharp.Abstractions.Ui.SFDialogButton.None = 2 -> SFSharp.Abstractions.Ui.SFDialogButton
+SFSharp.Abstractions.Ui.SFDialogButton.OK = 1 -> SFSharp.Abstractions.Ui.SFDialogButton
+SFSharp.Abstractions.Ui.SFDialogInputResult
+SFSharp.Abstractions.Ui.SFDialogInputResult.Button.get -> SFSharp.Abstractions.Ui.SFDialogButton
+SFSharp.Abstractions.Ui.SFDialogInputResult.Button.init -> void
+SFSharp.Abstractions.Ui.SFDialogInputResult.Deconstruct(out SFSharp.Abstractions.Ui.SFDialogButton Button, out string? Text) -> void
+SFSharp.Abstractions.Ui.SFDialogInputResult.Equals(SFSharp.Abstractions.Ui.SFDialogInputResult other) -> bool
+SFSharp.Abstractions.Ui.SFDialogInputResult.SFDialogInputResult() -> void
+SFSharp.Abstractions.Ui.SFDialogInputResult.SFDialogInputResult(SFSharp.Abstractions.Ui.SFDialogButton Button, string? Text) -> void
+SFSharp.Abstractions.Ui.SFDialogInputResult.Text.get -> string?
+SFSharp.Abstractions.Ui.SFDialogInputResult.Text.init -> void
+SFSharp.Abstractions.Ui.SFDialogListResult
+SFSharp.Abstractions.Ui.SFDialogListResult.Button.get -> SFSharp.Abstractions.Ui.SFDialogButton
+SFSharp.Abstractions.Ui.SFDialogListResult.Button.init -> void
+SFSharp.Abstractions.Ui.SFDialogListResult.Deconstruct(out SFSharp.Abstractions.Ui.SFDialogButton Button, out int SelectedIndex) -> void
+SFSharp.Abstractions.Ui.SFDialogListResult.Equals(SFSharp.Abstractions.Ui.SFDialogListResult other) -> bool
+SFSharp.Abstractions.Ui.SFDialogListResult.SelectedIndex.get -> int
+SFSharp.Abstractions.Ui.SFDialogListResult.SelectedIndex.init -> void
+SFSharp.Abstractions.Ui.SFDialogListResult.SFDialogListResult() -> void
+SFSharp.Abstractions.Ui.SFDialogListResult.SFDialogListResult(SFSharp.Abstractions.Ui.SFDialogButton Button, int SelectedIndex) -> void
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.ActorId.get -> ushort
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.ActorId.init -> void
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.Deconstruct(out ushort ObjectId, out ushort VehicleId, out ushort PlayerId, out ushort ActorId) -> void
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.Equals(SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget other) -> bool
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.ObjectId.get -> ushort
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.ObjectId.init -> void
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.PlayerId.get -> ushort
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.PlayerId.init -> void
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.SFLocalPlayerCameraTarget() -> void
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.SFLocalPlayerCameraTarget(ushort ObjectId, ushort VehicleId, ushort PlayerId, ushort ActorId) -> void
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.VehicleId.get -> ushort
+SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.VehicleId.init -> void
+static SFSharp.Abstractions.Gta.SFEntityRef.operator !=(SFSharp.Abstractions.Gta.SFEntityRef left, SFSharp.Abstractions.Gta.SFEntityRef right) -> bool
+static SFSharp.Abstractions.Gta.SFEntityRef.operator ==(SFSharp.Abstractions.Gta.SFEntityRef left, SFSharp.Abstractions.Gta.SFEntityRef right) -> bool
+static SFSharp.Abstractions.Gta.SFEntitySnapshot.operator !=(SFSharp.Abstractions.Gta.SFEntitySnapshot left, SFSharp.Abstractions.Gta.SFEntitySnapshot right) -> bool
+static SFSharp.Abstractions.Gta.SFEntitySnapshot.operator ==(SFSharp.Abstractions.Gta.SFEntitySnapshot left, SFSharp.Abstractions.Gta.SFEntitySnapshot right) -> bool
+static SFSharp.Abstractions.Gta.SFGameTick.operator !=(SFSharp.Abstractions.Gta.SFGameTick left, SFSharp.Abstractions.Gta.SFGameTick right) -> bool
+static SFSharp.Abstractions.Gta.SFGameTick.operator ==(SFSharp.Abstractions.Gta.SFGameTick left, SFSharp.Abstractions.Gta.SFGameTick right) -> bool
+static SFSharp.Abstractions.Gta.SFRaycastHit.operator !=(SFSharp.Abstractions.Gta.SFRaycastHit left, SFSharp.Abstractions.Gta.SFRaycastHit right) -> bool
+static SFSharp.Abstractions.Gta.SFRaycastHit.operator ==(SFSharp.Abstractions.Gta.SFRaycastHit left, SFSharp.Abstractions.Gta.SFRaycastHit right) -> bool
+static SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.operator !=(SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot? left, SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot? right) -> bool
+static SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot.operator ==(SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot? left, SFSharp.Abstractions.Modules.Lifecycle.ModuleRuntimeSnapshot? right) -> bool
+static SFSharp.Abstractions.Modules.ModuleDescriptor.operator !=(SFSharp.Abstractions.Modules.ModuleDescriptor? left, SFSharp.Abstractions.Modules.ModuleDescriptor? right) -> bool
+static SFSharp.Abstractions.Modules.ModuleDescriptor.operator ==(SFSharp.Abstractions.Modules.ModuleDescriptor? left, SFSharp.Abstractions.Modules.ModuleDescriptor? right) -> bool
+static SFSharp.Abstractions.Modules.SFModuleInfo.operator !=(SFSharp.Abstractions.Modules.SFModuleInfo? left, SFSharp.Abstractions.Modules.SFModuleInfo? right) -> bool
+static SFSharp.Abstractions.Modules.SFModuleInfo.operator ==(SFSharp.Abstractions.Modules.SFModuleInfo? left, SFSharp.Abstractions.Modules.SFModuleInfo? right) -> bool
+static SFSharp.Abstractions.Network.IncomingPacketFrame.operator !=(SFSharp.Abstractions.Network.IncomingPacketFrame left, SFSharp.Abstractions.Network.IncomingPacketFrame right) -> bool
+static SFSharp.Abstractions.Network.IncomingPacketFrame.operator ==(SFSharp.Abstractions.Network.IncomingPacketFrame left, SFSharp.Abstractions.Network.IncomingPacketFrame right) -> bool
+static SFSharp.Abstractions.Network.IncomingRpcFrame.operator !=(SFSharp.Abstractions.Network.IncomingRpcFrame left, SFSharp.Abstractions.Network.IncomingRpcFrame right) -> bool
+static SFSharp.Abstractions.Network.IncomingRpcFrame.operator ==(SFSharp.Abstractions.Network.IncomingRpcFrame left, SFSharp.Abstractions.Network.IncomingRpcFrame right) -> bool
+static SFSharp.Abstractions.Network.OutgoingPacketFrame.operator !=(SFSharp.Abstractions.Network.OutgoingPacketFrame left, SFSharp.Abstractions.Network.OutgoingPacketFrame right) -> bool
+static SFSharp.Abstractions.Network.OutgoingPacketFrame.operator ==(SFSharp.Abstractions.Network.OutgoingPacketFrame left, SFSharp.Abstractions.Network.OutgoingPacketFrame right) -> bool
+static SFSharp.Abstractions.Network.OutgoingRpcFrame.operator !=(SFSharp.Abstractions.Network.OutgoingRpcFrame left, SFSharp.Abstractions.Network.OutgoingRpcFrame right) -> bool
+static SFSharp.Abstractions.Network.OutgoingRpcFrame.operator ==(SFSharp.Abstractions.Network.OutgoingRpcFrame left, SFSharp.Abstractions.Network.OutgoingRpcFrame right) -> bool
+static SFSharp.Abstractions.Network.RakNetTimestampEnvelope.operator !=(SFSharp.Abstractions.Network.RakNetTimestampEnvelope left, SFSharp.Abstractions.Network.RakNetTimestampEnvelope right) -> bool
+static SFSharp.Abstractions.Network.RakNetTimestampEnvelope.operator ==(SFSharp.Abstractions.Network.RakNetTimestampEnvelope left, SFSharp.Abstractions.Network.RakNetTimestampEnvelope right) -> bool
+static SFSharp.Abstractions.Network.RakNetTimestampEnvelope.TryRead(System.ReadOnlySpan<byte> data, int dataBitLength, out SFSharp.Abstractions.Network.RakNetTimestampEnvelope envelope) -> bool
+static SFSharp.Abstractions.Network.SFPacketMetadata.operator !=(SFSharp.Abstractions.Network.SFPacketMetadata? left, SFSharp.Abstractions.Network.SFPacketMetadata? right) -> bool
+static SFSharp.Abstractions.Network.SFPacketMetadata.operator ==(SFSharp.Abstractions.Network.SFPacketMetadata? left, SFSharp.Abstractions.Network.SFPacketMetadata? right) -> bool
+static SFSharp.Abstractions.Network.SFPacketObservation.operator !=(SFSharp.Abstractions.Network.SFPacketObservation? left, SFSharp.Abstractions.Network.SFPacketObservation? right) -> bool
+static SFSharp.Abstractions.Network.SFPacketObservation.operator ==(SFSharp.Abstractions.Network.SFPacketObservation? left, SFSharp.Abstractions.Network.SFPacketObservation? right) -> bool
+static SFSharp.Abstractions.Samp.SFLabelSnapshot.operator !=(SFSharp.Abstractions.Samp.SFLabelSnapshot left, SFSharp.Abstractions.Samp.SFLabelSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFLabelSnapshot.operator ==(SFSharp.Abstractions.Samp.SFLabelSnapshot left, SFSharp.Abstractions.Samp.SFLabelSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFPlayerSnapshot.operator !=(SFSharp.Abstractions.Samp.SFPlayerSnapshot left, SFSharp.Abstractions.Samp.SFPlayerSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFPlayerSnapshot.operator ==(SFSharp.Abstractions.Samp.SFPlayerSnapshot left, SFSharp.Abstractions.Samp.SFPlayerSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFSampClientInfo.operator !=(SFSharp.Abstractions.Samp.SFSampClientInfo? left, SFSharp.Abstractions.Samp.SFSampClientInfo? right) -> bool
+static SFSharp.Abstractions.Samp.SFSampClientInfo.operator ==(SFSharp.Abstractions.Samp.SFSampClientInfo? left, SFSharp.Abstractions.Samp.SFSampClientInfo? right) -> bool
+static SFSharp.Abstractions.Samp.SFSampEntityEvent.operator !=(SFSharp.Abstractions.Samp.SFSampEntityEvent left, SFSharp.Abstractions.Samp.SFSampEntityEvent right) -> bool
+static SFSharp.Abstractions.Samp.SFSampEntityEvent.operator ==(SFSharp.Abstractions.Samp.SFSampEntityEvent left, SFSharp.Abstractions.Samp.SFSampEntityEvent right) -> bool
+static SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.operator !=(SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot left, SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.operator ==(SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot left, SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFTextDrawSnapshot.operator !=(SFSharp.Abstractions.Samp.SFTextDrawSnapshot left, SFSharp.Abstractions.Samp.SFTextDrawSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFTextDrawSnapshot.operator ==(SFSharp.Abstractions.Samp.SFTextDrawSnapshot left, SFSharp.Abstractions.Samp.SFTextDrawSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFVehicleSnapshot.operator !=(SFSharp.Abstractions.Samp.SFVehicleSnapshot left, SFSharp.Abstractions.Samp.SFVehicleSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.SFVehicleSnapshot.operator ==(SFSharp.Abstractions.Samp.SFVehicleSnapshot left, SFSharp.Abstractions.Samp.SFVehicleSnapshot right) -> bool
+static SFSharp.Abstractions.SFColor.FromArgb(byte a, byte r, byte g, byte b) -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColor.FromHex(string! hex) -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColor.FromRgb(byte r, byte g, byte b) -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColor.implicit operator uint(SFSharp.Abstractions.SFColor color) -> uint
+static SFSharp.Abstractions.SFColor.operator !=(SFSharp.Abstractions.SFColor left, SFSharp.Abstractions.SFColor right) -> bool
+static SFSharp.Abstractions.SFColor.operator ==(SFSharp.Abstractions.SFColor left, SFSharp.Abstractions.SFColor right) -> bool
+static SFSharp.Abstractions.SFColor.operator |(SFSharp.Abstractions.SFColor left, SFSharp.Abstractions.SFColor right) -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Black.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Blue.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Cyan.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.DarkGray.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Gray.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Green.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Ice.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.LightGray.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Mint.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Orange.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Purple.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Red.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Rose.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Sand.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Slate.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.White.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.SFColors.Yellow.get -> SFSharp.Abstractions.SFColor
+static SFSharp.Abstractions.Ui.ChatEntry.operator !=(SFSharp.Abstractions.Ui.ChatEntry? left, SFSharp.Abstractions.Ui.ChatEntry? right) -> bool
+static SFSharp.Abstractions.Ui.ChatEntry.operator ==(SFSharp.Abstractions.Ui.ChatEntry? left, SFSharp.Abstractions.Ui.ChatEntry? right) -> bool
+static SFSharp.Abstractions.Ui.ServerChatEntry.operator !=(SFSharp.Abstractions.Ui.ServerChatEntry? left, SFSharp.Abstractions.Ui.ServerChatEntry? right) -> bool
+static SFSharp.Abstractions.Ui.ServerChatEntry.operator ==(SFSharp.Abstractions.Ui.ServerChatEntry? left, SFSharp.Abstractions.Ui.ServerChatEntry? right) -> bool
+static SFSharp.Abstractions.Ui.SFDialogInputResult.operator !=(SFSharp.Abstractions.Ui.SFDialogInputResult left, SFSharp.Abstractions.Ui.SFDialogInputResult right) -> bool
+static SFSharp.Abstractions.Ui.SFDialogInputResult.operator ==(SFSharp.Abstractions.Ui.SFDialogInputResult left, SFSharp.Abstractions.Ui.SFDialogInputResult right) -> bool
+static SFSharp.Abstractions.Ui.SFDialogListResult.operator !=(SFSharp.Abstractions.Ui.SFDialogListResult left, SFSharp.Abstractions.Ui.SFDialogListResult right) -> bool
+static SFSharp.Abstractions.Ui.SFDialogListResult.operator ==(SFSharp.Abstractions.Ui.SFDialogListResult left, SFSharp.Abstractions.Ui.SFDialogListResult right) -> bool
+static SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.operator !=(SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget left, SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget right) -> bool
+static SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.operator ==(SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget left, SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget right) -> bool
+virtual SFSharp.Abstractions.Modules.SFModuleBase.CreateLogger(SFSharp.Abstractions.Modules.IModuleContext! context) -> Microsoft.Extensions.Logging.ILogger!
+virtual SFSharp.Abstractions.Modules.SFModuleBase.OnCompletedAsync() -> System.Threading.Tasks.Task!
+virtual SFSharp.Abstractions.Modules.SFModuleBase.OnFaultedAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
+virtual SFSharp.Abstractions.Modules.SFModuleBase.OnStartingAsync() -> System.Threading.Tasks.Task!
+virtual SFSharp.Abstractions.Modules.SFModuleBase.OnStoppedAsync() -> System.Threading.Tasks.Task!
+virtual SFSharp.Abstractions.Modules.SFModuleBase.OnStoppingAsync() -> System.Threading.Tasks.Task!
+virtual SFSharp.Abstractions.Network.SFPacketFilterCallback.Invoke(int packetId, System.ReadOnlySpan<byte> data, int bitLength) -> bool
+virtual SFSharp.Abstractions.Network.SFRpcFilterCallback.Invoke(int rpcId, System.ReadOnlySpan<byte> payload, int bitLength) -> bool
+virtual SFSharp.Abstractions.Ui.ChatEntry.<Clone>$() -> SFSharp.Abstractions.Ui.ChatEntry!
+virtual SFSharp.Abstractions.Ui.ChatEntry.EqualityContract.get -> System.Type!
+virtual SFSharp.Abstractions.Ui.ChatEntry.Equals(SFSharp.Abstractions.Ui.ChatEntry? other) -> bool
+virtual SFSharp.Abstractions.Ui.ChatEntry.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual SFSharp.Abstractions.Ui.ServerChatEntry.<Clone>$() -> SFSharp.Abstractions.Ui.ServerChatEntry!
+virtual SFSharp.Abstractions.Ui.ServerChatEntry.EqualityContract.get -> System.Type!
+virtual SFSharp.Abstractions.Ui.ServerChatEntry.Equals(SFSharp.Abstractions.Ui.ServerChatEntry? other) -> bool
+virtual SFSharp.Abstractions.Ui.ServerChatEntry.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~override SFSharp.Abstractions.Gta.SFEntityRef.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Gta.SFEntityRef.ToString() -> string
+~override SFSharp.Abstractions.Gta.SFEntitySnapshot.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Gta.SFEntitySnapshot.ToString() -> string
+~override SFSharp.Abstractions.Gta.SFGameTick.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Gta.SFGameTick.ToString() -> string
+~override SFSharp.Abstractions.Gta.SFRaycastHit.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Gta.SFRaycastHit.ToString() -> string
+~override SFSharp.Abstractions.Network.IncomingPacketFrame.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Network.IncomingPacketFrame.ToString() -> string
+~override SFSharp.Abstractions.Network.IncomingRpcFrame.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Network.IncomingRpcFrame.ToString() -> string
+~override SFSharp.Abstractions.Network.OutgoingPacketFrame.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Network.OutgoingPacketFrame.ToString() -> string
+~override SFSharp.Abstractions.Network.OutgoingRpcFrame.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Network.OutgoingRpcFrame.ToString() -> string
+~override SFSharp.Abstractions.Network.RakNetTimestampEnvelope.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Network.RakNetTimestampEnvelope.ToString() -> string
+~override SFSharp.Abstractions.Samp.SFLabelSnapshot.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.SFLabelSnapshot.ToString() -> string
+~override SFSharp.Abstractions.Samp.SFPlayerSnapshot.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.SFPlayerSnapshot.ToString() -> string
+~override SFSharp.Abstractions.Samp.SFSampEntityEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.SFSampEntityEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.SFTextDrawDataSnapshot.ToString() -> string
+~override SFSharp.Abstractions.Samp.SFTextDrawSnapshot.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.SFTextDrawSnapshot.ToString() -> string
+~override SFSharp.Abstractions.Samp.SFVehicleSnapshot.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.SFVehicleSnapshot.ToString() -> string
+~override SFSharp.Abstractions.SFColor.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Ui.SFDialogInputResult.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Ui.SFDialogInputResult.ToString() -> string
+~override SFSharp.Abstractions.Ui.SFDialogListResult.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Ui.SFDialogListResult.ToString() -> string
+~override SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Ui.SFLocalPlayerCameraTarget.ToString() -> string

@@ -10,6 +10,7 @@
 		<IsTrimmable>false</IsTrimmable>
 		<RootNamespace>SFSharp.Abstractions</RootNamespace>
 		<AssemblyName>SF.Abstractions</AssemblyName>
+		<Description>Managed plugin contracts for SF: GTA and SA-MP services, module lifecycle, storage and network observation.</Description>
 
 	</PropertyGroup>
 

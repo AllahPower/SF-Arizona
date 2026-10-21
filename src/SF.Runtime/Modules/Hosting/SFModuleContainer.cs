@@ -89,14 +89,14 @@ public sealed partial class SFModuleContainer
     /// <exception cref="InvalidOperationException">A module with the same <see cref="ModuleDescriptor.Id"/> is already registered.</exception>
     public void RegisterModule<T>(bool? enabledOnStart = null) where T : ISFModule, new()
     {
-        RegisterCore(ModuleDescriptor.FromType(typeof(T)), static () => new T(), enabledOnStart, ownerPluginId: null);
+        RegisterCore(ModuleDescriptorFactory.FromType(typeof(T)), static () => new T(), enabledOnStart, ownerPluginId: null);
     }
 
     /// <summary>Registers a built-in module created by <paramref name="factory"/>, for modules that take host services in their constructor.</summary>
     internal void RegisterModule<T>(Func<T> factory, bool? enabledOnStart = null) where T : ISFModule
     {
         ArgumentNullException.ThrowIfNull(factory);
-        RegisterCore(ModuleDescriptor.FromType(typeof(T)), () => factory(), enabledOnStart, ownerPluginId: null);
+        RegisterCore(ModuleDescriptorFactory.FromType(typeof(T)), () => factory(), enabledOnStart, ownerPluginId: null);
     }
 
     /// <summary>
@@ -123,7 +123,7 @@ public sealed partial class SFModuleContainer
             throw new ArgumentException($"Type {moduleType.FullName} has no public parameterless constructor.", nameof(moduleType));
         }
 
-        ModuleDescriptor descriptor = ModuleDescriptor.FromType(moduleType);
+        ModuleDescriptor descriptor = ModuleDescriptorFactory.FromType(moduleType);
         RegisterCore(descriptor, () => (ISFModule)Activator.CreateInstance(moduleType)!, enabledOnStart, ownerPluginId);
         return descriptor;
     }
@@ -146,7 +146,7 @@ public sealed partial class SFModuleContainer
         });
         _registrationsById.Add(descriptor.Id, registration);
         SFHostManifest.Instance.Upsert(descriptor.Id, autoStartEnabled, ownerPluginId is null ? "builtin" : "plugin");
-        SFLog.Info($"RegisterModule id={descriptor.Id} type={descriptor.ModuleType.Name} enabledOnStart={autoStartEnabled} execution={descriptor.ExecutionModel}");
+        SFLog.Info($"RegisterModule id={descriptor.Id} type={descriptor.ModuleTypeName} enabledOnStart={autoStartEnabled} execution={descriptor.ExecutionModel}");
         UpdateDependencyStatus(registration);
         PublishModuleCatalogSnapshot();
     }
@@ -396,7 +396,7 @@ public sealed partial class SFModuleContainer
         CancellationTokenSource cts = new();
         ModuleContext context = new(registration.Descriptor, registration.Runtime, cts.Token, _host, _mainThread);
 
-        SFLog.Info($"StartModule id={registration.Descriptor.Id} type={registration.Descriptor.ModuleType.Name} execution={registration.Descriptor.ExecutionModel}");
+        SFLog.Info($"StartModule id={registration.Descriptor.Id} type={registration.Descriptor.ModuleTypeName} execution={registration.Descriptor.ExecutionModel}");
         Task task = registration.Descriptor.ExecutionModel switch
         {
             ModuleExecutionModel.BackgroundWorker => Task.Run(() => RunModuleCore(registration, module, context)),
@@ -597,7 +597,7 @@ public sealed partial class SFModuleContainer
         string normalized = query.Trim();
         return _registrations.FirstOrDefault(x =>
             string.Equals(x.Descriptor.DisplayName, normalized, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(x.Descriptor.ModuleType.Name, normalized, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.Descriptor.ModuleTypeName, normalized, StringComparison.OrdinalIgnoreCase) ||
             x.Descriptor.Id.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
             x.Descriptor.DisplayName.Contains(normalized, StringComparison.OrdinalIgnoreCase));
     }

@@ -13,13 +13,11 @@ namespace SFSharp.Examples.ConfigCounter;
     DefaultEnabled = true,
     ExecutionModel = ModuleExecutionModel.MainThread,
     RestartPolicy = ModuleRestartPolicy.Manual)]
-public sealed class ConfigCounterModule : ISFModule
+public sealed class ConfigCounterModule : SFModuleBase
 {
     private CounterConfig _config = new();
-    private IModuleContext Context => ((ISFModule)this).Context;
-    private ILogger Log => ((ISFModule)this).Log;
 
-    public Task OnStartingAsync()
+    protected override Task OnStartingAsync()
     {
         _config = Context.Config.Load(
             ConfigCounterJsonContext.Default.CounterConfig,
@@ -44,12 +42,12 @@ public sealed class ConfigCounterModule : ISFModule
         return Task.CompletedTask;
     }
 
-    public async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(Timeout.Infinite, cancellationToken);
     }
 
-    public Task OnStoppingAsync()
+    protected override Task OnStoppingAsync()
     {
         Log.LogInformation("Config Counter example stopping");
         return Task.CompletedTask;

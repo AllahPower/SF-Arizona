@@ -1,7 +1,7 @@
 namespace SFSharp.Abstractions.Modules.Lifecycle;
 
 /// <summary>
-/// Controls whether a faulted module is automatically restarted by <see cref="SFModuleContainer"/>.
+/// Controls whether a faulted module is automatically restarted by <c>host</c>.
 /// Configured via <see cref="SFModuleAttribute.RestartPolicy"/>.
 /// </summary>
 public enum ModuleRestartPolicy

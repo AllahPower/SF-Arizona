@@ -14,7 +14,7 @@ namespace SFSharp.Examples.AntiAfkToggle;
     DefaultEnabled = true,
     ExecutionModel = ModuleExecutionModel.MainThread,
     RestartPolicy = ModuleRestartPolicy.Manual)]
-public sealed unsafe partial class AntiAfkToggleModule : ISFModule
+public sealed unsafe partial class AntiAfkToggleModule : SFModuleBase
 {
     private static readonly string[] CandidateModules = ["vorbisFile.asi", "vorbisFile.dll"];
     private const string ChatPrefix = "[AntiAFK]";
@@ -23,15 +23,13 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
     private const uint OffColor = 0xFFFF6666;
     private const uint WarnColor = 0xFFFFAA33;
 
-    private IModuleContext Context => ((ISFModule)this).Context;
-    private ILogger Log => ((ISFModule)this).Log;
 
     private delegate* unmanaged[Cdecl]<int, int> _setAntiAfk;
     private delegate* unmanaged[Cdecl]<byte> _isAntiAfk;
     private string? _resolvedModuleName;
     private AntiAfkConfig _config = new();
 
-    public Task OnStartingAsync()
+    protected override Task OnStartingAsync()
     {
         _config = Context.Config.Load(
             AntiAfkToggleJsonContext.Default.AntiAfkConfig,
@@ -68,13 +66,13 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
         return Task.CompletedTask;
     }
 
-    public Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
         return Task.Delay(Timeout.Infinite, cancellationToken)
             .ContinueWith(static _ => { }, TaskContinuationOptions.OnlyOnCanceled);
     }
 
-    public Task OnStoppingAsync()
+    protected override Task OnStoppingAsync()
     {
         Log.LogInformation("AntiAFK toggle stopping");
         return Task.CompletedTask;

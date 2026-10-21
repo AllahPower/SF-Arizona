@@ -3,7 +3,7 @@ namespace SFSharp.Abstractions.Modules.Lifecycle;
 /// <summary>
 /// Records why a module left the <see cref="ModuleLifecycleState.Running"/> state.
 /// Surfaced through <see cref="ModuleRuntimeSnapshot.LastStopReason"/> and drives restart logic in
-/// <see cref="SFModuleContainer"/>.
+/// <c>host</c>.
 /// </summary>
 public enum ModuleStopReason
 {

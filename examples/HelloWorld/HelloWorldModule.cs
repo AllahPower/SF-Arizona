@@ -13,12 +13,10 @@ namespace SFSharp.Examples.HelloWorld;
     DefaultEnabled = true,
     ExecutionModel = ModuleExecutionModel.MainThread,
     RestartPolicy = ModuleRestartPolicy.Manual)]
-public sealed class HelloWorldModule : ISFModule
+public sealed class HelloWorldModule : SFModuleBase
 {
-    private IModuleContext Context => ((ISFModule)this).Context;
-    private ILogger Log => ((ISFModule)this).Log;
 
-    public Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
         Context.Heartbeat("hello-world");
         Context.SetStatusText("printed hello world");
