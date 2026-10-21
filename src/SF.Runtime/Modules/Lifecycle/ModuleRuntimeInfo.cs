@@ -5,7 +5,7 @@ namespace SFSharp.Runtime.Modules.Lifecycle;
 
 /// <summary>
 /// Mutable per-module state owned by <see cref="SFModuleContainer"/>. Holds lifecycle flags,
-/// telemetry counters and the disposables registered through <see cref="ModuleContext"/>.
+/// telemetry counters and resource counts reported by the current <see cref="ModuleContext"/>.
 /// Public consumers should read state through <see cref="ModuleRuntimeSnapshot"/> (via
 /// <see cref="CreateSnapshot"/>) instead of touching this type directly.
 /// </summary>
@@ -18,8 +18,8 @@ namespace SFSharp.Runtime.Modules.Lifecycle;
 public sealed class ModuleRuntimeInfo
 {
     private readonly Lock _sync = new();
-    private readonly List<IDisposable> _ownedDisposables = [];
-    private readonly HashSet<Task> _ownedBackgroundTasks = [];
+    private int _ownedDisposableCount;
+    private int _ownedBackgroundTaskCount;
     private readonly ConcurrentDictionary<string, long> _counters = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, string> _details = new(StringComparer.OrdinalIgnoreCase);
     private long _lastMemoryPollTicks;
@@ -155,8 +155,8 @@ public sealed class ModuleRuntimeInfo
             _lastMemoryBytes = GC.GetTotalMemory(false);
             _counters.Clear();
             _details.Clear();
-            _ownedDisposables.Clear();
-            _ownedBackgroundTasks.Clear();
+            _ownedDisposableCount = 0;
+            _ownedBackgroundTaskCount = 0;
         }
     }
 
@@ -188,6 +188,16 @@ public sealed class ModuleRuntimeInfo
 
             _lastActivityAt = DateTimeOffset.UtcNow;
             _lastActivity = $"stop:{reason}";
+        }
+    }
+
+    internal void MarkDraining()
+    {
+        lock (_sync)
+        {
+            _state = ModuleLifecycleState.Stopping;
+            _lastActivityAt = DateTimeOffset.UtcNow;
+            _lastActivity = "draining-owned-work";
         }
     }
 
@@ -348,65 +358,15 @@ public sealed class ModuleRuntimeInfo
         }
     }
 
-    /// <summary>
-    /// Adds a disposable to the context-owned list so it is released on module teardown.
-    /// Called by <see cref="ModuleContext.RegisterDisposable(IDisposable)"/>.
-    /// </summary>
-    /// <param name="disposable">Resource that lives as long as the current module run.</param>
-    internal void RegisterDisposable(IDisposable disposable)
+    /// <summary>Mirrors counts only; resources and tasks belong to the per-run scope.</summary>
+    internal void SetOwnedResourceCounts(int resources, int tasks)
     {
         lock (_sync)
         {
-            _ownedDisposables.Add(disposable);
-        }
-    }
-
-    internal void RegisterBackgroundTask(Task task)
-    {
-        lock (_sync)
-        {
-            _ownedBackgroundTasks.Add(task);
-        }
-
-        _details["background.tasks"] = GetOwnedBackgroundTaskCountUnsafe().ToString();
-        task.ContinueWith(static (completed, state) =>
-        {
-            ModuleRuntimeInfo runtime = (ModuleRuntimeInfo)state!;
-            runtime.OnOwnedBackgroundTaskCompleted(completed);
-        }, this, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-    }
-
-    internal Task[] SnapshotOwnedBackgroundTasks()
-    {
-        lock (_sync)
-        {
-            return _ownedBackgroundTasks.ToArray();
-        }
-    }
-
-    /// <summary>
-    /// Disposes every owned <see cref="IDisposable"/> and clears the list. Exceptions from
-    /// individual disposables are logged and swallowed so teardown always finishes.
-    /// </summary>
-    internal void DisposeOwnedDisposables()
-    {
-        List<IDisposable> owned;
-        lock (_sync)
-        {
-            owned = [.. _ownedDisposables];
-            _ownedDisposables.Clear();
-        }
-
-        foreach (IDisposable disposable in owned)
-        {
-            try
-            {
-                disposable.Dispose();
-            }
-            catch (Exception ex)
-            {
-                SFLog.Error(ex, $"[{Descriptor.Id}] Failed to dispose runtime resource");
-            }
+            _ownedDisposableCount = resources;
+            _ownedBackgroundTaskCount = tasks;
+            if (tasks == 0) _details.TryRemove("background.tasks", out _);
+            else _details["background.tasks"] = tasks.ToString();
         }
     }
 
@@ -428,9 +388,9 @@ public sealed class ModuleRuntimeInfo
             _lastExceptionMessage = null;
             _lastMemoryPollTicks = 0;
             _lastMemoryBytes = GC.GetTotalMemory(false);
-            if (_ownedBackgroundTasks.Count != 0)
+            if (_ownedBackgroundTaskCount != 0)
             {
-                _details["background.tasks"] = _ownedBackgroundTasks.Count.ToString();
+                _details["background.tasks"] = _ownedBackgroundTaskCount.ToString();
             }
         }
     }
@@ -475,31 +435,8 @@ public sealed class ModuleRuntimeInfo
                 _lastExceptionMessage,
                 new Dictionary<string, long>(_counters, StringComparer.OrdinalIgnoreCase),
                 new Dictionary<string, string>(_details, StringComparer.OrdinalIgnoreCase),
-                _ownedDisposables.Count);
+                _ownedDisposableCount);
         }
     }
 
-    private void OnOwnedBackgroundTaskCompleted(Task completed)
-    {
-        lock (_sync)
-        {
-            _ownedBackgroundTasks.Remove(completed);
-            if (_ownedBackgroundTasks.Count == 0)
-            {
-                _details.TryRemove("background.tasks", out _);
-            }
-            else
-            {
-                _details["background.tasks"] = _ownedBackgroundTasks.Count.ToString();
-            }
-        }
-    }
-
-    private int GetOwnedBackgroundTaskCountUnsafe()
-    {
-        lock (_sync)
-        {
-            return _ownedBackgroundTasks.Count;
-        }
-    }
 }

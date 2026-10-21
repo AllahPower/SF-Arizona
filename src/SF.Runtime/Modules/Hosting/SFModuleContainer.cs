@@ -399,7 +399,7 @@ public sealed partial class SFModuleContainer
         SFLog.Info($"StartModule id={registration.Descriptor.Id} type={registration.Descriptor.ModuleType.Name} execution={registration.Descriptor.ExecutionModel}");
         Task task = registration.Descriptor.ExecutionModel switch
         {
-            ModuleExecutionModel.BackgroundWorker => Task.Run(() => RunModuleCore(registration, module, context), cts.Token),
+            ModuleExecutionModel.BackgroundWorker => Task.Run(() => RunModuleCore(registration, module, context)),
             _ => RunModuleCore(registration, module, context)
         };
 
@@ -418,31 +418,48 @@ public sealed partial class SFModuleContainer
     /// </summary>
     private async Task RunModuleCore(ModuleRegistration registration, ISFModule module, ModuleContext context)
     {
-        registration.Runtime.MarkRunning();
-        PublishModuleCatalogSnapshot();
+        await _mainThread.InvokeAsync(() =>
+        {
+            if (!context.CancellationToken.IsCancellationRequested) registration.Runtime.MarkRunning();
+            PublishModuleCatalogSnapshot();
+        });
+        Exception? failure = null;
         try
         {
+            context.CancellationToken.ThrowIfCancellationRequested();
             await module.RunAsync(context);
-            await context.DrainBackgroundTasksAsync();
-            registration.Runtime.MarkCompleted();
-            PublishModuleCatalogSnapshot();
         }
         catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
         {
-            await context.DrainBackgroundTasksAsync();
-            registration.Runtime.MarkCompleted();
-            PublishModuleCatalogSnapshot();
         }
         catch (Exception ex)
         {
-            registration.Runtime.MarkFault(ex);
-            PublishModuleCatalogSnapshot();
-            throw;
+            failure = ex;
         }
-        finally
+
+        await _mainThread.InvokeAsync(() =>
         {
-            context.Dispose();
+            registration.Runtime.MarkDraining();
+            PublishModuleCatalogSnapshot();
+        });
+        try { await context.DrainBackgroundTasksAsync(); }
+        catch (Exception ex) { failure ??= ex; }
+        await context.ReleaseResourcesAsync();
+
+        if (failure is not null)
+        {
+            await _mainThread.InvokeAsync(() =>
+            {
+                registration.Runtime.MarkFault(failure);
+                PublishModuleCatalogSnapshot();
+            });
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
         }
+        await _mainThread.InvokeAsync(() =>
+        {
+            registration.Runtime.MarkCompleted();
+            PublishModuleCatalogSnapshot();
+        });
     }
 
     /// <summary>Requests cooperative cancellation of a running module. No-op if it is not running.</summary>
@@ -455,6 +472,7 @@ public sealed partial class SFModuleContainer
 
         SFLog.Info($"StopModule id={registration.Descriptor.Id} reason={reason}");
         registration.Runtime.RequestStop(reason);
+        running.Context.RequestStop();
         running.CancellationTokenSource.Cancel();
         PublishModuleCatalogSnapshot();
     }

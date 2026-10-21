@@ -9,7 +9,7 @@ namespace SFSharp.Abstractions.Modules;
 /// </summary>
 /// <remarks>
 /// Member thread-safety varies. Telemetry helpers (<see cref="Telemetry"/>) and
-/// <see cref="RegisterChatCommand"/> / <see cref="RegisterDisposable"/> / <see cref="RunBackground"/>
+/// command registration, <see cref="RegisterDisposable"/> and background work registration
 /// are thread-safe. Everything else (storage init, <see cref="Config"/> access, subscription
 /// extensions that touch native hooks) should be treated as main-thread-only unless documented
 /// otherwise on the specific API.
@@ -63,12 +63,21 @@ public interface IModuleContext : IDisposable
 
     /// <summary>
     /// Takes ownership of <paramref name="disposable"/>. The object is disposed when the module run
-    /// ends, even if the module faults. Thread-safe.
+    /// ends, even if the module faults. Thread-safe. Resources are released in reverse registration
+    /// order on the game thread, after owned work finishes. Late registrations are disposed and rejected;
+    /// a late worker registration waits for game-thread cleanup. Do not register resources from native filters.
     /// </summary>
     IDisposable RegisterDisposable(IDisposable disposable);
 
     /// <summary>Registers a chat command scoped to this module's lifetime. Thread-safe.</summary>
     IDisposable RegisterChatCommand(string command, Action<string?> callback);
+
+    /// <summary>
+    /// Registers a tracked asynchronous command. Its synchronous prefix runs on the game thread.
+    /// At most one invocation runs at a time; further invocations while busy are ignored.
+    /// Stopping the run cancels the supplied token and waits for the handler before releasing resources.
+    /// </summary>
+    IDisposable RegisterAsyncChatCommand(string command, Func<string?, CancellationToken, Task> callback);
 
     /// <summary>Executes on the game thread, cancelled when this module stops. The caller's continuation is not switched.</summary>
     Task InvokeOnMainThreadAsync(Action action, CancellationToken cancellationToken = default);
@@ -79,6 +88,9 @@ public interface IModuleContext : IDisposable
     /// owned background task for this module run. Thread-safe.
     /// </summary>
     Task RunBackground(Func<Task> work);
+
+    /// <summary>Starts tracked thread-pool work with this run's cancellation token. Late starts are rejected.</summary>
+    Task RunBackground(Func<CancellationToken, Task> work);
 
     /// <inheritdoc cref="IModuleTelemetry.GetSnapshot"/>
     ModuleRuntimeSnapshot GetSnapshot() => Telemetry.GetSnapshot();

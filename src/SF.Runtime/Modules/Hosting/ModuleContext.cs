@@ -18,7 +18,7 @@ public sealed class ModuleContext : IModuleContext
 {
     private readonly ModuleRuntimeInfo _runtime;
     private readonly ModuleTelemetry _telemetry;
-    private int _disposed;
+    private readonly ModuleRunScope _scope;
     private IModuleStorage? _assets;
     private IModuleStorage? _userData;
     private IModuleConfig? _config;
@@ -37,7 +37,8 @@ public sealed class ModuleContext : IModuleContext
         _mainThread = mainThread;
         _runtime = runtime;
         _telemetry = new ModuleTelemetry(runtime);
-        CancellationToken = cancellationToken;
+        _scope = new(cancellationToken, runtime.SetOwnedResourceCounts,
+            ex => SFLog.Error(ex, $"[{descriptor.Id}] Module work or cleanup failed"));
     }
 
     /// <summary>Thread-safe telemetry surface backed by <see cref="ModuleRuntimeInfo"/>.</summary>
@@ -53,7 +54,7 @@ public sealed class ModuleContext : IModuleContext
     /// Cancelled when the container shuts down or the user issues <c>/sfs stop</c>. Also the token
     /// forwarded to <see cref="SFModuleBase.ExecuteAsync(CancellationToken)"/>.
     /// </summary>
-    public CancellationToken CancellationToken { get; }
+    public CancellationToken CancellationToken => _scope.Token;
 
     /// <inheritdoc />
     public ILogger Log => _log ??= SFLoggerProvider.Instance.CreateLogger(Descriptor.Id);
@@ -139,7 +140,7 @@ public sealed class ModuleContext : IModuleContext
     public IDisposable RegisterDisposable(IDisposable disposable)
     {
         ArgumentNullException.ThrowIfNull(disposable);
-        _runtime.RegisterDisposable(disposable);
+        _scope.Register(new MainThreadResource(_mainThread, disposable));
         return disposable;
     }
 
@@ -156,13 +157,15 @@ public sealed class ModuleContext : IModuleContext
     /// <returns>Disposable registration, also tracked by <see cref="RegisterDisposable(IDisposable)"/>.</returns>
     public IDisposable RegisterChatCommand(string command, Action<string?> callback)
     {
+        ArgumentNullException.ThrowIfNull(callback);
         IDisposable registration = SF.Samp.Chat.RegisterChatCommand(command, args =>
         {
+            if (CancellationToken.IsCancellationRequested) return;
             _runtime.IncrementCounter("commands.invoked", 1);
             _runtime.RecordActivity($"command:{command}");
             callback(args);
         });
-        _runtime.RegisterDisposable(registration);
+        RegisterDisposable(registration);
         _runtime.IncrementCounter("commands.registered", 1);
         return registration;
     }
@@ -191,39 +194,31 @@ public sealed class ModuleContext : IModuleContext
     public Task RunBackground(Func<Task> work)
     {
         ArgumentNullException.ThrowIfNull(work);
-        Task task = Task.Run(async () =>
+        return RunBackground(_ => work());
+    }
+
+    public Task RunBackground(Func<CancellationToken, Task> work)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        return _scope.Run(token =>
         {
             _runtime.RecordActivity("background-work");
-            await work();
-        }, CancellationToken);
-        _runtime.RegisterBackgroundTask(task);
-        return task;
+            return work(token);
+        }, background: true);
     }
 
-    internal async Task DrainBackgroundTasksAsync()
+    public IDisposable RegisterAsyncChatCommand(string command, Func<string?, CancellationToken, Task> callback)
     {
-        while (true)
-        {
-            Task[] tasks = _runtime.SnapshotOwnedBackgroundTasks();
-            if (tasks.Length == 0)
-            {
-                return;
-            }
-
-            try
-            {
-                await Task.WhenAll(tasks);
-                return;
-            }
-            catch (OperationCanceledException) when (CancellationToken.IsCancellationRequested)
-            {
-                if (tasks.All(static task => task.IsCanceled))
-                {
-                    return;
-                }
-            }
-        }
+        ArgumentNullException.ThrowIfNull(callback);
+        var handler = new ModuleAsyncCommand(_scope, callback);
+        return RegisterChatCommand(command, handler.Invoke);
     }
+
+    internal Task DrainBackgroundTasksAsync() => _scope.DrainAsync();
+
+    internal void RequestStop() => _scope.BeginStop();
+
+    internal Task ReleaseResourcesAsync() => _mainThread.InvokeAsync(Dispose);
 
     /// <summary>Captures a current <see cref="ModuleRuntimeSnapshot"/>. Safe to call from any thread.</summary>
     public ModuleRuntimeSnapshot GetSnapshot()
@@ -238,11 +233,21 @@ public sealed class ModuleContext : IModuleContext
     /// </summary>
     public void Dispose()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-        {
-            return;
-        }
+        if (!_mainThread.IsMainThread)
+            throw new InvalidOperationException("Module resources must be released on the game thread.");
+        _scope.Dispose();
+    }
 
-        _runtime.DisposeOwnedDisposables();
+    private sealed class MainThreadResource(MainThreadDispatcher mainThread, IDisposable resource) : IDisposable
+    {
+        private IDisposable? _resource = resource;
+
+        public void Dispose()
+        {
+            IDisposable? owned = Interlocked.Exchange(ref _resource, null);
+            if (owned is null) return;
+            // Late worker registrations still release native resources on their owning thread.
+            mainThread.Context.Send(static state => ((IDisposable)state!).Dispose(), owned);
+        }
     }
 }
