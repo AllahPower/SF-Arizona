@@ -9,7 +9,7 @@ internal sealed class SFRuntime
 {
     private HookRegistry? _hooks;
     private SFHost? _host;
-    private List<GameInitStageHook>? _gameLoadHooks;
+    private List<IDisposable>? _gameLoadHooks;
     private GtaProcessBridge? _processBridge;
     public SFGameClock Clock { get; } = new();
 

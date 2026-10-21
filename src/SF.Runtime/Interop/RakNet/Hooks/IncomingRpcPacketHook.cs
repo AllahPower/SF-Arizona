@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -18,7 +17,6 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
     internal unsafe delegate bool IncomingRpcPacketNative(IntPtr thisPtr, byte* data, int length, RakNetPlayerId playerId);
 
     private const byte IdTimestamp = 40;
-    private static IncomingRpcPacketHook? _instance;
     private readonly NetworkFilters _filters;
     private readonly NetworkDispatcher _dispatcher;
 
@@ -41,43 +39,42 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
     {
         _filters = filters;
         _dispatcher = dispatcher;
-        _instance = this;
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.RpcRuntime.HandleRpcPacket), new IncomingRpcPacketNative(HookProc));
     }
 
-    private static unsafe bool HookProc(IntPtr thisPtr, byte* data, int length, RakNetPlayerId playerId)
+    private bool HookProc(IntPtr thisPtr, byte* data, int length, RakNetPlayerId playerId)
     {
-        if (_instance is null)
+        try
         {
-            throw new UnreachableException();
-        }
 
-        _instance.RakPeerInstance = thisPtr;
-        _instance.ServerPlayerId = playerId;
-        _instance.HasServerPlayerId = true;
+            RakPeerInstance = thisPtr;
+            ServerPlayerId = playerId;
+            HasServerPlayerId = true;
 
-        if (TryExtractRpc(data, length, out int rpcId, out int payloadBitOffset, out int payloadBitLength))
-        {
-            if (_instance!._filters.IncomingRpc.HasFilters &&
-                _instance!._filters.IncomingRpc.ShouldCancel(rpcId, data, length * 8))
+            if (TryExtractRpc(data, length, out int rpcId, out int payloadBitOffset, out int payloadBitLength))
             {
-                return false;
-            }
-
-            if (_instance!._dispatcher.IncomingRpcHandlers.HasSubscribers(rpcId))
-            {
-                byte[] packet = new byte[length];
-                fixed (byte* dst = packet)
+                if (_filters.IncomingRpc.HasFilters &&
+                    _filters.IncomingRpc.ShouldCancel(rpcId, data, length * 8))
                 {
-                    Buffer.MemoryCopy(data, dst, length, length);
+                    return false;
                 }
 
-                _instance!._dispatcher.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
+                if (_dispatcher.IncomingRpcHandlers.HasSubscribers(rpcId))
+                {
+                    byte[] packet = new byte[length];
+                    fixed (byte* dst = packet)
+                    {
+                        Buffer.MemoryCopy(data, dst, length, length);
+                    }
+
+                    _dispatcher.EnqueueIncomingRpc(rpcId, packet, payloadBitOffset, payloadBitLength);
+                }
             }
         }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); }
 
-        // Call original via MinHook trampoline - no SuppressHook needed
-        return _instance.OriginalFunction(thisPtr, data, length, playerId);
+        try { return OriginalFunction(thisPtr, data, length, playerId); }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); return false; }
     }
 
     protected override bool InvokeOriginalFunction(nint args)
@@ -85,19 +82,13 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
         throw new NotSupportedException();
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        _instance = null;
-    }
-
-    private static unsafe bool TryExtractRpc(byte* data, int length, out int rpcId, out int payloadBitOffset, out int payloadBitLength)
+    private bool TryExtractRpc(byte* data, int length, out int rpcId, out int payloadBitOffset, out int payloadBitLength)
     {
         rpcId = 0;
         payloadBitOffset = 0;
         payloadBitLength = 0;
 
-        if (data is null || length <= 1)
+        if (data is null || length <= 1 || length > int.MaxValue / 8)
         {
             return false;
         }
@@ -115,7 +106,7 @@ internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpc
         }
 
         rpcId = rpcByte;
-        bool hasConsumers = _instance!._dispatcher.IncomingRpcHandlers.HasSubscribers(rpcId) || _instance!._filters.IncomingRpc.HasFilters;
+        bool hasConsumers = _dispatcher.IncomingRpcHandlers.HasSubscribers(rpcId) || _filters.IncomingRpc.HasFilters;
         if (!hasConsumers)
         {
             return false;

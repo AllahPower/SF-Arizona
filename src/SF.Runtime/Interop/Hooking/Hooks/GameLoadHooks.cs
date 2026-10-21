@@ -6,8 +6,7 @@ internal readonly record struct GameInitArgs(nint FileName);
 
 /// <summary>
 /// Wraps one cdecl CGame start-up function and reports the stages before and after it. The native signature
-/// is <c>bool(const char*)</c>; <c>InitialiseCoreDataAfterRW</c> takes no argument, which is harmless under cdecl
-/// because the detour only forwards the caller's stack slot and the caller cleans the stack.
+/// is <c>bool(const char*)</c>; the no-argument core-data stage has its own ABI below.
 /// </summary>
 internal sealed class GameInitStageHook : NativeHook<GameInitArgs, byte, GameInitStageHook.Native>
 {
@@ -28,17 +27,47 @@ internal sealed class GameInitStageHook : NativeHook<GameInitArgs, byte, GameIni
 
     private byte HookProc(nint fileName)
     {
-        _loading.Reach(_before);
-        byte result = Process(new(fileName));
-        _loading.Reach(_after);
+        GameLoadHooks.ReachSafely(_loading, _before);
+        byte result = ProcessNative(new(fileName), 0);
+        GameLoadHooks.ReachSafely(_loading, _after);
         return result;
     }
 
     protected override byte InvokeOriginalFunction(GameInitArgs args) => OriginalFunction(args.FileName);
 }
 
+/// <summary>CGame::InitialiseCoreDataAfterRW: cdecl, no arguments, boolean return in AL.</summary>
+internal sealed class GameCoreDataHook : NativeHook<int, byte, GameCoreDataHook.Native>
+{
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate byte Native();
+
+    private readonly SFGameLoading _loading;
+
+    public GameCoreDataHook(nint target, SFGameLoading loading)
+    {
+        _loading = loading;
+        InstallHook(target, new Native(HookProc));
+    }
+
+    private byte HookProc()
+    {
+        GameLoadHooks.ReachSafely(_loading, SFGameLoadStage.BeforeCoreData);
+        byte result = ProcessNative(0, 0);
+        GameLoadHooks.ReachSafely(_loading, SFGameLoadStage.AfterCoreData);
+        return result;
+    }
+
+    protected override byte InvokeOriginalFunction(int args) => OriginalFunction();
+}
+
 internal static unsafe class GameLoadHooks
 {
+    internal static void ReachSafely(SFGameLoading loading, SFGameLoadStage stage)
+    {
+        try { loading.Reach(stage); }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); }
+    }
     private readonly record struct Target(string Name, int Rva, byte[] Prologue, SFGameLoadStage Before, SFGameLoadStage After);
 
     // Prologues read from gta_sa.exe 1.0 US in IDA; a leading E9 means another module already detoured the entry.
@@ -55,9 +84,9 @@ internal static unsafe class GameLoadHooks
     public static int GameState => *(int*)ModuleResolver.GetGameAddress(GtaOffsets.GameLoadRva.GameState);
 
     /// <summary>Installs every stage hook whose entry is either untouched or a plain relative jump.</summary>
-    public static List<GameInitStageHook> Install(SFGameLoading loading)
+    public static List<IDisposable> Install(SFGameLoading loading)
     {
-        List<GameInitStageHook> hooks = new(Targets.Length);
+        List<IDisposable> hooks = new(Targets.Length);
         foreach (Target target in Targets)
         {
             nint address = ModuleResolver.GetGameAddress(target.Rva);
@@ -74,7 +103,9 @@ internal static unsafe class GameLoadHooks
                 SFLog.Warn($"Game load hook {target.Name} chains onto an existing detour at 0x{address:X8} ({bytes})");
             }
 
-            hooks.Add(new GameInitStageHook(address, loading, target.Before, target.After));
+            hooks.Add(target.Before == SFGameLoadStage.BeforeCoreData
+                ? new GameCoreDataHook(address, loading)
+                : new GameInitStageHook(address, loading, target.Before, target.After));
         }
 
         SFLog.Debug($"Game load hooks installed: {hooks.Count}/{Targets.Length}, gGameState={GameState}");

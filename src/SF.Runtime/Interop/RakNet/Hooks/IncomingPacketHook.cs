@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.RakNet.Hooks;
@@ -8,7 +7,6 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     internal unsafe delegate nint ReceiveNative(nint thisPtr);
 
-    private static IncomingPacketHook? _instance;
     private readonly NetworkFilters _filters;
     private readonly NetworkDispatcher _dispatcher;
 
@@ -16,49 +14,51 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
     {
         _filters = filters;
         _dispatcher = dispatcher;
-        _instance = this;
         nint targetAddress = ModuleResolver.GetProcAddress("samp.dll", SampOffsets.RakClientRuntime.Receive);
         InstallHook(targetAddress, new ReceiveNative(HookProc));
     }
 
-    private static unsafe nint HookProc(nint thisPtr)
+    private nint HookProc(nint thisPtr)
     {
-        if (_instance is null)
+        nint packetPtr;
+        try { packetPtr = OriginalFunction(thisPtr); }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); return 0; }
+
+        try
         {
-            throw new UnreachableException();
-        }
-
-        nint packetPtr = _instance.OriginalFunction(thisPtr);
-
-        if (packetPtr != 0)
-        {
-            int bitSize = *(int*)(packetPtr + SampOffsets.RakNetPacket.BitSize);
-            byte* data = *(byte**)(packetPtr + SampOffsets.RakNetPacket.Data);
-
-            if (data != null && bitSize >= 8)
+            if (packetPtr != 0)
             {
-                int packetId = data[0];
+                int bitSize = *(int*)(packetPtr + SampOffsets.RakNetPacket.BitSize);
+                byte* data = *(byte**)(packetPtr + SampOffsets.RakNetPacket.Data);
 
-                if (_instance!._filters.IncomingPacket.HasFilters &&
-                    _instance!._filters.IncomingPacket.ShouldCancel(packetId, data, bitSize))
+                if (data != null && bitSize >= 8)
                 {
-                    ((CRakClientInterface*)thisPtr)->DeallocatePacket((CRakNetPacket*)packetPtr);
-                    return 0;
-                }
+                    int packetId = data[0];
 
-                if (_instance!._dispatcher.IncomingPacketHandlers.HasSubscribers(packetId))
-                {
-                    int dataByteLength = (bitSize + 7) / 8;
-                    byte[] packet = new byte[dataByteLength];
-                    fixed (byte* dst = packet)
+                    if (_filters.IncomingPacket.HasFilters &&
+                        _filters.IncomingPacket.ShouldCancel(packetId, data, bitSize))
                     {
-                        Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
+                        nint cancelledPacket = packetPtr;
+                        packetPtr = 0;
+                        ((CRakClientInterface*)thisPtr)->DeallocatePacket((CRakNetPacket*)cancelledPacket);
+                        return 0;
                     }
 
-                    _instance!._dispatcher.EnqueueIncomingPacket(packetId, packet, bitSize);
+                    if (_dispatcher.IncomingPacketHandlers.HasSubscribers(packetId))
+                    {
+                        int dataByteLength = (bitSize + 7) / 8;
+                        byte[] packet = new byte[dataByteLength];
+                        fixed (byte* dst = packet)
+                        {
+                            Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
+                        }
+
+                        _dispatcher.EnqueueIncomingPacket(packetId, packet, bitSize);
+                    }
                 }
             }
         }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); }
 
         return packetPtr;
     }
@@ -68,9 +68,4 @@ internal unsafe class IncomingPacketHook : NativeHook<nint, nint, IncomingPacket
         throw new NotSupportedException();
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        _instance = null;
-    }
 }

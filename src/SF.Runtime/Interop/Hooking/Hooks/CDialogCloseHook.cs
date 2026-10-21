@@ -1,9 +1,6 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.Hooking.Hooks;
-
-using unsafe CDialogCloseDirect = delegate* unmanaged[Thiscall]<void*, byte, void>;
 
 public record struct CDialogCloseArgs(uint ThisPtr, byte DialogButton);
 
@@ -12,34 +9,21 @@ internal unsafe class CDialogCloseHook : NativeHook<CDialogCloseArgs, NoRetValue
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     internal unsafe delegate void CDialogCloseNative(IntPtr thisPtr, byte dialogButton);
 
-    private static CDialogCloseHook? _instance;
-
     public CDialogCloseHook()
     {
-        _instance = this;
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CDialog.Close), new CDialogCloseNative(HookProc));
     }
 
-    private static void HookProc(IntPtr thisPtr, byte dialogButton)
+    private void HookProc(IntPtr thisPtr, byte dialogButton)
     {
-        if (_instance is null)
-        {
-            throw new UnreachableException();
-        }
-
-        _instance.Process(new((uint)thisPtr, dialogButton));
+        try { Process(new((uint)thisPtr, dialogButton)); }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); }
     }
 
     protected override NoRetValue InvokeOriginalFunction(CDialogCloseArgs args)
     {
-        using var _ = SuppressHook();
-        ((CDialogCloseDirect)TargetAddress)((void*)args.ThisPtr, args.DialogButton);
+        OriginalFunction((nint)args.ThisPtr, args.DialogButton);
         return default;
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        _instance = null;
-    }
 }

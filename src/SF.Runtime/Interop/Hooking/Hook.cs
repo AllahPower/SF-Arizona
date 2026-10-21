@@ -1,5 +1,5 @@
 using MinHook;
-using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 
 namespace SFSharp.Runtime.Interop.Hooking;
 
@@ -12,118 +12,160 @@ public interface ISubHook<TArgs, TResult>
 
 public abstract class HookBase<TArgs, TResult>
 {
-    private List<ISubHook<TArgs, TResult>> _subHooks = new();
+    private readonly Lock _sync = new();
+    private readonly List<ISubHook<TArgs, TResult>> _subHooks = [];
     private Func<TArgs, TResult> _invokeSubHooks;
-    private bool _isProcessing = false;
+
+    [ThreadStatic] private static Invocation? _current;
+    [ThreadStatic] private static Invocation? _available;
+
+    private sealed class Invocation
+    {
+        public HookBase<TArgs, TResult>? Owner;
+        public Invocation? Next;
+        public bool OriginalStarted;
+        public TResult Result = default!;
+        public TResult ChainResult = default!;
+        public bool HasChainResult;
+        public ExceptionDispatchInfo? Failure;
+    }
 
     protected abstract TResult InvokeOriginalFunction(TArgs args);
 
     protected HookBase()
     {
-        BuildHookChain();
+        _invokeSubHooks = InvokeOriginalOnce;
     }
 
     public void AddSubHook(ISubHook<TArgs, TResult> subHook)
     {
-        if (_isProcessing)
+        ArgumentNullException.ThrowIfNull(subHook);
+        lock (_sync)
         {
-            _subHooks = _subHooks.ToList();
+            _subHooks.Add(subHook);
+            BuildHookChain();
         }
-
-        _subHooks.Add(subHook);
-        SFLog.Debug($"AddSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
-        BuildHookChain();
     }
 
     public void RemoveSubHook(ISubHook<TArgs, TResult> subHook)
     {
-        if (_isProcessing)
+        lock (_sync)
         {
-            _subHooks = _subHooks.ToList();
+            _subHooks.Remove(subHook);
+            BuildHookChain();
         }
-
-        _subHooks.Remove(subHook);
-        SFLog.Debug($"RemoveSubHook hook={GetType().Name} subHook={subHook.GetType().Name} count={_subHooks.Count}");
-        BuildHookChain();
     }
 
-    [MemberNotNull(nameof(_invokeSubHooks))]
-    protected void BuildHookChain()
+    private void BuildHookChain()
     {
-        var next = InvokeOriginalFunction;
+        Func<TArgs, TResult> next = InvokeOriginalOnce;
         foreach (var subHook in _subHooks.AsEnumerable().Reverse())
         {
             var current = next;
-            next = args => subHook.Process(args, current);
+            next = args =>
+            {
+                TResult result = subHook.Process(args, current);
+                Invocation invocation = _current!;
+                invocation.ChainResult = result;
+                invocation.HasChainResult = true;
+                return result;
+            };
         }
 
-        _invokeSubHooks = next;
+        Volatile.Write(ref _invokeSubHooks, next);
+    }
+
+    private TResult InvokeOriginalOnce(TArgs args)
+    {
+        Invocation invocation = _current ?? throw new InvalidOperationException("Hook continuation called outside its invocation.");
+        if (!ReferenceEquals(invocation.Owner, this))
+            throw new InvalidOperationException("Hook continuation belongs to another invocation.");
+
+        if (!invocation.OriginalStarted)
+        {
+            invocation.OriginalStarted = true;
+            try { invocation.Result = InvokeOriginalFunction(args); }
+            catch (Exception ex) { invocation.Failure = ExceptionDispatchInfo.Capture(ex); }
+        }
+
+        invocation.Failure?.Throw();
+        return invocation.Result;
     }
 
     protected TResult Process(TArgs args)
     {
-        _isProcessing = true;
+        // Reuse frames per thread and nesting depth, without retaining callback results between calls.
+        Invocation invocation = _available ?? new Invocation();
+        _available = invocation.Next;
+        invocation.Next = _current;
+        invocation.Owner = this;
+        _current = invocation;
         try
         {
-            return _invokeSubHooks(args);
+            return Volatile.Read(ref _invokeSubHooks)(args);
         }
         catch (Exception e)
         {
-            HookRuntime.ReportException(e);
-            return InvokeOriginalFunction(args);
+            HookRuntime.ReportSafely(e);
+            invocation.Failure?.Throw();
+            if (invocation.HasChainResult) return invocation.ChainResult;
+            return InvokeOriginalOnce(args);
         }
         finally
         {
-            _isProcessing = false;
+            _current = invocation.Next;
+            invocation.Owner = null;
+            invocation.Result = default!;
+            invocation.ChainResult = default!;
+            invocation.HasChainResult = false;
+            invocation.Failure = null;
+            invocation.OriginalStarted = false;
+            invocation.Next = _available;
+            _available = invocation;
         }
     }
 }
 
 public static class HookRuntime
 {
-    public static HookEngine Engine { get; } = new();
+    private static readonly Lazy<HookEngine> NativeEngine = new(static () => new());
+    public static HookEngine Engine => NativeEngine.Value;
 
     /// <summary>
     /// Receives exceptions thrown by sub-hooks inside native callbacks, which have no caller to propagate to.
     /// The composition root points it at the runtime's exception reporter.
     /// </summary>
     public static Action<Exception> ReportException { get; set; } = static ex => SFLog.Error(ex, "Unhandled hook exception");
+
+    internal static void ReportSafely(Exception exception)
+    {
+        try { ReportException(exception); }
+        catch { /* Exception reporting must never escape a native callback. */ }
+    }
 }
 
 public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TResult>, IDisposable
     where TDelegate : Delegate
 {
-    private sealed class HookSuppressionScope : IDisposable
-    {
-        private NativeHook<TArgs, TResult, TDelegate>? _owner;
-
-        public HookSuppressionScope(NativeHook<TArgs, TResult, TDelegate> owner)
-        {
-            _owner = owner;
-            HookRuntime.Engine.DisableHook(owner.OriginalFunction);
-        }
-
-        public void Dispose()
-        {
-            if (_owner is null)
-            {
-                return;
-            }
-
-            HookRuntime.Engine.EnableHook(_owner.OriginalFunction);
-            _owner = null;
-        }
-    }
-
     private TDelegate? _detour;
     private bool _isInstalled;
 
     protected TDelegate OriginalFunction { get; private set; } = null!;
     protected nint TargetAddress { get; private set; }
 
+    protected TResult ProcessNative(TArgs args, TResult failureResult)
+    {
+        try { return Process(args); }
+        catch (Exception ex)
+        {
+            HookRuntime.ReportSafely(ex);
+            return failureResult;
+        }
+    }
+
     protected void InstallHook(nint targetAddress, TDelegate detour)
     {
-        if (_isInstalled)
+        if (_detour is not null)
         {
             throw new InvalidOperationException("Hook already installed");
         }
@@ -137,16 +179,6 @@ public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TR
         SFLog.Debug($"InstallHook completed type={GetType().Name} target=0x{targetAddress:X8}");
     }
 
-    protected IDisposable SuppressHook()
-    {
-        if (!_isInstalled)
-        {
-            throw new InvalidOperationException("Hook is not installed");
-        }
-
-        return new HookSuppressionScope(this);
-    }
-
     public virtual void Dispose()
     {
         if (!_isInstalled)
@@ -157,6 +189,6 @@ public abstract class NativeHook<TArgs, TResult, TDelegate> : HookBase<TArgs, TR
         HookRuntime.Engine.DisableHook(OriginalFunction);
         SFLog.Debug($"Dispose hook type={GetType().Name} target=0x{TargetAddress:X8}");
         _isInstalled = false;
-        _detour = null;
+        // Trampoline and callback ownership remain resident; disabling is not native reclamation.
     }
 }

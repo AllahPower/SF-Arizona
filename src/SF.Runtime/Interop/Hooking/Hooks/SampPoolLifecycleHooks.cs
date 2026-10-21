@@ -32,7 +32,6 @@ internal sealed class SampEntityLifecycleSubHook<TArgs>(Action<TArgs, SFSampEnti
         bool succeeded = next(args);
         if (succeeded)
         {
-            // HookBase re-runs the original when a sub-hook throws, which would create the entity twice.
             try
             {
                 raise(args, args.Change);
@@ -67,7 +66,7 @@ internal sealed class VehiclePoolCreateHook : NativeHook<VehiclePoolCreateArgs, 
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehiclePool.Create), new Native(HookProc));
     }
 
-    private static int HookProc(nint pool, nint info) => _instance!.Process(new(pool, info)) ? 1 : 0;
+    private static int HookProc(nint pool, nint info) => _instance!.ProcessNative(new(pool, info), false) ? 1 : 0;
 
     protected override bool InvokeOriginalFunction(VehiclePoolCreateArgs args) => OriginalFunction(args.Pool, args.Info) != 0;
 }
@@ -93,7 +92,7 @@ internal sealed class PoolDeleteHook : NativeHook<PoolDeleteArgs, bool, PoolDele
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", (uint)rva), _detour);
     }
 
-    private int HookProc(nint pool, int id) => Process(new(pool, (ushort)id, _type)) ? 1 : 0;
+    private int HookProc(nint pool, int id) => ProcessNative(new(pool, (ushort)id, _type), false) ? 1 : 0;
 
     protected override bool InvokeOriginalFunction(PoolDeleteArgs args) => OriginalFunction(args.Pool, args.SampId) != 0;
 }
@@ -119,7 +118,7 @@ internal sealed class ObjectPoolCreateHook : NativeHook<ObjectPoolCreateArgs, bo
 
     private static int HookProc(nint pool, int id, int model, Vector3 position, Vector3 rotation, float drawDistance)
     {
-        return _instance!.Process(new(pool, (ushort)id, model, position, rotation, drawDistance)) ? 1 : 0;
+        return _instance!.ProcessNative(new(pool, (ushort)id, model, position, rotation, drawDistance), false) ? 1 : 0;
     }
 
     protected override bool InvokeOriginalFunction(ObjectPoolCreateArgs args)
@@ -148,7 +147,7 @@ internal sealed class ActorPoolCreateHook : NativeHook<ActorPoolCreateArgs, bool
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CActorPool.Create), new Native(HookProc));
     }
 
-    private static int HookProc(nint pool, nint info) => _instance!.Process(new(pool, info)) ? 1 : 0;
+    private static int HookProc(nint pool, nint info) => _instance!.ProcessNative(new(pool, info), false) ? 1 : 0;
 
     protected override bool InvokeOriginalFunction(ActorPoolCreateArgs args) => OriginalFunction(args.Pool, args.Info) != 0;
 }
@@ -172,7 +171,7 @@ internal sealed class PlayerPoolCreateHook : NativeHook<PlayerPoolCreateArgs, bo
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.Create), new Native(HookProc));
     }
 
-    private static int HookProc(nint pool, int id, nint name, int isNpc) => _instance!.Process(new(pool, (ushort)id, name, isNpc)) ? 1 : 0;
+    private static int HookProc(nint pool, int id, nint name, int isNpc) => _instance!.ProcessNative(new(pool, (ushort)id, name, isNpc), false) ? 1 : 0;
 
     protected override bool InvokeOriginalFunction(PlayerPoolCreateArgs args) => OriginalFunction(args.Pool, args.SampId, args.Name, args.IsNpc) != 0;
 }
@@ -196,7 +195,7 @@ internal sealed class PlayerPoolDeleteHook : NativeHook<PlayerPoolDeleteArgs, bo
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.Delete), new Native(HookProc));
     }
 
-    private static int HookProc(nint pool, int id, int reason) => _instance!.Process(new(pool, (ushort)id, reason)) ? 1 : 0;
+    private static int HookProc(nint pool, int id, int reason) => _instance!.ProcessNative(new(pool, (ushort)id, reason), false) ? 1 : 0;
 
     protected override bool InvokeOriginalFunction(PlayerPoolDeleteArgs args) => OriginalFunction(args.Pool, args.SampId, args.Reason) != 0;
 }
@@ -223,7 +222,7 @@ internal sealed class RemotePlayerSpawnHook : NativeHook<RemotePlayerSpawnArgs, 
 
     private static int HookProc(nint player, int team, int model, int unknown, nint position, float rotation, uint color, int fightingStyle)
     {
-        return _instance!.Process(new(player, team, model, unknown, position, rotation, color, fightingStyle)) ? 1 : 0;
+        return _instance!.ProcessNative(new(player, team, model, unknown, position, rotation, color, fightingStyle), false) ? 1 : 0;
     }
 
     protected override bool InvokeOriginalFunction(RemotePlayerSpawnArgs args)
@@ -252,7 +251,7 @@ internal sealed class RemotePlayerRemoveHook : NativeHook<RemotePlayerRemoveArgs
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CRemotePlayer.Remove), new Native(HookProc));
     }
 
-    private static void HookProc(nint player) => _instance!.Process(new(player));
+    private static void HookProc(nint player) => _instance!.ProcessNative(new(player), false);
 
     protected override bool InvokeOriginalFunction(RemotePlayerRemoveArgs args)
     {

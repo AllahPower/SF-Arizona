@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.RakNet.Hooks;
@@ -15,7 +14,6 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
         byte orderingChannel,
         [MarshalAs(UnmanagedType.U1)] bool shiftTimestamp);
 
-    private static OutgoingRpcPacketHook? _instance;
     private readonly NetworkFilters _filters;
     private readonly NetworkDispatcher _dispatcher;
 
@@ -23,13 +21,12 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
     {
         _filters = filters;
         _dispatcher = dispatcher;
-        _instance = this;
         InstallHook(
             ModuleResolver.GetProcAddress("samp.dll", SampOffsets.RpcRuntime.SendRpcBitStream),
             new OutgoingRpcPacketNative(HookProc));
     }
 
-    private static unsafe bool HookProc(
+    private bool HookProc(
         nint thisPtr,
         int* uniqueID,
         nint bitStream,
@@ -38,45 +35,46 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
         byte orderingChannel,
         bool shiftTimestamp)
     {
-        if (_instance is null)
+        try
         {
-            throw new UnreachableException();
-        }
 
-        if (uniqueID != null && bitStream != 0)
-        {
-            int rpcId = *uniqueID;
-
-            if (rpcId >= 0)
+            if (uniqueID != null && bitStream != 0)
             {
-                int dataBitLength = ((CRakNetBitStream*)bitStream)->NumberOfBitsUsed;
-                byte* data = ((CRakNetBitStream*)bitStream)->Data;
+                int rpcId = *uniqueID;
 
-                if (_instance!._filters.OutgoingRpc.HasFilters &&
-                    data != null &&
-                    _instance!._filters.OutgoingRpc.ShouldCancel(rpcId, data, dataBitLength))
+                if (rpcId >= 0)
                 {
-                    return true;
-                }
+                    int dataBitLength = ((CRakNetBitStream*)bitStream)->NumberOfBitsUsed;
+                    byte* data = ((CRakNetBitStream*)bitStream)->Data;
 
-                if (_instance!._dispatcher.OutgoingRpcHandlers.HasSubscribers(rpcId))
-                {
-                    int dataByteLength = (dataBitLength + 7) / 8;
-                    byte[] packet = new byte[dataByteLength];
-                    if (data != null && dataByteLength > 0)
+                    if (_filters.OutgoingRpc.HasFilters &&
+                        data != null &&
+                        _filters.OutgoingRpc.ShouldCancel(rpcId, data, dataBitLength))
                     {
-                        fixed (byte* dst = packet)
-                        {
-                            Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
-                        }
+                        return true;
                     }
 
-                    _instance!._dispatcher.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
+                    if (_dispatcher.OutgoingRpcHandlers.HasSubscribers(rpcId))
+                    {
+                        int dataByteLength = (dataBitLength + 7) / 8;
+                        byte[] packet = new byte[dataByteLength];
+                        if (data != null && dataByteLength > 0)
+                        {
+                            fixed (byte* dst = packet)
+                            {
+                                Buffer.MemoryCopy(data, dst, dataByteLength, dataByteLength);
+                            }
+                        }
+
+                        _dispatcher.EnqueueOutgoingRpc(rpcId, packet, dataBitLength);
+                    }
                 }
             }
         }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); }
 
-        return _instance.OriginalFunction(thisPtr, uniqueID, bitStream, priority, reliability, orderingChannel, shiftTimestamp);
+        try { return OriginalFunction(thisPtr, uniqueID, bitStream, priority, reliability, orderingChannel, shiftTimestamp); }
+        catch (Exception ex) { HookRuntime.ReportSafely(ex); return false; }
     }
 
     protected override bool InvokeOriginalFunction(nint args)
@@ -84,9 +82,4 @@ internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpc
         throw new NotSupportedException();
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        _instance = null;
-    }
 }

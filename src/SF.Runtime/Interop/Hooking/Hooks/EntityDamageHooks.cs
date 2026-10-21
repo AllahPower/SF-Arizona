@@ -23,7 +23,7 @@ internal sealed class PedDamageHook : NativeHook<PedDamageArgs, NoRetValue, PedD
         InstallHook(DamageHookTargets.Resolve(GtaOffsets.DamageRva.ComputePedDamageResponse), new Native(HookProc));
     }
 
-    private static void HookProc(nint calculator, nint ped, nint response, byte speak) => _instance!.Process(new(calculator, ped, response, speak));
+    private static void HookProc(nint calculator, nint ped, nint response, byte speak) => _instance!.ProcessNative(new(calculator, ped, response, speak), default);
 
     protected override NoRetValue InvokeOriginalFunction(PedDamageArgs args)
     {
@@ -50,7 +50,7 @@ internal sealed class VehicleDamageHook : NativeHook<VehicleDamageArgs, NoRetVal
 
     private static void HookProc(nint vehicle, nint source, int weapon, float amount, Vector3 position)
     {
-        _instance!.Process(new(vehicle, source, weapon, amount, position));
+        _instance!.ProcessNative(new(vehicle, source, weapon, amount, position), default);
     }
 
     protected override NoRetValue InvokeOriginalFunction(VehicleDamageArgs args)
@@ -78,7 +78,7 @@ internal sealed class ObjectDamageHook : NativeHook<ObjectDamageArgs, NoRetValue
 
     private static void HookProc(nint obj, float amount, nint collisionPosition, nint collisionDirection, nint source, int weapon)
     {
-        _instance!.Process(new(obj, amount, collisionPosition, collisionDirection, source, weapon));
+        _instance!.ProcessNative(new(obj, amount, collisionPosition, collisionDirection, source, weapon), default);
     }
 
     protected override NoRetValue InvokeOriginalFunction(ObjectDamageArgs args)

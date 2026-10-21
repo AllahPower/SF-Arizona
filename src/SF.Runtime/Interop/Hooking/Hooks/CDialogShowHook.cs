@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.Hooking.Hooks;
@@ -35,52 +34,58 @@ internal unsafe class CDialogShowHook : NativeHook<CDialogShowHookArgs, NoRetVal
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     internal unsafe delegate void CDialogShowNative(IntPtr thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide);
 
-    private static CDialogShowHook? _instance;
-
     /// <summary>
-    /// Replacement buffers remain owned by this hook until the next dialog or disposal;
+    /// Replacement buffers remain owned by this resident hook until the next dialog;
     /// unmodified strings keep their original caller-owned pointers.
     /// </summary>
     private static readonly nint[] _replacedStrings = new nint[4];
 
     public CDialogShowHook()
     {
-        _instance = this;
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CDialog.Show), new CDialogShowNative(HookProc));
     }
 
-    private static unsafe void HookProc(IntPtr thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide)
+    private void HookProc(IntPtr thisPtr, int id, int type, byte* caption, byte* text, byte* leftButton, byte* rightButton, int serverSide)
     {
-        if (_instance is null)
+        bool dispatching = false;
+        try
         {
-            throw new UnreachableException();
-        }
+            string? decodedCaption = AnsiString.Decode(caption);
+            string? decodedText = AnsiString.Decode(text);
+            string? decodedLeftButton = AnsiString.Decode(leftButton);
+            string? decodedRightButton = AnsiString.Decode(rightButton);
 
-        string? decodedCaption = AnsiString.Decode(caption);
-        string? decodedText = AnsiString.Decode(text);
-        string? decodedLeftButton = AnsiString.Decode(leftButton);
-        string? decodedRightButton = AnsiString.Decode(rightButton);
-
-        _instance.Process(new(
-            (uint)thisPtr,
-            id,
-            (DialogStyle)type,
-            decodedCaption,
-            decodedText,
-            decodedLeftButton,
-            decodedRightButton,
-            serverSide != 0)
-        {
-            Native = new(
-                (nint)caption,
-                (nint)text,
-                (nint)leftButton,
-                (nint)rightButton,
+            dispatching = true;
+            Process(new(
+                (uint)thisPtr,
+                id,
+                (DialogStyle)type,
                 decodedCaption,
                 decodedText,
                 decodedLeftButton,
-                decodedRightButton),
-        });
+                decodedRightButton,
+                serverSide != 0)
+            {
+                Native = new(
+                    (nint)caption,
+                    (nint)text,
+                    (nint)leftButton,
+                    (nint)rightButton,
+                    decodedCaption,
+                    decodedText,
+                    decodedLeftButton,
+                    decodedRightButton),
+            });
+        }
+        catch (Exception ex)
+        {
+            HookRuntime.ReportSafely(ex);
+            if (!dispatching)
+            {
+                try { OriginalFunction(thisPtr, id, type, caption, text, leftButton, rightButton, serverSide); }
+                catch (Exception originalError) { HookRuntime.ReportSafely(originalError); }
+            }
+        }
     }
 
     protected override NoRetValue InvokeOriginalFunction(CDialogShowHookArgs args)
@@ -123,10 +128,4 @@ internal unsafe class CDialogShowHook : NativeHook<CDialogShowHookArgs, NoRetVal
         }
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        ReleaseReplacedStrings();
-        _instance = null;
-    }
 }

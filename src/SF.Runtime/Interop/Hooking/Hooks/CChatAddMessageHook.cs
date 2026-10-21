@@ -1,9 +1,6 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.Hooking.Hooks;
-
-using unsafe CChatAddMessageDirect = delegate* unmanaged[Thiscall]<void*, uint, byte*, void>;
 
 public record struct CChatAddMessageArgs(uint ThisPtr, uint Color, string? Text);
 
@@ -12,36 +9,36 @@ internal unsafe class CChatAddMessageHook : NativeHook<CChatAddMessageArgs, NoRe
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     internal unsafe delegate void CChatAddMessageNative(IntPtr thisPtr, uint color, byte* szText);
 
-    private static CChatAddMessageHook? _instance;
-
     public CChatAddMessageHook()
     {
-        _instance = this;
         InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CChat.AddMessage), new CChatAddMessageNative(HookProc));
     }
 
-    private static unsafe void HookProc(IntPtr thisPtr, uint color, byte* szText)
+    private void HookProc(IntPtr thisPtr, uint color, byte* szText)
     {
-        if (_instance is null)
+        bool dispatching = false;
+        try
         {
-            throw new UnreachableException();
+            string? text = AnsiString.Decode(szText);
+            dispatching = true;
+            Process(new((uint)thisPtr, color, text));
         }
-
-        _instance.Process(new((uint)thisPtr, color, AnsiString.Decode(szText)));
+        catch (Exception ex)
+        {
+            HookRuntime.ReportSafely(ex);
+            if (!dispatching)
+            {
+                try { OriginalFunction(thisPtr, color, szText); }
+                catch (Exception originalError) { HookRuntime.ReportSafely(originalError); }
+            }
+        }
     }
 
     protected override NoRetValue InvokeOriginalFunction(CChatAddMessageArgs args)
     {
         using AnsiString szText = AnsiString.Encode(args.Text);
-        using IDisposable _ = SuppressHook();
-
-        ((CChatAddMessageDirect)TargetAddress)((void*)args.ThisPtr, args.Color, szText);
+        OriginalFunction((nint)args.ThisPtr, args.Color, szText);
         return default;
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        _instance = null;
-    }
 }
