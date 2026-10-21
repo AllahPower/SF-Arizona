@@ -5,8 +5,8 @@ namespace SFSharp.Runtime.Events;
 
 internal sealed class SFEventChannel<T>
 {
-    private readonly List<Action<T>> _callbacks = new();
-    private readonly List<Channel<T>> _streams = new();
+    private Unsubscriber[] _callbacks = [];
+    private Channel<T>[] _streams = [];
     private readonly Func<Action<T>, IDisposable> _attach;
     private readonly Lock _sync = new();
     private IDisposable? _binding;
@@ -19,19 +19,19 @@ internal sealed class SFEventChannel<T>
 
     private void Publish(T value)
     {
-        Action<T>[] snapshot;
+        Unsubscriber[] snapshot;
         Channel<T>[] streams;
         lock (_sync)
         {
-            snapshot = _callbacks.Count > 0 ? [.. _callbacks] : [];
-            streams = _streams.Count > 0 ? [.. _streams] : [];
+            snapshot = _callbacks;
+            streams = _streams;
         }
 
-        foreach (Action<T> cb in snapshot)
+        foreach (Unsubscriber cb in snapshot)
         {
             try
             {
-                cb(value);
+                cb.Invoke(value);
             }
             catch (Exception ex)
             {
@@ -50,14 +50,16 @@ internal sealed class SFEventChannel<T>
 
     public IDisposable Subscribe(Action<T> handler)
     {
+        ArgumentNullException.ThrowIfNull(handler);
+        var subscription = new Unsubscriber(this, handler);
         lock (_sync)
         {
             EnsureBound();
-            _callbacks.Add(handler);
+            _callbacks = [.. _callbacks, subscription];
             _consumerCount++;
         }
 
-        return new Unsubscriber(this, handler);
+        return subscription;
     }
 
     public async IAsyncEnumerable<T> Stream([EnumeratorCancellation] CancellationToken token = default)
@@ -67,7 +69,7 @@ internal sealed class SFEventChannel<T>
         lock (_sync)
         {
             EnsureBound();
-            _streams.Add(stream);
+            _streams = [.. _streams, stream];
             _consumerCount++;
         }
 
@@ -82,7 +84,8 @@ internal sealed class SFEventChannel<T>
         {
             lock (_sync)
             {
-                _streams.Remove(stream);
+                int index = Array.IndexOf(_streams, stream);
+                _streams = [.. _streams[..index], .. _streams[(index + 1)..]];
                 _consumerCount--;
                 ReleaseBindingIfUnused();
             }
@@ -109,9 +112,8 @@ internal sealed class SFEventChannel<T>
 
     private sealed class Unsubscriber : IDisposable
     {
-        private readonly SFEventChannel<T> _channel;
-        private readonly Action<T> _handler;
-        private int _disposed;
+        private SFEventChannel<T>? _channel;
+        private Action<T>? _handler;
 
         public Unsubscriber(SFEventChannel<T> channel, Action<T> handler)
         {
@@ -119,16 +121,20 @@ internal sealed class SFEventChannel<T>
             _handler = handler;
         }
 
+        public void Invoke(T value) => Volatile.Read(ref _handler)?.Invoke(value);
+
         public void Dispose()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) != 0)
-                return;
+            SFEventChannel<T>? channel = Interlocked.Exchange(ref _channel, null);
+            if (channel is null) return;
+            Interlocked.Exchange(ref _handler, null);
 
-            lock (_channel._sync)
+            lock (channel._sync)
             {
-                _channel._callbacks.Remove(_handler);
-                _channel._consumerCount--;
-                _channel.ReleaseBindingIfUnused();
+                int index = Array.IndexOf(channel._callbacks, this);
+                channel._callbacks = [.. channel._callbacks[..index], .. channel._callbacks[(index + 1)..]];
+                channel._consumerCount--;
+                channel.ReleaseBindingIfUnused();
             }
         }
     }

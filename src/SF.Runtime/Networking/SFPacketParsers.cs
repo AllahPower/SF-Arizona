@@ -81,41 +81,4 @@ public sealed partial class SFPacketParsers(PacketParserRegistry registry, SFPac
     }
 
 
-    private sealed class SubscriptionGroup : IDisposable
-    {
-        private readonly List<IDisposable> _items = new();
-        private CancellationTokenRegistration _tokenRegistration;
-        private bool _disposed;
-
-        public void Add(IDisposable subscription)
-        {
-            _items.Add(subscription);
-        }
-
-        public void Link(CancellationToken token)
-        {
-            if (token.CanBeCanceled)
-            {
-                _tokenRegistration = token.Register(Dispose);
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _tokenRegistration.Dispose();
-            foreach (IDisposable item in _items)
-            {
-                item.Dispose();
-            }
-
-            _items.Clear();
-        }
-    }
-
 }

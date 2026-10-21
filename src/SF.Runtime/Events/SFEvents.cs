@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace SFSharp.Runtime.Events;
 
 public sealed partial class SFEvents : ISFEvents
@@ -10,10 +12,11 @@ public sealed partial class SFEvents : ISFEvents
     }
 
     private readonly Lock _initSync = new();
-    private readonly Dictionary<Type, object> _incomingRpcChannels = new();
-    private readonly Dictionary<Type, object> _outgoingRpcChannels = new();
-    private readonly Dictionary<Type, object> _incomingPacketChannels = new();
-    private readonly Dictionary<Type, object> _outgoingPacketChannels = new();
+    // Ephemeron keys allow plugin-defined DTO types and their channel values to unload together.
+    private readonly ConditionalWeakTable<Type, object> _incomingRpcChannels = new();
+    private readonly ConditionalWeakTable<Type, object> _outgoingRpcChannels = new();
+    private readonly ConditionalWeakTable<Type, object> _incomingPacketChannels = new();
+    private readonly ConditionalWeakTable<Type, object> _outgoingPacketChannels = new();
 
     private SFEventChannel<TRpc> GetOrCreateIncomingRpcChannel<TRpc>()
     {
@@ -25,7 +28,7 @@ public sealed partial class SFEvents : ISFEvents
             }
 
             SFEventChannel<TRpc> created = _factory.FromParsedIncomingRpc<TRpc>();
-            _incomingRpcChannels[typeof(TRpc)] = created;
+            _incomingRpcChannels.Add(typeof(TRpc), created);
             return created;
         }
     }
@@ -40,7 +43,7 @@ public sealed partial class SFEvents : ISFEvents
             }
 
             SFEventChannel<TRpc> created = _factory.FromParsedOutgoingRpc<TRpc>();
-            _outgoingRpcChannels[typeof(TRpc)] = created;
+            _outgoingRpcChannels.Add(typeof(TRpc), created);
             return created;
         }
     }
@@ -55,7 +58,7 @@ public sealed partial class SFEvents : ISFEvents
             }
 
             SFEventChannel<TPacket> created = _factory.FromParsedIncomingPacket<TPacket>();
-            _incomingPacketChannels[typeof(TPacket)] = created;
+            _incomingPacketChannels.Add(typeof(TPacket), created);
             return created;
         }
     }
@@ -70,7 +73,7 @@ public sealed partial class SFEvents : ISFEvents
             }
 
             SFEventChannel<TPacket> created = _factory.FromParsedOutgoingPacket<TPacket>();
-            _outgoingPacketChannels[typeof(TPacket)] = created;
+            _outgoingPacketChannels.Add(typeof(TPacket), created);
             return created;
         }
     }
