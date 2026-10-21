@@ -4,24 +4,23 @@ namespace SFSharp.Runtime.Interop.Classes.Game;
 
 public static unsafe class CCamera
 {
-    private static readonly nint _base = GtaOffsets.CCamera.TheCamera;
+    private static nint Base => ModuleResolver.GetGameAddress(GtaOffsets.CCamera.TheCameraRva);
+    private static GtaCameraView View => new(Base);
 
-    public static bool IsAvailable => NativeMemoryValidator.IsReadable(_base, (nuint)GtaOffsets.CCamera.Size);
-    public static nint Pointer => _base;
+    public static bool IsAvailable => NativeMemoryValidator.IsReadable(Base, (nuint)GtaOffsets.CCamera.Size) && View.HasActiveCamera;
+    public static nint Pointer => Base;
 
-    private static nint ActiveCam => _base + GtaOffsets.CCamera.ActiveCam;
-
-    public static Vector3 Position => *(Vector3*)(ActiveCam + GtaOffsets.CCam.Source);
-    public static Vector3 Front => *(Vector3*)(ActiveCam + GtaOffsets.CCam.Front);
-    public static Vector3 Up => *(Vector3*)(ActiveCam + GtaOffsets.CCam.Up);
+    public static Vector3 Position => View.Position;
+    public static Vector3 Front => View.Front;
+    public static Vector3 Up => View.Up;
     public static Vector3 Right => Vector3.Cross(Front, Up);
-    public static float FieldOfView => *(float*)(ActiveCam + GtaOffsets.CCam.Fov);
-    public static byte Mode => *(byte*)(ActiveCam + GtaOffsets.CCam.Mode);
+    public static float FieldOfView => View.FieldOfView;
+    public static ushort Mode => View.Mode;
 
-    public static byte FadeAlpha => *(byte*)(_base + GtaOffsets.CCamera.FadeAlpha);
-    public static byte FadeState => *(byte*)(_base + GtaOffsets.CCamera.FadeState);
-    public static bool IsWideScreen => *(byte*)(_base + GtaOffsets.CCamera.WideScreenOn) != 0;
-    public static float ShakeForce => *(float*)(_base + GtaOffsets.CCamera.ShakeForce);
+    public static float FadeAlpha => View.FadeAlpha;
+    public static byte FadeState => View.FadeState;
+    public static bool IsWideScreen => View.IsWideScreen;
+    public static float ShakeForce => View.ShakeForce;
 
     public static Vector3 GetLookAtPoint(float distance = 100f)
     {

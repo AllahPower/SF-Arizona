@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<LangVersion>preview</LangVersion>
+		<LangVersion>14</LangVersion>
 		<AssemblyName>SF.Runtime</AssemblyName>
 		<RootNamespace>SFSharp.Runtime</RootNamespace>
 		<EnableDynamicLoading>true</EnableDynamicLoading>

@@ -12,10 +12,10 @@ public sealed class SFCamera(SFPlayers players, SFRpc rpc)
     public Vector3 Up => CCamera.Up;
     public Vector3 Right => CCamera.Right;
     public float FieldOfView => CCamera.FieldOfView;
-    public byte Mode => CCamera.Mode;
+    public ushort Mode => CCamera.Mode;
     public float ShakeForce => CCamera.ShakeForce;
     public bool IsWideScreen => CCamera.IsWideScreen;
-    public byte FadeAlpha => CCamera.FadeAlpha;
+    public float FadeAlpha => CCamera.FadeAlpha;
     public byte FadeState => CCamera.FadeState;
     public bool IsFading => CCamera.FadeState != 0;
     public Vector3 GetLookAtPoint(float distance = 100f) => CCamera.GetLookAtPoint(distance);

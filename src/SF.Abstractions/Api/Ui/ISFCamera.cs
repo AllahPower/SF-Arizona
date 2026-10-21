@@ -13,10 +13,10 @@ public interface ISFCamera
     Vector3 Up { get; }
     Vector3 Right { get; }
     float FieldOfView { get; }
-    byte Mode { get; }
+    ushort Mode { get; }
     float ShakeForce { get; }
     bool IsWideScreen { get; }
-    byte FadeAlpha { get; }
+    float FadeAlpha { get; }
     byte FadeState { get; }
     bool IsFading { get; }
 
