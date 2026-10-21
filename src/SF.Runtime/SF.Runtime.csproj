@@ -12,6 +12,7 @@
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<PlatformTarget>x86</PlatformTarget>
+		<RuntimeIdentifiers>win-x86</RuntimeIdentifiers>
 		<SelfContained>false</SelfContained>
 		<Product>SF-Arizona</Product>
 		<Authors>AllahPower</Authors>
@@ -44,6 +45,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-		<PackageReference Include="MinHook.NET" Version="1.1.2" />
+		<PackageReference Include="MinHook.NET" Version="1.1.2-sf.1" />
 	</ItemGroup>
+
 </Project>

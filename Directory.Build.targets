@@ -1,0 +1,32 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'SF.Abstractions' Or '$(MSBuildProjectName)' == 'SF.Protocol'">
+    <None Update="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <Target Name="BoundProtocolContractDependency" AfterTargets="_GetProjectReferenceVersions"
+          Condition="'$(MSBuildProjectName)' == 'SF.Protocol'">
+    <PropertyGroup>
+      <NextContractMajor>$([MSBuild]::Add($([System.Version]::Parse('$(SFBaseVersion)').Major), 1)).0.0</NextContractMajor>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)">
+        <ProjectVersion>[$(Version),$(NextContractMajor))</ProjectVersion>
+      </_ProjectReferencesWithVersions>
+    </ItemGroup>
+  </Target>
+  <Target Name="AcquireMinHookFork" BeforeTargets="CollectPackageReferences"
+          Condition="'$(MSBuildProjectName)' == 'SF.Runtime'">
+    <PropertyGroup>
+      <HookPackageDirectory>$(RepositoryRoot)artifacts/dependencies/nuget</HookPackageDirectory>
+      <HookPackagePath>$(HookPackageDirectory)/MinHook.NET.1.1.2-sf.1.nupkg</HookPackagePath>
+    </PropertyGroup>
+    <MakeDir Directories="$(HookPackageDirectory)" />
+    <DownloadFile Condition="!Exists('$(HookPackagePath)')"
+                  SourceUrl="https://github.com/AllahPower/MinHook.NET/releases/download/v1.1.2-sf.1/MinHook.NET.1.1.2-sf.1.nupkg"
+                  DestinationFolder="$(HookPackageDirectory)" DestinationFileName="MinHook.NET.1.1.2-sf.1.nupkg" />
+    <GetFileHash Files="$(HookPackagePath)" Algorithm="SHA256">
+      <Output TaskParameter="Hash" PropertyName="HookPackageHash" />
+    </GetFileHash>
+    <Error Condition="'$(HookPackageHash)' != '39CA0F1E1B2E4C70CEFAC5CE960B31D60D0CD6442AFB201E70FA929EF5311CF8'"
+           Text="MinHook.NET fork package checksum mismatch. Restore is stopped; no upstream fallback is permitted." />
+  </Target>
+</Project>
