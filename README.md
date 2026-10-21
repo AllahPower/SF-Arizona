@@ -169,8 +169,8 @@ RakClient::Receive                    RakClient::Send
 ### Custom Client Extensions
 
 Custom packet IDs have no built-in client-specific interpretation. Optional plugins register
-decoders and metadata through `ISF.PacketParsers`; separate native integrations can publish
-copied observations through `ISF.Packets.RegisterSource`. Registrations must be disposed
+decoders and metadata through `ISF.Samp.PacketParsers`; separate native integrations can publish
+copied observations through `ISF.Samp.Packets.RegisterSource`. Registrations must be disposed
 before the exporting plugin unloads. Normal raw send/receive APIs accept numeric IDs.
 
 ---
@@ -225,7 +225,7 @@ container.RegisterModule<ExampleModule>();
 | `Context.RegisterOutgoingRpc<T>(...)` | Subscribe a module to a parsed outgoing RPC |
 | `Context.RegisterIncomingPacket<T>(...)` | Subscribe a module to a parsed incoming packet |
 | `Context.RegisterOutgoingPacket<T>(...)` | Subscribe a module to a parsed outgoing packet |
-| `Context.SwitchToMainThreadAsync()` | Marshal execution to the game thread |
+| `Context.InvokeOnMainThreadAsync(action)` | Execute a delegate on the game thread with module cancellation |
 | `Context.RunBackground(...)` | Offload work to a background thread |
 
 ### Management Commands
@@ -242,6 +242,8 @@ container.RegisterModule<ExampleModule>();
 ---
 
 ## Documentation
+
+See [GTA and SA-MP API](docs/GAME_API.md) for service boundaries, tick/world queries and main-thread execution.
 
 For detailed guides, API reference, and examples, visit the **[SF-Arizona Wiki](https://github.com/AllahPower/SF-Arizona/wiki)**.
 

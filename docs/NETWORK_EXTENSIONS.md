@@ -6,7 +6,7 @@ Their enums, layouts, sub-ID routing and native adapters belong to external libr
 
 ## Decoders And Labels
 
-`ISF.PacketParsers.RegisterIncomingDecoder` and `RegisterOutgoingDecoder` accept a
+`ISF.Samp.PacketParsers.RegisterIncomingDecoder` and `RegisterOutgoingDecoder` accept a
 numeric custom packet ID and a callback returning a parsed packet. They reject
 standard enum IDs and duplicate registrations. Dispose each registration when its
 module stops. Typed standard subscriptions remain backed by SF.Protocol; extensions
@@ -20,7 +20,7 @@ client modules. With no provider installed, unknown packets remain raw and unlab
 
 ## Observations From Native Integrations
 
-An external native integration can own `ISF.Packets.RegisterSource("vendor.feature")`
+An external native integration can own `ISF.Samp.Packets.RegisterSource("vendor.feature")`
 and publish captured bytes through the returned `ISFPacketSource`. Publishing copies
 the valid bytes and carries an explicit bit window and optional sub-ID. It never
 injects a packet into the game or runs network send filters.

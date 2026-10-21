@@ -2,7 +2,7 @@
 
 DebugWeb is an optional plugin under `examples/DebugWeb`, not an embedded Runtime module.
 It subscribes through SF.Abstractions and parses SA-MP through SF.Protocol. Optional custom
-decoders and metadata are registered through ISF.PacketParsers, not linked source files.
+decoders and metadata are registered through ISF.Samp.PacketParsers, not linked source files.
 It has no Runtime reference, offsets, native hooks or private copy of either host assembly.
 The native hooks remain in the core. World inspection was removed from this plugin.
 

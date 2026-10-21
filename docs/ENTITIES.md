@@ -1,6 +1,6 @@
 # World entities
 
-`ISF.Entities` (`ISFEntities`, namespace `SFSharp.Abstractions.Game`) reads and changes GTA world
+`ISF.Gta.Entities` (`ISFEntities`, namespace `SFSharp.Abstractions.Gta`) reads and changes GTA world
 entities: peds, vehicles and objects. It works on the game engine's own pools, so it also sees
 entities that have no SA-MP id, such as peds and objects created by game scripts or other mods.
 
@@ -17,14 +17,15 @@ generation changes, so an old reference stops resolving instead of pointing at t
 Server-owned entities are resolved from their SA-MP ids and back:
 
 ```csharp
-ISFEntities entities = context.SF.Entities;
+ISFEntities entities = context.SF.Gta.Entities;
+var mappings = context.SF.Samp.Entities;
 
-if (entities.TryGetVehicle(vehicleId, out SFEntityRef vehicle)
+if (mappings.TryGetVehicle(vehicleId, out SFEntityRef vehicle)
     && entities.TryGetSnapshot(vehicle, out SFEntitySnapshot snapshot)
     && snapshot.Driver is { } driver
-    && entities.TryGetPlayerId(driver, out ushort driverId))
+    && mappings.TryGetPlayerId(driver, out ushort driverId))
 {
-    context.SF.Chat.Add($"vehicle {vehicleId} is driven by player {driverId}");
+    context.SF.Samp.Chat.Add($"vehicle {vehicleId} is driven by player {driverId}");
 }
 ```
 
@@ -72,11 +73,11 @@ need, so subscribe from the main thread. A plugin should register the subscripti
 context so it is released when the module stops:
 
 ```csharp
-context.RegisterDisposable(context.SF.Entities.OnSampEntityChanged(e =>
+context.RegisterDisposable(context.SF.Samp.Entities.OnSampEntityChanged(e =>
 {
     if (e.Type == SFSampEntityType.Player && e.Change == SFSampEntityChange.StreamedIn)
     {
-        context.SF.Chat.Add($"player {e.SampId} streamed in");
+        context.SF.Samp.Chat.Add($"player {e.SampId} streamed in");
     }
 }));
 ```
@@ -97,6 +98,7 @@ A connecting player has no ped yet, so `Entity` is `null` for player `Created`.
 ### `OnDamage`
 
 Raised before the engine applies damage. A handler may lower or raise `Amount`, or set `Cancel`.
+Subscribe through `context.SF.Gta.Entities.OnDamage`; lifecycle events instead belong to `Samp.Entities`.
 
 | Target | Source in the game | Cancel |
 |---|---|---|
