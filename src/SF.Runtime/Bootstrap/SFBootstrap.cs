@@ -104,9 +104,8 @@ public static class SFBootstrap
 
             uint baseAddress = await GetSampDllBaseAddress();
             SFLog.Debug($"samp.dll loaded at 0x{baseAddress:X8}");
-            SampBitStreamReader.NativeStringDecoder = new SampStringCompressorDecoder();
-
             ValidateEnvironment();
+            SampBitStreamReader.NativeStringDecoder = new SampStringCompressorDecoder();
 
             runtime.InstallEarlyHooks();
             SFLog.Debug("IncomingRpc hook installed (pre-CNetGame).");
@@ -146,7 +145,7 @@ public static class SFBootstrap
 
         SFLog.Info($"SA-MP detected: version={env.Version} EP=0x{env.EntryPointRva:X} SizeOfImage=0x{env.SizeOfImage:X} TimeDateStamp=0x{env.TimeDateStamp:X} SizeOfCode=0x{env.SizeOfCode:X}");
         if (!env.IsSupported)
-            throw new NotSupportedException($"Unsupported SA-MP version (EP=0x{env.EntryPointRva:X}); only 0.3.7-R3-1 is supported. Hooks were not installed.");
+            throw new NotSupportedException($"Unsupported SA-MP {env.Version} (EP=0x{env.EntryPointRva:X}). Supported clients: R3-1 and R5-1. Hooks were not installed.");
 
     }
 
@@ -196,7 +195,7 @@ public static class SFBootstrap
     private static async Task WhenCNetGameLoads(uint baseAddress)
     {
         SFLog.Debug($"Waiting for CNetGame pointer at samp.dll+0x{SampOffsets.CNetGame.Instance:X8} from base 0x{baseAddress:X8}");
-        while (!ModuleResolver.IsClassReady("samp.dll", SampOffsets.CNetGame.Instance))
+        while (!ModuleResolver.IsClassReady("samp.dll", (uint)SampOffsets.CNetGame.Instance))
         {
             await Task.Yield();
         }

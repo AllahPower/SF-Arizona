@@ -14,6 +14,7 @@ public struct RakNetPlayerId
 internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpcPacketHook.IncomingRpcPacketNative>
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal unsafe delegate bool IncomingRpcPacketNative(IntPtr thisPtr, byte* data, int length, RakNetPlayerId playerId);
 
     private const byte IdTimestamp = 40;

@@ -30,7 +30,7 @@ public sealed unsafe class SFMenu
                 return null;
             }
 
-            return NativeString.Decode(_native->Title, CMenu.MaxMenuLine);
+            return _native->GetTitle();
         }
     }
 
@@ -41,7 +41,7 @@ public sealed unsafe class SFMenu
             return null;
         }
 
-        return NativeString.Decode(_native->Header + (column * CMenu.MaxMenuLine), CMenu.MaxMenuLine);
+        return _native->GetHeader(column);
     }
 
     public string? GetItem(byte column, byte row)

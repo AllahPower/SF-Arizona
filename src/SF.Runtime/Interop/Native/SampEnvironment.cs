@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace SFSharp.Runtime.Interop.Native;
 
 /// <summary>
@@ -6,13 +8,13 @@ namespace SFSharp.Runtime.Interop.Native;
 /// </summary>
 public static unsafe class SampEnvironment
 {
-    // samp.dll R3: DllEntryPoint RVA confirmed in IDA.
-    private const uint SampR3EntryPoint = 0xCC4D0;
-
     // samp.dll R3: null-terminated ASCII "0.3.7-R3" in .rdata.
     private const uint SampR3VersionStringRva = 0xE5B8C;
 
     private static SampVersionInfo? _cached;
+    private static SFSampClientInfo _client = new(SFSampVersion.Unknown, SFSampCapabilities.None);
+
+    public static SFSampClientInfo Client => Volatile.Read(ref _client);
 
     public static SampVersionInfo? Current => _cached;
 
@@ -39,24 +41,39 @@ public static unsafe class SampEnvironment
             sampPe.TimeDateStamp,
             sampPe.SizeOfCode);
 
-        _cached = info;
+        SFSampCapabilities capabilities = info.IsSupported
+            ? SFSampCapabilities.Chat | SFSampCapabilities.Dialogs | SFSampCapabilities.Pools
+                | SFSampCapabilities.Network | SFSampCapabilities.IncomingEmulation | SFSampCapabilities.CompressedStrings
+            : SFSampCapabilities.None;
+        Volatile.Write(ref _client, new(info.Profile?.Version ?? SFSampVersion.Unknown, capabilities));
+        Volatile.Write(ref _cached, info);
         return info;
     }
 
     public static SampVersionInfo? GetOrDetect() => _cached ?? Detect();
 
     public static bool IsSampR3 => GetOrDetect()?.Version == SampVersion.R3_037;
+    internal static bool IsR5 => Current?.Version == SampVersion.R5_037;
 
 
     private static SampVersion ClassifySampVersion(uint moduleBase, PeFingerprint pe)
     {
-        if (pe.EntryPointRva == SampR3EntryPoint && VerifyAsciiString(moduleBase + SampR3VersionStringRva, "0.3.7-R3"))
-            return SampVersion.R3_037;
+        return Identify(pe.EntryPointRva, pe.SizeOfImage,
+            VerifyAsciiString(moduleBase + SampR3VersionStringRva, "0.3.7-R3"),
+            VerifyAsciiString(moduleBase + SampR3VersionStringRva, "0.3.7-R5"));
+    }
 
-        if (VerifyAsciiString(moduleBase + SampR3VersionStringRva, "0.3.7-R3"))
-            return SampVersion.R3_037_Patched;
-
-        return SampVersion.Unknown;
+    internal static SampVersion Identify(uint entryPoint, uint imageSize, bool r3Marker, bool r5Marker)
+    {
+        SampClientProfile? profile = SampClientProfile.FromEntryPoint(entryPoint);
+        if (profile is null || imageSize < profile.NetGameRva + sizeof(uint) || entryPoint >= imageSize)
+            return SampVersion.Unknown;
+        return profile.Version switch
+        {
+            SFSampVersion.R3_1 when r3Marker && !r5Marker => SampVersion.R3_037,
+            SFSampVersion.R5_1 when r5Marker && !r3Marker => SampVersion.R5_037,
+            _ => SampVersion.Unknown,
+        };
     }
 
     private static bool VerifyAsciiString(uint address, string expected)
@@ -111,9 +128,18 @@ public static unsafe class SampEnvironment
         if (!NativeMemoryValidator.IsReadable((nint)basePtr, 0x40))
             return default;
 
-        int peOffset = *(int*)(basePtr + 0x3C);
+        if (MemoryMarshal.Read<ushort>(new ReadOnlySpan<byte>(basePtr, 2)) != 0x5A4D)
+            return default;
+        int peOffset = MemoryMarshal.Read<int>(new ReadOnlySpan<byte>(basePtr + 0x3C, 4));
+        if (peOffset < 0x40 || peOffset > 0x100000)
+            return default;
         byte* ntHeaders = basePtr + peOffset;
         if (!NativeMemoryValidator.IsReadable((nint)ntHeaders, 0x78))
+            return default;
+
+        if (MemoryMarshal.Read<uint>(new ReadOnlySpan<byte>(ntHeaders, 4)) != 0x4550
+            || MemoryMarshal.Read<ushort>(new ReadOnlySpan<byte>(ntHeaders + 4, 2)) != 0x14C
+            || MemoryMarshal.Read<ushort>(new ReadOnlySpan<byte>(ntHeaders + 0x18, 2)) != 0x10B)
             return default;
 
         uint timeDateStamp = *(uint*)(ntHeaders + 0x08);
@@ -136,7 +162,8 @@ public enum SampVersion
 {
     Unknown,
     R3_037,
-    R3_037_Patched
+    R3_037_Patched,
+    R5_037,
 }
 
 public sealed record SampVersionInfo(
@@ -147,5 +174,6 @@ public sealed record SampVersionInfo(
     uint TimeDateStamp,
     uint SizeOfCode)
 {
-    public bool IsSupported => Version is SampVersion.R3_037 or SampVersion.R3_037_Patched;
+    internal SampClientProfile? Profile => Version == SampVersion.Unknown ? null : SampClientProfile.FromEntryPoint(EntryPointRva);
+    public bool IsSupported => Profile?.IsRuntimeSupported == true;
 }

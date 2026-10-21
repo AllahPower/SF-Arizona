@@ -4,7 +4,6 @@ using unsafe DeallocatePacketDelegate = delegate* unmanaged[Thiscall]<nint, nint
 using unsafe PushBackPacketDelegate = delegate* unmanaged[Thiscall]<nint, nint, bool, void>;
 using unsafe ReceiveDelegate = delegate* unmanaged[Thiscall]<nint, nint>;
 using unsafe RpcBitStreamDelegate = delegate* unmanaged[Thiscall]<nint, int*, nint, int, int, byte, bool, bool>;
-using unsafe RpcDataDelegate = delegate* unmanaged[Thiscall]<nint, int*, byte*, uint, int, int, byte, bool, bool>;
 using unsafe SendBitStreamDelegate = delegate* unmanaged[Thiscall]<nint, nint, int, int, byte, bool>;
 using unsafe SendDataDelegate = delegate* unmanaged[Thiscall]<nint, byte*, int, int, int, byte, bool>;
 
@@ -114,16 +113,17 @@ public unsafe struct CRakClientInterface
 
     public bool Rpc(int rpcId, ReadOnlySpan<byte> payload, int payloadBitLength, RakNetPacketPriority priority = RakNetPacketPriority.High, RakNetPacketReliability reliability = RakNetPacketReliability.ReliableOrdered, byte orderingChannel = 0, bool shiftTimestamp = false)
     {
-        if (__vftable == null || payloadBitLength < 0)
+        if (__vftable == null || payloadBitLength < 0 || payloadBitLength > (long)payload.Length * 8)
         {
             return false;
         }
 
         fixed (byte* payloadPtr = payload)
         {
-            int id = rpcId;
-            RpcDataDelegate rpc = (RpcDataDelegate)__vftable->RpcData;
-            return rpc == null ? false : rpc((nint)Unsafe.AsPointer(ref this), &id, payloadPtr, (uint)payloadBitLength, (int)priority, (int)reliability, orderingChannel, shiftTimestamp);
+            // The raw-data overload also takes NetworkID/reply arguments in this client ABI.
+            // Use the short BitStream overload instead; the borrowed span stays pinned for the call.
+            CRakNetBitStream stream = CRakNetBitStream.Create(payloadPtr, payloadBitLength);
+            return Rpc(rpcId, &stream, priority, reliability, orderingChannel, shiftTimestamp);
         }
     }
 

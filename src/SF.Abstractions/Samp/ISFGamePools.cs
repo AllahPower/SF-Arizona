@@ -19,7 +19,9 @@ public interface ISFGamePools
 
     bool IsAvailable { get; }
     bool IsInitialized { get; }
-    int State { get; }
+    SFSampGameState State { get; }
+    /// <summary>Untranslated state value from the current client revision.</summary>
+    int RawState { get; }
     bool IsLanMode { get; }
     int InitializedPoolCount { get; }
 }

@@ -31,7 +31,15 @@ public sealed unsafe class SFGamePools(SFPlayers players, SFVehicles vehicles, I
 
     public bool IsAvailable => TryGetInstance(out _);
     public bool IsInitialized => TryGetPools(out _);
-    public int State => TryGetInstance(out CNetGame* netGame) ? netGame->GetState() : 0;
+    public int RawState => TryGetInstance(out CNetGame* netGame) ? netGame->GetState() : 0;
+    public SFSampGameState State
+    {
+        get
+        {
+            int raw = RawState;
+            return SampEnvironment.GetOrDetect()?.Profile?.NormalizeState(raw) ?? SFSampGameState.Unknown;
+        }
+    }
     public bool IsLanMode => TryGetInstance(out CNetGame* netGame) && netGame->IsLanMode();
     public int InitializedPoolCount => TryGetPools(out CNetGamePools* pools) ? pools->GetInitializedCount() : 0;
 

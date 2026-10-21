@@ -5,6 +5,7 @@ namespace SFSharp.Runtime.Interop.RakNet.Hooks;
 internal sealed unsafe class OutgoingDataPacketHook : NativeHook<nint, bool, OutgoingDataPacketHook.SendDataNative>
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal delegate bool SendDataNative(nint thisPtr, byte* data, int length, int priority, int reliability, byte orderingChannel);
 
     private readonly NetworkFilters _filters;

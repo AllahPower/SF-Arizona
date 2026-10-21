@@ -5,6 +5,7 @@ internal sealed class SFSampServices(
     ISFSampEntities entities, ISFSampCamera camera, ISFEvents events, ISFRpc rpc, ISFPackets packets,
     ISFPacketParsers packetParsers, ISFRpcParsers rpcParsers, ISFNetwork network) : ISFSamp
 {
+    public SFSampClientInfo Client => SampEnvironment.Client;
     public ISFChat Chat => chat;
     public ISFDialog Dialog => dialog;
     public ISFPlayers Players => players;

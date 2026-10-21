@@ -14,6 +14,9 @@ namespace SFSharp.Runtime.Interop.Classes.Players;
 [StructLayout(LayoutKind.Explicit, Size = 509, Pack = 1)]
 public unsafe struct CRemotePlayer
 {
+    [FieldOffset(0)]
+    private readonly RemotePlayerR5 _r5;
+
     [FieldOffset(0x00)]
     private readonly CPed* _ped;
 
@@ -120,14 +123,14 @@ public unsafe struct CRemotePlayer
     private static readonly GetStatusDelegate _getStatus = (GetStatusDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CRemotePlayer.GetStatus);
     private static readonly DoesExistDelegate _doesExist = (DoesExistDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CRemotePlayer.DoesExist);
 
-    public CPed* Ped => _ped;
-    public CVehicle* Vehicle => _vehicle;
-    public ushort Id => _id;
-    public ushort VehicleId => _vehicleId;
-    public bool DrawLabels => _drawLabels != 0;
-    public bool HasJetpack => _hasJetpack != 0;
-    public byte SpecialAction => _specialAction;
-    public bool IsAvailable => _ped != null || _vehicle != null;
+    public CPed* Ped => (SampEnvironment.IsR5 ? _r5.ped : _ped);
+    public CVehicle* Vehicle => (SampEnvironment.IsR5 ? _r5.vehicle : _vehicle);
+    public ushort Id => (SampEnvironment.IsR5 ? _r5.id : _id);
+    public ushort VehicleId => (SampEnvironment.IsR5 ? _r5.vehicleId : _vehicleId);
+    public bool DrawLabels => (SampEnvironment.IsR5 ? _r5.drawLabels : _drawLabels) != 0;
+    public bool HasJetpack => (SampEnvironment.IsR5 ? _r5.hasJetpack : _hasJetpack) != 0;
+    public byte SpecialAction => (SampEnvironment.IsR5 ? _r5.specialAction : _specialAction);
+    public bool IsAvailable => (SampEnvironment.IsR5 ? _r5.ped : _ped) != null || (SampEnvironment.IsR5 ? _r5.vehicle : _vehicle) != null;
     public SampIncarData IncarData => _incarData;
     public SampTrailerData TrailerData => _trailerData;
     public SampAimData AimData => _aimData;
@@ -137,20 +140,20 @@ public unsafe struct CRemotePlayer
     public byte State => _state;
     public byte SeatId => _seatId;
     public bool PassengerDriveBy => _passengerDriveByRaw != 0;
-    public Vector3 OnfootTargetPosition => _onfootTargetPosition;
-    public Vector3 OnfootTargetSpeed => _onfootTargetSpeed;
-    public Vector3 IncarTargetPosition => _incarTargetPosition;
-    public Vector3 IncarTargetSpeed => _incarTargetSpeed;
-    public Vector3 PositionDifference => _positionDifference;
-    public CRemotePlayerIncarTargetRotation IncarTargetRotation => _incarTargetRotation;
+    public Vector3 OnfootTargetPosition => (SampEnvironment.IsR5 ? _r5.onfootTargetPosition : _onfootTargetPosition);
+    public Vector3 OnfootTargetSpeed => (SampEnvironment.IsR5 ? _r5.onfootTargetSpeed : _onfootTargetSpeed);
+    public Vector3 IncarTargetPosition => (SampEnvironment.IsR5 ? _r5.incarTargetPosition : _incarTargetPosition);
+    public Vector3 IncarTargetSpeed => (SampEnvironment.IsR5 ? _r5.incarTargetSpeed : _incarTargetSpeed);
+    public Vector3 PositionDifference => (SampEnvironment.IsR5 ? _r5.positionDifference : _positionDifference);
+    public CRemotePlayerIncarTargetRotation IncarTargetRotation => (SampEnvironment.IsR5 ? _r5.incarTargetRotation : _incarTargetRotation);
     public float ReportedArmour => _reportedArmour;
     public float ReportedHealth => _reportedHealth;
-    public SampAnimation Animation => _animation;
-    public byte UpdateType => _updateType;
-    public uint LastUpdate => _lastUpdate;
-    public uint LastTimestamp => _lastTimestamp;
-    public bool PerformingCustomAnimation => _performingCustomAnimationRaw != 0;
-    public CPlayerHeadState Head => _head;
+    public SampAnimation Animation => (SampEnvironment.IsR5 ? _r5.animation : _animation);
+    public byte UpdateType => (SampEnvironment.IsR5 ? _r5.updateType : _updateType);
+    public uint LastUpdate => (SampEnvironment.IsR5 ? _r5.lastUpdate : _lastUpdate);
+    public uint LastTimestamp => (SampEnvironment.IsR5 ? _r5.lastTimestamp : _lastTimestamp);
+    public bool PerformingCustomAnimation => (SampEnvironment.IsR5 ? _r5.performingCustomAnimationRaw : _performingCustomAnimationRaw) != 0;
+    public CPlayerHeadState Head => (SampEnvironment.IsR5 ? _r5.head : _head);
     public bool MarkerState => _markerStateRaw != 0;
     public CRemotePlayerMarkerPosition MarkerPosition => _markerPosition;
     public int MarkerHandle => _markerHandle;

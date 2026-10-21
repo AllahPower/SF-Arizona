@@ -2,58 +2,66 @@ namespace SFSharp.Runtime.Interop.Offsets;
 
 public static class SampOffsets
 {
+    // SAMP-API multiver 6d4db99, plus the documented R5 RakNet analysis.
+    // Resolve once when binding native functions. Unknown versions have no fallback.
+    internal static int Select(int r3, int r5) => SampEnvironment.GetOrDetect()?.Version switch
+    {
+        SampVersion.R3_037 => r3,
+        SampVersion.R5_037 => r5,
+        _ => throw new NotSupportedException("No native address profile for this SA-MP client."),
+    };
     public static class CNetGame
     {
-        public const int Instance = 0x26E8DC;
-        public const int Constructor = 0xB5F0;
+        public static int Instance => Select(0x26E8DC, 0x26EB94);
+        public static int Constructor => Select(0xB5F0, 0xB930);
         public const int State = 0x3CD;
         public const int Pools = 0x3DE;
         public const int RakClient = 0x2C;
-        public const int GetPlayerPool = 0x1160;
-        public const int GetVehiclePool = 0x1170;
-        public const int GetObjectPool = 0x2DF0;
-        public const int GetActorPool = 0x2E00;
-        public const int GetState = 0x2E10;
-        public const int LanMode = 0x2E20;
-        public const int GetPickupPool = 0x8170;
-        public const int GetMenuPool = 0x8180;
-        public const int SetState = 0x8190;
-        public const int InitializePools = 0x81D0;
-        public const int InitialNotification = 0x83F0;
-        public const int GetCounter = 0x8570;
-        public const int InitializeGameLogic = 0x8580;
-        public const int Connect = 0x85D0;
-        public const int SpawnScreen = 0x8640;
-        public const int GetRakClient = 0x1A40;
-        public const int UpdatePlayers = 0x8BA0;
-        public const int ResetPlayerPool = 0x8C70;
-        public const int ResetVehiclePool = 0x8D10;
-        public const int ResetTextDrawPool = 0x8DB0;
-        public const int ResetObjectPool = 0x8E50;
-        public const int ResetGangZonePool = 0x8EF0;
-        public const int ResetPickupPool = 0x8F90;
-        public const int ResetMenuPool = 0x8FF0;
-        public const int ResetLabelPool = 0x9080;
-        public const int ResetActorPool = 0x9120;
-        public const int ResetMarkers = 0x9F50;
-        public const int ResetPools = 0xA190;
-        public const int ShutdownForRestart = 0xA1E0;
+        public static int GetPlayerPool => Select(0x1160, 0x1170);
+        public static int GetVehiclePool => Select(0x1170, 0x1180);
+        public static int GetObjectPool => Select(0x2DF0, 0x2E10);
+        public static int GetActorPool => Select(0x2E00, 0x2E20);
+        public static int GetState => Select(0x2E10, 0x2E30);
+        public static int LanMode => Select(0x2E20, 0x2E40);
+        public static int GetPickupPool => Select(0x8170, 0x84E0);
+        public static int GetMenuPool => Select(0x8180, 0x84F0);
+        public static int SetState => Select(0x8190, 0x8500);
+        public static int InitializePools => Select(0x81D0, 0x8540);
+        public static int InitialNotification => Select(0x83F0, 0x8760);
+        public static int GetCounter => Select(0x8570, 0x88E0);
+        public static int InitializeGameLogic => Select(0x8580, 0x88F0);
+        public static int Connect => Select(0x85D0, 0x8940);
+        public static int SpawnScreen => Select(0x8640, 0x89B0);
+        public static int GetRakClient => Select(0x1A40, 0xBBC0);
+        public static int UpdatePlayers => Select(0x8BA0, 0x8F10);
+        public static int ResetPlayerPool => Select(0x8C70, 0x8FE0);
+        public static int ResetVehiclePool => Select(0x8D10, 0x9080);
+        public static int ResetTextDrawPool => Select(0x8DB0, 0x9110);
+        public static int ResetObjectPool => Select(0x8E50, 0x91B0);
+        public static int ResetGangZonePool => Select(0x8EF0, 0x9250);
+        public static int ResetPickupPool => Select(0x8F90, 0x92F0);
+        public static int ResetMenuPool => Select(0x8FF0, 0x9350);
+        public static int ResetLabelPool => Select(0x9080, 0x9490);
+        public static int ResetActorPool => Select(0x9120, 0x93F0);
+        public static int ResetMarkers => Select(0x9F50, 0xA2C0);
+        public static int ResetPools => Select(0xA190, 0xA4F0);
+        public static int ShutdownForRestart => Select(0xA1E0, 0xA540);
     }
 
     public static class CVehiclePool
     {
         public const int MaxVehicles = 2000;
-        public const int Get = 0x1110;
-        public const int DoesExist = 0x1140;
-        public const int UpdateCount = 0x1E260;
-        public const int Create = 0x1E930;
-        public const int Delete = 0x1E330;
-        public const int ChangeInterior = 0x1E3B0;
-        public const int SetParams = 0x1E3E0;
-        public const int Find = 0x1E440;
-        public const int GetNearest = 0x1E4B0;
-        public const int ProcessWaitingList = 0x1EBC0;
-        public const int Process = 0x1EC80;
+        public static int Get => Select(0x1110, 0x1120);
+        public static int DoesExist => Select(0x1140, 0x1150);
+        public static int UpdateCount => Select(0x1E260, 0x1E9B0);
+        public static int Create => Select(0x1E930, 0x1F080);
+        public static int Delete => Select(0x1E330, 0x1EA80);
+        public static int ChangeInterior => Select(0x1E3B0, 0x1EB00);
+        public static int SetParams => Select(0x1E3E0, 0x1EB30);
+        public static int Find => Select(0x1E440, 0x1EB90);
+        public static int GetNearest => Select(0x1E4B0, 0x1EC00);
+        public static int ProcessWaitingList => Select(0x1EBC0, 0x1F300);
+        public static int Process => Select(0x1EC80, 0x1F3C0);
     }
 
     public static class CObjectPool
@@ -62,38 +70,38 @@ public static class SampOffsets
         public const int LargestId = 0x0000;
         public const int OccupancyArray = 0x0004;
         public const int ObjectArray = 0x0FA4;
-        public const int Get = 0x2DC0;
-        public const int GetCount = 0x124E0;
-        public const int Delete = 0x12500;
-        public const int Create = 0x12580;
-        public const int GetId = 0x126C0;
-        public const int Process = 0x12700;
-        public const int ConstructMaterials = 0x127C0;
-        public const int ShutdownMaterials = 0x12800;
-        public const int Draw = 0x12840;
-        public const int DrawLast = 0x12880;
+        public static int Get => Select(0x2DC0, 0x2DE0);
+        public static int GetCount => Select(0x124E0, 0x12830);
+        public static int Delete => Select(0x12500, 0x12850);
+        public static int Create => Select(0x12580, 0x128D0);
+        public static int GetId => Select(0x126C0, 0x12A10);
+        public static int Process => Select(0x12700, 0x12A50);
+        public static int ConstructMaterials => Select(0x127C0, 0x12B10);
+        public static int ShutdownMaterials => Select(0x12800, 0x12B50);
+        public static int Draw => Select(0x12840, 0x12B90);
+        public static int DrawLast => Select(0x12880, 0x12BD0);
     }
 
     public static class CObject
     {
-        public const int Constructor = 0xA8880;
-        public const int GetDistance = 0xA7730;
-        public const int Stop = 0xA77A0;
-        public const int SetRotation = 0xA7810;
-        public const int SetAttachedToVehicle = 0xA7880;
-        public const int SetAttachedToObject = 0xA7910;
-        public const int AttachToVehicle = 0xA79B0;
-        public const int AttachToObject = 0xA7A30;
-        public const int Rotate = 0xA7B30;
-        public const int AttachedToMovingEntity = 0xA7C30;
-        public const int SetMaterial = 0xA7CA0;
-        public const int SetMaterialText = 0xA7E20;
-        public const int GetMaterialSize = 0xA83F0;
-        public const int ShutdownMaterialText = 0xA8640;
-        public const int Render = 0xA86D0;
-        public const int Process = 0xA8DC0;
-        public const int ConstructMaterialText = 0xA9650;
-        public const int Draw = 0xA9700;
+        public static int Constructor => Select(0xA8880, 0xA9110);
+        public static int GetDistance => Select(0xA7730, 0xA7FC0);
+        public static int Stop => Select(0xA77A0, 0xA8030);
+        public static int SetRotation => Select(0xA7810, 0xA80A0);
+        public static int SetAttachedToVehicle => Select(0xA7880, 0xA8110);
+        public static int SetAttachedToObject => Select(0xA7910, 0xA81A0);
+        public static int AttachToVehicle => Select(0xA79B0, 0xA8240);
+        public static int AttachToObject => Select(0xA7A30, 0xA82C0);
+        public static int Rotate => Select(0xA7B30, 0xA83C0);
+        public static int AttachedToMovingEntity => Select(0xA7C30, 0xA84C0);
+        public static int SetMaterial => Select(0xA7CA0, 0xA8530);
+        public static int SetMaterialText => Select(0xA7E20, 0xA86B0);
+        public static int GetMaterialSize => Select(0xA83F0, 0xA8C80);
+        public static int ShutdownMaterialText => Select(0xA8640, 0xA8ED0);
+        public static int Render => Select(0xA86D0, 0xA8F60);
+        public static int Process => Select(0xA8DC0, 0xA9650);
+        public static int ConstructMaterialText => Select(0xA9650, 0xA9EE0);
+        public static int Draw => Select(0xA9700, 0xA9F90);
     }
 
     public static class CActorPool
@@ -102,22 +110,22 @@ public static class SampOffsets
         public const int LargestId = 0x0000;
         public const int ObjectArray = 0x0004;
         public const int OccupancyArray = 0x0FA4;
-        public const int Get = 0x1600;
-        public const int DoesExist = 0x1630;
-        public const int Delete = 0x16E0;
-        public const int Find = 0x18A0;
-        public const int Create = 0x18F0;
+        public static int Get => Select(0x1600, 0x1610);
+        public static int DoesExist => Select(0x1630, 0x1640);
+        public static int Delete => Select(0x16E0, 0x16F0);
+        public static int Find => Select(0x18A0, 0x18B0);
+        public static int Create => Select(0x18F0, 0x1900);
     }
 
     public static class CActor
     {
-        public const int Constructor = 0x9BBA0;
-        public const int Destroy = 0x9BCF0;
-        public const int PerformAnimation = 0x9BD50;
-        public const int SetRotation = 0x9BE60;
-        public const int GetHealth = 0x9BEA0;
-        public const int SetHealth = 0x9BEC0;
-        public const int SetInvulnerable = 0x9BFF0;
+        public static int Constructor => Select(0x9BBA0, 0x9C2B0);
+        public static int Destroy => Select(0x9BCF0, 0x9C400);
+        public static int PerformAnimation => Select(0x9BD50, 0x9C460);
+        public static int SetRotation => Select(0x9BE60, 0x9C570);
+        public static int GetHealth => Select(0x9BEA0, 0x9C5B0);
+        public static int SetHealth => Select(0x9BEC0, 0x9C5D0);
+        public static int SetInvulnerable => Select(0x9BFF0, 0x9C700);
     }
 
     public static class CPickupPool
@@ -129,15 +137,15 @@ public static class SampOffsets
         public const int Timers = 0x8004;
         public const int Weapons = 0xC004;
         public const int Pickups = 0xF004;
-        public const int Constructor = 0x8130;
-        public const int Destructor = 0x130C0;
-        public const int CreateWeapon = 0x12E30;
-        public const int Create = 0x12F20;
-        public const int Delete = 0x12FD0;
-        public const int DeleteWeapon = 0x13030;
-        public const int GetIndex = 0x13090;
-        public const int SendNotification = 0x130F0;
-        public const int Process = 0x131D0;
+        public static int Constructor => Select(0x8130, 0x84A0);
+        public static int Destructor => Select(0x130C0, 0x13410);
+        public static int CreateWeapon => Select(0x12E30, 0x13180);
+        public static int Create => Select(0x12F20, 0x12F20);
+        public static int Delete => Select(0x12FD0, 0x13320);
+        public static int DeleteWeapon => Select(0x13030, 0x13380);
+        public static int GetIndex => Select(0x13090, 0x133E0);
+        public static int SendNotification => Select(0x130F0, 0x13440);
+        public static int Process => Select(0x131D0, 0x13520);
     }
 
     public static class CMenuPool
@@ -146,28 +154,30 @@ public static class SampOffsets
         public const int MenuArray = 0x0000;
         public const int OccupancyArray = 0x0200;
         public const int CurrentMenu = 0x0400;
-        public const int Cancelled = 0x0402;
-        public const int Constructor = 0x7AE0;
-        public const int Destructor = 0x7E50;
-        public const int Create = 0x7B30;
-        public const int Delete = 0x7C00;
-        public const int Show = 0x7C50;
-        public const int Hide = 0x7CB0;
-        public const int GetTextPointer = 0x7CF0;
-        public const int Process = 0x7E90;
+        public const int Cancelled = 0x0401;
+        public static int Constructor => Select(0x7AE0, 0x7E60);
+        public static int Destructor => Select(0x7E50, 0x81C0);
+        public static int Create => Select(0x7B30, 0x7EB0);
+        public static int Delete => Select(0x7C00, 0x7F70);
+        public static int Show => Select(0x7C50, 0x7FC0);
+        public static int Hide => Select(0x7CB0, 0x8020);
+        public static int GetTextPointer => Select(0x7CF0, 0x8060);
+        public static int Process => Select(0x7E90, 0x8200);
     }
 
     public static class CMenu
     {
-        public const int Constructor = 0xA6CE0;
-        public const int AddItem = 0xA6D80;
-        public const int SetColumnTitle = 0xA6DB0;
-        public const int Hide = 0xA6DE0;
-        public const int GetItem = 0xA6E00;
-        public const int GetTitle = 0xA6E20;
-        public const int GetString = 0xA6E50;
-        public const int GetActiveRow = 0xA6E80;
-        public const int Show = 0xA6EB0;
+        public static int SetTitle => SampEnvironment.IsR5 ? 0xA7530
+            : throw new NotSupportedException("CMenu::SetTitle is an R5-only native method.");
+        public static int Constructor => Select(0xA6CE0, 0xA7420);
+        public static int AddItem => Select(0xA6D80, 0xA7580);
+        public static int SetColumnTitle => Select(0xA6DB0, 0xA7600);
+        public static int Hide => Select(0xA6DE0, 0xA7670);
+        public static int GetItem => Select(0xA6E00, 0xA7690);
+        public static int GetTitle => Select(0xA6E20, 0xA76B0);
+        public static int GetString => Select(0xA6E50, 0xA76E0);
+        public static int GetActiveRow => Select(0xA6E80, 0xA7710);
+        public static int Show => Select(0xA6EB0, 0xA7740);
     }
 
     public static class CGangZonePool
@@ -175,13 +185,13 @@ public static class SampOffsets
         public const int MaxGangZones = 1024;
         public const int ObjectArray = 0x0000;
         public const int OccupancyArray = 0x1000;
-        public const int Constructor = 0x2100;
-        public const int Destructor = 0x2130;
-        public const int Create = 0x2160;
-        public const int StartFlashing = 0x21E0;
-        public const int StopFlashing = 0x2200;
-        public const int Delete = 0x2220;
-        public const int Draw = 0x2250;
+        public static int Constructor => Select(0x2100, 0x2120);
+        public static int Destructor => Select(0x2130, 0x2150);
+        public static int Create => Select(0x2160, 0x2180);
+        public static int StartFlashing => Select(0x21E0, 0x2200);
+        public static int StopFlashing => Select(0x2200, 0x2220);
+        public static int Delete => Select(0x2220, 0x2240);
+        public static int Draw => Select(0x2250, 0x2270);
     }
 
     public static class CLabelPool
@@ -189,11 +199,11 @@ public static class SampOffsets
         public const int MaxLabels = 2048;
         public const int ObjectArray = 0x0000;
         public const int OccupancyArray = 0xE800;
-        public const int Constructor = 0x1180;
-        public const int Destructor = 0x15D0;
-        public const int Create = 0x11C0;
-        public const int Delete = 0x12D0;
-        public const int Draw = 0x1340;
+        public static int Constructor => Select(0x1180, 0x1190);
+        public static int Destructor => Select(0x15D0, 0x15E0);
+        public static int Create => Select(0x11C0, 0x11D0);
+        public static int Delete => Select(0x12D0, 0x12E0);
+        public static int Draw => Select(0x1340, 0x1350);
     }
 
     public static class CTextDrawPool
@@ -203,140 +213,140 @@ public static class SampOffsets
         public const int TotalTextDraws = MaxTextDraws + MaxLocalTextDraws;
         public const int OccupancyArray = 0x0000;
         public const int ObjectArray = 0x2400;
-        public const int Constructor = 0x1E050;
-        public const int Destructor = 0x1E180;
-        public const int Delete = 0x1E0A0;
-        public const int Draw = 0x1E0E0;
-        public const int Create = 0x1E1C0;
+        public static int Constructor => Select(0x1E050, 0x1E7A0);
+        public static int Destructor => Select(0x1E180, 0x1E8D0);
+        public static int Delete => Select(0x1E0A0, 0x1E7F0);
+        public static int Draw => Select(0x1E0E0, 0x1E830);
+        public static int Create => Select(0x1E1C0, 0x1E910);
     }
 
     public static class CTextDraw
     {
-        public const int Constructor = 0xB2E50;
-        public const int Destructor = 0xB26C0;
-        public const int SetText = 0xB26D0;
-        public const int Draw = 0xB2BF0;
+        public static int Constructor => Select(0xB2E50, 0xB36E0);
+        public static int Destructor => Select(0xB26C0, 0xB2F50);
+        public static int SetText => Select(0xB26D0, 0xB36E0);
+        public static int Draw => Select(0xB2BF0, 0xB3480);
     }
 
     public static class CInput
     {
-        public const int Instance = 0x26E8CC;
-        public const int Send = 0x69190;
+        public static int Instance => Select(0x26E8CC, 0x26EB84);
+        public static int Send => Select(0x69190, 0x69900);
         // SAMP-API R3-1, packed x86 CInput::m_bEnabled (BOOL).
         public const int Enabled = 0x14E0;
     }
 
     public static class CDialog
     {
-        public const int Instance = 0x26E898;
+        public static int Instance => Select(0x26E898, 0x26EB50);
         public const int Active = 0x28;
-        public const int Show = 0x6F8C0;
-        public const int Hide = 0x6F110;
-        public const int Close = 0x6FF40;
+        public static int Show => Select(0x6F8C0, 0x6FFB0);
+        public static int Hide => Select(0x6F110, 0x6F860);
+        public static int Close => Select(0x6FF40, 0x70630);
     }
 
     public static class CLocalPlayer
     {
-        public const int GetPed = 0x2D50;
-        public const int GetSpecialAction = 0x3340;
-        public const int SetColor = 0x3D50;
-        public const int GetColorAsRgba = 0x3D80;
-        public const int GetColorAsArgb = 0x3DA0;
-        public const int RequestSpawn = 0x3ED0;
-        public const int Chat = 0x5820;
+        public static int GetPed => Select(0x2D50, 0x2D70);
+        public static int GetSpecialAction => Select(0x3340, 0x3410);
+        public static int SetColor => Select(0x3D50, 0x3ED0);
+        public static int GetColorAsRgba => Select(0x3D80, 0x3F00);
+        public static int GetColorAsArgb => Select(0x3DA0, 0x3F20);
+        public static int RequestSpawn => Select(0x3ED0, 0x4060);
+        public static int Chat => Select(0x5820, 0x5A10);
     }
 
     public static class CEntity
     {
-        public const int GetMatrix = 0x9E400;
-        public const int SetMatrix = 0x9E4B0;
-        public const int UpdateRwFrame = 0x9E570;
-        public const int GetSpeed = 0x9E5D0;
-        public const int SetSpeed = 0x9E600;
-        public const int GetTurnSpeed = 0x9E720;
-        public const int SetTurnSpeed = 0x9E750;
-        public const int ApplyTurnSpeed = 0x9E780;
-        public const int SetModelIndex = 0x9E840;
-        public const int GetModelIndex = 0x9E920;
-        public const int Teleport = 0x9E930;
-        public const int GetDistanceToLocalPlayer = 0x9E9B0;
-        public const int GetDistanceToCamera = 0x9EA80;
-        public const int GetDistanceToLocalPlayerNoHeight = 0x9EAE0;
-        public const int GetDistanceToPoint = 0x9EBA0;
-        public const int DoesExist = 0x9ECC0;
-        public const int GetCollisionFlag = 0x9EF50;
-        public const int SetCollisionFlag = 0x9EF20;
-        public const int SetCollisionProcessed = 0x9EF70;
-        public const int GetEulerInverted = 0x9F1E0;
+        public static int GetMatrix => Select(0x9E400, 0x9EB10);
+        public static int SetMatrix => Select(0x9E4B0, 0x9EBC0);
+        public static int UpdateRwFrame => Select(0x9E570, 0x9EC80);
+        public static int GetSpeed => Select(0x9E5D0, 0x9ECE0);
+        public static int SetSpeed => Select(0x9E600, 0x9ED10);
+        public static int GetTurnSpeed => Select(0x9E720, 0x9EE30);
+        public static int SetTurnSpeed => Select(0x9E750, 0x9EE60);
+        public static int ApplyTurnSpeed => Select(0x9E780, 0x9EE90);
+        public static int SetModelIndex => Select(0x9E840, 0x9EF50);
+        public static int GetModelIndex => Select(0x9E920, 0x9F030);
+        public static int Teleport => Select(0x9E930, 0x9F040);
+        public static int GetDistanceToLocalPlayer => Select(0x9E9B0, 0x9F0C0);
+        public static int GetDistanceToCamera => Select(0x9EA80, 0x9F190);
+        public static int GetDistanceToLocalPlayerNoHeight => Select(0x9EAE0, 0x9F1F0);
+        public static int GetDistanceToPoint => Select(0x9EBA0, 0x9F2B0);
+        public static int DoesExist => Select(0x9ECC0, 0x9F3D0);
+        public static int GetCollisionFlag => Select(0x9EF50, 0x9F660);
+        public static int SetCollisionFlag => Select(0x9EF20, 0x9F630);
+        public static int SetCollisionProcessed => Select(0x9EF70, 0x9F680);
+        public static int GetEulerInverted => Select(0x9F1E0, 0x9F8F0);
     }
 
     public static class CPed
     {
-        public const int GetHealth = 0xAB4C0;
-        public const int SetHealth = 0xAB4E0;
-        public const int GetArmour = 0xAB500;
-        public const int SetArmour = 0xAB520;
-        public const int GetState = 0xAB5B0;
-        public const int SetState = 0xAB5C0;
-        public const int GetRotation = 0xAB600;
-        public const int ForceRotation = 0xAB680;
-        public const int SetRotation = 0xAB6D0;
-        public const int IsPassenger = 0xAB730;
-        public const int GetVehicle = 0xAB770;
-        public const int GetCurrentWeapon = 0xAB3C0;
-        public const int GetCurrentWeaponAmmo = 0xAC8C0;
-        public const int GetVehicleSeatIndex = 0xAB970;
-        public const int ClearWeapons = 0xAB780;
-        public const int EnableJetpack = 0xAC480;
-        public const int DisableJetpack = 0xAC4D0;
-        public const int HasJetpack = 0xAC530;
-        public const int GetAimZ = 0xAD060;
-        public const int GetBonePosition = 0xADC00;
-        public const int SetAimZ = 0xAD0A0;
-        public const int HasAccessory = 0xAE5A0;
-        public const int DeleteAccessory = 0xAE5C0;
-        public const int GetAccessoryState = 0xAE620;
-        public const int GetAccessory = 0x13330;
-        public const int DeleteAllAccessories = 0xB0220;
-        public const int AddAccessory = 0xB0280;
+        public static int GetHealth => Select(0xAB4C0, 0xABD50);
+        public static int SetHealth => Select(0xAB4E0, 0xABD70);
+        public static int GetArmour => Select(0xAB500, 0xABD90);
+        public static int SetArmour => Select(0xAB520, 0xABDB0);
+        public static int GetState => Select(0xAB5B0, 0xABE40);
+        public static int SetState => Select(0xAB5C0, 0xABE50);
+        public static int GetRotation => Select(0xAB600, 0xABE90);
+        public static int ForceRotation => Select(0xAB680, 0xABF10);
+        public static int SetRotation => Select(0xAB6D0, 0xABF60);
+        public static int IsPassenger => Select(0xAB730, 0xABFC0);
+        public static int GetVehicle => Select(0xAB770, 0xAC000);
+        public static int GetCurrentWeapon => Select(0xAB3C0, 0xABC50);
+        public static int GetCurrentWeaponAmmo => Select(0xAC8C0, 0xAD150);
+        public static int GetVehicleSeatIndex => Select(0xAB970, 0xAC200);
+        public static int ClearWeapons => Select(0xAB780, 0xAC010);
+        public static int EnableJetpack => Select(0xAC480, 0xACD10);
+        public static int DisableJetpack => Select(0xAC4D0, 0xACD60);
+        public static int HasJetpack => Select(0xAC530, 0xACDC0);
+        public static int GetAimZ => Select(0xAD060, 0xAD8F0);
+        public static int GetBonePosition => Select(0xADBF0, 0xAE480);
+        public static int SetAimZ => Select(0xAD0A0, 0xAD930);
+        public static int HasAccessory => Select(0xAE5A0, 0xAEE30);
+        public static int DeleteAccessory => Select(0xAE5C0, 0xAEE50);
+        public static int GetAccessoryState => Select(0xAE620, 0xAEEB0);
+        public static int GetAccessory => Select(0x13330, 0x13680);
+        public static int DeleteAllAccessories => Select(0xB0220, 0xB0AB0);
+        public static int AddAccessory => Select(0xB0280, 0xB0B10);
     }
 
     public static class CRemotePlayer
     {
-        public const int GetDistanceToLocalPlayer = 0x15BB0;
-        public const int SetColor = 0x15BE0;
-        public const int GetColorAsRgba = 0x15C00;
-        public const int GetColorAsArgb = 0x15C10;
-        public const int GetStatus = 0x15DB0;
-        public const int DoesExist = 0x1080;
-        public const int Spawn = 0x16A90;
-        public const int Remove = 0x16E70;
+        public static int GetDistanceToLocalPlayer => Select(0x15BB0, 0x16120);
+        public static int SetColor => Select(0x15BE0, 0x16150);
+        public static int GetColorAsRgba => Select(0x15C00, 0x16170);
+        public static int GetColorAsArgb => Select(0x15C10, 0x16180);
+        public static int GetStatus => Select(0x15DB0, 0x16330);
+        public static int DoesExist => Select(0x1080, 0x1080);
+        public static int Spawn => Select(0x16A90, 0x17130);
+        public static int Remove => Select(0x16E70, 0x17530);
     }
 
     public static class CVehicle
     {
-        public const int HasDriver = 0xB6850;
-        public const int IsOccupied = 0xB68A0;
-        public const int SetInvulnerable = 0xB6900;
-        public const int SetLocked = 0xB69A0;
-        public const int GetHealth = 0xB6A10;
-        public const int SetHealth = 0xB6A30;
-        public const int SetColor = 0xB6A50;
-        public const int UpdateColor = 0xB6AA0;
-        public const int EnableSiren = 0xB6CB0;
-        public const int SirenEnabled = 0xB6CD0;
-        public const int GetTrailer = 0xB7400;
-        public const int DoesExist = 0xB78A0;
-        public const int SetLicensePlateText = 0xB78B0;
-        public const int SetRotation = 0xB78D0;
-        public const int EnableEngine = 0xB81D0;
+        public static int HasDriver => Select(0xB6850, 0xB70E0);
+        public static int IsOccupied => Select(0xB68A0, 0xB7130);
+        public static int SetInvulnerable => Select(0xB6900, 0xB7190);
+        public static int SetLocked => Select(0xB69A0, 0xB7230);
+        public static int GetHealth => Select(0xB6A10, 0xB72A0);
+        public static int SetHealth => Select(0xB6A30, 0xB72C0);
+        public static int SetColor => Select(0xB6A50, 0xB72E0);
+        public static int UpdateColor => Select(0xB6AA0, 0xB7330);
+        public static int EnableSiren => Select(0xB6CB0, 0xB7540);
+        public static int SirenEnabled => Select(0xB6CD0, 0xB7560);
+        public static int GetTrailer => Select(0xB7400, 0xB7C90);
+        public static int DoesExist => Select(0xB78A0, 0xB8140);
+        public static int SetLicensePlateText => Select(0xB78B0, 0xB8150);
+        public static int SetRotation => Select(0xB78D0, 0xB8170);
+        public static int EnableEngine => Select(0xB81D0, 0xB8A70);
     }
 
     public static class CPlayerPool
     {
         public const int MaxPlayers = 1004;
-        public const int RemotePlayerInfoArray = 0x004;
-        public const int ConnectionStateArray = 0xFB4;
+        public static int RemotePlayerInfoArray => Select(0x4, 0x1F8A);
+        public static int ConnectionStateArray => Select(0xFB4, 0x2A);
         public const int LocalPlayerPing = 0x2F14;
         public const int LocalPlayerScore = 0x2F18;
         public const int LocalPlayerId = 0x2F1C;
@@ -346,43 +356,43 @@ public static class SampOffsets
         public const int PlayerInfoName = 0x0C;
         public const int PlayerInfoScore = 0x24;
         public const int PlayerInfoNpcFlag = 0x28;
-        public const int IsConnected = 0x10B0;
-        public const int GetPlayer = 0x10F0;
-        public const int GetLocalPlayer = 0x1A30;
-        public const int GetCount = 0x13670;
-        public const int Find = 0x13570;
-        public const int Create = 0x13E80;
-        public const int Delete = 0x13CB0;
-        public const int GetLocalPlayerName = 0xA170;
-        public const int GetName = 0x16F00;
-        public const int GetScore = 0x6E0E0;
-        public const int GetPing = 0x6E110;
-        public const int GetLocalPlayerPing = 0x6E150;
+        public static int IsConnected => Select(0x10B0, 0x10B0);
+        public static int GetPlayer => Select(0x10F0, 0x10F0);
+        public static int GetLocalPlayer => Select(0x1A30, 0x1A40);
+        public static int GetCount => Select(0x13670, 0x139F0);
+        public static int Find => Select(0x13570, 0x138C0);
+        public static int Create => Select(0x13E80, 0x14250);
+        public static int Delete => Select(0x13CB0, 0x14090);
+        public static int GetLocalPlayerName => Select(0xA170, 0xA4E0);
+        public static int GetName => Select(0x16F00, 0x175C0);
+        public static int GetScore => Select(0x6E0E0, 0x6E850);
+        public static int GetPing => Select(0x6E110, 0x6E880);
+        public static int GetLocalPlayerPing => Select(0x6E150, 0x6E8C0);
     }
 
     public static class CScoreboard
     {
-        public const int Instance = 0x26E894;
+        public static int Instance => Select(0x26E894, 0x26EB4C);
         public const int Enabled = 0x00;
-        public const int UpdateScoresPingsIps = 0x10090;
+        public static int UpdateScoresPingsIps => Select(0x10090, 0x103E0);
     }
 
     // SAMP-API commit 0d43a3603239f2f4bc65b8305ffc72177386cc29, R3-1.
     public static class CGame
     {
-        public const int Instance = 0x26E8F4;
+        public static int Instance => Select(0x26E8F4, 0x26EBAC);
         // CGame::m_nCursorMode in the pinned packed x86 layout.
         public const int CursorMode = 0x61;
-        public const int SetCursorMode = 0x9FFE0;
-        public const int GetWindowHandle = 0x2CF0;
+        public static int SetCursorMode => Select(0x9FFE0, 0xA06F0);
+        public static int GetWindowHandle => Select(0x2CF0, 0x2D10);
     }
 
     public static class CChat
     {
-        public const int Instance = 0x26E8C8;
-        public const int AddEntry = 0x67460;
-        public const int AddChatMessage = 0x678A0;
-        public const int AddMessage = 0x679F0;
+        public static int Instance => Select(0x26E8C8, 0x26EB80);
+        public static int AddEntry => Select(0x67460, 0x67BE0);
+        public static int AddChatMessage => Select(0x678A0, 0x68020);
+        public static int AddMessage => Select(0x679F0, 0x68170);
 
         public const int Entries = 0x0132;
         public const int Redraw = 0x63DA;
@@ -412,36 +422,36 @@ public static class SampOffsets
     public static class RakPeer
     {
         // Packet* __cdecl AllocPacket(unsigned int dataSize)
-        public const int AllocPacket = 0x37B90;
+        public static int AllocPacket => Select(0x37B90, 0x382D0);
 
         // Offset within RakPeer struct to the packet SingleProducerConsumer queue.
         public const int OffsetPackets = 0xDB6;
 
         // Packet** __thiscall WriteLock(void* queue) — acquires write slot.
-        public const int WriteLock = 0x38EC0;
+        public static int WriteLock => Select(0x38EC0, 0x39600);
 
         // void __thiscall WriteUnlock(void* queue) — commits the write.
-        public const int WriteUnlock = 0x38F00;
+        public static int WriteUnlock => Select(0x38F00, 0x39640);
     }
 
     public static class RakClientRuntime
     {
         // SA-MP 0.3.7 R3-1: native entries, before Arizona/SAMPFUNCS proxy processing.
-        public const int SendBitStream = 0x33BA0;
-        public const int SendData = 0x33B50;
-        public const int Receive = 0x34AC0;
+        public static int SendBitStream => Select(0x33BA0, 0x342E0);
+        public static int SendData => Select(0x33B50, 0x34290);
+        public static int Receive => Select(0x34AC0, 0x35200);
     }
 
     public static class RpcRuntime
     {
-        public const int HandleRpcPacket = 0x3A6A0;
-        public const int SendRpcBitStream = 0x33EE0;
+        public static int HandleRpcPacket => Select(0x3A6A0, 0x3ADE0);
+        public static int SendRpcBitStream => Select(0x33EE0, 0x34620);
     }
 
     public static class SampStringCompressor
     {
-        public const int Instance = 0x534F0;
-        public const int DecodeString = 0x53B90;
+        public static int Instance => Select(0x534F0, 0x53C30);
+        public static int DecodeString => Select(0x53B90, 0x542D0);
     }
 
     public static class RakNetBitStream
@@ -461,22 +471,22 @@ public static class SampOffsets
     {
         public static class Chat
         {
-            public const int AddChatMessage = CChat.AddChatMessage;
-            public const int AddMessage = CChat.AddMessage;
+            public static int AddChatMessage => CChat.AddChatMessage;
+            public static int AddMessage => CChat.AddMessage;
         }
 
         public static class Dialog
         {
-            public const int Show = CDialog.Show;
-            public const int Close = CDialog.Close;
+            public static int Show => CDialog.Show;
+            public static int Close => CDialog.Close;
         }
 
         public static class Game
         {
-            public const int DisplayGameText = 0xA05D0;
-            public const int DeleteRacingCheckpoint = 0xA0630;
-            public const int SetCheckpoint = 0xA16B0;
-            public const int SetRacingCheckpoint = 0xA19D0;
+            public static int DisplayGameText => Select(0xA05D0, 0xA0CE0);
+            public static int DeleteRacingCheckpoint => Select(0xA0630, 0xA0D60);
+            public static int SetCheckpoint => Select(0xA16B0, 0xA1DE0);
+            public static int SetRacingCheckpoint => Select(0xA19D0, 0xA2100);
         }
     }
 }

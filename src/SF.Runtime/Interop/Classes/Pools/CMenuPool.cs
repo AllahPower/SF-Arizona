@@ -17,7 +17,7 @@ public unsafe ref struct CMenuPool
     public static ref readonly CMenuPool Instance => ref *RequireInstance();
 
     [FieldOffset(SampOffsets.CMenuPool.CurrentMenu)]
-    private readonly ushort _currentMenu;
+    private readonly byte _currentMenu;
 
     [FieldOffset(SampOffsets.CMenuPool.Cancelled)]
     private readonly byte _cancelled;
@@ -55,6 +55,17 @@ public unsafe ref struct CMenuPool
     {
         CMenuInteraction copy = interaction;
         using AnsiString titleAnsi = AnsiString.Encode(title);
+        if (SampEnvironment.IsR5)
+        {
+            var create = (delegate* unmanaged[Thiscall]<CMenuPool*, byte, float, float, byte, float, float, CMenuInteraction*, CMenu*>)_create;
+            CMenu* menu = create(RequireInstance(), menuId, x, y, columns, firstColumnWidth, secondColumnWidth, &copy);
+            if (menu != null)
+            {
+                var setTitle = (delegate* unmanaged[Thiscall]<CMenu*, byte*, void>)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenu.SetTitle);
+                setTitle(menu, titleAnsi);
+            }
+            return menu;
+        }
         return (CMenu*)_create(RequireInstance(), menuId, titleAnsi, x, y, columns, firstColumnWidth, secondColumnWidth, &copy);
     }
 
@@ -125,6 +136,8 @@ public unsafe ref struct CMenuPool
 [StructLayout(LayoutKind.Explicit, Size = 952, Pack = 1)]
 public unsafe struct CMenu
 {
+    [FieldOffset(0)]
+    private readonly MenuR5 _r5;
     public const int MaxMenuItems = 12;
     public const int MaxColumns = 2;
     public const int MaxMenuLine = 32;
@@ -142,28 +155,43 @@ public unsafe struct CMenu
     public fixed byte Header[MaxColumns * MaxMenuLine];
 
     [FieldOffset(0x361)]
-    public float X;
+    private readonly float _x;
+    public float X => SampEnvironment.IsR5 ? _r5.X : _x;
 
     [FieldOffset(0x365)]
-    public float Y;
+    private readonly float _y;
+    public float Y => SampEnvironment.IsR5 ? _r5.Y : _y;
 
     [FieldOffset(0x369)]
-    public float FirstColumnWidth;
+    private readonly float _firstColumnWidth;
+    public float FirstColumnWidth => SampEnvironment.IsR5 ? _r5.FirstColumnWidth : _firstColumnWidth;
 
     [FieldOffset(0x36D)]
-    public float SecondColumnWidth;
+    private readonly float _secondColumnWidth;
+    public float SecondColumnWidth => SampEnvironment.IsR5 ? _r5.SecondColumnWidth : _secondColumnWidth;
 
     [FieldOffset(0x371)]
-    public byte Columns;
+    private readonly byte _columns;
+    public byte Columns => SampEnvironment.IsR5 ? _r5.Columns : _columns;
 
     [FieldOffset(0x372)]
-    public CMenuInteraction Interaction;
+    private readonly CMenuInteraction _interaction;
+    public CMenuInteraction Interaction => SampEnvironment.IsR5 ? _r5.Interaction : _interaction;
 
     [FieldOffset(0x3B2)]
     public fixed byte ColumnCount[MaxColumns];
 
     [FieldOffset(0x3B4)]
-    public int Panel;
+    private readonly int _panel;
+    public int Panel => SampEnvironment.IsR5 ? _r5.Panel : _panel;
+
+    public string? GetHeader(byte column)
+    {
+        if (column >= MaxColumns) return null;
+        int line = SampEnvironment.IsR5 ? 33 : MaxMenuLine;
+        byte* header = (byte*)Unsafe.AsPointer(ref this) + 1 + (1 + MaxMenuItems * MaxColumns + column) * line;
+        return NativeString.Decode(header, line);
+    }
 
     private static readonly delegate* unmanaged[Thiscall]<CMenu*, byte, byte, byte*, void> _addItem = (delegate* unmanaged[Thiscall]<CMenu*, byte, byte, byte*, void>)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenu.AddItem);
     private static readonly delegate* unmanaged[Thiscall]<CMenu*, byte, byte*, void> _setColumnTitle = (delegate* unmanaged[Thiscall]<CMenu*, byte, byte*, void>)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenu.SetColumnTitle);

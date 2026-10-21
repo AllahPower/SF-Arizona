@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace SFSharp.Runtime.Interop.Classes.Game;
 
@@ -32,10 +33,15 @@ public unsafe ref struct CNetGame
     [FieldOffset(SampOffsets.CNetGame.RakClient)]
     private readonly CRakClientInterface* _rakClient;
 
+    [FieldOffset(0)]
+    private readonly CRakClientInterface* _rakClientR5;
+
+    private CRakClientInterface* Client => SampEnvironment.IsR5 ? _rakClientR5 : _rakClient;
+
     public int State => RequireInstance()->_state;
     public CNetGamePools* Pools => RequireInstance()->_pools;
     public bool HasPools => RequireInstance()->_pools != null;
-    public CRakClientInterface* RakClient => RequireInstance()->_rakClient;
+    public CRakClientInterface* RakClient => RequireInstance()->Client;
 
     private static readonly GetPlayerPoolDelegate _getPlayerPool = (GetPlayerPoolDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetPlayerPool);
     private static readonly GetVehiclePoolDelegate _getVehiclePool = (GetVehiclePoolDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetVehiclePool);
@@ -98,12 +104,12 @@ public unsafe ref struct CNetGame
             return 0;
         }
 
-        return *(nint*)(cnetGamePtr + SampOffsets.CNetGame.RakClient);
+        return *(nint*)(cnetGamePtr + SampOffsets.Select(SampOffsets.CNetGame.RakClient, 0));
     }
 
     public static CRakClientInterface* GetRakClient()
     {
-        return RequireInstance()->_rakClient;
+        return RequireInstance()->Client;
     }
 
     public static bool TryGetRakClient(out CRakClientInterface* rakClient)
@@ -114,7 +120,7 @@ public unsafe ref struct CNetGame
             return false;
         }
 
-        rakClient = instance->_rakClient;
+        rakClient = instance->Client;
         return rakClient != null;
     }
 
@@ -297,31 +303,58 @@ public unsafe ref struct CNetGame
 public unsafe struct CNetGamePools
 {
     [FieldOffset(0x00)]
-    public CMenuPool* Menu;
+    private CMenuPool* _menu;
+
+    public CMenuPool* Menu => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Menu : _menu;
 
     [FieldOffset(0x04)]
-    public CActorPool* Actor;
+    private CActorPool* _actor;
+
+    public CActorPool* Actor => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Actor : _actor;
 
     [FieldOffset(0x08)]
-    public CPlayerPool* Player;
+    private CPlayerPool* _player;
+
+    public CPlayerPool* Player => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Player : _player;
 
     [FieldOffset(0x0C)]
-    public CVehiclePool* Vehicle;
+    private CVehiclePool* _vehicle;
+
+    public CVehiclePool* Vehicle => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Vehicle : _vehicle;
 
     [FieldOffset(0x10)]
-    public CPickupPool* Pickup;
+    private CPickupPool* _pickup;
+
+    public CPickupPool* Pickup => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Pickup : _pickup;
 
     [FieldOffset(0x14)]
-    public CObjectPool* Object;
+    private CObjectPool* _object;
+
+    public CObjectPool* Object => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Object : _object;
 
     [FieldOffset(0x18)]
-    public CGangZonePool* GangZone;
+    private CGangZonePool* _gangZone;
+
+    public CGangZonePool* GangZone => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->GangZone : _gangZone;
 
     [FieldOffset(0x1C)]
-    public CLabelPool* Label;
+    private CLabelPool* _label;
+
+    public CLabelPool* Label => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Label : _label;
 
     [FieldOffset(0x20)]
-    public CTextDrawPool* TextDraw;
+    private CTextDrawPool* _textDraw;
+
+    public CTextDrawPool* TextDraw => SampEnvironment.IsR5
+        ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->TextDraw : _textDraw;
 
     public bool IsAvailable =>
         Menu != null ||

@@ -2,9 +2,24 @@ namespace SFSharp.Runtime.Interop.Native;
 
 public static unsafe class ModuleResolver
 {
+    public static nint GetProcAddress(string moduleName, int offset)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        return GetProcAddress(moduleName, (uint)offset);
+    }
+
     public static nint GetProcAddress(string moduleName, uint offset)
     {
-        return (nint)(Win32.GetModuleHandle(moduleName) + offset);
+        uint moduleBase = Win32.GetModuleHandle(moduleName);
+        if (moduleBase == 0) throw new DllNotFoundException($"Native module '{moduleName}' is not loaded.");
+        if (string.Equals(moduleName, "samp.dll", StringComparison.OrdinalIgnoreCase))
+        {
+            SampVersionInfo environment = SampEnvironment.GetOrDetect()
+                ?? throw new InvalidOperationException("SA-MP environment has not been detected.");
+            if (!environment.IsSupported || offset >= environment.SizeOfImage)
+                throw new NotSupportedException($"Invalid SA-MP binding RVA 0x{offset:X} for {environment.Version}.");
+        }
+        return checked((nint)((nuint)moduleBase + offset));
     }
 
     /// <summary>Address of an RVA inside the game executable (the process main module).</summary>

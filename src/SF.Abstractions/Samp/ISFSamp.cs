@@ -1,8 +1,10 @@
 namespace SFSharp.Abstractions.Samp;
 
-/// <summary>SA-MP R3 services. Entity mappings bridge server IDs to GTA pool handles.</summary>
+/// <summary>SA-MP services. Entity mappings bridge server IDs to GTA pool handles.</summary>
 public interface ISFSamp
 {
+    /// <summary>Detected client revision and implemented capabilities. Thread-safe.</summary>
+    SFSampClientInfo Client { get; }
     ISFChat Chat { get; }
     ISFDialog Dialog { get; }
     ISFPlayers Players { get; }

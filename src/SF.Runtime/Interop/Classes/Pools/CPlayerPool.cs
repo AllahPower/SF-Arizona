@@ -16,6 +16,8 @@ namespace SFSharp.Runtime.Interop.Classes.Pools;
 [StructLayout(LayoutKind.Explicit, Size = 12094, Pack = 1)]
 public unsafe ref struct CPlayerPool
 {
+    [FieldOffset(0)]
+    private readonly PlayerPoolR5 _r5;
     private static CPlayerPool* CurrentInstance => CNetGame.Instance.GetPlayerPool();
     public static ref readonly CPlayerPool Instance => ref *RequireInstance();
 
@@ -31,9 +33,9 @@ public unsafe ref struct CPlayerPool
     [FieldOffset(SampOffsets.CPlayerPool.LocalPlayerPointer)]
     private readonly CLocalPlayer* _localPlayer;
 
-    public int LocalPlayerPing => RequireInstance()->_localPlayerPing;
-    public int LocalPlayerScore => RequireInstance()->_localPlayerScore;
-    public ushort LocalPlayerId => RequireInstance()->_localPlayerId;
+    public int LocalPlayerPing => SampEnvironment.IsR5 ? RequireInstance()->_r5.Ping : RequireInstance()->_localPlayerPing;
+    public int LocalPlayerScore => SampEnvironment.IsR5 ? RequireInstance()->_r5.Score : RequireInstance()->_localPlayerScore;
+    public ushort LocalPlayerId => SampEnvironment.IsR5 ? RequireInstance()->_r5.Id : RequireInstance()->_localPlayerId;
 
     private static readonly IsConnectedDelegate _isConnected = (IsConnectedDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.IsConnected);
     private static readonly GetPlayerDelegate _getPlayer = (GetPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetPlayer);
@@ -146,7 +148,7 @@ public unsafe ref struct CPlayerPool
 
     public int GetLocalPlayerScore()
     {
-        return RequireInstance()->_localPlayerScore;
+        return LocalPlayerScore;
     }
 
     public bool IsNpc(ushort playerId)
@@ -167,23 +169,32 @@ public unsafe ref struct CPlayerPool
     }
 }
 
-[StructLayout(LayoutKind.Explicit, Size = 44, Pack = 1)]
+[StructLayout(LayoutKind.Explicit, Size = 48, Pack = 1)]
 public unsafe struct CPlayerInfo
 {
+    [FieldOffset(0)]
+    private readonly PlayerInfoR5 _r5;
+
     [FieldOffset(0x00)]
-    public CRemotePlayer* Player;
+    private readonly CRemotePlayer* _player;
 
     [FieldOffset(SampOffsets.CPlayerPool.PlayerInfoPing)]
-    public int Ping;
+    private readonly int _ping;
 
     [FieldOffset(SampOffsets.CPlayerPool.PlayerInfoName)]
-    public StdString Name;
+    private readonly StdString _name;
 
     [FieldOffset(SampOffsets.CPlayerPool.PlayerInfoScore)]
-    public int Score;
+    private readonly int _score;
 
     [FieldOffset(SampOffsets.CPlayerPool.PlayerInfoNpcFlag)]
-    public int NpcFlag;
+    private readonly int _npcFlag;
+
+    public CRemotePlayer* Player => SampEnvironment.IsR5 ? _r5.Player : _player;
+    public int Ping => SampEnvironment.IsR5 ? _r5.Ping : _ping;
+    public StdString Name => SampEnvironment.IsR5 ? _r5.Name : _name;
+    public int Score => SampEnvironment.IsR5 ? _r5.Score : _score;
+    public int NpcFlag => SampEnvironment.IsR5 ? _r5.NpcFlag : _npcFlag;
 }
 
 [StructLayout(LayoutKind.Explicit, Size = 24, Pack = 1)]

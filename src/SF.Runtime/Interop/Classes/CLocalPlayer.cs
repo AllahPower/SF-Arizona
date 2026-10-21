@@ -13,6 +13,9 @@ namespace SFSharp.Runtime.Interop.Classes;
 [StructLayout(LayoutKind.Explicit, Size = 812, Pack = 1)]
 public unsafe ref struct CLocalPlayer
 {
+    [FieldOffset(0)]
+    private readonly LocalPlayerR5 _r5;
+
     private static CLocalPlayer* CurrentInstance => CPlayerPool.Instance.GetLocalPlayer();
     public static ref readonly CLocalPlayer Instance => ref *RequireInstance();
 
@@ -85,25 +88,25 @@ public unsafe ref struct CLocalPlayer
     public ushort AimedPlayerId => WeaponsData.AimedPlayer;
     public ushort AimedActorId => WeaponsData.AimedActor;
     public byte CurrentWeapon => WeaponsData.CurrentWeapon;
-    public ushort CurrentVehicleId => _currentVehicleId;
-    public ushort LastVehicleId => _lastVehicleId;
-    public byte Team => _team;
+    public ushort CurrentVehicleId => (SampEnvironment.IsR5 ? _r5.currentVehicleId : _currentVehicleId);
+    public ushort LastVehicleId => (SampEnvironment.IsR5 ? _r5.lastVehicleId : _lastVehicleId);
+    public byte Team => (SampEnvironment.IsR5 ? _r5.team : _team);
     public bool HasSpawnInfo => _hasSpawnInfoRaw != 0;
     public bool IsPassengerDriveBy => _passengerDriveByRaw != 0;
     public byte CurrentInterior => _currentInterior;
     public bool IsInRcMode => _inRcModeRaw != 0;
-    public SampIncarData IncarData => _incarData;
-    public SampAimData AimData => _aimData;
-    public SampTrailerData TrailerData => _trailerData;
-    public SampOnfootData OnfootData => _onfootData;
-    public SampPassengerData PassengerData => _passengerData;
+    public SampIncarData IncarData => (SampEnvironment.IsR5 ? _r5.incarData : _incarData);
+    public SampAimData AimData => (SampEnvironment.IsR5 ? _r5.aimData : _aimData);
+    public SampTrailerData TrailerData => (SampEnvironment.IsR5 ? _r5.trailerData : _trailerData);
+    public SampOnfootData OnfootData => (SampEnvironment.IsR5 ? _r5.onfootData : _onfootData);
+    public SampPassengerData PassengerData => (SampEnvironment.IsR5 ? _r5.passengerData : _passengerData);
     public CLocalPlayerCameraTarget CameraTarget => _cameraTarget;
-    public CPlayerHeadState Head => _head;
+    public CPlayerHeadState Head => (SampEnvironment.IsR5 ? _r5.head : _head);
     public CLocalPlayerSpawnInfo SpawnInfo => _spawnInfo;
     public CLocalPlayerSurfingState Surfing => _surfing;
     public CLocalPlayerClassSelectionState ClassSelection => _classSelection;
-    public CLocalPlayerSpectatingState Spectating => _spectating;
-    public CLocalPlayerDamageState Damage => _damage;
+    public CLocalPlayerSpectatingState Spectating => (SampEnvironment.IsR5 ? _r5.spectating : _spectating);
+    public CLocalPlayerDamageState Damage => (SampEnvironment.IsR5 ? _r5.damage : _damage);
 
     private static readonly GetPedDelegate _getPed = (GetPedDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CLocalPlayer.GetPed);
     private static readonly GetSpecialActionDelegate _getSpecialAction = (GetSpecialActionDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CLocalPlayer.GetSpecialAction);

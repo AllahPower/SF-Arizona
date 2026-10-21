@@ -5,6 +5,7 @@ namespace SFSharp.Runtime.Interop.RakNet.Hooks;
 internal unsafe class OutgoingPacketHook : NativeHook<nint, bool, OutgoingPacketHook.SendBitStreamNative>
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal unsafe delegate bool SendBitStreamNative(
         nint thisPtr,
         nint bitStream,

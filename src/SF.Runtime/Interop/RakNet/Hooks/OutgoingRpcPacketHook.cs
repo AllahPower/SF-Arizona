@@ -5,6 +5,7 @@ namespace SFSharp.Runtime.Interop.RakNet.Hooks;
 internal unsafe class OutgoingRpcPacketHook : NativeHook<nint, bool, OutgoingRpcPacketHook.OutgoingRpcPacketNative>
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    [return: MarshalAs(UnmanagedType.U1)]
     internal unsafe delegate bool OutgoingRpcPacketNative(
         nint thisPtr,
         int* uniqueID,

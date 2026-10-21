@@ -30,9 +30,9 @@ public struct CRakClientInterfaceVTable
     public nint RegisterAsRemoteProcedureCall;
     public nint RegisterClassMemberRPC;
     public nint UnregisterAsRemoteProcedureCall;
-    public nint RpcData;
     public nint RpcBitStream;
     public nint RpcBitStreamToNetworkId;
+    public nint RpcData;
     public nint SetTrackFrequencyTable;
     public nint GetSendFrequencyTable;
     public nint GetCompressionRatio;
