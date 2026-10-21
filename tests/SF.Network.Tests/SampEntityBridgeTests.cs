@@ -1,9 +1,19 @@
 using SFSharp.Runtime.Samp;
+using SFSharp.Runtime.Gta;
+using SFSharp.Abstractions.Gta;
+using SFSharp.Abstractions.Samp;
 
 namespace SF.Network.Tests;
 
 public sealed class SampEntityBridgeTests
 {
+    [Fact]
+    public void FacadeImplementationsCannotBeCastAcrossEngineBoundaries()
+    {
+        Assert.False(typeof(ISFSamp).IsAssignableFrom(typeof(SFGtaServices)));
+        Assert.False(typeof(ISFGta).IsAssignableFrom(typeof(SFSampServices)));
+    }
+
     [Theory]
     [InlineData(-1, false)]
     [InlineData(0, true)]

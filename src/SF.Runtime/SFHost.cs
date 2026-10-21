@@ -4,7 +4,7 @@ namespace SFSharp.Runtime;
 /// The game services behind <see cref="ISF"/>, created by <see cref="SFRuntime"/> once CNetGame is ready.
 /// Every service receives its dependencies through its constructor.
 /// </summary>
-internal sealed class SFHost : ISF, ISFGta, ISFSamp
+internal sealed class SFHost : ISF
 {
     public SFHost(SFRuntime runtime)
     {
@@ -28,6 +28,9 @@ internal sealed class SFHost : ISF, ISFGta, ISFSamp
         LoadingImpl = runtime.Loading;
         MainThread = runtime.MainThread;
         Clock = runtime.Clock;
+        Gta = new SFGtaServices(EntitiesImpl, CameraImpl, Clock, World);
+        Samp = new SFSampServices(ChatImpl, DialogImpl, PlayersImpl, VehiclesImpl, PoolsImpl, SampEntitiesImpl,
+            SampCameraImpl, EventsImpl, RpcImpl, PacketsImpl, PacketParsersImpl, RpcParsersImpl, NetworkImpl);
     }
 
     public SFChat ChatImpl { get; }
@@ -55,24 +58,9 @@ internal sealed class SFHost : ISF, ISFGta, ISFSamp
     public string UserFilesDirectory { get; } =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GTA San Andreas User Files");
 
-    ISFGta ISF.Gta => this;
-    ISFSamp ISF.Samp => this;
-    ISFChat ISFSamp.Chat => ChatImpl;
-    ISFDialog ISFSamp.Dialog => DialogImpl;
+    public ISFGta Gta { get; }
+    public ISFSamp Samp { get; }
     ISFKeyboard ISF.Keyboard => KeyboardImpl;
-    ISFPlayers ISFSamp.Players => PlayersImpl;
-    ISFVehicles ISFSamp.Vehicles => VehiclesImpl;
-    ISFGamePools ISFSamp.Pools => PoolsImpl;
-    ISFEntities ISFGta.Entities => EntitiesImpl;
-    ISFSampEntities ISFSamp.Entities => SampEntitiesImpl;
-    ISFSampCamera ISFSamp.Camera => SampCameraImpl;
     ISFModules ISF.Modules => SFPublicModules.Instance;
-    ISFEvents ISFSamp.Events => EventsImpl;
-    ISFRpc ISFSamp.Rpc => RpcImpl;
-    ISFPackets ISFSamp.Packets => PacketsImpl;
-    ISFPacketParsers ISFSamp.PacketParsers => PacketParsersImpl;
-    ISFRpcParsers ISFSamp.RpcParsers => RpcParsersImpl;
-    ISFCamera ISFGta.Camera => CameraImpl;
-    ISFNetwork ISFSamp.Network => NetworkImpl;
     ISFGameLoading ISF.Loading => LoadingImpl;
 }
