@@ -6,7 +6,7 @@ namespace SFSharp.Abstractions.Ui;
 /// </summary>
 /// <remarks>
 /// NOT thread-safe. Every <c>ShowXxx</c> call drives native SA-MP dialog state and must be invoked
-/// from the main game thread. Use <see cref="IModuleContext.SwitchToMainThreadAsync"/> first when
+/// from the main game thread. Use <see cref="ISF.MainThread"/> to execute native calls when
 /// calling from a background context.
 /// </remarks>
 public interface ISFDialog

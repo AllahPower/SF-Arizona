@@ -1,5 +1,7 @@
 using SFSharp.Abstractions.Game;
-using SFSharp.Runtime.Game.Entities;
+using SFSharp.Abstractions.Gta;
+using SFSharp.Runtime.Events;
+using SFSharp.Abstractions.Samp;
 using SFSharp.Runtime.Interop.Hooking.Hooks;
 
 namespace SF.Network.Tests;

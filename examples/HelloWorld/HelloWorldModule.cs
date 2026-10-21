@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using SFSharp.Abstractions.Game;
+using SFSharp.Abstractions.Gta;
 using SFSharp.Abstractions.Modules;
 using SFSharp.Abstractions.Modules.Lifecycle;
 
@@ -26,14 +26,14 @@ public sealed class HelloWorldModule : ISFModule
             "Hello world from external example module pluginId={PluginId} moduleId={ModuleId}",
             "example.hello-world",
             Context.Descriptor.Id);
-        Context.SF.Chat.Add("Hello world!", prefix: "[HelloWorld]", prefixColor: 0xFF55CC55);
+        Context.SF.Samp.Chat.Add("Hello world!", prefix: "[HelloWorld]", prefixColor: 0xFF55CC55);
 
-        ISFEntities entities = Context.SF.Entities;
-        if (entities.TryGetLocalPlayer(out SFEntityRef player) && entities.TryGetSnapshot(player, out SFEntitySnapshot snapshot))
+        ISFEntities entities = Context.SF.Gta.Entities;
+        if (Context.SF.Samp.Entities.TryGetLocalPlayer(out SFEntityRef player) && entities.TryGetSnapshot(player, out SFEntitySnapshot snapshot))
         {
             string text = $"You are at {snapshot.Position.X:0.0} {snapshot.Position.Y:0.0} {snapshot.Position.Z:0.0}, health {snapshot.Health:0}";
             Log.LogInformation("{Text}", text);
-            Context.SF.Chat.Add(text, prefix: "[HelloWorld]", prefixColor: 0xFF55CC55);
+            Context.SF.Samp.Chat.Add(text, prefix: "[HelloWorld]", prefixColor: 0xFF55CC55);
         }
 
         return Task.CompletedTask;

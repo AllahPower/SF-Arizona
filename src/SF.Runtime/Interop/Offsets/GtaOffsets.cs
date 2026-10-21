@@ -2,8 +2,24 @@ namespace SFSharp.Runtime.Interop.Offsets;
 
 public static class GtaOffsets
 {
-    // GTA SA 1.0 US / current Arizona client. RVAs are relative to the EXE base,
-    // unlike the legacy absolute camera addresses below. Device/HWND verified by
+    // cdecl entry points checked in the 1.0 US IDB. Byte booleans use x86 stack slots; float return uses x87.
+    public static class WorldRva
+    {
+        public const int ProcessLineOfSight = 0x16BA00;
+        public const int FindGroundZFor3DCoord = 0x1696C0;
+        public const int CalcScreenCoors = 0x30CE30;
+    }
+    // IDA 2026-10-21, EXE MD5 84a781f30fac7eba030af2497da86930; Idle calls CTimer::Update before Process.
+    public static class ClockRva
+    {
+        public const int ProcessCall = 0x13E981;
+        public const int FrameCounter = 0x77CB4C;
+        public const int Milliseconds = 0x77CB84;
+        public const int TimeStep = 0x77CB5C;
+        public const int CodePause = 0x77CB48;
+        public const int UserPause = 0x77CB49;
+    }
+    // GTA SA 1.0 US. RVAs are relative to the EXE base. Device/HWND verified by
     // read-only process inspection on 2026-09-29; function identities checked in IDA.
     public static class RenderWareRva
     {

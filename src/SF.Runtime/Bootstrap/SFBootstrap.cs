@@ -78,6 +78,7 @@ public static class SFBootstrap
             SFMain(_runtime, main);
         }
 
+        _runtime.CheckNativeOwnership();
         _runtime.MainThread.Pump();
     }
 

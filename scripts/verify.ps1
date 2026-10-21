@@ -42,6 +42,14 @@ foreach ($project in 'SF.Abstractions', 'SF.Protocol') {
     }
 }
 $native = Get-Content -LiteralPath "$root/src/SF.Native/src/runtime/hostfxr_bootstrap.cpp" -Raw
+foreach ($folder in 'src/SF.Runtime/Gta', 'src/SF.Runtime/Interop/Gta', 'src/SF.Abstractions/Api/Gta') {
+    foreach ($source in Get-ChildItem -LiteralPath "$root/$folder" -Filter '*.cs' -Recurse) {
+        Assert-True (!(Select-String -LiteralPath $source.FullName -Pattern '\b(?:SampOffsets|CNetGame|CPlayerPool|CLocalPlayer|SFPlayers|SFRpc)\b|using SFSharp\..*\.Samp\b' -Quiet)) "SA-MP implementation dependency in GTA code: $($source.FullName)"
+    }
+}
+foreach ($project in $runtime, $abstractions, $protocol) {
+    Assert-True ('14' -in @($project.Project.PropertyGroup.LangVersion)) 'Host projects must target stable C# 14.'
+}
 Assert-True ($native.Contains('SFSharp.Runtime.Bootstrap.SFBootstrap, SF.Runtime')) 'Managed bootstrap identity changed.'
 $solution = Get-Content -LiteralPath "$root/SF-Arizona.sln" -Raw
 foreach ($project in $expectedProjects) {

@@ -59,7 +59,7 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
         Context.SetDetail("config.path", Context.Config.Location);
         Context.SetStatusText("ready, type /sfafk");
         Log.LogInformation("AntiAFK toggle attached to {Module}", _resolvedModuleName);
-        Context.SF.Chat.Add(
+        Context.SF.Samp.Chat.Add(
             _config.Enabled
                 ? "AntiAFK restored to enabled from config. Type /sfafk to toggle."
                 : "Type /sfafk to toggle the AntiAFK flag. Optional: /sfafk on|off.",
@@ -115,7 +115,7 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
         bool? explicitTarget = ParseExplicitTarget(args);
         if (explicitTarget is null && !string.IsNullOrWhiteSpace(args))
         {
-            Context.SF.Chat.Add(
+            Context.SF.Samp.Chat.Add(
                 "Usage: /sfafk [on|off]",
                 prefix: ChatPrefix,
                 prefixColor: WarnColor);
@@ -131,7 +131,7 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
         Context.Heartbeat($"afk:{(next ? "on" : "off")}");
         Log.LogInformation("AntiAFK flag set to {State}", next ? "on" : "off");
 
-        Context.SF.Chat.Add(
+        Context.SF.Samp.Chat.Add(
             next
                 ? "AntiAFK enabled. Client keeps ticking and keeps sending sync when window loses focus."
                 : "AntiAFK disabled. Client throttles and stops sync while minimized.",
@@ -141,7 +141,7 @@ public sealed unsafe partial class AntiAfkToggleModule : ISFModule
 
     private void OnCommandUnavailable(string? args)
     {
-        Context.SF.Chat.Add(
+        Context.SF.Samp.Chat.Add(
             "AntiAFK unavailable: vorbisFile.asi / vorbisFile.dll is not loaded.",
             prefix: ChatPrefix,
             prefixColor: OffColor);

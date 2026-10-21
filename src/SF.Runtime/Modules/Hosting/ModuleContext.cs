@@ -156,7 +156,7 @@ public sealed class ModuleContext : IModuleContext
     /// <returns>Disposable registration, also tracked by <see cref="RegisterDisposable(IDisposable)"/>.</returns>
     public IDisposable RegisterChatCommand(string command, Action<string?> callback)
     {
-        IDisposable registration = SF.Chat.RegisterChatCommand(command, args =>
+        IDisposable registration = SF.Samp.Chat.RegisterChatCommand(command, args =>
         {
             _runtime.IncrementCounter("commands.invoked", 1);
             _runtime.RecordActivity($"command:{command}");
@@ -168,25 +168,18 @@ public sealed class ModuleContext : IModuleContext
     }
 
     /// <summary>
-    /// Awaitable that resumes on the SAMP main thread. No-op when already there. Safe to call
-    /// from any thread. Intended for modules using <see cref="ModuleExecutionModel.BackgroundWorker"/>
-    /// or <see cref="ModuleExecutionModel.Hybrid"/>.
+    /// Executes a delegate on the game thread, with module lifetime cancellation.
     /// </summary>
-    public Task SwitchToMainThreadAsync()
+    public async Task InvokeOnMainThreadAsync(Action action, CancellationToken cancellationToken = default)
     {
-        if (SynchronizationContext.Current is SFSynchronizationContext)
-        {
-            _runtime.RecordActivity("main-thread");
-            return Task.CompletedTask;
-        }
+        using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken, cancellationToken);
+        await _mainThread.InvokeAsync(action, linked.Token).ConfigureAwait(false);
+    }
 
-        TaskCompletionSource tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        _mainThread.Post(() =>
-        {
-            _runtime.RecordActivity("switch-main-thread");
-            tcs.SetResult();
-        });
-        return tcs.Task;
+    public async Task<T> InvokeOnMainThreadAsync<T>(Func<T> action, CancellationToken cancellationToken = default)
+    {
+        using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken, cancellationToken);
+        return await _mainThread.InvokeAsync(action, linked.Token).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -12,6 +12,7 @@ public class SFSynchronizationContext(Action<Exception> reportException) : Synch
     private readonly ConcurrentBag<SyncWorkItem> _syncPool = new();
 
     private readonly int _mainThreadId = Environment.CurrentManagedThreadId;
+    public bool IsMainThread => _mainThreadId == Environment.CurrentManagedThreadId;
 
     public override void Send(SendOrPostCallback d, object? state)
     {

@@ -48,6 +48,7 @@ public static unsafe class GtaPools
 
     private static bool IsValidHandle(GtaPool* pool, int handle)
     {
-        return pool is not null && GtaPoolHandle.IsInRange(handle, pool->Capacity);
+        return pool is not null && pool->ByteMap is not null && GtaPoolHandle.IsInRange(handle, pool->Capacity)
+            && GtaPoolHandle.Matches(handle, pool->ByteMap[GtaPoolHandle.GetSlot(handle)]);
     }
 }

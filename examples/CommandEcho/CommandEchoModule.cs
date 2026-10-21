@@ -23,7 +23,7 @@ public sealed class CommandEchoModule : ISFModule
         Context.SetDetail("command", "/echoexample <text>");
         Context.SetStatusText("waiting for /echoexample");
         Log.LogInformation("Command Echo example started");
-        Context.SF.Chat.Add(
+        Context.SF.Samp.Chat.Add(
             "Type /echoexample <text> to send a message through the module.",
             prefix: "[CommandEcho]",
             prefixColor: 0xFF55AAFF);
@@ -51,6 +51,6 @@ public sealed class CommandEchoModule : ISFModule
         Context.IncrementCounter("commands.echoexample");
         Context.SetStatusText($"last message: {message}");
         Log.LogInformation("EchoExample command invoked with message: {Message}", message);
-        Context.SF.Chat.Add(message, prefix: "[CommandEcho]", prefixColor: 0xFF55AAFF);
+        Context.SF.Samp.Chat.Add(message, prefix: "[CommandEcho]", prefixColor: 0xFF55AAFF);
     }
 }

@@ -2,7 +2,7 @@ namespace SFSharp.Abstractions.Ui;
 
 /// <summary>
 /// Plugin-facing contract for in-game chat. Concrete implementation lives in the host and is
-/// reached through <see cref="ISF.Chat"/>.
+/// reached through <see cref="ISF.Samp"/>.
 /// </summary>
 /// <remarks>
 /// <see cref="Send"/> and both <c>Add</c> overloads are NOT thread-safe and must be invoked on

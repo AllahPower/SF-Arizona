@@ -37,7 +37,7 @@ public sealed class ConfigCounterModule : ISFModule
             "Config Counter example started with StartCount={StartCount} ConfigPath={ConfigPath}",
             _config.StartCount,
             Context.Config.Location);
-        Context.SF.Chat.Add(
+        Context.SF.Samp.Chat.Add(
             $"Module start count: {_config.StartCount}",
             prefix: "[ConfigCounter]",
             prefixColor: 0xFFFFAA55);
@@ -61,7 +61,7 @@ public sealed class ConfigCounterModule : ISFModule
         Context.IncrementCounter("commands.counterexample");
         Context.SetStatusText($"starts: {_config.StartCount}");
         Log.LogInformation("CounterExample command invoked");
-        Context.SF.Chat.Add(
+        Context.SF.Samp.Chat.Add(
             $"Start count: {_config.StartCount}. Config: {Context.Config.Location}",
             prefix: "[ConfigCounter]",
             prefixColor: 0xFFFFAA55);

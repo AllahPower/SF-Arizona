@@ -13,6 +13,7 @@ public static class GtaPoolHandle
     public static byte GetGeneration(int handle) => (byte)handle;
 
     public static bool IsFree(byte byteMapEntry) => (byteMapEntry & GtaOffsets.CPool.FreeSlotFlag) != 0;
+    public static bool Matches(int handle, byte byteMapEntry) => !IsFree(byteMapEntry) && GetGeneration(handle) == byteMapEntry;
 
     /// <summary>Range check the native getters skip; an out-of-range slot would read past the byte map.</summary>
     public static bool IsInRange(int handle, int capacity) => handle >= 0 && GetSlot(handle) < capacity;

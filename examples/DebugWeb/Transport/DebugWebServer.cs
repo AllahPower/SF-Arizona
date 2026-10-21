@@ -10,10 +10,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using SFSharp.Examples.DebugWeb.Capture;
+using SFSharp.Abstractions;
 
 namespace SFSharp.Examples.DebugWeb.Transport;
 
-internal sealed class DebugWebServer(TrafficCapture capture, MainThreadInvoker mainThread,
+internal sealed class DebugWebServer(TrafficCapture capture, ISFMainThread mainThread,
     Action<CaptureSettings> persist, ILogger log)
 {
     private sealed class Client(WebSocket socket)

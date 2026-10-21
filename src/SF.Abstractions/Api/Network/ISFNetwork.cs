@@ -6,7 +6,7 @@ namespace SFSharp.Abstractions.Network;
 /// </summary>
 /// <remarks>
 /// NOT thread-safe. Every method must be called from the main game thread because the underlying
-/// RakPeer queues are single-producer. Use <see cref="IModuleContext.SwitchToMainThreadAsync"/>
+/// RakPeer queues are single-producer. Use <see cref="ISF.MainThread"/>
 /// before calling any member from a background context.
 /// </remarks>
 public interface ISFNetwork

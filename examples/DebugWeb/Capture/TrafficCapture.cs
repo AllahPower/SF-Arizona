@@ -27,19 +27,19 @@ internal sealed class TrafficCapture : IDisposable
 
     public void Subscribe(ISF sf)
     {
-        Parsers = sf.PacketParsers;
-        _subscriptions.Add(sf.Packets.ObserveSources(observation => Record(observation.Incoming ? "in" : "out", "packet",
+        Parsers = sf.Samp.PacketParsers;
+        _subscriptions.Add(sf.Samp.Packets.ObserveSources(observation => Record(observation.Incoming ? "in" : "out", "packet",
             observation.PacketId, observation.Data, observation.DataBitLength, observation.PayloadBitOffset,
             observation.PayloadBitLength, observation.SubId, observation.SubId.HasValue, observation.Source, observation.Reconstructed)));
         for (int id = 0; id <= 255; id++)
         {
             int key = id;
-            _subscriptions.Add(sf.Rpc.SubscribeIncoming(key, frame => Record("in", "rpc", frame.RpcId, frame.Data,
+            _subscriptions.Add(sf.Samp.Rpc.SubscribeIncoming(key, frame => Record("in", "rpc", frame.RpcId, frame.Data,
                 frame.DataBitOffset + frame.DataBitLength, frame.DataBitOffset, frame.DataBitLength)));
-            _subscriptions.Add(sf.Rpc.SubscribeOutgoing(key, frame => Record("out", "rpc", frame.RpcId, frame.Data,
+            _subscriptions.Add(sf.Samp.Rpc.SubscribeOutgoing(key, frame => Record("out", "rpc", frame.RpcId, frame.Data,
                 frame.DataBitLength, 0, frame.DataBitLength)));
-            _subscriptions.Add(sf.Packets.SubscribeIncoming(key, Incoming));
-            _subscriptions.Add(sf.Packets.SubscribeOutgoing(key, Outgoing));
+            _subscriptions.Add(sf.Samp.Packets.SubscribeIncoming(key, Incoming));
+            _subscriptions.Add(sf.Samp.Packets.SubscribeOutgoing(key, Outgoing));
         }
     }
 

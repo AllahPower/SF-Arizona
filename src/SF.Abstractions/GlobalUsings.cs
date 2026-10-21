@@ -1,4 +1,6 @@
 global using SFSharp.Abstractions.Game;
+global using SFSharp.Abstractions.Gta;
+global using SFSharp.Abstractions.Samp;
 global using SFSharp.Abstractions.Network.Protocol;
 global using SFSharp.Abstractions.Modules;
 global using SFSharp.Abstractions.Modules.Lifecycle;

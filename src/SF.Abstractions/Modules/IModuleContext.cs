@@ -70,8 +70,9 @@ public interface IModuleContext : IDisposable
     /// <summary>Registers a chat command scoped to this module's lifetime. Thread-safe.</summary>
     IDisposable RegisterChatCommand(string command, Action<string?> callback);
 
-    /// <summary>Awaitable that resumes on the SAMP main thread. No-op when already there.</summary>
-    Task SwitchToMainThreadAsync();
+    /// <summary>Executes on the game thread, cancelled when this module stops. The caller's continuation is not switched.</summary>
+    Task InvokeOnMainThreadAsync(Action action, CancellationToken cancellationToken = default);
+    Task<T> InvokeOnMainThreadAsync<T>(Func<T> action, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Runs <paramref name="work"/> on a thread-pool thread and tracks the returned task as an

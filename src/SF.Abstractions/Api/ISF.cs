@@ -1,3 +1,6 @@
+using SFSharp.Abstractions.Gta;
+using SFSharp.Abstractions.Samp;
+
 namespace SFSharp.Abstractions;
 
 /// <summary>
@@ -6,53 +9,15 @@ namespace SFSharp.Abstractions;
 /// </summary>
 public interface ISF
 {
-    /// <summary>Chat helpers, see <see cref="ISFChat"/>.</summary>
-    ISFChat Chat { get; }
-
-    /// <summary>Dialog helpers, see <see cref="ISFDialog"/>.</summary>
-    ISFDialog Dialog { get; }
+    ISFGta Gta { get; }
+    ISFSamp Samp { get; }
+    ISFMainThread MainThread { get; }
 
     /// <summary>Keyboard state helpers, see <see cref="ISFKeyboard"/>.</summary>
     ISFKeyboard Keyboard { get; }
 
-    /// <summary>Read-only player helpers, see <see cref="ISFPlayers"/>.</summary>
-    ISFPlayers Players { get; }
-
-    /// <summary>Read-only vehicle helpers, see <see cref="ISFVehicles"/>.</summary>
-    ISFVehicles Vehicles { get; }
-
-    /// <summary>GTA world entities by pool handle or SA-MP id, see <see cref="ISFEntities"/>.</summary>
-    ISFEntities Entities { get; }
-
-    /// <summary>Read-only game pool helpers, see <see cref="ISFGamePools"/>.</summary>
-    ISFGamePools Pools { get; }
-
     /// <summary>Read-only catalog of modules currently registered in the host.</summary>
     ISFModules Modules { get; }
-
-    /// <summary>Typed parsed event subscriptions and streams, see <see cref="ISFEvents"/>.</summary>
-    ISFEvents Events { get; }
-
-    /// <summary>Raw RPC transport facade backed by copied payload frames.</summary>
-    ISFRpc Rpc { get; }
-
-    /// <summary>Raw packet transport facade backed by copied payload frames.</summary>
-    ISFPackets Packets { get; }
-
-    /// <summary>Typed parsed SA-MP packets and explicitly registered extension decoders.</summary>
-    ISFPacketParsers PacketParsers { get; }
-
-    /// <summary>Typed parsed RPC facade.</summary>
-    ISFRpcParsers RpcParsers { get; }
-
-    /// <summary>Read-only camera facade.</summary>
-    ISFCamera Camera { get; }
-
-    /// <summary>
-    /// Raw RakNet transport (send packet/RPC, simulate incoming). Every member is main-thread only -
-    /// see <see cref="ISFNetwork"/>.
-    /// </summary>
-    ISFNetwork Network { get; }
 
     /// <summary>Game start-up stages, see <see cref="ISFGameLoading"/>.</summary>
     ISFGameLoading Loading { get; }

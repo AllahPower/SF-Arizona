@@ -8,6 +8,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using SFSharp.Examples.DebugWeb.Capture;
 using SFSharp.Examples.DebugWeb.Transport;
+using SFSharp.Abstractions;
 
 namespace SF.DebugWeb.Tests;
 
@@ -21,7 +22,7 @@ public sealed class ServerLifecycleTests
         {
             using var stop = new CancellationTokenSource();
             using TrafficCapture capture = new(new() { Port = port, Capture = true });
-            MainThreadInvoker main = new(new SynchronizationContext());
+            InlineMainThread main = new();
             DebugWebServer server = new(capture, main, _ => { }, NullLogger.Instance);
             string webRoot = FrontendRoot();
             Task running = server.RunAsync(webRoot, stop.Token);
@@ -87,7 +88,7 @@ public sealed class ServerLifecycleTests
         object settings = Activator.CreateInstance(settingsType)!;
         settingsType.GetProperty("Port")!.SetValue(settings, port);
         object capture = Activator.CreateInstance(assembly.GetType(typeof(TrafficCapture).FullName!)!, settings)!;
-        object invoker = Activator.CreateInstance(assembly.GetType(typeof(MainThreadInvoker).FullName!)!, new SynchronizationContext())!;
+        object invoker = new InlineMainThread();
         Type serverType = assembly.GetType(typeof(DebugWebServer).FullName!)!;
         object server = Activator.CreateInstance(serverType, capture, invoker, null, NullLogger.Instance)!;
         using CancellationTokenSource stop = new();
@@ -129,5 +130,21 @@ public sealed class ServerLifecycleTests
         string web = Path.Combine(root, "wwwroot");
         Assert.True(File.Exists(Path.Combine(web, "index.html")), web);
         return web;
+    }
+
+    private sealed class InlineMainThread : ISFMainThread
+    {
+        public bool IsMainThread => true;
+        public Task InvokeAsync(Action action, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            action();
+            return Task.CompletedTask;
+        }
+        public Task<T> InvokeAsync<T>(Func<T> action, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(action());
+        }
     }
 }

@@ -14,14 +14,14 @@ public enum ModuleExecutionModel
 
     /// <summary>
     /// Module runs on a worker thread via <see cref="System.Threading.Tasks.Task.Run(System.Action)"/>.
-    /// Anything touching game state must be marshalled back via <see cref="ModuleContext.SwitchToMainThreadAsync"/>.
+    /// Anything touching game state must execute through <see cref="ISF.MainThread"/>.
     /// </summary>
     BackgroundWorker,
 
     /// <summary>
     /// Module starts on the main thread but is free to switch to background work through
     /// <see cref="ModuleContext.RunBackground(System.Func{System.Threading.Tasks.Task})"/> and back through
-    /// <see cref="ModuleContext.SwitchToMainThreadAsync"/>.
+    /// <see cref="ISF.MainThread"/>.
     /// </summary>
     Hybrid
 }

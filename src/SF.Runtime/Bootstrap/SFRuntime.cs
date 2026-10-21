@@ -10,6 +10,8 @@ internal sealed class SFRuntime
     private HookRegistry? _hooks;
     private SFHost? _host;
     private List<GameInitStageHook>? _gameLoadHooks;
+    private GtaProcessBridge? _processBridge;
+    public SFGameClock Clock { get; } = new();
 
     public SFRuntime()
     {
@@ -39,6 +41,7 @@ internal sealed class SFRuntime
     public HookRegistry Hooks => _hooks ?? throw new InvalidOperationException("Hooks are installed after samp.dll loads.");
     public SFHost Host => _host ?? throw new InvalidOperationException("Game services are created after CNetGame is ready.");
     public bool HasHost => _host is not null;
+    public void CheckNativeOwnership() => _processBridge?.CheckOwnership();
 
     /// <summary>Hooks the CGame start-up functions on the first tick; they only touch gta_sa.exe.</summary>
     public void InstallGameLoadHooks()
@@ -54,5 +57,10 @@ internal sealed class SFRuntime
     public void CreateServices()
     {
         _host ??= new SFHost(this);
+        if (_processBridge is null)
+        {
+            try { _processBridge = new GtaProcessBridge(Clock); }
+            catch (Exception ex) { Exceptions.Report(ex); }
+        }
     }
 }
