@@ -64,6 +64,23 @@ stride `0x238`. Mode is ushort at `+0x0C`, FOV float `+0xB4`, front/source/up at
 Camera widescreen is byte `+0x3D`, shake float `+0x12C`, fade alpha float `+0xBFC`.
 Fade status follows GetScreenFadeStatus: 0 clear, 1 transitioning, 2 black.
 
+The loading-hook ABI was checked against instructions and callers in the same IDB on 2026-10-21.
+`InitialiseCoreDataAfterRW` RVA `0x1BFA90` is cdecl with no arguments and returns a boolean in AL
+(`xor al,al` on failure). `Init1/2/3` RVAs `0x1BF840/0x1BA1A0/0x1BA400` are called with a
+`const char*` argument and return their success value in AL. Decompiler return types in this IDB
+are inaccurate here; callers, argument pushes and return instructions were used instead.
+
+Core hook chains publish immutable registration snapshots and reuse per-thread invocation frames.
+The original is called at most once; an observer failing after `next()` preserves the completed result,
+including an explicit suppression. Native callbacks contain managed exceptions, and observer failures
+do not retry a completed receive/send or game operation. SA-MP chat/dialog originals use MinHook
+trampolines rather than disabling a process-wide detour around each call.
+
+Core native hooks are resident. Disabling a hook does not reclaim its trampoline or callback, and
+does not authorize unloading a native provider. Replacement dialog strings stay alive until the next
+hooked dialog; disabling cannot free buffers a still-visible native dialog may reference. Dynamic
+native-provider reclamation and public hook-health snapshots remain outside this first reliability wave.
+
 These are static binary/layout observations, not proof on every modified EXE. SFUI retains its
 separate verified graphics profile; its existing fingerprint must not be replaced with this IDB's hash.
 In-game gates: clean R3 startup, reconnect, pause, all camera modes, collision hit/miss, clipping,

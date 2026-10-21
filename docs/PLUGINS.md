@@ -131,6 +131,40 @@ identity across plugins:
   whose shared assembly references another assembly of the plugin folder that is not listed is rejected
   on load, because the Default context cannot see the plugin folder.
 
+## Run Ownership And Threading
+
+Each regular module run owns its own cancellation, background tasks and registered resources.
+Normal completion, cancellation and faults all close registration, cancel owned work, wait for it
+to finish and release resources in reverse registration order on the game thread. The runtime's
+telemetry stores counts, not task or subscription references across restarts.
+
+Use `context.RunBackground(token => WorkAsync(token))` for cancellable background work. The existing
+parameterless delegate overload is still available, but the delegate must use the context token itself.
+A worker fault is logged, cancels the run and remains part of the final outcome even if the worker
+finished before the module loop. Work that ignores cancellation keeps the module stopping and prevents
+unload; the host does not force-free its resources. `/sfs` reports `draining-owned-work` and the number
+of outstanding tasks during teardown.
+
+`RegisterDisposable` and command/work registration are thread-safe. Starting work after stop is rejected.
+A late resource registration releases the resource on the game thread and then fails; a worker making
+that late registration waits for the game thread. Do not register resources from synchronous native
+packet/RPC filters. `IModuleContext.Dispose` itself is game-thread-only and requires owned work to finish.
+
+Prefer `RegisterAsyncChatCommand(name, async (args, token) => { ... })` over `async void`. The synchronous
+prefix executes on the game thread and the handler is owned by the run. A command has at most one active
+invocation; additional invocations while busy are ignored. A continuation after `ConfigureAwait(false)`
+is not moved back to the game thread: use `InvokeOnMainThreadAsync` for native operations.
+
+SA-MP chat, dialogs, players, pools, entity mappings and native camera queries reject worker access
+before resolving native memory. Capture managed snapshots on the game thread for background analysis.
+Player enumeration and pool ID enumeration materialize their results on the game thread. Holding a
+snapshot does not keep a native entity alive. Keyboard queries synchronize their current/previous samples.
+
+Parsed-event channels use weak type keys, so an idle cache does not pin a collectible plugin DTO type.
+Dispose every subscription and finish stream enumeration before unload; a live consumer still owns
+its callbacks and types. Disposed command/event registrations clear callback references. Subscription
+disposal prevents later calls but does not interrupt a callback already executing.
+
 ## Early loading
 
 Plugins are discovered on the first runtime tick, the first iteration of the GTA main loop, before the
