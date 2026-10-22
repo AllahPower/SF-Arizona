@@ -6,5 +6,5 @@
   "author": "SF-Arizona",
   "assembly": "SF.Example.DebugWeb.dll",
   "enabledOnStart": false,
-  "dependencies": { "sf": { "min": "4.1.0", "max": "4.x", "target": "4.1.0" } }
+  "dependencies": { "sf": { "min": "5.0.0", "max": "5.x", "target": "5.0.0" } }
 }
