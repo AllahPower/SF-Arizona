@@ -22,6 +22,63 @@ standard SA-MP synchronization models, also reference the built `SF.Protocol.dll
 <Reference Include="SF.Protocol" HintPath="$(SFProtocolPath)" Private="false" />
 ```
 
+## Development Requirements
+
+To write a managed plugin, install the .NET 10 SDK and use a `net10.0` class library.
+C# 14 is supported. The x64 SDK can build the plugin; target x86 for the game,
+or AnyCPU for libraries that contain no architecture-specific code. Do not target x64.
+Visual Studio 2026 with the .NET desktop workload is optional; the `dotnet` CLI
+also works. C++ build tools, Node.js, Python and IDA are not required for a C# plugin.
+They are only needed when building the corresponding native, frontend or analysis tools.
+
+Reference `SF.Abstractions.dll` from the same SDK build as the installed host.
+Reference `SF.Protocol.dll` as well when using parsers, sync models or
+`SFSharp.Protocol.BitStream`. Set `Private="false"` on both references. Add the
+logging abstractions package when using `ILogger`, but do not deploy its runtime
+assembly: the host provides it. Do not reference `SF.Runtime` or compile host sources.
+The NuGet publishing workflow is prepared, but this does not mean a package has
+already been published. Built DLL references work without a published package.
+
+To run or test in the game, install the x86 ASP.NET Core Runtime .NET 10, which
+includes the base .NET runtime. An x64 SDK or runtime alone does not supply x86
+runtime components. Install the SF host and any plugin dependencies declared in
+the manifest. Follow their packaging instructions; shared APIs belong beside
+their exporting plugin, not directly in `SF/`.
+
+## Module Lifecycle
+
+`ISFModule` requires `Task RunAsync(IModuleContext context)`. Implement it directly
+to own the complete execution flow, or inherit the optional `SFModuleBase` helper:
+
+```csharp
+using SFSharp.Abstractions.Modules;
+using SFSharp.Abstractions.Modules.Lifecycle;
+
+[SFModule("my-tools", "My Tools", ExecutionModel = ModuleExecutionModel.MainThread)]
+public sealed class MyToolsModule : SFModuleBase
+{
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        using IDisposable command = Context.RegisterChatCommand("mytools", _ =>
+            Context.SF.Samp.Chat.Add("My Tools is running."));
+        await Task.Delay(Timeout.Infinite, cancellationToken);
+    }
+}
+```
+
+Override `OnStartingAsync` and `OnStoppingAsync` with `protected override` when
+needed. The returned task must represent the module's entire lifetime. Native
+game operations must run on the game thread; worker modules use
+`Context.InvokeOnMainThreadAsync`. Keep subscriptions and native resources owned
+by the run and release them during teardown.
+
+Old modules that relied on default `ISFModule.ExecuteAsync`/lifecycle methods must
+be adapted and rebuilt. Changing only the manifest or copying a new host DLL does
+not update their IL. A `RunAsync ... does not have an implementation` loader error
+means the old plugin binary is still being used. Replace the matching plugin DLLs
+and restart the game, especially after replacing shared API assemblies. During
+unreleased API changes, the numeric assembly version alone is not an ABI guarantee.
+
 ## manifest.json
 
 ```json
