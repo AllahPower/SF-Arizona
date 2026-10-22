@@ -79,7 +79,6 @@ public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter excepti
 
     public void ObserveOutgoingDialogResponse(DialogResponseRpc response)
     {
-        SFLog.Debug($"Dialog response rpc id={response.DialogId} button={response.Button} list={response.ListboxId} input={response.Input ?? "<null>"} activeId={_activeDialogId}");
         if (_tcs is null || _activeDialogId != response.DialogId)
         {
             return;
@@ -107,7 +106,6 @@ public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter excepti
             return false;
         }
 
-        SFLog.Debug($"Dialog response rpc claimed id={response.DialogId} button={response.Button} list={response.ListboxId} input={response.Input ?? "<null>"}");
         mainThread.Post(() => SetResult(((SFDialogButton)response.Button, response.ListboxId, response.Input)));
         return true;
     }
@@ -141,7 +139,6 @@ public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter excepti
             return;
         }
 
-        SFLog.Debug($"Dialog result button={result.Button} selected={result.SelectedItemIndex} input={result.InputText ?? "<null>"}");
         TaskCompletionSource<DialogResultArgs> tcs = _tcs;
         _tcs = null;
         _activeDialogId = NoDialogId;
@@ -188,7 +185,6 @@ public class SFDialog(MainThreadDispatcher mainThread, ExceptionReporter excepti
             return;
         }
 
-        SFLog.Debug($"Dialog watchdog observed close without a response rpc id={dialogId} selected={selectedIndex}");
         CompleteIfCurrent(tcs, (SFDialogButton.None, selectedIndex, null));
     }
 

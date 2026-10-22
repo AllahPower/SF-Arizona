@@ -109,7 +109,7 @@ public sealed class SFGameLoading : ISFGameLoading
             }
         }
 
-        SFLog.Info($"Game load stage {stage} gGameState={GameState} handlers={handlers.Length}");
+        SFLog.Debug($"Game load stage {stage} gGameState={GameState} handlers={handlers.Length}");
         foreach (Subscription subscription in handlers)
         {
             subscription.Invoke(_reportException, stage);
