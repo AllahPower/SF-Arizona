@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using unsafe CreateDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, byte*, float, float, byte, float, float, SFSharp.Runtime.Interop.Classes.Pools.CMenuInteraction*, nint>;
+using unsafe CreateR5Delegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, float, float, byte, float, float, SFSharp.Runtime.Interop.Classes.Pools.CMenuInteraction*, SFSharp.Runtime.Interop.Classes.Pools.CMenu*>;
 using unsafe DeleteDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, int>;
 using unsafe GetTextPointerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte*, byte*>;
 using unsafe HideDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CMenuPool*, byte, void>;
@@ -25,7 +26,8 @@ public unsafe ref struct CMenuPool
     public ushort CurrentMenu => RequireInstance()->_currentMenu;
     public bool Cancelled => RequireInstance()->_cancelled != 0;
 
-    private static readonly CreateDelegate _create = (CreateDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenuPool.Create);
+    // The entry has different ABIs. Keep the address untyped until selecting the matching signature.
+    private static readonly nint _createAddress = ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenuPool.Create);
     private static readonly DeleteDelegate _delete = (DeleteDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenuPool.Delete);
     private static readonly ShowDelegate _show = (ShowDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenuPool.Show);
     private static readonly HideDelegate _hide = (HideDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CMenuPool.Hide);
@@ -57,7 +59,8 @@ public unsafe ref struct CMenuPool
         using AnsiString titleAnsi = AnsiString.Encode(title);
         if (SampEnvironment.IsR5)
         {
-            var create = (delegate* unmanaged[Thiscall]<CMenuPool*, byte, float, float, byte, float, float, CMenuInteraction*, CMenu*>)_create;
+            // R5 RVA 0x7EB0 returns with ret 1Ch: title is not a constructor argument in this ABI.
+            CreateR5Delegate create = (CreateR5Delegate)_createAddress;
             CMenu* menu = create(RequireInstance(), menuId, x, y, columns, firstColumnWidth, secondColumnWidth, &copy);
             if (menu != null)
             {
@@ -66,7 +69,8 @@ public unsafe ref struct CMenuPool
             }
             return menu;
         }
-        return (CMenu*)_create(RequireInstance(), menuId, titleAnsi, x, y, columns, firstColumnWidth, secondColumnWidth, &copy);
+        CreateDelegate createWithTitle = (CreateDelegate)_createAddress;
+        return (CMenu*)createWithTitle(RequireInstance(), menuId, titleAnsi, x, y, columns, firstColumnWidth, secondColumnWidth, &copy);
     }
 
     public bool Delete(byte menuId)

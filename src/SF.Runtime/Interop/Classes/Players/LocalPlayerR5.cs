@@ -40,6 +40,9 @@ internal unsafe struct LocalPlayerR5
     [FieldOffset(0x30E)]
     internal CLocalPlayerSpectatingState spectating;
 
+    [FieldOffset(0x2FA)]
+    internal CLocalPlayerClassSelectionState classSelection;
+
     [FieldOffset(0x318)]
     internal CLocalPlayerDamageState damage;
 }

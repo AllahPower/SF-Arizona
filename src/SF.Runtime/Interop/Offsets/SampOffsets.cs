@@ -41,8 +41,9 @@ public static class SampOffsets
         public static int ResetGangZonePool => Select(0x8EF0, 0x9250);
         public static int ResetPickupPool => Select(0x8F90, 0x92F0);
         public static int ResetMenuPool => Select(0x8FF0, 0x9350);
-        public static int ResetLabelPool => Select(0x9080, 0x9490);
-        public static int ResetActorPool => Select(0x9120, 0x93F0);
+        // R5 SAMP-API labels are swapped. Native stores target pool +0x18 (labels) / +0x10 (actors).
+        public static int ResetLabelPool => Select(0x9080, 0x93F0);
+        public static int ResetActorPool => Select(0x9120, 0x9490);
         public static int ResetMarkers => Select(0x9F50, 0xA2C0);
         public static int ResetPools => Select(0xA190, 0xA4F0);
         public static int ShutdownForRestart => Select(0xA1E0, 0xA540);
@@ -140,7 +141,7 @@ public static class SampOffsets
         public static int Constructor => Select(0x8130, 0x84A0);
         public static int Destructor => Select(0x130C0, 0x13410);
         public static int CreateWeapon => Select(0x12E30, 0x13180);
-        public static int Create => Select(0x12F20, 0x12F20);
+        public static int Create => Select(0x12F20, 0x13270);
         public static int Delete => Select(0x12FD0, 0x13320);
         public static int DeleteWeapon => Select(0x13030, 0x13380);
         public static int GetIndex => Select(0x13090, 0x133E0);
@@ -224,7 +225,7 @@ public static class SampOffsets
     {
         public static int Constructor => Select(0xB2E50, 0xB36E0);
         public static int Destructor => Select(0xB26C0, 0xB2F50);
-        public static int SetText => Select(0xB26D0, 0xB36E0);
+        public static int SetText => Select(0xB26D0, 0xB2F60);
         public static int Draw => Select(0xB2BF0, 0xB3480);
     }
 

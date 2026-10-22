@@ -34,19 +34,20 @@ public unsafe struct CVehicle
     [FieldOffset(0x58)]
     private readonly int _isInvulnerable;
 
-    [FieldOffset(0x5C)]
+    [FieldOffset(0x54)]
     private readonly int _isLightsOn;
 
     [FieldOffset(0x60)]
     private readonly int _isLocked;
 
-    [FieldOffset(0x78)]
+    // Packed offsets: verified in R1/R5 SetColor and EnableEngine, also shared by the R3 API layout.
+    [FieldOffset(0x75)]
     private readonly int _engineState;
 
-    [FieldOffset(0x7C)]
+    [FieldOffset(0x79)]
     private readonly byte _primaryColor;
 
-    [FieldOffset(0x7D)]
+    [FieldOffset(0x7A)]
     private readonly byte _secondaryColor;
 
     private static readonly HasDriverDelegate _hasDriver = (HasDriverDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CVehicle.HasDriver);

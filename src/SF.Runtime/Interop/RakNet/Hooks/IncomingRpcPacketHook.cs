@@ -3,6 +3,10 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.RakNet.Hooks;
 
+/// <summary>PlayerID passed by value to the x86 RPC dispatcher.</summary>
+/// <remarks>The call uses two four-byte stack slots: address, then port with padding.
+/// This eight-byte argument is not the packed six-byte PlayerID stored in a native Packet.
+/// Reusing the packed layout here shifts the following stack arguments.</remarks>
 [StructLayout(LayoutKind.Sequential)]
 public struct RakNetPlayerId
 {
@@ -13,6 +17,7 @@ public struct RakNetPlayerId
 
 internal unsafe class IncomingRpcPacketHook : NativeHook<nint, bool, IncomingRpcPacketHook.IncomingRpcPacketNative>
 {
+    /// <summary>Matches HandleRpcPacket's thiscall ABI, including its one-byte bool return in AL.</summary>
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     [return: MarshalAs(UnmanagedType.U1)]
     internal unsafe delegate bool IncomingRpcPacketNative(IntPtr thisPtr, byte* data, int length, RakNetPlayerId playerId);
