@@ -12,6 +12,25 @@ namespace SF.Network.Tests;
 
 public sealed unsafe class SampR1ProfileTests
 {
+    [Theory]
+    [InlineData(0x31DF13u, "0.3.7", SampVersion.R1_037)]
+    [InlineData(0x31DF13u, "0.3.7-R1", SampVersion.Unknown)]
+    [InlineData(0x31DF13u, "0.3.7-R2", SampVersion.Unknown)]
+    [InlineData(0x31DF13u, "0.3.7-extra", SampVersion.Unknown)]
+    [InlineData(0x31DF13u, "", SampVersion.Unknown)]
+    [InlineData(0xCC4D0u, "0.3.7", SampVersion.Unknown)]
+    public void ClassificationReadsTheExactR1MarkerFromTheImage(uint entryPoint, string marker, SampVersion expected)
+    {
+        // Clean R1 (MD5 1d22eaa2605717ddf215f68e861de378) stores "0.3.7\0" at RVA 0xD3B84.
+        byte[] image = new byte[0x330000];
+        System.Text.Encoding.ASCII.GetBytes(marker).CopyTo(image, 0xD3B84);
+
+        fixed (byte* moduleBase = image)
+        {
+            Assert.Equal(expected, SampEnvironment.ClassifySampVersion((uint)moduleBase, entryPoint, (uint)image.Length));
+        }
+    }
+
     [Fact]
     public void R1SpawnDelegateCallsSixSlotNativeThiscall()
     {

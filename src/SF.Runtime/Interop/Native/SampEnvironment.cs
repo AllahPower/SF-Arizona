@@ -37,7 +37,7 @@ public static unsafe class SampEnvironment
             return null;
 
         PeFingerprint sampPe = ReadPeFingerprint(sampBase);
-        SampVersion version = ClassifySampVersion(sampBase, sampPe);
+        SampVersion version = ClassifySampVersion(sampBase, sampPe.EntryPointRva, sampPe.SizeOfImage);
 
         SampVersionInfo info = new(
             version,
@@ -59,12 +59,14 @@ public static unsafe class SampEnvironment
     internal static bool IsR1 => RequiredProfile.Version == SFSampVersion.R1;
 
 
-    private static SampVersion ClassifySampVersion(uint moduleBase, PeFingerprint pe)
+    internal static SampVersion ClassifySampVersion(uint moduleBase, uint entryPoint, uint imageSize)
     {
-        return Identify(pe.EntryPointRva, pe.SizeOfImage,
+        // Clean R1 stores "0.3.7", without an R1 suffix. The entry point distinguishes its revision.
+        // Verified in samp.dll MD5 1d22eaa2605717ddf215f68e861de378 at RVA 0xD3B84.
+        return Identify(entryPoint, imageSize,
             VerifyAsciiString(moduleBase + R3R5VersionStringRva, "0.3.7-R3"),
             VerifyAsciiString(moduleBase + R3R5VersionStringRva, "0.3.7-R5"),
-            VerifyAsciiString(moduleBase + R1VersionStringRva, "0.3.7-R1"));
+            VerifyAsciiString(moduleBase + R1VersionStringRva, "0.3.7"));
     }
 
     internal static SampVersion Identify(uint entryPoint, uint imageSize, bool r3Marker, bool r5Marker, bool r1Marker = false)
