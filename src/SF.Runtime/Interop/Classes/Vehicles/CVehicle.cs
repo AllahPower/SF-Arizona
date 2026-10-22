@@ -22,6 +22,9 @@ namespace SFSharp.Runtime.Interop.Classes.Vehicles;
 [StructLayout(LayoutKind.Explicit, Size = 0x80, Pack = 1)]
 public unsafe struct CVehicle
 {
+    [FieldOffset(0)]
+    private readonly VehicleR1 _r1;
+
     [FieldOffset(0x00)]
     private CEntity _entity;
 
@@ -70,7 +73,7 @@ public unsafe struct CVehicle
     public CVehicle* Trailer => _trailer;
     public nint GameVehicle => _gameVehicle;
     public bool IsInvulnerable => _isInvulnerable != 0;
-    public bool IsLightsOn => _isLightsOn != 0;
+    public bool IsLightsOn => (SampEnvironment.IsR1 ? _r1.LightsOn : _isLightsOn) != 0;
     public bool IsLocked => _isLocked != 0;
     public bool EngineState => _engineState != 0;
     public byte PrimaryColor => _primaryColor;

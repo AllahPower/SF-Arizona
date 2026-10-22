@@ -3,9 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace SFSharp.Runtime.Interop.Hooking.Hooks;
 
-// SA-MP 0.3.7-R3-1 pool lifecycle entry points. Signatures follow SAMP-API src/0.3.7-R3-1; the callee
-// stack cleanup (retn N) of every target was checked against the Arizona launcher samp.dll
-// (MD5 e672e4723da63c93e984912f1193a798) on 2026-10-02.
+// Lifecycle ABIs were checked in R3-1 (MD5 e672e4723da63c93e984912f1193a798) and R1
+// (MD5 1d22eaa2605717ddf215f68e861de378). R1 Spawn needs a separate six-argument delegate.
 
 internal interface ISampEntityLifecycleArgs
 {
@@ -205,6 +204,37 @@ internal readonly unsafe record struct RemotePlayerSpawnArgs(nint Player, int Te
     public SFSampEntityType Type => SFSampEntityType.Player;
     public ushort SampId => ((CRemotePlayer*)Player)->Id;
     public SFSampEntityChange Change => SFSampEntityChange.StreamedIn;
+}
+
+internal readonly unsafe record struct RemotePlayerSpawnR1Args(nint Player, int Unused, int Model, nint Position, float Rotation, uint Color, int FightingStyle) : ISampEntityLifecycleArgs
+{
+    public SFSampEntityType Type => SFSampEntityType.Player;
+    public ushort SampId => ((CRemotePlayer*)Player)->Id;
+    public SFSampEntityChange Change => SFSampEntityChange.StreamedIn;
+}
+
+/// <summary>R1 Spawn has six stack arguments and returns with ret 18h, unlike R3/R5's seven.</summary>
+/// <remarks>Verified at R1 RVA 0x13890, MD5 1d22eaa2605717ddf215f68e861de378.
+/// The first argument is unused. There is no extra argument between model and position.
+/// Sharing the R3 delegate shifts the position pointer and corrupts the stack.</remarks>
+internal sealed class RemotePlayerSpawnR1Hook : NativeHook<RemotePlayerSpawnR1Args, bool, RemotePlayerSpawnR1Hook.Native>
+{
+    [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+    internal delegate int Native(nint player, int unused, int model, nint position, float rotation, uint color, int fightingStyle);
+
+    private static RemotePlayerSpawnR1Hook? _instance;
+
+    public RemotePlayerSpawnR1Hook()
+    {
+        _instance = this;
+        InstallHook(ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CRemotePlayer.Spawn), new Native(HookProc));
+    }
+
+    private static int HookProc(nint player, int unused, int model, nint position, float rotation, uint color, int fightingStyle)
+        => _instance!.ProcessNative(new(player, unused, model, position, rotation, color, fightingStyle), false) ? 1 : 0;
+
+    protected override bool InvokeOriginalFunction(RemotePlayerSpawnR1Args args)
+        => OriginalFunction(args.Player, args.Unused, args.Model, args.Position, args.Rotation, args.Color, args.FightingStyle) != 0;
 }
 
 internal sealed class RemotePlayerSpawnHook : NativeHook<RemotePlayerSpawnArgs, bool, RemotePlayerSpawnHook.Native>

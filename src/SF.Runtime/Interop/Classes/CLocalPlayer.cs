@@ -16,6 +16,9 @@ public unsafe ref struct CLocalPlayer
     [FieldOffset(0)]
     private readonly LocalPlayerR5 _r5;
 
+    [FieldOffset(0)]
+    private readonly LocalPlayerR1 _r1;
+
     private static CLocalPlayer* CurrentInstance => CPlayerPool.Instance.GetLocalPlayer();
     public static ref readonly CLocalPlayer Instance => ref *RequireInstance();
 
@@ -59,7 +62,9 @@ public unsafe ref struct CLocalPlayer
     private readonly int _hasSpawnInfoRaw;
 
     [FieldOffset(389)]
-    public CLocalPlayerWeaponsData WeaponsData;
+    private readonly CLocalPlayerWeaponsData _weaponsData;
+
+    public CLocalPlayerWeaponsData WeaponsData => SampEnvironment.IsR1 ? _r1.weaponsData : _weaponsData;
 
     [FieldOffset(0x1CB)]
     private readonly int _passengerDriveByRaw;
@@ -88,25 +93,25 @@ public unsafe ref struct CLocalPlayer
     public ushort AimedPlayerId => WeaponsData.AimedPlayer;
     public ushort AimedActorId => WeaponsData.AimedActor;
     public byte CurrentWeapon => WeaponsData.CurrentWeapon;
-    public ushort CurrentVehicleId => (SampEnvironment.IsR5 ? _r5.currentVehicleId : _currentVehicleId);
-    public ushort LastVehicleId => (SampEnvironment.IsR5 ? _r5.lastVehicleId : _lastVehicleId);
-    public byte Team => (SampEnvironment.IsR5 ? _r5.team : _team);
-    public bool HasSpawnInfo => _hasSpawnInfoRaw != 0;
-    public bool IsPassengerDriveBy => _passengerDriveByRaw != 0;
-    public byte CurrentInterior => _currentInterior;
-    public bool IsInRcMode => _inRcModeRaw != 0;
-    public SampIncarData IncarData => (SampEnvironment.IsR5 ? _r5.incarData : _incarData);
-    public SampAimData AimData => (SampEnvironment.IsR5 ? _r5.aimData : _aimData);
-    public SampTrailerData TrailerData => (SampEnvironment.IsR5 ? _r5.trailerData : _trailerData);
-    public SampOnfootData OnfootData => (SampEnvironment.IsR5 ? _r5.onfootData : _onfootData);
-    public SampPassengerData PassengerData => (SampEnvironment.IsR5 ? _r5.passengerData : _passengerData);
-    public CLocalPlayerCameraTarget CameraTarget => _cameraTarget;
-    public CPlayerHeadState Head => (SampEnvironment.IsR5 ? _r5.head : _head);
-    public CLocalPlayerSpawnInfo SpawnInfo => _spawnInfo;
+    public ushort CurrentVehicleId => SampEnvironment.IsR1 ? _r1.currentVehicleId : SampEnvironment.IsR5 ? _r5.currentVehicleId : _currentVehicleId;
+    public ushort LastVehicleId => SampEnvironment.IsR1 ? _r1.lastVehicleId : SampEnvironment.IsR5 ? _r5.lastVehicleId : _lastVehicleId;
+    public byte Team => SampEnvironment.IsR1 ? _r1.team : SampEnvironment.IsR5 ? _r5.team : _team;
+    public bool HasSpawnInfo => (SampEnvironment.IsR1 ? _r1.hasSpawnInfo : _hasSpawnInfoRaw) != 0;
+    public bool IsPassengerDriveBy => (SampEnvironment.IsR1 ? _r1.passengerDriveBy : _passengerDriveByRaw) != 0;
+    public byte CurrentInterior => SampEnvironment.IsR1 ? _r1.currentInterior : _currentInterior;
+    public bool IsInRcMode => (SampEnvironment.IsR1 ? _r1.inRcMode : _inRcModeRaw) != 0;
+    public SampIncarData IncarData => SampEnvironment.IsR1 ? _r1.incarData : SampEnvironment.IsR5 ? _r5.incarData : _incarData;
+    public SampAimData AimData => SampEnvironment.IsR1 ? _r1.aimData : SampEnvironment.IsR5 ? _r5.aimData : _aimData;
+    public SampTrailerData TrailerData => SampEnvironment.IsR1 ? _r1.trailerData : SampEnvironment.IsR5 ? _r5.trailerData : _trailerData;
+    public SampOnfootData OnfootData => SampEnvironment.IsR1 ? _r1.onfootData : SampEnvironment.IsR5 ? _r5.onfootData : _onfootData;
+    public SampPassengerData PassengerData => SampEnvironment.IsR1 ? _r1.passengerData : SampEnvironment.IsR5 ? _r5.passengerData : _passengerData;
+    public CLocalPlayerCameraTarget CameraTarget => SampEnvironment.IsR1 ? _r1.cameraTarget : _cameraTarget;
+    public CPlayerHeadState Head => SampEnvironment.IsR1 ? _r1.head : SampEnvironment.IsR5 ? _r5.head : _head;
+    public CLocalPlayerSpawnInfo SpawnInfo => SampEnvironment.IsR1 ? _r1.spawnInfo : _spawnInfo;
     public CLocalPlayerSurfingState Surfing => _surfing;
-    public CLocalPlayerClassSelectionState ClassSelection => _classSelection;
-    public CLocalPlayerSpectatingState Spectating => (SampEnvironment.IsR5 ? _r5.spectating : _spectating);
-    public CLocalPlayerDamageState Damage => (SampEnvironment.IsR5 ? _r5.damage : _damage);
+    public CLocalPlayerClassSelectionState ClassSelection => SampEnvironment.IsR1 ? _r1.classSelection : SampEnvironment.IsR5 ? _r5.classSelection : _classSelection;
+    public CLocalPlayerSpectatingState Spectating => SampEnvironment.IsR1 ? _r1.spectating : SampEnvironment.IsR5 ? _r5.spectating : _spectating;
+    public CLocalPlayerDamageState Damage => SampEnvironment.IsR1 ? _r1.damage : SampEnvironment.IsR5 ? _r5.damage : _damage;
 
     private static readonly GetPedDelegate _getPed = (GetPedDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CLocalPlayer.GetPed);
     private static readonly GetSpecialActionDelegate _getSpecialAction = (GetSpecialActionDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CLocalPlayer.GetSpecialAction);
@@ -170,20 +175,16 @@ public unsafe ref struct CLocalPlayer
     {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slot, CLocalPlayerWeaponsData.WeaponSlotCount);
-        fixed (int* ammo = WeaponsData.LastWeaponAmmo)
-        {
-            return ammo[slot];
-        }
+        CLocalPlayerWeaponsData weapons = WeaponsData;
+        return weapons.LastWeaponAmmo[slot];
     }
 
     public byte GetWeaponId(int slot)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slot, CLocalPlayerWeaponsData.WeaponSlotCount);
-        fixed (byte* weapons = WeaponsData.LastWeapon)
-        {
-            return weapons[slot];
-        }
+        CLocalPlayerWeaponsData weapons = WeaponsData;
+        return weapons.LastWeapon[slot];
     }
 
     public void Chat(string text)

@@ -24,24 +24,15 @@ public unsafe ref struct CNetGame
     private static CNetGame* CurrentInstance => *(CNetGame**)_instanceAddress;
     public static ref readonly CNetGame Instance => ref *RequireInstance();
 
-    [FieldOffset(SampOffsets.CNetGame.State)]
-    private readonly int _state;
+    private static SampClientProfile Profile => SampEnvironment.RequiredProfile;
 
-    [FieldOffset(SampOffsets.CNetGame.Pools)]
-    private readonly CNetGamePools* _pools;
+    public int State => *(int*)((byte*)RequireInstance() + Profile.StateOffset);
+    public CNetGamePools* Pools => ReadPools(RequireInstance());
+    public bool HasPools => Pools != null;
+    public CRakClientInterface* RakClient => GetRakClient();
 
-    [FieldOffset(SampOffsets.CNetGame.RakClient)]
-    private readonly CRakClientInterface* _rakClient;
-
-    [FieldOffset(0)]
-    private readonly CRakClientInterface* _rakClientR5;
-
-    private CRakClientInterface* Client => SampEnvironment.IsR5 ? _rakClientR5 : _rakClient;
-
-    public int State => RequireInstance()->_state;
-    public CNetGamePools* Pools => RequireInstance()->_pools;
-    public bool HasPools => RequireInstance()->_pools != null;
-    public CRakClientInterface* RakClient => RequireInstance()->Client;
+    private static CNetGamePools* ReadPools(CNetGame* instance) =>
+        *(CNetGamePools**)((byte*)instance + Profile.PoolsOffset);
 
     private static readonly GetPlayerPoolDelegate _getPlayerPool = (GetPlayerPoolDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetPlayerPool);
     private static readonly GetVehiclePoolDelegate _getVehiclePool = (GetVehiclePoolDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.GetVehiclePool);
@@ -58,8 +49,6 @@ public unsafe ref struct CNetGame
     private static readonly InitializeDelegate _initializePools = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.InitializePools);
     private static readonly InitializeDelegate _initialNotification = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.InitialNotification);
     private static readonly InitializeDelegate _initializeGameLogic = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.InitializeGameLogic);
-    private static readonly InitializeDelegate _connect = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.Connect);
-    private static readonly InitializeDelegate _spawnScreen = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.SpawnScreen);
     private static readonly UpdatePlayersDelegate _updatePlayers = (UpdatePlayersDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.UpdatePlayers);
     private static readonly InitializeDelegate _resetPlayerPool = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.ResetPlayerPool);
     private static readonly InitializeDelegate _resetVehiclePool = (InitializeDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CNetGame.ResetVehiclePool);
@@ -80,6 +69,14 @@ public unsafe ref struct CNetGame
         return instance != null;
     }
 
+    internal static bool IsReady()
+    {
+        if (!TryGetInstance(out CNetGame* instance)) return false;
+        SampClientProfile profile = Profile;
+        return NativeMemoryValidator.IsReadable((nint)instance, (nuint)profile.NetGameReadinessSize)
+            && profile.IsNetGameReady(new ReadOnlySpan<byte>(instance, profile.NetGameReadinessSize));
+    }
+
     public static bool TryGetPools(out CNetGamePools* pools)
     {
         if (!TryGetInstance(out CNetGame* instance))
@@ -88,7 +85,7 @@ public unsafe ref struct CNetGame
             return false;
         }
 
-        pools = instance->_pools;
+        pools = ReadPools(instance);
         return pools != null;
     }
 
@@ -104,12 +101,12 @@ public unsafe ref struct CNetGame
             return 0;
         }
 
-        return *(nint*)(cnetGamePtr + SampOffsets.Select(SampOffsets.CNetGame.RakClient, 0));
+        return *(nint*)(cnetGamePtr + Profile.RakClientOffset);
     }
 
     public static CRakClientInterface* GetRakClient()
     {
-        return RequireInstance()->Client;
+        return (CRakClientInterface*)GetRakClientPtr((nint)RequireInstance());
     }
 
     public static bool TryGetRakClient(out CRakClientInterface* rakClient)
@@ -120,7 +117,7 @@ public unsafe ref struct CNetGame
             return false;
         }
 
-        rakClient = instance->Client;
+        rakClient = (CRakClientInterface*)GetRakClientPtr((nint)instance);
         return rakClient != null;
     }
 
@@ -217,16 +214,6 @@ public unsafe ref struct CNetGame
         _initializeGameLogic(RequireInstance());
     }
 
-    public void Connect()
-    {
-        _connect(RequireInstance());
-    }
-
-    public void SpawnScreen()
-    {
-        _spawnScreen(RequireInstance());
-    }
-
     public void ResetPlayerPool()
     {
         _resetPlayerPool(RequireInstance());
@@ -305,55 +292,64 @@ public unsafe struct CNetGamePools
     [FieldOffset(0x00)]
     private CMenuPool* _menu;
 
-    public CMenuPool* Menu => SampEnvironment.IsR5
+    public CMenuPool* Menu => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->Menu : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Menu : _menu;
 
     [FieldOffset(0x04)]
     private CActorPool* _actor;
 
-    public CActorPool* Actor => SampEnvironment.IsR5
+    public CActorPool* Actor => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->Actor : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Actor : _actor;
 
     [FieldOffset(0x08)]
     private CPlayerPool* _player;
 
-    public CPlayerPool* Player => SampEnvironment.IsR5
+    public CPlayerPool* Player => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->Player : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Player : _player;
 
     [FieldOffset(0x0C)]
     private CVehiclePool* _vehicle;
 
-    public CVehiclePool* Vehicle => SampEnvironment.IsR5
+    public CVehiclePool* Vehicle => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->Vehicle : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Vehicle : _vehicle;
 
     [FieldOffset(0x10)]
     private CPickupPool* _pickup;
 
-    public CPickupPool* Pickup => SampEnvironment.IsR5
+    public CPickupPool* Pickup => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->Pickup : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Pickup : _pickup;
 
     [FieldOffset(0x14)]
     private CObjectPool* _object;
 
-    public CObjectPool* Object => SampEnvironment.IsR5
+    public CObjectPool* Object => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->Object : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Object : _object;
 
     [FieldOffset(0x18)]
     private CGangZonePool* _gangZone;
 
-    public CGangZonePool* GangZone => SampEnvironment.IsR5
+    public CGangZonePool* GangZone => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->GangZone : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->GangZone : _gangZone;
 
     [FieldOffset(0x1C)]
     private CLabelPool* _label;
 
-    public CLabelPool* Label => SampEnvironment.IsR5
+    public CLabelPool* Label => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->Label : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->Label : _label;
 
     [FieldOffset(0x20)]
     private CTextDrawPool* _textDraw;
 
-    public CTextDrawPool* TextDraw => SampEnvironment.IsR5
+    public CTextDrawPool* TextDraw => SampEnvironment.IsR1
+        ? ((NetGamePoolsR1*)Unsafe.AsPointer(ref this))->TextDraw : SampEnvironment.IsR5
         ? ((NetGamePoolsR5*)Unsafe.AsPointer(ref this))->TextDraw : _textDraw;
 
     public bool IsAvailable =>

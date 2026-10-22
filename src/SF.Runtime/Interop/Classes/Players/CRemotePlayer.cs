@@ -17,6 +17,9 @@ public unsafe struct CRemotePlayer
     [FieldOffset(0)]
     private readonly RemotePlayerR5 _r5;
 
+    [FieldOffset(0)]
+    private readonly RemotePlayerR1 _r1;
+
     [FieldOffset(0x00)]
     private readonly CPed* _ped;
 
@@ -125,29 +128,29 @@ public unsafe struct CRemotePlayer
 
     public CPed* Ped => (SampEnvironment.IsR5 ? _r5.ped : _ped);
     public CVehicle* Vehicle => (SampEnvironment.IsR5 ? _r5.vehicle : _vehicle);
-    public ushort Id => (SampEnvironment.IsR5 ? _r5.id : _id);
-    public ushort VehicleId => (SampEnvironment.IsR5 ? _r5.vehicleId : _vehicleId);
-    public bool DrawLabels => (SampEnvironment.IsR5 ? _r5.drawLabels : _drawLabels) != 0;
-    public bool HasJetpack => (SampEnvironment.IsR5 ? _r5.hasJetpack : _hasJetpack) != 0;
-    public byte SpecialAction => (SampEnvironment.IsR5 ? _r5.specialAction : _specialAction);
+    public ushort Id => (SampEnvironment.IsR1 ? _r1.id : SampEnvironment.IsR5 ? _r5.id : _id);
+    public ushort VehicleId => (SampEnvironment.IsR1 ? _r1.vehicleId : SampEnvironment.IsR5 ? _r5.vehicleId : _vehicleId);
+    public bool DrawLabels => (SampEnvironment.IsR1 ? _r1.drawLabels : SampEnvironment.IsR5 ? _r5.drawLabels : _drawLabels) != 0;
+    public bool HasJetpack => (SampEnvironment.IsR1 ? _r1.hasJetpack : SampEnvironment.IsR5 ? _r5.hasJetpack : _hasJetpack) != 0;
+    public byte SpecialAction => (SampEnvironment.IsR1 ? _r1.specialAction : SampEnvironment.IsR5 ? _r5.specialAction : _specialAction);
     public bool IsAvailable => (SampEnvironment.IsR5 ? _r5.ped : _ped) != null || (SampEnvironment.IsR5 ? _r5.vehicle : _vehicle) != null;
-    public SampIncarData IncarData => _incarData;
-    public SampTrailerData TrailerData => _trailerData;
-    public SampAimData AimData => _aimData;
-    public SampPassengerData PassengerData => _passengerData;
-    public SampOnfootData OnfootData => _onfootData;
-    public byte Team => _team;
-    public byte State => _state;
-    public byte SeatId => _seatId;
-    public bool PassengerDriveBy => _passengerDriveByRaw != 0;
-    public Vector3 OnfootTargetPosition => (SampEnvironment.IsR5 ? _r5.onfootTargetPosition : _onfootTargetPosition);
-    public Vector3 OnfootTargetSpeed => (SampEnvironment.IsR5 ? _r5.onfootTargetSpeed : _onfootTargetSpeed);
-    public Vector3 IncarTargetPosition => (SampEnvironment.IsR5 ? _r5.incarTargetPosition : _incarTargetPosition);
-    public Vector3 IncarTargetSpeed => (SampEnvironment.IsR5 ? _r5.incarTargetSpeed : _incarTargetSpeed);
-    public Vector3 PositionDifference => (SampEnvironment.IsR5 ? _r5.positionDifference : _positionDifference);
-    public CRemotePlayerIncarTargetRotation IncarTargetRotation => (SampEnvironment.IsR5 ? _r5.incarTargetRotation : _incarTargetRotation);
-    public float ReportedArmour => _reportedArmour;
-    public float ReportedHealth => _reportedHealth;
+    public SampIncarData IncarData => SampEnvironment.IsR1 ? _r1.incarData : _incarData;
+    public SampTrailerData TrailerData => SampEnvironment.IsR1 ? _r1.trailerData : _trailerData;
+    public SampAimData AimData => SampEnvironment.IsR1 ? _r1.aimData : _aimData;
+    public SampPassengerData PassengerData => SampEnvironment.IsR1 ? _r1.passengerData : _passengerData;
+    public SampOnfootData OnfootData => SampEnvironment.IsR1 ? _r1.onfootData : _onfootData;
+    public byte Team => SampEnvironment.IsR1 ? _r1.team : _team;
+    public byte State => SampEnvironment.IsR1 ? _r1.state : _state;
+    public byte SeatId => SampEnvironment.IsR1 ? _r1.seatId : _seatId;
+    public bool PassengerDriveBy => (SampEnvironment.IsR1 ? _r1.passengerDriveBy : _passengerDriveByRaw) != 0;
+    public Vector3 OnfootTargetPosition => (SampEnvironment.IsR1 ? _r1.onfootTargetPosition : SampEnvironment.IsR5 ? _r5.onfootTargetPosition : _onfootTargetPosition);
+    public Vector3 OnfootTargetSpeed => (SampEnvironment.IsR1 ? _r1.onfootTargetSpeed : SampEnvironment.IsR5 ? _r5.onfootTargetSpeed : _onfootTargetSpeed);
+    public Vector3 IncarTargetPosition => (SampEnvironment.IsR1 ? _r1.incarTargetPosition : SampEnvironment.IsR5 ? _r5.incarTargetPosition : _incarTargetPosition);
+    public Vector3 IncarTargetSpeed => (SampEnvironment.IsR1 ? _r1.incarTargetSpeed : SampEnvironment.IsR5 ? _r5.incarTargetSpeed : _incarTargetSpeed);
+    public Vector3 PositionDifference => (SampEnvironment.IsR1 ? _r1.positionDifference : SampEnvironment.IsR5 ? _r5.positionDifference : _positionDifference);
+    public CRemotePlayerIncarTargetRotation IncarTargetRotation => (SampEnvironment.IsR1 ? _r1.incarTargetRotation : SampEnvironment.IsR5 ? _r5.incarTargetRotation : _incarTargetRotation);
+    public float ReportedArmour => SampEnvironment.IsR1 ? _r1.reportedArmour : _reportedArmour;
+    public float ReportedHealth => SampEnvironment.IsR1 ? _r1.reportedHealth : _reportedHealth;
     public SampAnimation Animation => (SampEnvironment.IsR5 ? _r5.animation : _animation);
     public byte UpdateType => (SampEnvironment.IsR5 ? _r5.updateType : _updateType);
     public uint LastUpdate => (SampEnvironment.IsR5 ? _r5.lastUpdate : _lastUpdate);

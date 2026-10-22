@@ -20,7 +20,10 @@ public sealed unsafe partial class SFSampEntities
             Install(new PoolDeleteHook(SFSampEntityType.Actor, SampOffsets.CActorPool.Delete));
             Install(new PlayerPoolCreateHook());
             Install(new PlayerPoolDeleteHook());
-            Install(new RemotePlayerSpawnHook());
+            if (SampEnvironment.IsR1)
+                Install(new RemotePlayerSpawnR1Hook());
+            else
+                Install(new RemotePlayerSpawnHook());
             Install(new RemotePlayerRemoveHook());
             _installed = true;
         }

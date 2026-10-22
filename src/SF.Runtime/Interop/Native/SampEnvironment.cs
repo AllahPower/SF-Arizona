@@ -3,28 +3,34 @@ using System.Runtime.InteropServices;
 namespace SFSharp.Runtime.Interop.Native;
 
 /// <summary>
-/// Detects the SA-MP client version and companion modules at runtime
-/// using PE header fingerprints and known in-memory markers.
+/// Identifies the loaded SA-MP client from its PE header and exact version marker.
 /// </summary>
+/// <remarks>The first detected module stays bound for the process lifetime. Native views and
+/// function pointers must not change revision while hooks are installed.</remarks>
 public static unsafe class SampEnvironment
 {
-    // samp.dll R3: null-terminated ASCII "0.3.7-R3" in .rdata.
-    private const uint SampR3VersionStringRva = 0xE5B8C;
+    private const uint R1VersionStringRva = 0xD3B84;
+    private const uint R3R5VersionStringRva = 0xE5B8C;
 
-    private static SampVersionInfo? _cached;
-    private static SFSampClientInfo _client = new(SFSampVersion.Unknown, SFSampCapabilities.None);
+    private static DetectionSnapshot? _detected;
+    private static readonly SFSampClientInfo UnknownClient = new(SFSampVersion.Unknown, SFSampCapabilities.None);
 
-    public static SFSampClientInfo Client => Volatile.Read(ref _client);
+    public static SFSampClientInfo Client => Volatile.Read(ref _detected)?.Client ?? UnknownClient;
 
-    public static SampVersionInfo? Current => _cached;
+    public static SampVersionInfo? Current => Volatile.Read(ref _detected)?.Info;
+
+    /// <summary>Gets the verified layout or refuses native access before any field is read.</summary>
+    internal static SampClientProfile RequiredProfile => GetOrDetect()?.Profile is { IsRuntimeSupported: true } profile
+        ? profile
+        : throw new NotSupportedException("No verified native profile for the loaded SA-MP client.");
 
     /// <summary>
     /// Performs full environment detection. First successful result is cached.
     /// </summary>
     public static SampVersionInfo? Detect()
     {
-        if (_cached is not null)
-            return _cached;
+        if (Current is { } cached)
+            return cached;
 
         uint sampBase = Win32.GetModuleHandle("samp.dll");
         if (sampBase == 0)
@@ -41,37 +47,36 @@ public static unsafe class SampEnvironment
             sampPe.TimeDateStamp,
             sampPe.SizeOfCode);
 
-        SFSampCapabilities capabilities = info.IsSupported
-            ? SFSampCapabilities.Chat | SFSampCapabilities.Dialogs | SFSampCapabilities.Pools
-                | SFSampCapabilities.Network | SFSampCapabilities.IncomingEmulation | SFSampCapabilities.CompressedStrings
-            : SFSampCapabilities.None;
-        Volatile.Write(ref _client, new(info.Profile?.Version ?? SFSampVersion.Unknown, capabilities));
-        Volatile.Write(ref _cached, info);
-        return info;
+        DetectionSnapshot candidate = DetectionSnapshot.Create(info);
+        // Publish identity and capabilities together. Concurrent probes use the same winning snapshot.
+        return (Interlocked.CompareExchange(ref _detected, candidate, null) ?? candidate).Info;
     }
 
-    public static SampVersionInfo? GetOrDetect() => _cached ?? Detect();
+    public static SampVersionInfo? GetOrDetect() => Current ?? Detect();
 
     public static bool IsSampR3 => GetOrDetect()?.Version == SampVersion.R3_037;
-    internal static bool IsR5 => Current?.Version == SampVersion.R5_037;
+    internal static bool IsR5 => RequiredProfile.Version == SFSampVersion.R5_1;
+    internal static bool IsR1 => RequiredProfile.Version == SFSampVersion.R1;
 
 
     private static SampVersion ClassifySampVersion(uint moduleBase, PeFingerprint pe)
     {
         return Identify(pe.EntryPointRva, pe.SizeOfImage,
-            VerifyAsciiString(moduleBase + SampR3VersionStringRva, "0.3.7-R3"),
-            VerifyAsciiString(moduleBase + SampR3VersionStringRva, "0.3.7-R5"));
+            VerifyAsciiString(moduleBase + R3R5VersionStringRva, "0.3.7-R3"),
+            VerifyAsciiString(moduleBase + R3R5VersionStringRva, "0.3.7-R5"),
+            VerifyAsciiString(moduleBase + R1VersionStringRva, "0.3.7-R1"));
     }
 
-    internal static SampVersion Identify(uint entryPoint, uint imageSize, bool r3Marker, bool r5Marker)
+    internal static SampVersion Identify(uint entryPoint, uint imageSize, bool r3Marker, bool r5Marker, bool r1Marker = false)
     {
         SampClientProfile? profile = SampClientProfile.FromEntryPoint(entryPoint);
         if (profile is null || imageSize < profile.NetGameRva + sizeof(uint) || entryPoint >= imageSize)
             return SampVersion.Unknown;
         return profile.Version switch
         {
-            SFSampVersion.R3_1 when r3Marker && !r5Marker => SampVersion.R3_037,
-            SFSampVersion.R5_1 when r5Marker && !r3Marker => SampVersion.R5_037,
+            SFSampVersion.R1 when r1Marker && !r3Marker && !r5Marker => SampVersion.R1_037,
+            SFSampVersion.R3_1 when r3Marker && !r5Marker && !r1Marker => SampVersion.R3_037,
+            SFSampVersion.R5_1 when r5Marker && !r3Marker && !r1Marker => SampVersion.R5_037,
             _ => SampVersion.Unknown,
         };
     }
@@ -89,37 +94,6 @@ public static unsafe class SampEnvironment
         }
 
         return ptr[expected.Length] == 0;
-    }
-
-    private static bool VerifyAsciiPrefix(uint address, string prefix)
-    {
-        byte* ptr = (byte*)address;
-        if (!NativeMemoryValidator.IsReadable((nint)ptr, (nuint)prefix.Length))
-            return false;
-
-        for (int i = 0; i < prefix.Length; i++)
-        {
-            if (ptr[i] != (byte)prefix[i])
-                return false;
-        }
-
-        return true;
-    }
-
-    private static string? TryReadAsciiString(uint address, int maxLength)
-    {
-        byte* ptr = (byte*)address;
-        if (!NativeMemoryValidator.IsReadable((nint)ptr, 1))
-            return null;
-
-        int len = 0;
-        while (len < maxLength && NativeMemoryValidator.IsReadable((nint)(ptr + len), 1) && ptr[len] != 0)
-            len++;
-
-        if (len == 0)
-            return null;
-
-        return new string((sbyte*)ptr, 0, len);
     }
 
     private static PeFingerprint ReadPeFingerprint(uint moduleBase)
@@ -156,14 +130,28 @@ public static unsafe class SampEnvironment
         uint SizeOfImage,
         uint TimeDateStamp,
         uint SizeOfCode);
+
+    /// <summary>One immutable publication unit for native bindings and plugin-visible capabilities.</summary>
+    internal sealed record DetectionSnapshot(SampVersionInfo Info, SFSampClientInfo Client)
+    {
+        internal static DetectionSnapshot Create(SampVersionInfo info)
+        {
+            SampClientProfile? profile = info.Profile;
+            SFSampCapabilities capabilities = profile is { IsRuntimeSupported: true }
+                ? SFSampCapabilities.Chat | SFSampCapabilities.Dialogs | SFSampCapabilities.Pools
+                    | SFSampCapabilities.Network | SFSampCapabilities.IncomingEmulation | SFSampCapabilities.CompressedStrings
+                : SFSampCapabilities.None;
+            return new(info, new(profile?.Version ?? SFSampVersion.Unknown, capabilities));
+        }
+    }
 }
 
 public enum SampVersion
 {
     Unknown,
     R3_037,
-    R3_037_Patched,
     R5_037,
+    R1_037,
 }
 
 public sealed record SampVersionInfo(
@@ -174,6 +162,11 @@ public sealed record SampVersionInfo(
     uint TimeDateStamp,
     uint SizeOfCode)
 {
-    internal SampClientProfile? Profile => Version == SampVersion.Unknown ? null : SampClientProfile.FromEntryPoint(EntryPointRva);
+    internal SampClientProfile? Profile => SampClientProfile.FromEntryPoint(EntryPointRva) is { } profile
+        && profile.DetectedVersion == Version
+        && EntryPointRva < SizeOfImage
+        && SizeOfImage >= profile.NetGameRva + sizeof(uint)
+            ? profile
+            : null;
     public bool IsSupported => Profile?.IsRuntimeSupported == true;
 }

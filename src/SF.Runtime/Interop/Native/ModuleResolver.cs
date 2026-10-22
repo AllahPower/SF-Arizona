@@ -77,23 +77,6 @@ public static unsafe class ModuleResolver
         return 0;
     }
 
-    public static bool IsClassReady(string moduleName, uint offset)
-    {
-        var moduleHandle = Win32.GetModuleHandle(moduleName);
-        if (moduleHandle == 0)
-        {
-            return false;
-        }
-
-        var classPtr = (uint**)(moduleHandle + offset);
-        if (*classPtr is null)
-        {
-            return false;
-        }
-
-        return **classPtr != 0;
-    }
-
     /// <summary>
     /// Resolves a concrete function address from a C++ object's vtable.
     /// Dereferences: module+instanceOffset -> object -> +objectFieldOffset -> target -> vtable -> vtable[vtableIndex].

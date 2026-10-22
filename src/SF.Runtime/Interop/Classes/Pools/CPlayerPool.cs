@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using unsafe FindDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, nint, ushort>;
 using unsafe GetCountDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, int, int>;
 using unsafe GetLocalPlayerDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, SFSharp.Runtime.Interop.Classes.CLocalPlayer*>;
-using unsafe GetLocalPlayerNameDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, byte*>;
 using unsafe GetLocalPlayerPingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, int>;
 using unsafe GetNameDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, ushort, byte*>;
 using unsafe GetPingDelegate = delegate* unmanaged[Thiscall]<SFSharp.Runtime.Interop.Classes.Pools.CPlayerPool*, ushort, int>;
@@ -18,6 +17,9 @@ public unsafe ref struct CPlayerPool
 {
     [FieldOffset(0)]
     private readonly PlayerPoolR5 _r5;
+
+    [FieldOffset(0)]
+    private readonly PlayerPoolR1 _r1;
     private static CPlayerPool* CurrentInstance => CNetGame.Instance.GetPlayerPool();
     public static ref readonly CPlayerPool Instance => ref *RequireInstance();
 
@@ -33,16 +35,15 @@ public unsafe ref struct CPlayerPool
     [FieldOffset(SampOffsets.CPlayerPool.LocalPlayerPointer)]
     private readonly CLocalPlayer* _localPlayer;
 
-    public int LocalPlayerPing => SampEnvironment.IsR5 ? RequireInstance()->_r5.Ping : RequireInstance()->_localPlayerPing;
-    public int LocalPlayerScore => SampEnvironment.IsR5 ? RequireInstance()->_r5.Score : RequireInstance()->_localPlayerScore;
-    public ushort LocalPlayerId => SampEnvironment.IsR5 ? RequireInstance()->_r5.Id : RequireInstance()->_localPlayerId;
+    public int LocalPlayerPing => SampEnvironment.IsR1 ? RequireInstance()->_r1.Ping : SampEnvironment.IsR5 ? RequireInstance()->_r5.Ping : RequireInstance()->_localPlayerPing;
+    public int LocalPlayerScore => SampEnvironment.IsR1 ? RequireInstance()->_r1.Score : SampEnvironment.IsR5 ? RequireInstance()->_r5.Score : RequireInstance()->_localPlayerScore;
+    public ushort LocalPlayerId => SampEnvironment.IsR1 ? RequireInstance()->_r1.Id : SampEnvironment.IsR5 ? RequireInstance()->_r5.Id : RequireInstance()->_localPlayerId;
 
     private static readonly IsConnectedDelegate _isConnected = (IsConnectedDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.IsConnected);
     private static readonly GetPlayerDelegate _getPlayer = (GetPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetPlayer);
     private static readonly GetLocalPlayerDelegate _getLocalPlayer = (GetLocalPlayerDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetLocalPlayer);
     private static readonly GetCountDelegate _getCount = (GetCountDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetCount);
     private static readonly FindDelegate _find = (FindDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.Find);
-    private static readonly GetLocalPlayerNameDelegate _getLocalPlayerName = (GetLocalPlayerNameDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetLocalPlayerName);
     private static readonly GetNameDelegate _getName = (GetNameDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetName);
     private static readonly GetScoreDelegate _getScore = (GetScoreDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetScore);
     private static readonly GetPingDelegate _getPing = (GetPingDelegate)ModuleResolver.GetProcAddress("samp.dll", SampOffsets.CPlayerPool.GetPing);
@@ -121,10 +122,10 @@ public unsafe ref struct CPlayerPool
         return _getCount(RequireInstance(), includeNpcPlayers ? 1 : 0);
     }
 
-    public string? GetLocalPlayerName()
-    {
-        return AnsiString.Decode(_getLocalPlayerName(RequireInstance()));
-    }
+    /// <summary>Resolves the local name through the same ID-aware getter used for remote players.</summary>
+    /// <remarks>R1 RVA 0x13CD0 reads CPlayerInfo's string, not CPlayerPool's local string.
+    /// GetName handles the packed local layout explicitly when the supplied ID is local.</remarks>
+    public string? GetLocalPlayerName() => GetName(LocalPlayerId);
 
     public string? GetName(ushort playerId)
     {
@@ -175,6 +176,9 @@ public unsafe struct CPlayerInfo
     [FieldOffset(0)]
     private readonly PlayerInfoR5 _r5;
 
+    [FieldOffset(0)]
+    private readonly PlayerInfoR1 _r1;
+
     [FieldOffset(0x00)]
     private readonly CRemotePlayer* _player;
 
@@ -191,10 +195,10 @@ public unsafe struct CPlayerInfo
     private readonly int _npcFlag;
 
     public CRemotePlayer* Player => SampEnvironment.IsR5 ? _r5.Player : _player;
-    public int Ping => SampEnvironment.IsR5 ? _r5.Ping : _ping;
+    public int Ping => SampEnvironment.IsR1 ? _r1.Ping : SampEnvironment.IsR5 ? _r5.Ping : _ping;
     public StdString Name => SampEnvironment.IsR5 ? _r5.Name : _name;
     public int Score => SampEnvironment.IsR5 ? _r5.Score : _score;
-    public int NpcFlag => SampEnvironment.IsR5 ? _r5.NpcFlag : _npcFlag;
+    public int NpcFlag => SampEnvironment.IsR1 ? _r1.NpcFlag : SampEnvironment.IsR5 ? _r5.NpcFlag : _npcFlag;
 }
 
 [StructLayout(LayoutKind.Explicit, Size = 24, Pack = 1)]

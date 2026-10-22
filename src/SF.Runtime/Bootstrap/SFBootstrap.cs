@@ -145,7 +145,7 @@ public static class SFBootstrap
 
         SFLog.Info($"SA-MP detected: version={env.Version} EP=0x{env.EntryPointRva:X} SizeOfImage=0x{env.SizeOfImage:X} TimeDateStamp=0x{env.TimeDateStamp:X} SizeOfCode=0x{env.SizeOfCode:X}");
         if (!env.IsSupported)
-            throw new NotSupportedException($"Unsupported SA-MP {env.Version} (EP=0x{env.EntryPointRva:X}). Supported clients: R3-1 and R5-1. Hooks were not installed.");
+            throw new NotSupportedException($"Unsupported SA-MP {env.Version} (EP=0x{env.EntryPointRva:X}). Supported clients: R1, R3-1 and R5-1. Hooks were not installed.");
 
     }
 
@@ -195,7 +195,7 @@ public static class SFBootstrap
     private static async Task WhenCNetGameLoads(uint baseAddress)
     {
         SFLog.Debug($"Waiting for CNetGame pointer at samp.dll+0x{SampOffsets.CNetGame.Instance:X8} from base 0x{baseAddress:X8}");
-        while (!ModuleResolver.IsClassReady("samp.dll", (uint)SampOffsets.CNetGame.Instance))
+        while (!CNetGame.IsReady())
         {
             await Task.Yield();
         }
