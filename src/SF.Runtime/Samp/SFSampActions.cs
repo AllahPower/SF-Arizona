@@ -1,8 +1,17 @@
+using SFSharp.Abstractions.Samp.Events;
+using SFSharp.Runtime.Samp.Events;
+
 namespace SFSharp.Runtime.Samp;
 
 /// <summary>Lazy native action observers; constructing the service does not resolve samp.dll.</summary>
-internal sealed class SFSampActions(MainThreadDispatcher mainThread) : ISFSampActions
+internal sealed class SFSampActions(MainThreadDispatcher mainThread, ISFGameClock clock, ISFSampEntities entities) : ISFSampActions
 {
+    public ISFSampSessionEvents Session { get; } = new SampSessionEvents(mainThread, clock);
+    public ISFSampRemotePlayerEvents RemotePlayers { get; } = new SampRemotePlayerEvents(mainThread, entities);
+    public ISFSampPoolEvents Pools { get; } = new SampPoolEvents(mainThread);
+    public ISFSampTextDrawEvents TextDraws { get; } = new SampTextDrawEvents(mainThread);
+    public ISFSampPickupEvents Pickups { get; } = new SampPickupEvents(mainThread);
+    public ISFSampSpectatingEvents Spectating { get; } = new SampSpectatingEvents(mainThread);
     private readonly SampActionEvent<NoRetValue> _spawnRequested = new(nameof(OnSpawnRequested), mainThread,
         publish => new SampVoidActionHook(Address(SampOffsets.CLocalPlayer.RequestSpawn), () => publish(default)));
     private readonly SampActionEvent<bool> _spawnCompleted = new(nameof(OnSpawnCompleted), mainThread,

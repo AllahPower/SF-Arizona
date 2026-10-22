@@ -1,4 +1,294 @@
 #nullable enable
+~override SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.ToString() -> string
+~override SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.ToString() -> string
+override SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.GetHashCode() -> int
+override SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.GetHashCode() -> int
+SFSharp.Abstractions.Samp.Events.ISFSampPickupEvents
+SFSharp.Abstractions.Samp.Events.ISFSampPickupEvents.OnChanged(System.Action<SFSharp.Abstractions.Samp.Events.SFSampPickupEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampPickupEvents.OnCollectionNotified(System.Action<SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampPoolEvents
+SFSharp.Abstractions.Samp.Events.ISFSampPoolEvents.OnChanged(System.Action<SFSharp.Abstractions.Samp.Events.SFSampPoolEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampRemotePlayerEvents
+SFSharp.Abstractions.Samp.Events.ISFSampRemotePlayerEvents.OnActionCompleted(System.Action<SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampRemotePlayerEvents.OnStateChanged(System.Action<SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampRemotePlayerEvents.OnSyncProcessed(SFSharp.Abstractions.Samp.Events.SFSampSyncKind kind, System.Action<SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampSessionEvents
+SFSharp.Abstractions.Samp.Events.ISFSampSessionEvents.OnConnectAttempt(System.Action! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampSessionEvents.OnConnectionEvent(System.Action<SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampSessionEvents.OnStateChanged(System.Action<SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampSpectatingEvents
+SFSharp.Abstractions.Samp.Events.ISFSampSpectatingEvents.OnChanged(System.Action<SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampTextDrawEvents
+SFSharp.Abstractions.Samp.Events.ISFSampTextDrawEvents.OnHoveredChanged(System.Action<ushort>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampTextDrawEvents.OnSelectionChanged(System.Action<SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.ISFSampTextDrawEvents.OnSelectionNotified(System.Action<ushort>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.Deconstruct(out SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind Kind, out SFSharp.Abstractions.Samp.SFSampGameState State) -> void
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.Kind.get -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.Kind.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.SFSampConnectionEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.SFSampConnectionEvent(SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind Kind, SFSharp.Abstractions.Samp.SFSampGameState State) -> void
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.State.get -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.State.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.AttemptFailed = 6 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.Banned = 1 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.ConnectionLost = 7 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.Disconnected = 4 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.InvalidPassword = 5 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.JoinHandshake = 8 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.PublicKeyMismatch = 0 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.RequestAccepted = 2 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind.ServerFull = 3 -> SFSharp.Abstractions.Samp.Events.SFSampConnectionEventKind
+SFSharp.Abstractions.Samp.Events.SFSampEventPhase
+SFSharp.Abstractions.Samp.Events.SFSampEventPhase.After = 1 -> SFSharp.Abstractions.Samp.Events.SFSampEventPhase
+SFSharp.Abstractions.Samp.Events.SFSampEventPhase.Before = 0 -> SFSharp.Abstractions.Samp.Events.SFSampEventPhase
+SFSharp.Abstractions.Samp.Events.SFSampPickupChange
+SFSharp.Abstractions.Samp.Events.SFSampPickupChange.Created = 0 -> SFSharp.Abstractions.Samp.Events.SFSampPickupChange
+SFSharp.Abstractions.Samp.Events.SFSampPickupChange.Deleting = 1 -> SFSharp.Abstractions.Samp.Events.SFSampPickupChange
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Change.get -> SFSharp.Abstractions.Samp.Events.SFSampPickupChange
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Change.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Deconstruct(out int ServerId, out int PoolIndex, out int Model, out int Type, out System.Numerics.Vector3 Position, out SFSharp.Abstractions.Samp.Events.SFSampPickupChange Change) -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampPickupEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Model.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Model.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.PoolIndex.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.PoolIndex.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Position.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Position.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.ServerId.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.ServerId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.SFSampPickupEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.SFSampPickupEvent(int ServerId, int PoolIndex, int Model, int Type, System.Numerics.Vector3 Position, SFSharp.Abstractions.Samp.Events.SFSampPickupChange Change) -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Type.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.Type.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.Deconstruct(out int LookupId, out int PoolIndex, out int? ServerId) -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.LookupId.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.LookupId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.PoolIndex.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.PoolIndex.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.ServerId.get -> int?
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.ServerId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.SFSampPickupNotificationEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.SFSampPickupNotificationEvent(int LookupId, int PoolIndex, int? ServerId) -> void
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Deconstruct(out SFSharp.Abstractions.Samp.Events.SFSampPoolKind Pool, out SFSharp.Abstractions.Samp.Events.SFSampPoolOperation Operation, out SFSharp.Abstractions.Samp.Events.SFSampEventPhase Phase) -> void
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampPoolEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Operation.get -> SFSharp.Abstractions.Samp.Events.SFSampPoolOperation
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Operation.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Phase.get -> SFSharp.Abstractions.Samp.Events.SFSampEventPhase
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Phase.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Pool.get -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.Pool.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.SFSampPoolEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.SFSampPoolEvent(SFSharp.Abstractions.Samp.Events.SFSampPoolKind Pool, SFSharp.Abstractions.Samp.Events.SFSampPoolOperation Operation, SFSharp.Abstractions.Samp.Events.SFSampEventPhase Phase) -> void
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.Actors = 4 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.All = 0 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.GangZones = 8 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.Labels = 9 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.Menus = 6 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.Objects = 3 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.Pickups = 5 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.Players = 1 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.TextDraws = 7 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolKind.Vehicles = 2 -> SFSharp.Abstractions.Samp.Events.SFSampPoolKind
+SFSharp.Abstractions.Samp.Events.SFSampPoolOperation
+SFSharp.Abstractions.Samp.Events.SFSampPoolOperation.Initialize = 1 -> SFSharp.Abstractions.Samp.Events.SFSampPoolOperation
+SFSharp.Abstractions.Samp.Events.SFSampPoolOperation.Reset = 0 -> SFSharp.Abstractions.Samp.Events.SFSampPoolOperation
+SFSharp.Abstractions.Samp.Events.SFSampRemoteAction
+SFSharp.Abstractions.Samp.Events.SFSampRemoteAction.EnterVehicle = 0 -> SFSharp.Abstractions.Samp.Events.SFSampRemoteAction
+SFSharp.Abstractions.Samp.Events.SFSampRemoteAction.ExitVehicle = 1 -> SFSharp.Abstractions.Samp.Events.SFSampRemoteAction
+SFSharp.Abstractions.Samp.Events.SFSampRemoteAction.Kill = 2 -> SFSharp.Abstractions.Samp.Events.SFSampRemoteAction
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.Action.get -> SFSharp.Abstractions.Samp.Events.SFSampRemoteAction
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.Action.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.After.get -> SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.After.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.Deconstruct(out ushort PlayerId, out SFSharp.Abstractions.Samp.Events.SFSampRemoteAction Action, out ushort VehicleId, out bool IsPassenger, out SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot After) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.IsPassenger.get -> bool
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.IsPassenger.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.PlayerId.get -> ushort
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.PlayerId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.SFSampRemoteActionEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.SFSampRemoteActionEvent(ushort PlayerId, SFSharp.Abstractions.Samp.Events.SFSampRemoteAction Action, ushort VehicleId, bool IsPassenger, SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot After) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.VehicleId.get -> ushort
+SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.VehicleId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.Armour.get -> float
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.Armour.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.Deconstruct(out ushort PlayerId, out ushort VehicleId, out byte State, out byte SeatId, out uint LastUpdate, out uint LastTimestamp, out float Health, out float Armour, out System.Numerics.Vector3 OnFootTarget, out System.Numerics.Vector3 VehicleTarget) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.Equals(SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.Health.get -> float
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.Health.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.LastTimestamp.get -> uint
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.LastTimestamp.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.LastUpdate.get -> uint
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.LastUpdate.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.OnFootTarget.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.OnFootTarget.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.PlayerId.get -> ushort
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.PlayerId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.SeatId.get -> byte
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.SeatId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.SFSampRemoteSnapshot() -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.SFSampRemoteSnapshot(ushort PlayerId, ushort VehicleId, byte State, byte SeatId, uint LastUpdate, uint LastTimestamp, float Health, float Armour, System.Numerics.Vector3 OnFootTarget, System.Numerics.Vector3 VehicleTarget) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.State.get -> byte
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.State.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.VehicleId.get -> ushort
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.VehicleId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.VehicleTarget.get -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.VehicleTarget.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.Current.get -> byte
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.Current.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.Deconstruct(out ushort PlayerId, out byte? Previous, out byte Current) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.PlayerId.get -> ushort
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.PlayerId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.Previous.get -> byte?
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.Previous.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.SFSampRemoteStateEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.SFSampRemoteStateEvent(ushort PlayerId, byte? Previous, byte Current) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.After.get -> SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.After.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Before.get -> SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Before.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Deconstruct(out SFSharp.Abstractions.Samp.Events.SFSampSyncKind Kind, out SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot Before, out SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot After, out uint? NativeTimestamp, out SFSharp.Abstractions.Samp.Events.SFSampSyncPayload Input, out SFSharp.Abstractions.Samp.Events.SFSampSyncPayload Stored, out bool StoredDataChanged) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Input.get -> SFSharp.Abstractions.Samp.Events.SFSampSyncPayload
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Input.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Kind.get -> SFSharp.Abstractions.Samp.Events.SFSampSyncKind
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Kind.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.NativeTimestamp.get -> uint?
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.NativeTimestamp.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.SFSampRemoteSyncEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.SFSampRemoteSyncEvent(SFSharp.Abstractions.Samp.Events.SFSampSyncKind Kind, SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot Before, SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot After, uint? NativeTimestamp, SFSharp.Abstractions.Samp.Events.SFSampSyncPayload Input, SFSharp.Abstractions.Samp.Events.SFSampSyncPayload Stored, bool StoredDataChanged) -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Stored.get -> SFSharp.Abstractions.Samp.Events.SFSampSyncPayload
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.Stored.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.StoredDataChanged.get -> bool
+SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.StoredDataChanged.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.Current.get -> SFSharp.Abstractions.Samp.SFSampGameState
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.Current.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.Deconstruct(out SFSharp.Abstractions.Samp.SFSampGameState? Previous, out SFSharp.Abstractions.Samp.SFSampGameState Current) -> void
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.Previous.get -> SFSharp.Abstractions.Samp.SFSampGameState?
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.Previous.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.SFSampSessionStateEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.SFSampSessionStateEvent(SFSharp.Abstractions.Samp.SFSampGameState? Previous, SFSharp.Abstractions.Samp.SFSampGameState Current) -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.CameraMode.get -> byte
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.CameraMode.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.Deconstruct(out bool Enabled, out SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget Target, out int TargetId, out byte CameraMode) -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.Enabled.get -> bool
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.Enabled.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.SFSampSpectatingEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.SFSampSpectatingEvent(bool Enabled, SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget Target, int TargetId, byte CameraMode) -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.Target.get -> SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.Target.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.TargetId.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.TargetId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget.None = 0 -> SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget.Player = 1 -> SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget
+SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget.Vehicle = 2 -> SFSharp.Abstractions.Samp.Events.SFSampSpectatingTarget
+SFSharp.Abstractions.Samp.Events.SFSampSyncKind
+SFSharp.Abstractions.Samp.Events.SFSampSyncKind.Aim = 3 -> SFSharp.Abstractions.Samp.Events.SFSampSyncKind
+SFSharp.Abstractions.Samp.Events.SFSampSyncKind.OnFoot = 0 -> SFSharp.Abstractions.Samp.Events.SFSampSyncKind
+SFSharp.Abstractions.Samp.Events.SFSampSyncKind.Passenger = 2 -> SFSharp.Abstractions.Samp.Events.SFSampSyncKind
+SFSharp.Abstractions.Samp.Events.SFSampSyncKind.Trailer = 4 -> SFSharp.Abstractions.Samp.Events.SFSampSyncKind
+SFSharp.Abstractions.Samp.Events.SFSampSyncKind.Vehicle = 1 -> SFSharp.Abstractions.Samp.Events.SFSampSyncKind
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.ContentEquals(SFSharp.Abstractions.Samp.Events.SFSampSyncPayload other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.CopyTo(System.Span<byte> destination) -> void
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.Length.get -> int
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.ReadByte(int offset) -> byte
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.ReadSingle(int offset) -> float
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.ReadUInt16(int offset) -> ushort
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.ReadUInt32(int offset) -> uint
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.ReadVector3(int offset) -> System.Numerics.Vector3
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.SFSampSyncPayload() -> void
+SFSharp.Abstractions.Samp.Events.SFSampSyncPayload.SFSampSyncPayload(System.ReadOnlySpan<byte> data) -> void
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.Deconstruct(out bool Enabled, out uint HoverColor, out ushort HoveredId) -> void
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.Enabled.get -> bool
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.Enabled.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.Equals(SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent other) -> bool
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.HoverColor.get -> uint
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.HoverColor.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.HoveredId.get -> ushort
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.HoveredId.init -> void
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.SFSampTextDrawSelectionEvent() -> void
+SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.SFSampTextDrawSelectionEvent(bool Enabled, uint HoverColor, ushort HoveredId) -> void
+SFSharp.Abstractions.Samp.ISFSampActions.Pickups.get -> SFSharp.Abstractions.Samp.Events.ISFSampPickupEvents!
+SFSharp.Abstractions.Samp.ISFSampActions.Pools.get -> SFSharp.Abstractions.Samp.Events.ISFSampPoolEvents!
+SFSharp.Abstractions.Samp.ISFSampActions.RemotePlayers.get -> SFSharp.Abstractions.Samp.Events.ISFSampRemotePlayerEvents!
+SFSharp.Abstractions.Samp.ISFSampActions.Session.get -> SFSharp.Abstractions.Samp.Events.ISFSampSessionEvents!
+SFSharp.Abstractions.Samp.ISFSampActions.Spectating.get -> SFSharp.Abstractions.Samp.Events.ISFSampSpectatingEvents!
+SFSharp.Abstractions.Samp.ISFSampActions.TextDraws.get -> SFSharp.Abstractions.Samp.Events.ISFSampTextDrawEvents!
+SFSharp.Abstractions.Samp.SFSampFeatureUnavailableException
+SFSharp.Abstractions.Samp.SFSampFeatureUnavailableException.Feature.get -> string!
+SFSharp.Abstractions.Samp.SFSampFeatureUnavailableException.SFSampFeatureUnavailableException(SFSharp.Abstractions.Samp.SFSampVersion version, string! feature) -> void
+SFSharp.Abstractions.Samp.SFSampFeatureUnavailableException.Version.get -> SFSharp.Abstractions.Samp.SFSampVersion
+static SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent left, SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent left, SFSharp.Abstractions.Samp.Events.SFSampConnectionEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampPickupEvent left, SFSharp.Abstractions.Samp.Events.SFSampPickupEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampPickupEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampPickupEvent left, SFSharp.Abstractions.Samp.Events.SFSampPickupEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent left, SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent left, SFSharp.Abstractions.Samp.Events.SFSampPickupNotificationEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampPoolEvent left, SFSharp.Abstractions.Samp.Events.SFSampPoolEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampPoolEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampPoolEvent left, SFSharp.Abstractions.Samp.Events.SFSampPoolEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent left, SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent left, SFSharp.Abstractions.Samp.Events.SFSampRemoteActionEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.operator !=(SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot left, SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot.operator ==(SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot left, SFSharp.Abstractions.Samp.Events.SFSampRemoteSnapshot right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent left, SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent left, SFSharp.Abstractions.Samp.Events.SFSampRemoteStateEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent left, SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent left, SFSharp.Abstractions.Samp.Events.SFSampRemoteSyncEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent left, SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent left, SFSharp.Abstractions.Samp.Events.SFSampSessionStateEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent left, SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent left, SFSharp.Abstractions.Samp.Events.SFSampSpectatingEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.operator !=(SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent left, SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent right) -> bool
+static SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent.operator ==(SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent left, SFSharp.Abstractions.Samp.Events.SFSampTextDrawSelectionEvent right) -> bool
 override SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.GetHashCode() -> int
 SFSharp.Abstractions.Samp.ISFSamp.Actions.get -> SFSharp.Abstractions.Samp.ISFSampActions!
 SFSharp.Abstractions.Samp.ISFSampActions

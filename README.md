@@ -202,6 +202,48 @@ Addresses and ABIs come from [SAMP-API multiver](https://github.com/BlastHackNet
 for R3-1 and R5-1; the R3 routines were also checked in disassembly. In-game validation is
 still required on each target revision, especially when other modifications hook these entries.
 
+Additional observer groups are available through `Context.SF.Samp.Actions`:
+
+| Group | Events |
+|---|---|
+| `Session` | Native connection-handler completions with reasons, tick-observed session state, Connect calls |
+| `RemotePlayers` | Onfoot/vehicle/passenger/aim/trailer processing, observed player state and entry/exit/Kill routine completions |
+| `Pools` | Before/after initialization and resets, including nested per-pool resets |
+| `TextDraws` | Selection enabled/color changes, hover changes, click/cancel notifications |
+| `Pickups` | Server-pickup creation, pre-delete snapshots and collection-notification routines |
+| `Spectating` | Actual enabled/target state after native routines return |
+
+These groups have explicit R1, R3-1 and R5-1 bindings. `Session.OnConnectAttempt` is the
+exception: the pinned upstream has no verified R1 Connect entry. Subscribing to it on R1
+throws `SFSampFeatureUnavailableException`, whose `Version` and `Feature` identify the missing
+binding. Other R1 session observers remain available. No revision borrows another revision's address.
+
+Remote sync events carry complete inline copies of decoded native `Input` and, for
+onfoot/vehicle/passenger, client `Stored` data. They are not compressed wire packets and
+do not contain packet/player ID prefixes. Use `CopyTo(Span<byte>)`, `ReadVector3`, `ReadUInt16`,
+`ReadUInt32` or `ReadSingle` without allocating an array. Native payload sizes and position offsets:
+
+| Kind | Bytes | Position offset |
+|---|---:|---:|
+| Onfoot | 68 | 6 |
+| Vehicle | 63 | 24 |
+| Passenger | 24 | 12 |
+| Aim | 31 | 13 (aim position) |
+| Trailer | 54 | 2 |
+
+`Before`/`After` contain copied client bookkeeping and interpolation targets, not the final
+rendered ped position. `StoredDataChanged` means changed cache bytes, not accepted input.
+`NativeTimestamp` is the Update argument, not a guaranteed RakNet `ID_TIMESTAMP`; it is absent
+for aim/trailer and the unused passenger argument. Stale input can complete without replacing
+stored data. Textdraw ID `65535` means no hover/cancel. Pickup notification lookup IDs are
+resolved to server slots before the native call; a completed routine does not guarantee an RPC.
+
+All registrations require the game thread and must be owned by the module context. Callbacks
+normally run synchronously at the native boundary; foreign-thread calls are queued as owned
+snapshots. A deferred `Before` event is not a synchronous mutation point. Do not block callbacks,
+reset the observed pool from a reset callback or retain assumptions about native pointer lifetime.
+Observers see future calls only, not calls made before the first subscription.
+
 ---
 
 ## Module System

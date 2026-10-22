@@ -31,7 +31,7 @@ internal sealed class SFHost : ISF
         Gta = new SFGtaServices(EntitiesImpl, CameraImpl, Clock, World);
         Samp = new SFSampServices(ChatImpl, DialogImpl, PlayersImpl, VehiclesImpl, PoolsImpl, SampEntitiesImpl,
             SampCameraImpl, EventsImpl, RpcImpl, PacketsImpl, PacketParsersImpl, RpcParsersImpl, NetworkImpl,
-            new SFSampActions(runtime.MainThread));
+            new SFSampActions(runtime.MainThread, Clock, SampEntitiesImpl));
     }
 
     public SFChat ChatImpl { get; }

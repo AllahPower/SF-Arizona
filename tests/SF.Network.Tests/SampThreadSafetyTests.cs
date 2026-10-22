@@ -21,7 +21,7 @@ public sealed class SampThreadSafetyTests
         var exceptions = new ExceptionReporter();
         var chat = new SFChat(exceptions, mainThread);
         var dialog = new SFDialog(mainThread, exceptions);
-        var actions = new SFSampActions(mainThread);
+        var actions = new SFSampActions(mainThread, new SFSharp.Runtime.Gta.SFGameClock(), bridge);
         Exception? failure = null;
 
         var worker = new Thread(() =>
@@ -52,6 +52,19 @@ public sealed class SampThreadSafetyTests
                 Assert.Throws<InvalidOperationException>(() => actions.OnVehicleEntryNotified(_ => { }));
                 Assert.Throws<InvalidOperationException>(() => actions.OnVehicleExitNotified(_ => { }));
                 Assert.Throws<InvalidOperationException>(() => actions.OnRestarted(() => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.Session.OnConnectionEvent(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.Session.OnStateChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.Session.OnConnectAttempt(() => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.RemotePlayers.OnSyncProcessed(SFSharp.Abstractions.Samp.Events.SFSampSyncKind.OnFoot, _ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.RemotePlayers.OnStateChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.RemotePlayers.OnActionCompleted(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.Pools.OnChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.TextDraws.OnSelectionChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.TextDraws.OnHoveredChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.TextDraws.OnSelectionNotified(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.Pickups.OnChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.Pickups.OnCollectionNotified(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.Spectating.OnChanged(_ => { }));
                 Assert.Throws<InvalidOperationException>(() => camera.AimPosition);
                 Assert.Throws<InvalidOperationException>(() => camera.Target);
                 Assert.Throws<InvalidOperationException>(() => chat.Add("test"));

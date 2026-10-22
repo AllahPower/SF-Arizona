@@ -54,7 +54,7 @@ public sealed unsafe class SampActionAbiTests
         }
     }
 
-    private sealed class NativeStub : IDisposable
+    internal sealed class NativeStub : IDisposable
     {
         public nint Address { get; }
 

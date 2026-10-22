@@ -26,7 +26,9 @@ internal sealed class SampActionEvent<T>
         return _source.Subscribe(handler);
     }
 
-    private void Publish(T value)
+    internal bool HasSubscribers => _source.HasHandlers;
+
+    internal void Publish(T value)
     {
         if (!_source.HasHandlers) return;
         if (_mainThread.IsMainThread)
