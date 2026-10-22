@@ -131,7 +131,7 @@ and enable Capture. World inspection is not part of this plugin.
 ```powershell
 # Build the plugin, its Preact frontend and the separate installable archive
 ./scripts/package-debug-web.ps1
-dotnet test tests/SF.DebugWeb.Tests/SF.DebugWeb.Tests.csproj -c Release
+dotnet test --project tests/SF.DebugWeb.Tests/SF.DebugWeb.Tests.csproj -c Release
 ```
 
 Node.js 24.12+ is required to build DebugWeb, but not to run it in the game. The main

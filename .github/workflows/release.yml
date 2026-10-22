@@ -33,7 +33,7 @@ jobs:
         shell: pwsh
         run: ./scripts/release-version.ps1
       - name: Test public contracts
-        run: dotnet test tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
+        run: dotnet test --project tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
       - name: Pack public libraries
         shell: pwsh
         run: ./scripts/pack-nuget.ps1 -Version '${{ steps.version.outputs.version }}'
@@ -97,11 +97,11 @@ jobs:
         run: ./scripts/build.ps1 -Version '${{ steps.version.outputs.version }}'
       - name: Test packet contracts
         shell: pwsh
-        run: dotnet test tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
+        run: dotnet test --project tests/SF.Network.Contracts.Tests/SF.Network.Contracts.Tests.csproj -c Release
       - name: Test DebugWeb plugin and frontend
         shell: pwsh
         run: |
-          dotnet test tests/SF.DebugWeb.Tests/SF.DebugWeb.Tests.csproj -c Release
+          dotnet test --project tests/SF.DebugWeb.Tests/SF.DebugWeb.Tests.csproj -c Release
           if ($LASTEXITCODE -ne 0) { throw 'DebugWeb plugin tests failed' }
           Push-Location examples/DebugWeb/frontend
           try {
