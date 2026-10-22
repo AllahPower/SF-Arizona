@@ -44,7 +44,7 @@ try {
     Copy-Item -LiteralPath "$native/SF.asi", "$native/nethost.dll" -Destination $stage
     Get-ChildItem -LiteralPath $publish -Force | Copy-Item -Destination "$stage/SF" -Recurse
     Get-ChildItem -LiteralPath $stage -File -Filter '*.pdb' -Recurse | Remove-Item
-    Copy-Item -LiteralPath "$root/docs/INSTALL.md" -Destination $stage
+    Copy-Item -LiteralPath "$root/INSTALL.md" -Destination $stage
     @{ version = $Version; commit = $commit; architecture = 'win-x86'; selfContained = $false } |
         ConvertTo-Json | Set-Content -LiteralPath "$stage/build-info.json" -Encoding utf8
     $archive = "$releases/SF-Arizona-$Version-win-x86.zip"

@@ -93,7 +93,7 @@ after `build.ps1` has prepared deployment files for the requested version and cu
 
 ### Install
 
-Install ASP.NET Core Runtime .NET 10 **x86** and extract the archive beside `gta_sa.exe` and `samp.dll`. Keep `SF.asi`, `nethost.dll` and the `SF/` dependency/assets directory together. See [installation instructions](docs/INSTALL.md).
+Install ASP.NET Core Runtime .NET 10 **x86** and extract the archive beside `gta_sa.exe` and `samp.dll`. Keep `SF.asi`, `nethost.dll` and the `SF/` dependency/assets directory together. See [installation instructions](INSTALL.md).
 
 ---
 
@@ -116,7 +116,7 @@ src/
   SF.Native/       # C++ loader/hostfxr integration
 examples/          # independent plugins referencing Abstractions and optionally Protocol
 scripts/           # reproducible build, package and verification tooling
-docs/              # deployment instructions
+INSTALL.md         # deployment instructions
 artifacts/         # ignored generated output
 ```
 
@@ -136,7 +136,7 @@ dotnet test tests/SF.DebugWeb.Tests/SF.DebugWeb.Tests.csproj -c Release
 
 Node.js 24.12+ is required to build DebugWeb, but not to run it in the game. The main
 `SF-Arizona.sln` does not require Node.js. Open `examples/DebugWeb/DebugWeb.slnx` to work
-on the plugin and its tests. See [the DebugWeb guide](docs/DEBUGWEB.md).
+on the plugin and its tests. Additional guidance is available in the [project wiki](https://github.com/AllahPower/SF-Arizona/wiki).
 
 SF-Arizona intercepts network traffic at two levels: **RPC** (Remote Procedure Calls) and **raw packets**. Both pipelines follow the same pattern: hook the native function, enqueue the event, dispatch on the main thread.
 
@@ -243,7 +243,7 @@ container.RegisterModule<ExampleModule>();
 
 ## Documentation
 
-See [GTA and SA-MP API](docs/GAME_API.md) for service boundaries, tick/world queries and main-thread execution.
+See the [project wiki](https://github.com/AllahPower/SF-Arizona/wiki) for service boundaries, tick/world queries and main-thread execution.
 
 For detailed guides, API reference, and examples, visit the **[SF-Arizona Wiki](https://github.com/AllahPower/SF-Arizona/wiki)**.
 

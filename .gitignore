@@ -377,3 +377,6 @@ AGENTS.md
 
 # Repository-wide build, publish and local verification output
 /artifacts/
+
+# Local documentation is kept outside version control.
+/docs/
