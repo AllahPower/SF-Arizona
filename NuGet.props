@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>$(MSBuildProjectName)</PackageId>
     <Authors>AllahPower</Authors>
     <RepositoryUrl>https://github.com/AllahPower/SF-Arizona</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

@@ -347,13 +347,25 @@ For detailed guides, API reference, and examples, visit the **[SF-Arizona Wiki](
 
 ## Versioning and Releases
 
-`Version.props` owns the base version (**4.1.0**) and numeric assembly/file versions. Use SemVer: patch for fixes, minor for compatible features, major for breaking changes. The number of commits does not dictate version bumps; a folder-only refactor retains the current version.
+`Version.props` owns the base version and numeric assembly/file versions. Use SemVer: patch for fixes, minor for compatible features, major for breaking changes. The number of commits does not dictate version bumps; a folder-only refactor retains the current version.
 
 - PRs and supported branch pushes build and verify a deployment archive.
-- Pushes to `main` or `experiment/jit-runtime` publish `4.1.0-preview.<run_number>.<short_sha>` prereleases, never latest.
-- Tag `v4.1.0` publishes a stable release; `v4.1.0-rc.1` publishes a prerelease. The numeric version must match Version.props.
+- Pushes to `main` or `experiment/jit-runtime` publish `<base>-preview.<run_number>.<short_sha>` prereleases, never latest.
+- Tag `vX.Y.Z` publishes a stable release; `vX.Y.Z-rc.1` publishes a prerelease. The numeric version must match Version.props.
 - Reruns reuse the same preview identity. Archives contain build-info.json and a separate SHA-256 checksum.
-- Automatic NuGet publication is not configured.
+- Version-tag pushes publish validated `SFSharp.Abstractions` and `SFSharp.Protocol` NuGet packages through Trusted Publishing. Branch previews do not publish to NuGet.
+
+NuGet IDs differ from assembly names: the packages contain `SF.Abstractions.dll` and
+`SF.Protocol.dll`, with unchanged `SFSharp.*` namespaces. Host plugins must exclude
+runtime assets from package references and use the host's shared assemblies.
+`SFSharp.Protocol` depends on `SFSharp.Abstractions`, not the reserved `SF.*` package IDs.
+
+Run `./scripts/pack-nuget.ps1` to create packages under `artifacts/packages/<version>/`.
+For GitHub publication, set `NUGET_USER` to the nuget.org profile name and configure
+Trusted Publishing for owner `AllahPower`, repository `SF-Arizona`, workflow
+`release.yml`, environment `nuget`, and the two exact `SFSharp.*` package IDs.
+The push step does not suppress HTTP 409: a reserved ID must fail rather than appear
+to be a successfully skipped duplicate. Re-running an already published version also fails.
 
 ## Contribution and Validation
 

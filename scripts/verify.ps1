@@ -19,6 +19,10 @@ foreach ($path in $tracked) {
 [xml]$runtime = Get-Content -LiteralPath "$root/src/SF.Runtime/SF.Runtime.csproj"
 [xml]$abstractions = Get-Content -LiteralPath "$root/src/SF.Abstractions/SF.Abstractions.csproj"
 [xml]$protocol = Get-Content -LiteralPath "$root/src/SF.Protocol/SF.Protocol.csproj"
+Assert-True ('SFSharp.Abstractions' -in @($abstractions.Project.PropertyGroup.PackageId)) 'Abstractions NuGet ID must use the SFSharp prefix.'
+Assert-True ('SFSharp.Protocol' -in @($protocol.Project.PropertyGroup.PackageId)) 'Protocol NuGet ID must use the SFSharp prefix.'
+Assert-True ('SF.Abstractions' -in @($abstractions.Project.PropertyGroup.AssemblyName)) 'Abstractions assembly identity must remain unchanged.'
+Assert-True ('SF.Protocol' -in @($protocol.Project.PropertyGroup.AssemblyName)) 'Protocol assembly identity must remain unchanged.'
 $runtimeReferences = @($runtime.Project.ItemGroup.ProjectReference | Where-Object { $_ } | ForEach-Object Include | Sort-Object)
 Assert-True (($runtimeReferences -join ';') -eq '..\SF.Abstractions\SF.Abstractions.csproj;..\SF.Protocol\SF.Protocol.csproj') 'Runtime must reference only Abstractions and Protocol.'
 $protocolReferences = @($protocol.Project.ItemGroup.ProjectReference | Where-Object { $_ } | ForEach-Object Include)
