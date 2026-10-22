@@ -3,7 +3,7 @@ namespace SFSharp.Runtime.Samp;
 internal sealed class SFSampServices(
     ISFChat chat, ISFDialog dialog, ISFPlayers players, ISFVehicles vehicles, ISFGamePools pools,
     ISFSampEntities entities, ISFSampCamera camera, ISFEvents events, ISFRpc rpc, ISFPackets packets,
-    ISFPacketParsers packetParsers, ISFRpcParsers rpcParsers, ISFNetwork network) : ISFSamp
+    ISFPacketParsers packetParsers, ISFRpcParsers rpcParsers, ISFNetwork network, ISFSampActions actions) : ISFSamp
 {
     public SFSampClientInfo Client => SampEnvironment.Client;
     public ISFChat Chat => chat;
@@ -12,6 +12,7 @@ internal sealed class SFSampServices(
     public ISFVehicles Vehicles => vehicles;
     public ISFGamePools Pools => pools;
     public ISFSampEntities Entities => entities;
+    public ISFSampActions Actions => actions;
     public ISFSampCamera Camera => camera;
     public ISFEvents Events => events;
     public ISFRpc Rpc => rpc;

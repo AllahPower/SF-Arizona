@@ -11,6 +11,7 @@ public sealed class EntityContractTests
     {
         Assert.Equal(typeof(ISFGta), typeof(ISF).GetProperty(nameof(ISF.Gta))?.PropertyType);
         Assert.Equal(typeof(ISFSamp), typeof(ISF).GetProperty(nameof(ISF.Samp))?.PropertyType);
+        Assert.Equal(typeof(ISFSampActions), typeof(ISFSamp).GetProperty(nameof(ISFSamp.Actions))?.PropertyType);
         Assert.Equal(typeof(ISFEntities), typeof(ISFGta).GetProperty(nameof(ISFGta.Entities))?.PropertyType);
         Assert.Null(typeof(ISF).GetProperty("Entities"));
         Assert.Null(typeof(ISFEntities).GetMethod("TryGetPlayer"));

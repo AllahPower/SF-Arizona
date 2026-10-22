@@ -11,6 +11,8 @@ public interface ISFSamp
     ISFVehicles Vehicles { get; }
     ISFGamePools Pools { get; }
     ISFSampEntities Entities { get; }
+    /// <summary>Native client actions. Subscription registration requires the game thread.</summary>
+    ISFSampActions Actions { get; }
     ISFSampCamera Camera { get; }
     ISFEvents Events { get; }
     ISFRpc Rpc { get; }

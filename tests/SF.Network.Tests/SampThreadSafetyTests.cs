@@ -21,6 +21,7 @@ public sealed class SampThreadSafetyTests
         var exceptions = new ExceptionReporter();
         var chat = new SFChat(exceptions, mainThread);
         var dialog = new SFDialog(mainThread, exceptions);
+        var actions = new SFSampActions(mainThread);
         Exception? failure = null;
 
         var worker = new Thread(() =>
@@ -43,6 +44,14 @@ public sealed class SampThreadSafetyTests
                 Assert.Throws<InvalidOperationException>(() => bridge.TryGetLocalPlayer(out _));
                 Assert.Throws<InvalidOperationException>(() => bridge.TryGetPlayerId(default, out _));
                 Assert.Throws<InvalidOperationException>(() => bridge.OnSampEntityChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnSpawnRequested(() => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnSpawnCompleted(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnDeathNotified(() => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnClassRequested(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnInteriorChanged(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnVehicleEntryNotified(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnVehicleExitNotified(_ => { }));
+                Assert.Throws<InvalidOperationException>(() => actions.OnRestarted(() => { }));
                 Assert.Throws<InvalidOperationException>(() => camera.AimPosition);
                 Assert.Throws<InvalidOperationException>(() => camera.Target);
                 Assert.Throws<InvalidOperationException>(() => chat.Add("test"));

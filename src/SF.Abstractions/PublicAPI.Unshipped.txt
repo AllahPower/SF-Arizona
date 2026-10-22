@@ -1,1 +1,25 @@
 #nullable enable
+override SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.GetHashCode() -> int
+SFSharp.Abstractions.Samp.ISFSamp.Actions.get -> SFSharp.Abstractions.Samp.ISFSampActions!
+SFSharp.Abstractions.Samp.ISFSampActions
+SFSharp.Abstractions.Samp.ISFSampActions.OnClassRequested(System.Action<int>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampActions.OnDeathNotified(System.Action! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampActions.OnInteriorChanged(System.Action<byte>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampActions.OnRestarted(System.Action! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampActions.OnSpawnCompleted(System.Action<bool>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampActions.OnSpawnRequested(System.Action! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampActions.OnVehicleEntryNotified(System.Action<SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.ISFSampActions.OnVehicleExitNotified(System.Action<int>! handler) -> System.IDisposable!
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.Deconstruct(out int VehicleId, out bool IsPassenger) -> void
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.Equals(SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent other) -> bool
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.IsPassenger.get -> bool
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.IsPassenger.init -> void
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.SFSampVehicleEntryEvent() -> void
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.SFSampVehicleEntryEvent(int VehicleId, bool IsPassenger) -> void
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.VehicleId.get -> int
+SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.VehicleId.init -> void
+static SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.operator !=(SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent left, SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent right) -> bool
+static SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.operator ==(SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent left, SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent right) -> bool
+~override SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.Equals(object obj) -> bool
+~override SFSharp.Abstractions.Samp.SFSampVehicleEntryEvent.ToString() -> string

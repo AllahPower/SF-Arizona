@@ -254,6 +254,14 @@ public static class SampOffsets
         public static int GetColorAsRgba => Select(0x3D80, 0x3F00);
         public static int GetColorAsArgb => Select(0x3DA0, 0x3F20);
         public static int RequestSpawn => Select(0x3ED0, 0x4060);
+        // SAMP-API multiver 6d4db99, CLocalPlayer.cpp for each revision.
+        // R3 entries and thiscall stack cleanup also checked in sampR3.dll disassembly.
+        public static int Spawn => Select(0x3AD0, 0x3C20);
+        public static int WastedNotification => Select(0x5620, 0x5810);
+        public static int RequestClass => Select(0x56E0, 0x58D0);
+        public static int ChangeInterior => Select(0x5780, 0x5970);
+        public static int EnterVehicle => Select(0x58E0, 0x5AD0);
+        public static int ExitVehicle => Select(0x5A00, 0x5BF0);
         public static int Chat => Select(0x5820, 0x5A10);
     }
 

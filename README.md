@@ -173,6 +173,35 @@ decoders and metadata through `ISF.Samp.PacketParsers`; separate native integrat
 copied observations through `ISF.Samp.Packets.RegisterSource`. Registrations must be disposed
 before the exporting plugin unloads. Normal raw send/receive APIs accept numeric IDs.
 
+### Native SA-MP Actions
+
+`Context.SF.Samp.Actions` observes eight native client routines, separately from parsed RPCs.
+Hooks install on first subscription and remain owned by the host. Register subscriptions with
+the module context so stopped or unloaded plugins release their callbacks:
+
+```csharp
+await Context.InvokeOnMainThreadAsync(() =>
+{
+    Context.RegisterDisposable(Context.SF.Samp.Actions.OnSpawnCompleted(success =>
+        Log.LogInformation("Local spawn completed: {Success}", success)));
+    Context.RegisterDisposable(Context.SF.Samp.Actions.OnVehicleEntryNotified(entry =>
+        Log.LogInformation("Vehicle entry notification: {VehicleId}, passenger={Passenger}",
+            entry.VehicleId, entry.IsPassenger)));
+});
+```
+
+The first priority is local lifecycle (`OnSpawnRequested`, `OnSpawnCompleted`, `OnDeathNotified`,
+`OnClassRequested`), followed by vehicle/interior actions (`OnVehicleEntryNotified`,
+`OnVehicleExitNotified`, `OnInteriorChanged`) and restart cleanup (`OnRestarted`).
+Observers run after the native routine returns and cannot suppress it. Spawn completion reports
+the native success flag; request and notification events do not imply server acceptance, RPC
+delivery or an occupied vehicle seat. Restart means `ShutdownForRestart` completed, not every
+disconnect. Calls from another thread are delivered on the next game-thread tick.
+
+Addresses and ABIs come from [SAMP-API multiver](https://github.com/BlastHackNet/SAMP-API/tree/6d4db99ab41f19d1a6a7c6cd48f5878bd1e14b62/src/sampapi)
+for R3-1 and R5-1; the R3 routines were also checked in disassembly. In-game validation is
+still required on each target revision, especially when other modifications hook these entries.
+
 ---
 
 ## Module System
