@@ -93,11 +93,7 @@ public sealed class PluginLoader
             return 0;
         }
 
-        if (!Directory.Exists(_pluginsRoot))
-        {
-            SFLog.Info($"PluginLoader: plugins root '{_pluginsRoot}' does not exist, nothing to load.");
-            return 0;
-        }
+        Directory.CreateDirectory(_pluginsRoot);
 
         SFLog.Info($"PluginLoader: scanning '{_pluginsRoot}' for manifests");
         List<ResolvedPluginManifest> candidates = [];
