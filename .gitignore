@@ -370,6 +370,7 @@ FodyWeavers.xsd
 .github/copilot-instructions.md
 .aider*
 .codeium/
+.codegraph/
 .continue/
 .windsurf/
 CLAUDE.md
